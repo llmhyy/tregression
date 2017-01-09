@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+ <extension
+       point="org.eclipse.ui.commands">
+       <command
+            defaultHandler="tregression.handler.EvaluationTrialHandler"
+            id="tregression.command.evaluateTrial"
+            name="Run Regression for Trial">
+      </command>
+ </extension>	
+ <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="tregression.category"
+            name="Tregression">
+      </category>
+      <view
+            category="tregression.category"
+            class="tregression.views.BeforeTraceView"
+            icon="icons/before.ico"
+            id="tregression.evalView.beforeTraceView"
+            name="Before Trace"
+            restorable="true">
+      </view>
+      <view
+            category="tregression.category"
+            class="tregression.views.AfterTraceView"
+            icon="icons/after.ico"
+            id="tregression.evalView.afterTraceView"
+            name="After Trace"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="tregression.perspectives.TraceComparisonPerspective"
+            icon="icons/trace_comparison.png"
+            id="tregression.perspective.traceChecking"
+            name="Trace Comparison">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu">
+         <menu label="Tregression">
+            <command
+                     commandId="microbat.command.evaluateTrial"
+                     icon="icons/evaluation.png"
+                     label="Trial"
+                     style="push">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+
+</plugin>

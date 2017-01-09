@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: tregression
-Bundle-SymbolicName: tregression
+Bundle-SymbolicName: tregression;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: microbat;bundle-version="1.0.0",
  sav.commons;bundle-version="1.0.0",
@@ -14,7 +14,8 @@ Require-Bundle: microbat;bundle-version="1.0.0",
  org.eclipse.swt;bundle-version="3.104.2",
  org.eclipse.jface;bundle-version="3.11.1",
  mutation;bundle-version="1.0.1",
- org.eclipse.ui.console;bundle-version="3.6.100"
+ org.eclipse.ui.console;bundle-version="3.6.100",
+ org.eclipse.ui;bundle-version="3.107.0"
 Bundle-ClassPath: lib/poi-3.11-20141221.jar,
  lib/poi-ooxml-3.11-20141221.jar,
  lib/poi-ooxml-schemas-3.11-20141221.jar,

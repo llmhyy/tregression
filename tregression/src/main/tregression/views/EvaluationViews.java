@@ -4,8 +4,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 public class EvaluationViews {
-	public static final String BEFORE_TRACE = "microbat.evalView.beforeTraceView";
-	public static final String AFTER_TRACE = "microbat.evalView.afterTraceView";
+	public static final String BEFORE_TRACE = "tregression.evalView.beforeTraceView";
+	public static final String AFTER_TRACE = "tregression.evalView.afterTraceView";
 	
 	public static BeforeTraceView getBeforeTraceView(){
 		BeforeTraceView view = null;
