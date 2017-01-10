@@ -305,7 +305,9 @@ public class SimulatedMicroBat {
 				}
 				
 				TraceNode originalSuspiciousNode = suspiciousNode;
+				
 				suspiciousNode = findSuspicioiusNode(suspiciousNode, mutatedTrace, feedback.getFeedbackType());	
+				
 				if(suspiciousNode==null && feedback.getFeedbackType().equals(UserFeedback.WRONG_PATH)){
 					UserFeedback f = new UserFeedback();
 					f.setFeedbackType("Missing Control Dominator!");
