@@ -176,6 +176,8 @@ public class TestCaseAnalyzer {
 		SimulatedMicroBat microbat = new SimulatedMicroBat();
 		ClassLocation mutatedLocation = new ClassLocation(mutatedClassName, null, mutatedLine);
 		microbat.prepare(killingMutatantTrace, correctTrace, mutatedLocation, testcaseName, mutationFile);
+		visualize(killingMutatantTrace, correctTrace, microbat.getPairList());
+		
 		Trial trial;
 		try {
 			trial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, mutatedLocation, 
@@ -191,7 +193,6 @@ public class TestCaseAnalyzer {
 			System.err.println("Mutated File: " + mutatedFile);
 		}
 		
-		visualize(killingMutatantTrace, correctTrace, microbat.getPairList());
 	}
 
 	private void visualize(final Trace killingMutatantTrace, final Trace correctTrace, final PairList pairList) {

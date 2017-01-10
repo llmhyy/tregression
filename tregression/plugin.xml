@@ -48,7 +48,7 @@
             locationURI="menu:org.eclipse.ui.main.menu">
          <menu label="Tregression">
             <command
-                     commandId="microbat.command.evaluateTrial"
+                     commandId="tregression.command.evaluateTrial"
                      icon="icons/evaluation.png"
                      label="Trial"
                      style="push">
