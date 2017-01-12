@@ -247,6 +247,16 @@ public class SimulatedMicroBat {
 		}
 	}
 	
+	class FeedbackResult{
+		TraceNode suspiciousNode;
+		UserFeedback userFeedback;
+		
+		public FeedbackResult(TraceNode suspiciousNode, UserFeedback feedback) {
+			this.suspiciousNode = suspiciousNode;
+			this.userFeedback = feedback;
+		}
+	}
+	
 	private Trial startSimulation(TraceNode observedFaultNode, TraceNode rootCause, Trace mutatedTrace, 
 			Map<Integer, TraceNode> allWrongNodeMap, PairList pairList, String testCaseName, String mutatedFile, 
 			double unclearRate, boolean enableLoopInference, int optionSearchLimit) 
@@ -366,7 +376,7 @@ public class SimulatedMicroBat {
 						for(String wrongVarID: option.getIncludedWrongVarID()){
 							Settings.interestedVariables.add(wrongVarID, checkTime);
 						}
-						feedback = new UserFeedback(option, UserFeedback.INCORRECT);
+						feedback = new UserFeedback(option, UserFeedback.WRONG_VARIABLE_VALUE);
 						
 						pair = pairList.findByMutatedNode(suspiciousNode);
 						referenceNode = (pair==null)? null : pair.getOriginalNode();
@@ -389,14 +399,28 @@ public class SimulatedMicroBat {
 								mutatedTrace, pairList, maxUnclearFeedbackNum, confusingStack,
 								jumpingSteps, false, failedAttempts);
 
-						pair = pairList.findByMutatedNode(suspiciousNode);
-						referenceNode = (pair==null)? null : pair.getOriginalNode();
-						
-						jumpingSteps.add(new StepOperationTuple(suspiciousNode, feedback, referenceNode, recommender.getState()));
-						
-						if(!feedback.getFeedbackType().equals(UserFeedback.UNCLEAR)){
-							setCurrentNodeChecked(mutatedTrace, suspiciousNode);		
-							updateVariableCheckTime(mutatedTrace, suspiciousNode);
+						/**
+						 * the logic here is different from microbat
+						 */
+						if(feedback.getFeedbackType().equals(UserFeedback.CORRECT)){
+							
+							FeedbackResult result = applyAlignmentSlicing(jumpingSteps, suspiciousNode, 
+									feedback, mutatedTrace, pairList, confusingStack, failedAttempts, maxUnclearFeedbackNum);
+							if(result != null){
+								suspiciousNode = result.suspiciousNode;
+								feedback = result.userFeedback;
+							}
+						}
+						else{
+							pair = pairList.findByMutatedNode(suspiciousNode);
+							referenceNode = (pair==null)? null : pair.getOriginalNode();
+							
+							jumpingSteps.add(new StepOperationTuple(suspiciousNode, feedback, referenceNode, recommender.getState()));	
+							
+							if(!feedback.getFeedbackType().equals(UserFeedback.UNCLEAR)){
+								setCurrentNodeChecked(mutatedTrace, suspiciousNode);		
+								updateVariableCheckTime(mutatedTrace, suspiciousNode);
+							}
 						}
 					}
 					else{
@@ -428,6 +452,77 @@ public class SimulatedMicroBat {
 		}
 	}
 	
+	private FeedbackResult applyAlignmentSlicing(ArrayList<StepOperationTuple> jumpingSteps, TraceNode suspiciousNode, 
+			UserFeedback feedback, Trace mutatedTrace, PairList pairList, Stack<StateWrapper> confusingStack, 
+			HashSet<Attempt> failedAttempts, int maxUnclearFeedbackNum) {
+		
+		StepOperationTuple tuple = jumpingSteps.get(jumpingSteps.size()-1);
+		TraceNode oldSuspiciousNode = tuple.getNode();
+		UserFeedback oldFeedback = tuple.getUserFeedback();
+		if(oldFeedback.getFeedbackType().equals(UserFeedback.WRONG_VARIABLE_VALUE)){
+			TraceNodePair oldPair = pairList.findByMutatedNode(oldSuspiciousNode);
+			TraceNode originalNode = oldPair.getOriginalNode();
+			VarValue readVarInMutation = oldFeedback.getOption().getReadVar();
+			
+			VarValue readVarInOrigin = findMatchOriginalVar(readVarInMutation, originalNode);
+			
+			TraceNode dataDominator = originalNode.findDataDominator(readVarInOrigin);
+			
+			/**
+			 * for now, the dataDominator must not find a corresponding mutated node.
+			 */
+			if(dataDominator != null){
+				TraceNode controlDom = dataDominator.getControlDominator();
+				TraceNodePair conPair = pairList.findByOriginalNode(controlDom);
+				while(conPair == null){
+					controlDom = controlDom.getControlDominator();
+					conPair = pairList.findByOriginalNode(controlDom);
+				}
+				
+				suspiciousNode = conPair.getMutatedNode();
+				feedback = operateFeedback(suspiciousNode,
+						mutatedTrace, pairList, maxUnclearFeedbackNum, confusingStack,
+						jumpingSteps, false, failedAttempts);
+				
+				jumpingSteps.add(new StepOperationTuple(suspiciousNode, feedback, controlDom, recommender.getState()));
+				
+				if(!feedback.getFeedbackType().equals(UserFeedback.UNCLEAR)){
+					setCurrentNodeChecked(mutatedTrace, suspiciousNode);		
+					updateVariableCheckTime(mutatedTrace, suspiciousNode);
+				}
+				
+				FeedbackResult result = new FeedbackResult(suspiciousNode, feedback);
+				return result;
+			}
+			
+		}
+		else{
+			System.out.println("correct feedback follows wrong-path feedback");
+			
+		}
+		
+		return null;
+	}
+
+
+	private VarValue findMatchOriginalVar(VarValue readVarInMutation, TraceNode originalNode) {
+		for(VarValue readVar: originalNode.getReadVariables()){
+			if(readVar.getVarName().equals(readVarInMutation.getVarName())){
+				return readVar;
+			}
+			else{
+				List<VarValue> children = readVar.getAllDescedentChildren();
+				for(VarValue child: children){
+					if(child.getVarName().equals(readVarInMutation.getVarName())){
+						return child;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+
 	private boolean cannotConverge(ArrayList<StepOperationTuple> jumpingSteps) {
 		if(jumpingSteps.size() > 10){
 			int size = jumpingSteps.size();

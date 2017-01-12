@@ -54,7 +54,7 @@ public class EvaluationTrialHandler extends AbstractHandler {
 		String mutationFile = "C:\\microbat_evaluation\\apache-common-math-2.2\\920_17_1\\MathUtils.java";
 		double unclearRate = 0.0;
 		boolean enableLoopInference = false;
-		boolean isReuseTrace = false;
+		boolean isReuseTrace = true;
 		int optionSearchLimit = 1000;
 		
 		try {
