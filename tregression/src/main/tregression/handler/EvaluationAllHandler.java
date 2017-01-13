@@ -27,7 +27,7 @@ public class EvaluationAllHandler extends AbstractHandler {
 	private ParsedTrials parsedTrials;
 	
 	private int trialNumPerTestCase = 3;
-	private double[] unclearRates = {0, 0.005, 0.01, 0.05, 0.1, -1};
+	private double[] unclearRates = {0};
 	
 	
 	private boolean isLimitTrialNum = false;

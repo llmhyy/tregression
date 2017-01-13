@@ -8,6 +8,11 @@
             id="tregression.command.evaluateTrial"
             name="Run Regression for Trial">
       </command>
+       <command
+             defaultHandler="tregression.handler.EvaluationAllHandler"
+             id="tregression.command.evaluateAll"
+             name="Run Regression for All">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -52,6 +57,12 @@
                      icon="icons/evaluation.png"
                      label="Trial"
                      style="push">
+            </command>
+            <command
+                  commandId="tregression.command.evaluateAll"
+                  icon="icons/evaluation.png"
+                  label="Evaluate All"
+                  style="push">
             </command>
          </menu>
       </menuContribution>

@@ -49,9 +49,9 @@ public class EvaluationTrialHandler extends AbstractHandler {
 //		boolean isReuseTrace = false;
 //		int optionSearchLimit = 1000;
 		
-		String testClassName = "org.apache.commons.math.fraction.FractionTest";
-		String testMethodName = "testReciprocal";
-		String mutationFile = "C:\\microbat_evaluation\\apache-common-math-2.2\\920_17_1\\MathUtils.java";
+		String testClassName = "org.apache.commons.math.analysis.polynomials.PolynomialsUtilsTest";
+		String testMethodName = "testFirstChebyshevPolynomials";
+		String mutationFile = "C:\\microbat_evaluation_regression\\apache-common-math-2.2\\197_31_1\\PolynomialsUtils.java";
 		double unclearRate = 0.0;
 		boolean enableLoopInference = false;
 		boolean isReuseTrace = true;
