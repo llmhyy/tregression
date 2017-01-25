@@ -55,7 +55,7 @@ import tregression.views.EvaluationViews;
 public class TestCaseAnalyzer {
 	
 	public static final String TEST_RUNNER = "microbat.evaluation.junit.MicroBatTestRunner";
-	private static final String TMP_DIRECTORY = "C:\\microbat_evaluation\\";
+	private static final String TMP_DIRECTORY = "C:\\microbat_evaluation_regression\\";
 	
 	public TestCaseAnalyzer(){
 	}

@@ -30,6 +30,9 @@ public class ExcelReporter {
 	private String projectName;
 	
 	public ExcelReporter(String projectName, double[] unclearRates) throws IOException{
+		
+		projectName = projectName + "_regression";
+		
 		this.unclearRates = unclearRates;
 		this.projectName = projectName;
 		
