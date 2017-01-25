@@ -68,26 +68,18 @@ public class ExcelReporter {
 		titles.add("mutation file");
 		titles.add("mutation line");
 		titles.add("total steps");
+		titles.add("original total steps");
+		titles.add("trace diff");
 		titles.add("time");
 		
 		for(int i=0; i<unclearRates.length; i++){
-			String nonLoopJumpSteps = "jump steps (nonloop, " + unclearRates[i] + ")";
-			String loopJumpSteps = "jump steps (loop, " + unclearRates[i] + ")";
-			String nonLoopUnclearSteps = "unclear steps (nonloop, " + unclearRates[i] + ")";
-			String loopUnclearSteps = "unclear steps (loop, " + unclearRates[i] + ")";
-			String nonLoopResult = "result (nonloop, " + unclearRates[i] + ")";
-			String loopResult = "result (loop, " + unclearRates[i] + ")";
-			String nonLoopDetail = "detail (nonloop, " + unclearRates[i] + ")";
-			String loopDetail = "detail (loop, " + unclearRates[i] + ")";
+			String jumpSteps = "jump steps";
+			String result = "result";
+			String detail = "detail";
 			
-			titles.add(nonLoopJumpSteps);
-			titles.add(loopJumpSteps);
-			titles.add(nonLoopUnclearSteps);
-			titles.add(loopUnclearSteps);
-			titles.add(nonLoopResult);
-			titles.add(loopResult);
-			titles.add(nonLoopDetail);
-			titles.add(loopDetail);
+			titles.add(jumpSteps);
+			titles.add(result);
+			titles.add(detail);
 		}
 		
 		Row row = sheet.createRow(0);
@@ -120,24 +112,13 @@ public class ExcelReporter {
 		row.createCell(1).setCellValue(trial.getMutatedFile());
 		row.createCell(2).setCellValue(trial.getMutatedLineNumber());
 		row.createCell(3).setCellValue(trial.getTotalSteps());
-		row.createCell(4).setCellValue(trial.getTime());
+		row.createCell(4).setCellValue(trial.getOriginalTotalSteps());
+		row.createCell(5).setCellValue(Math.abs(trial.getOriginalTotalSteps()-trial.getTotalSteps()));
+		row.createCell(6).setCellValue(trial.getTime());
+		row.createCell(7).setCellValue(trial.getJumpSteps().size());
+		row.createCell(8).setCellValue(trial.getResult());
+		row.createCell(9).setCellValue(trial.getJumpSteps().toString());
 		
-		int column = 5;
-		for(int i=0; i<trialList.size(); i=i+2){
-			Trial nonLoopTrial = trialList.get(i);
-			Trial loopTrial = trialList.get(i+1);
-			
-			row.createCell(column).setCellValue(nonLoopTrial.getJumpSteps().size());
-			row.createCell(column+1).setCellValue(loopTrial.getJumpSteps().size());
-			row.createCell(column+2).setCellValue(nonLoopTrial.getUnclearFeedbackNumber());
-			row.createCell(column+3).setCellValue(loopTrial.getUnclearFeedbackNumber());
-			row.createCell(column+4).setCellValue(nonLoopTrial.getResult());
-			row.createCell(column+5).setCellValue(loopTrial.getResult());
-			row.createCell(column+6).setCellValue(nonLoopTrial.getJumpSteps().toString());
-			row.createCell(column+7).setCellValue(loopTrial.getJumpSteps().toString());
-			
-			column = column + 8;
-		}
 	}
 	
 	private void writeToExcel(Workbook book, String fileName){

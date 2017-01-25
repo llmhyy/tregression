@@ -401,25 +401,17 @@ public class TestCaseAnalyzer {
 				boolean isValid = true;
 				List<Trial> trialList = new ArrayList<>();
 				for(int i=0; i<unclearRates.length; i++){
-					Trial nonloopTrial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, 
+					Trial trial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, 
 							mutatedLocation, testCaseName, mutationFile.toString(), unclearRates[i], false, optionSearchLimit);
-					Trial loopTrial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, 
-							mutatedLocation, testCaseName, mutationFile.toString(), unclearRates[i], true, optionSearchLimit);
 					
-					if(loopTrial==null || nonloopTrial==null){
+					if(trial==null){
 						isValid = false;
 						break;
 					}
 					
-					nonloopTrial.setTime(killingMutatantTrace.getConstructTime());
-					loopTrial.setTime(killingMutatantTrace.getConstructTime());
-					trialList.add(nonloopTrial);
-					trialList.add(loopTrial);
+					trial.setTime(killingMutatantTrace.getConstructTime());
+					trialList.add(trial);
 					
-					if(i==0 && loopTrial.getJumpSteps().size()<nonloopTrial.getJumpSteps().size()){
-						isLoopEffective = true;
-						System.out.println("GOOD NEWS: loop inference takes effect!");
-					}
 				}
 				
 				if(isValid){

@@ -12,6 +12,7 @@ public class Trial {
 	private String testCaseName;
 	private boolean isBugFound;
 	private int totalSteps;
+	private int originalTotalSteps;
 	private String mutatedFile;
 	private int mutatedLineNumber;
 	private List<String> jumpSteps;
@@ -135,6 +136,14 @@ public class Trial {
 
 	public void setTime(int time) {
 		this.time = time;
+	}
+
+	public int getOriginalTotalSteps() {
+		return originalTotalSteps;
+	}
+
+	public void setOriginalTotalSteps(int originalTotalSteps) {
+		this.originalTotalSteps = originalTotalSteps;
 	}
 
 	

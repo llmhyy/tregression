@@ -162,8 +162,9 @@ public class SimulatedMicroBat {
 		mutatedTrace.resetCheckTime();
 		if(observedFaultNode != null){
 			try {
-				Trial trial = startSimulation(observedFaultNode, rootCause, mutatedTrace, allWrongNodeMap, getPairList(), 
-						testCaseName, mutatedFile, unclearRate, enableLoopInference, optionSearchLimit);
+				Trial trial = startSimulation(observedFaultNode, rootCause, mutatedTrace, correctTrace, 
+						allWrongNodeMap, getPairList(), testCaseName, mutatedFile, unclearRate, 
+						enableLoopInference, optionSearchLimit);
 //				System.currentTimeMillis();
 				return trial;			
 			} catch (Exception e) {
@@ -257,7 +258,7 @@ public class SimulatedMicroBat {
 		}
 	}
 	
-	private Trial startSimulation(TraceNode observedFaultNode, TraceNode rootCause, Trace mutatedTrace, 
+	private Trial startSimulation(TraceNode observedFaultNode, TraceNode rootCause, Trace mutatedTrace, Trace originalTrace,
 			Map<Integer, TraceNode> allWrongNodeMap, PairList pairList, String testCaseName, String mutatedFile, 
 			double unclearRate, boolean enableLoopInference, int optionSearchLimit) 
 					throws SimulationFailException {
@@ -435,7 +436,7 @@ public class SimulatedMicroBat {
 			}
 			
 			System.out.println("number of attempts: " + optionSearchTime);
-			Trial trial = constructTrial(rootCause, mutatedTrace, testCaseName,
+			Trial trial = constructTrial(rootCause, mutatedTrace, originalTrace, testCaseName,
 					mutatedFile, isBugFound, jumpingSteps);
 			
 			return trial;
@@ -620,7 +621,7 @@ public class SimulatedMicroBat {
 		return feedbackType;
 	}
 
-	private Trial constructTrial(TraceNode rootCause, Trace mutatedTrace,
+	private Trial constructTrial(TraceNode rootCause, Trace mutatedTrace, Trace originalTrace,
 			String testCaseName, String mutatedFile, boolean isBugFound, List<StepOperationTuple> jumpingSteps) {
 		
 		List<String> jumpStringSteps = new ArrayList<>();
@@ -641,6 +642,7 @@ public class SimulatedMicroBat {
 		trial.setMutatedLineNumber(rootCause.getLineNumber());
 		trial.setJumpSteps(jumpStringSteps);
 		trial.setTotalSteps(mutatedTrace.size());
+		trial.setOriginalTotalSteps(originalTrace.size());
 		trial.setMutatedFile(mutatedFile);
 		trial.setResult(isBugFound? Trial.SUCESS : Trial.FAIL);
 		return trial;
