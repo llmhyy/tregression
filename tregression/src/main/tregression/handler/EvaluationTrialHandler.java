@@ -49,15 +49,21 @@ public class EvaluationTrialHandler extends AbstractHandler {
 //		boolean isReuseTrace = false;
 //		int optionSearchLimit = 1000;
 		
-		String testClassName = "org.apache.commons.math.analysis.polynomials.PolynomialsUtilsTest";
-		String testMethodName = "testFirstChebyshevPolynomials";
-		String mutationFile = "C:\\microbat_evaluation_regression\\apache-common-math-2.2\\197_31_1\\PolynomialsUtils.java";
+		String testCase = "org.apache.commons.math.linear.SparseFieldMatrixTest#testScalarAdd";
+		String mutationFile = "C:\\microbat_evaluation\\apache-common-math-2.2\\"
+				+ "org.apache.commons.math.util.MathUtils_920_17_1\\MathUtils.java";
+		
+//		String testClassName = "org.apache.commons.math.linear.TriDiagonalTransformerTest";
+//		String testMethodName = "testQOrthogonal";
+//		String mutationFile = "C:\\microbat_evaluation_regression\\apache-common-math-2.2\\408_18_1\\Array2DRowRealMatrix.java";
 		double unclearRate = 0.0;
 		boolean enableLoopInference = false;
-		boolean isReuseTrace = true;
+		boolean isReuseTrace = false;
 		int optionSearchLimit = 1000;
 		
 		try {
+			String testClassName = testCase.substring(0, testCase.indexOf("#"));
+			String testMethodName = testCase.substring(testCase.indexOf("#")+1);
 			analyzer.runEvaluationForSingleTrial(testClassName, testMethodName, mutationFile, 
 					unclearRate, enableLoopInference, isReuseTrace, optionSearchLimit);
 		} catch (JavaModelException e) {
