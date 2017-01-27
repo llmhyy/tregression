@@ -491,6 +491,7 @@ public class TestCaseAnalyzer {
 				TraceModelConstructor constructor = new TraceModelConstructor();
 				
 				List<BreakPoint> executingStatements = checker.collectBreakPoints(testcaseConfig, true);
+				System.currentTimeMillis();
 				
 				if(checker.isOverLong()){
 					System.out.println("The trace is over long for " + testMethod + " (mutation: " + mutatedFile + ")");
