@@ -42,7 +42,9 @@ public class EvaluationTestCaseHandler extends AbstractHandler {
 				try {
 					ExcelReporter reporter = new ExcelReporter(Settings.projectName, unclearRates);
 					
-					String testCase = "org.apache.commons.math.linear.SparseFieldMatrixTest#testScalarAdd";
+//					String testCase = "org.apache.commons.math.linear.SparseFieldMatrixTest#testScalarAdd";
+					String testCase = "org.apache.commons.math.ode.events.EventStateTest#closeEvents";
+//					String testCase = "org.apache.commons.math.analysis.integration.RombergIntegratorTest#testSinFunction";
 					String testClassName = testCase.substring(0, testCase.indexOf("#"));
 					String testMethodName = testCase.substring(testCase.indexOf("#")+1);
 					

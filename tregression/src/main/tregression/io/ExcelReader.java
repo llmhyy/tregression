@@ -26,6 +26,8 @@ public class ExcelReader {
 	public void readXLSX() throws IOException {
 		
 		String projectName = Settings.projectName;
+		projectName = projectName + "_regression";
+		
 		int filePage = 0;
 
 		String fileName = projectName + filePage + ".xlsx";
