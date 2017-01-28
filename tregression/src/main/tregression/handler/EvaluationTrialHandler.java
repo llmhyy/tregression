@@ -54,7 +54,7 @@ public class EvaluationTrialHandler extends AbstractHandler {
 //				+ "org.apache.commons.math.util.MathUtils_920_17_1\\MathUtils.java";
 
 		String testCase = "org.apache.commons.math.analysis.integration.RombergIntegratorTest#testSinFunction";
-		String mutationFile = "C:\\microbat_evaluation\\apache-common-math-2.2\\"
+		String mutationFile = "C:\\microbat_evaluation_regression\\apache-common-math-2.2\\"
 				+ "org.apache.commons.math.analysis.integration.RombergIntegrator_80_20_1\\RombergIntegrator.java";
 
 		
