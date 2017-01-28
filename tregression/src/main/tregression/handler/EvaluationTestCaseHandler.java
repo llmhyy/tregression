@@ -41,8 +41,11 @@ public class EvaluationTestCaseHandler extends AbstractHandler {
 				TestCaseAnalyzer analyzer = new TestCaseAnalyzer();
 				try {
 					ExcelReporter reporter = new ExcelReporter(Settings.projectName, unclearRates);
-					String testClassName = "org.apache.commons.math.analysis.interpolation.DividedDifferenceInterpolatorTest";
-					String testMethodName = "testExpm1Function";
+					
+					String testCase = "org.apache.commons.math.analysis.integration.RombergIntegratorTest#testSinFunction";
+					String testClassName = testCase.substring(0, testCase.indexOf("#"));
+					String testMethodName = testCase.substring(testCase.indexOf("#")+1);
+					
 					analyzer.runEvaluationForSingleTestCase(testClassName, testMethodName, reporter, isLimitTrialNum,
 							ignoredTestCaseFiles, parsedTrials, trialNumPerTestCase, unclearRates, optionSearchLimit, monitor);
 				} catch (JavaModelException | IOException e) {

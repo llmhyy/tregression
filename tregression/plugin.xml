@@ -9,6 +9,11 @@
             name="Run Regression for Trial">
       </command>
        <command
+             defaultHandler="tregression.handler.EvaluationTestCaseHandler"
+             id="tregression.command.evaluateTestCase"
+             name="Run Regression for Test Case">
+       </command>
+       <command
              defaultHandler="tregression.handler.EvaluationAllHandler"
              id="tregression.command.evaluateAll"
              name="Run Regression for All">
@@ -57,6 +62,12 @@
                      icon="icons/evaluation.png"
                      label="Trial"
                      style="push">
+            </command>
+            <command
+                  commandId="tregression.command.evaluateTestCase"
+                  icon="icons/evaluation.png"
+                  label="Test Case"
+                  style="push">
             </command>
             <command
                   commandId="tregression.command.evaluateAll"
