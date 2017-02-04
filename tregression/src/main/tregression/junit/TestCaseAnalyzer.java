@@ -535,6 +535,8 @@ public class TestCaseAnalyzer {
 		Settings.iCompilationUnitMap.put(toBeMutatedClass, iunit);
 		Settings.compilationUnitMap.put(toBeMutatedClass, unit);
 		
+//		System.currentTimeMillis();
+		
 		String originalCodeText = iunit.getSource();
 		
 		String mutatedCodeText = FileUtils.readFileToString(mutationFile);

@@ -11,6 +11,7 @@ import java.util.Stack;
 import microbat.algorithm.graphdiff.GraphDiff;
 import microbat.algorithm.graphdiff.HierarchyGraphDiffer;
 import microbat.handler.CheckingState;
+import microbat.model.UserInterestedVariables;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.trace.TraceNodeReverseOrderComparator;
@@ -317,7 +318,7 @@ public class SimulatedMicroBat {
 				
 				TraceNode originalSuspiciousNode = suspiciousNode;
 				
-				suspiciousNode = findSuspicioiusNode(suspiciousNode, mutatedTrace, feedback.getFeedbackType());	
+				suspiciousNode = findSuspicioiusNode(suspiciousNode, mutatedTrace, feedback);	
 				
 				if(suspiciousNode==null && feedback.getFeedbackType().equals(UserFeedback.WRONG_PATH)){
 					UserFeedback f = new UserFeedback();
@@ -597,6 +598,8 @@ public class SimulatedMicroBat {
 			ArrayList<StepOperationTuple> jumpingSteps,
 			boolean isFirstTime, HashSet<Attempt> failedAttempts) {
 		
+		UserInterestedVariables interestedVariables = Settings.interestedVariables.clone();
+		
 		UserFeedback feedbackType = user.feedback(suspiciousNode, mutatedTrace, pairList, 
 				mutatedTrace.getCheckTime(), isFirstTime, maxUnclearFeedbackNum);
 		
@@ -604,7 +607,7 @@ public class SimulatedMicroBat {
 		for(int i=size-1; i>=0; i--){
 			CheckingState state = new CheckingState();
 			state.recordCheckingState(suspiciousNode, recommender, mutatedTrace, 
-					Settings.interestedVariables, Settings.wrongPathNodeOrder, Settings.potentialCorrectPatterns);
+					interestedVariables, Settings.wrongPathNodeOrder, Settings.potentialCorrectPatterns);
 			
 			ChosenVariableOption option = user.getOtherOptions().get(i);
 			ArrayList<StepOperationTuple> clonedJumpingSteps = (ArrayList<StepOperationTuple>) jumpingSteps.clone();
@@ -762,7 +765,7 @@ public class SimulatedMicroBat {
 		return null;
 	}
 
-	private TraceNode findSuspicioiusNode(TraceNode currentNode, Trace trace, String feedbackType) {
+	private TraceNode findSuspicioiusNode(TraceNode currentNode, Trace trace, UserFeedback feedbackType) {
 		setCurrentNodeCheck(trace, currentNode);
 		
 		
