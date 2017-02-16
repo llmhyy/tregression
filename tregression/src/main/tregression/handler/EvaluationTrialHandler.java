@@ -53,9 +53,9 @@ public class EvaluationTrialHandler extends AbstractHandler {
 //		String mutationFile = "C:\\microbat_evaluation\\apache-common-math-2.2\\"
 //				+ "org.apache.commons.math.util.MathUtils_920_17_1\\MathUtils.java";
 
-		String testCase = "org.apache.commons.lang3.time.DurationFormatUtilsTest#testLANG815";
+		String testCase = "org.apache.commons.lang3.text.WordUtilsTest#testWrap_StringIntStringBoolean";
 		String mutationFile = "C:\\microbat_evaluation_regression\\common-lang\\"
-				+ "org.apache.commons.lang3.time.DurationFormatUtils_305_21_1\\DurationFormatUtils.java";
+				+ "org.apache.commons.lang3.text.WordUtils_215_25_1\\WordUtils.java";
 
 		
 //		String testClassName = "org.apache.commons.math.linear.TriDiagonalTransformerTest";
