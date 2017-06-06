@@ -1,9 +1,17 @@
 package tregression.temporary;
 
 import java.io.File;
+import java.net.URL;
+import java.util.List;
 
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
+
+import microbat.model.BreakPoint;
+import microbat.model.trace.Trace;
 import sav.commons.TestConfiguration;
 import sav.strategies.dto.AppJavaClassPath;
+import tregression.TraceModelConstructor;
 import tregression.junit.TestCaseAnalyzer;
 import tregression.junit.TestCaseRunner;
 
@@ -18,11 +26,29 @@ public class TraceCollector {
 		 * setting junit lib into classpath
 		 */
 		String userDir = System.getProperty("user.dir");
+		
+		Bundle plugin = Platform.getBundle("tregression");
+		URL url = plugin.getEntry ("/");
+
+		File file = null;
+		try {
+		// Resolve the URL
+			URL resolvedURL = Platform.resolve (url);
+			file = new File (resolvedURL.getFile ());
+		} catch (Exception e) {
+		// Something sensible if an error occurs
+		}
+		
+		userDir = file.getAbsolutePath();
+		userDir = userDir.substring(0, userDir.indexOf(".."));
+		
 		String junitDir = userDir + File.separator + "dropins" + File.separator + "junit_lib";
 		String junitPath = junitDir + File.separator + "junit.jar";
 		String hamcrestCorePath = junitDir + File.separator + "org.hamcrest.core.jar";
+		String testRunnerPath = junitDir + File.separator + "testrunner.jar";
 		appClassPath.addClasspath(junitPath);
 		appClassPath.addClasspath(hamcrestCorePath);
+		appClassPath.addClasspath(testRunnerPath);
 		
 		appClassPath.setJavaHome(TestConfiguration.getJavaHome());
 		appClassPath.setWorkingDirectory(workingDir);
@@ -41,6 +67,15 @@ public class TraceCollector {
 		
 		TestCaseRunner checker = new TestCaseRunner();
 		checker.checkValidity(appClassPath);
+		
+		TraceModelConstructor constructor = new TraceModelConstructor();
+		
+		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
+		long t1 = System.currentTimeMillis();
+		Trace buggyTrace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum());
+		long t2 = System.currentTimeMillis();
+		int time = (int) ((t2-t1)/1000);
+		buggyTrace.setConstructTime(time);
 		
 		System.currentTimeMillis();
 	}
