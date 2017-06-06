@@ -18,6 +18,11 @@
              id="tregression.command.evaluateAll"
              name="Run Regression for All">
        </command>
+       <command
+             defaultHandler="tregression.handler.SeparateVersionHandler"
+             id="tregression.command.runSeparateVersions"
+             name="Run for Separate Versions">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -73,6 +78,11 @@
                   commandId="tregression.command.evaluateAll"
                   icon="icons/evaluation.png"
                   label="Evaluate All"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.command.runSeparateVersions"
+                  label="Run for Separate Versions"
                   style="push">
             </command>
          </menu>
