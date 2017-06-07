@@ -30,7 +30,7 @@ public class TraceModelConstructor {
 		//TODO
 	}
 	
-	public Trace constructTraceModel(AppJavaClassPath appClassPath, List<BreakPoint> executingStatements, int stepNum)
+	public Trace constructTraceModel(AppJavaClassPath appClassPath, List<BreakPoint> executingStatements, int stepNum, boolean isForEvaluation)
 			throws TimeoutException{
 		
 		setup();
@@ -45,7 +45,7 @@ public class TraceModelConstructor {
 		BPVariableRetriever retriever = new BPVariableRetriever(executingStatements);
 		List<BreakPoint> runningStatements = null;
 		try {
-			runningStatements = retriever.parsingBreakPoints(appClassPath, true);
+			runningStatements = retriever.parsingBreakPoints(appClassPath, isForEvaluation);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -56,7 +56,7 @@ public class TraceModelConstructor {
 		 * 2) Generating variable ID for local variable.
 		 */
 		List<String> classScope = parseScope(runningStatements);
-		parseLocalVariables(classScope);
+		parseLocalVariables(classScope, appClassPath);
 		
 		/** 4. extract runtime variables*/
 		tcExecutor.setConfig(appClassPath);
@@ -76,9 +76,9 @@ public class TraceModelConstructor {
 	}
 	
 	
-	private void parseLocalVariables(final List<String> classScope) {
+	private void parseLocalVariables(final List<String> classScope, AppJavaClassPath appPath) {
 		VariableScopeParser vsParser = new VariableScopeParser();
-		vsParser.parseLocalVariableScopes(classScope);
+		vsParser.parseLocalVariableScopes(classScope, appPath);
 		List<LocalVariableScope> lvsList = vsParser.getVariableScopeList();
 		Settings.localVariableScopes.setVariableScopes(lvsList);
 	}

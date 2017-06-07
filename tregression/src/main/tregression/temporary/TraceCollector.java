@@ -19,8 +19,17 @@ public class TraceCollector {
 	public AppJavaClassPath initialize(String workingDir, String testClass, String testMethod){
 		AppJavaClassPath appClassPath = new AppJavaClassPath();
 		
-		String testTargetPath = workingDir + File.pathSeparator + "build-tests";
+		String testTargetPath = workingDir + File.separator + "build-tests";
+		String codeTargetPath = workingDir + File.separator + "build";
+		
 		appClassPath.addClasspath(testTargetPath);
+		appClassPath.addClasspath(codeTargetPath);
+		
+		String sourceCodePath = workingDir + File.separator + "source";
+		appClassPath.setSourceCodePath(sourceCodePath);
+		
+		String testCodePath = workingDir + File.separator + "tests";
+		appClassPath.setTestCodePath(testCodePath);
 		
 		/**
 		 * setting junit lib into classpath
@@ -40,7 +49,7 @@ public class TraceCollector {
 		}
 		
 		userDir = file.getAbsolutePath();
-		userDir = userDir.substring(0, userDir.indexOf(".."));
+		userDir = userDir.substring(0, userDir.indexOf("..")-1);
 		
 		String junitDir = userDir + File.separator + "dropins" + File.separator + "junit_lib";
 		String junitPath = junitDir + File.separator + "junit.jar";
@@ -72,7 +81,7 @@ public class TraceCollector {
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
 		long t1 = System.currentTimeMillis();
-		Trace buggyTrace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum());
+		Trace buggyTrace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum(), false);
 		long t2 = System.currentTimeMillis();
 		int time = (int) ((t2-t1)/1000);
 		buggyTrace.setConstructTime(time);

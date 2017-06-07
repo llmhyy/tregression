@@ -163,7 +163,7 @@ public class TestCaseAnalyzer {
 			
 			System.out.println("The correct consists of " + checker.getStepNum() + " steps");
 			correctTrace = new TraceModelConstructor().
-					constructTraceModel(testcaseConfig, executingStatements, checker.getStepNum());
+					constructTraceModel(testcaseConfig, executingStatements, checker.getStepNum(), true);
 			
 			cachedCorrectTrace = correctTrace;
 			cachedMutatedTrace = killingMutatantTrace;
@@ -279,7 +279,7 @@ public class TestCaseAnalyzer {
 			}
 			
 			System.out.println("identifying the possible mutated location for " + testCaseName);
-			List<ClassLocation> locationList = findMutationLocation(executingStatements);
+			List<ClassLocation> locationList = findMutationLocation(executingStatements, testcaseConfig);
 			
 			int thisTrialNum = 0;
 			if(!locationList.isEmpty()){
@@ -390,7 +390,7 @@ public class TestCaseAnalyzer {
 				if(null == correctTrace){
 					System.out.println("The correct trace of " + stepNum + " steps is to be generated for " + testCaseName);
 					correctTrace = new TraceModelConstructor().
-							constructTraceModel(testcaseConfig, executingStatements, stepNum);
+							constructTraceModel(testcaseConfig, executingStatements, stepNum, true);
 				}
 				
 				ClassLocation mutatedLocation = new ClassLocation(tobeMutatedClass, null, line);
@@ -503,7 +503,7 @@ public class TestCaseAnalyzer {
 							" steps is to be generated for " + testMethod + " (mutation: " + mutatedFile + ")");
 					killingMutantTrace = null;
 					long t1 = System.currentTimeMillis();
-					killingMutantTrace = constructor.constructTraceModel(testcaseConfig, executingStatements, checker.getStepNum());
+					killingMutantTrace = constructor.constructTraceModel(testcaseConfig, executingStatements, checker.getStepNum(), true);
 					long t2 = System.currentTimeMillis();
 					int time = (int) ((t2-t1)/1000);
 					killingMutantTrace.setConstructTime(time);
@@ -583,7 +583,7 @@ public class TestCaseAnalyzer {
 		}
 	}
 
-	private List<ClassLocation> findMutationLocation(List<BreakPoint> executingStatements) {
+	private List<ClassLocation> findMutationLocation(List<BreakPoint> executingStatements, AppJavaClassPath appPath) {
 		List<ClassLocation> locations = new ArrayList<>();
 		
 //		for(BreakPoint point: executingStatements){
@@ -594,8 +594,8 @@ public class TestCaseAnalyzer {
 		
 		for(BreakPoint point: executingStatements){
 			String className = point.getDeclaringCompilationUnitName();
-			CompilationUnit cu = JavaUtil.findCompilationUnitInProject(className);
-			if(cu != null && !JTestUtil.isInTestCase(className)){
+			CompilationUnit cu = JavaUtil.findCompilationUnitInProject(className, appPath);
+			if(cu != null && !JTestUtil.isInTestCase(className, appPath)){
 				MutationPointChecker checker = new MutationPointChecker(cu, point.getLineNumber());
 				cu.accept(checker);
 				
@@ -607,7 +607,7 @@ public class TestCaseAnalyzer {
 			}
 		}
 		
-		List<ClassLocation> invocationMutationPoints = findInvocationMutations(executingStatements);
+		List<ClassLocation> invocationMutationPoints = findInvocationMutations(executingStatements, appPath);
 		for(ClassLocation location: invocationMutationPoints){
 			if(!locations.contains(location)){
 				locations.add(location);
@@ -617,11 +617,11 @@ public class TestCaseAnalyzer {
 		return locations;
 	}
 	
-	private List<ClassLocation> findInvocationMutations(final List<BreakPoint> executingStatements) {
+	private List<ClassLocation> findInvocationMutations(final List<BreakPoint> executingStatements, final AppJavaClassPath appPath) {
 		final List<ClassLocation> validLocationList = new ArrayList<>();
 		
 		for(final BreakPoint point: executingStatements){
-			final CompilationUnit cu = JavaUtil.findCompilationUnitInProject(point.getDeclaringCompilationUnitName());
+			final CompilationUnit cu = JavaUtil.findCompilationUnitInProject(point.getDeclaringCompilationUnitName(), appPath);
 			cu.accept(new ASTVisitor() {
 				public boolean visit(MethodInvocation invocation){
 					int startLine = cu.getLineNumber(invocation.getStartPosition());
@@ -651,7 +651,7 @@ public class TestCaseAnalyzer {
 							IMethodBinding declarationBinding = invocationBinding.getMethodDeclaration();
 							
 							ITypeBinding type = declarationBinding.getDeclaringClass();
-							CompilationUnit cuOfDec = JavaUtil.findCompilationUnitInProject(type.getQualifiedName());
+							CompilationUnit cuOfDec = JavaUtil.findCompilationUnitInProject(type.getQualifiedName(), appPath);
 							
 							if(cuOfDec == null){
 								return false;
