@@ -28,23 +28,24 @@ public class SeparateVersionHandler extends AbstractHandler{
 			protected IStatus run(IProgressMonitor monitor) {
 				TraceCollector collector = new TraceCollector();
 				
-				DiffMatcher diffMatcher = new DiffMatcher(null, 
-						PathConfiguration.buggyPath+File.separator+"source", 
-						PathConfiguration.fixPath+File.separator+"source");
-				diffMatcher.matchCode(null, null);
 				
-//				try {
-//					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
-//					
-//					RunningResult buggyRS = collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
-//					RunningResult correctRs = collector.run(PathConfiguration.fixPath, tc.testClass, tc.testMethod);
-//					
-//					DiffMatcher diffMatcher = new DiffMatcher(null, PathConfiguration.buggyPath, PathConfiguration.fixPath);
-//					diffMatcher.matchCode(null, null);
-//					System.currentTimeMillis();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
+				
+				try {
+					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
+					
+					RunningResult buggyRS = collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
+					RunningResult correctRs = collector.run(PathConfiguration.fixPath, tc.testClass, tc.testMethod);
+					
+					DiffMatcher diffMatcher = new DiffMatcher("source", 
+							PathConfiguration.buggyPath+File.separator+"source", 
+							PathConfiguration.fixPath+File.separator+"source");
+					diffMatcher.matchCode();
+					
+					
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				
 				
 				return Status.OK_STATUS;

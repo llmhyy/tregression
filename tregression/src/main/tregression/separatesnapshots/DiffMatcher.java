@@ -25,6 +25,8 @@ public class DiffMatcher {
 	private String buggyPath;
 	private String fixPath;
 	
+	private List<FileDiff> fileDiffList;
+	
 	public DiffMatcher(String sourceFolderName, String buggyPath, String fixPath) {
 		super();
 		this.sourceFolderName = sourceFolderName;
@@ -62,9 +64,38 @@ public class DiffMatcher {
 		
 		return null;
 	}
+	
+	public boolean isMatch(BreakPoint srcPoint, BreakPoint targetPoint){
+		FileDiff fileDiff = findFileDiff(srcPoint);
+		if(fileDiff==null){
+			boolean isSameFile = srcPoint.getDeclaringCompilationUnitName().equals(targetPoint.getDeclaringCompilationUnitName());
+			boolean isSameLocation = srcPoint.getLineNumber()==targetPoint.getLineNumber();
+			
+			return isSameFile && isSameLocation;
+		}
+		else{
+			List<Integer> targetLines = fileDiff.getSourceToTargetMap().get(srcPoint.getLineNumber());
+			if(fileDiff.getTargetDeclaringCompilationUnit().equals(targetPoint.getDeclaringCompilationUnitName())){
+				if(targetLines.contains(targetPoint.getLineNumber())){
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
 
-	public HashMap<BreakPoint, BreakPoint> matchCode(List<BreakPoint> buggyVersion, List<BreakPoint> fixVersion){
-		HashMap<BreakPoint, BreakPoint> map = new HashMap<>();
+	private FileDiff findFileDiff(BreakPoint srcPoint) {
+		for(FileDiff diff: this.fileDiffList){
+			if(diff.getSourceDeclaringCompilationUnit().equals(srcPoint.getDeclaringCompilationUnitName())){
+				return diff;
+			}
+		}
+		
+		return null;
+	}
+
+	public void matchCode(){
 		
 		List<String> diffContent = getRawDiffContent();
 		diffContent.add("diff end");
@@ -80,7 +111,8 @@ public class DiffMatcher {
 			fileDiff.setTargetToSourceMap(targetToSourceMap);
 		}
 		
-		return map;
+		this.fileDiffList = fileDiffs;
+		
 	}
 
 	private int countLineNumber(String fileName){
