@@ -1,4 +1,4 @@
-package tregression.temporary;
+package tregression.separatesnapshots;
 
 import java.io.File;
 import java.net.URL;
@@ -34,22 +34,22 @@ public class TraceCollector {
 		/**
 		 * setting junit lib into classpath
 		 */
-		String userDir = System.getProperty("user.dir");
+		String userDir = System.getProperty("eclipse.launcher");
 		
-		Bundle plugin = Platform.getBundle("tregression");
-		URL url = plugin.getEntry ("/");
-
-		File file = null;
-		try {
-		// Resolve the URL
-			URL resolvedURL = Platform.resolve (url);
-			file = new File (resolvedURL.getFile ());
-		} catch (Exception e) {
-		// Something sensible if an error occurs
-		}
-		
-		userDir = file.getAbsolutePath();
-		userDir = userDir.substring(0, userDir.indexOf("..")-1);
+//		Bundle plugin = Platform.getBundle("tregression");
+//		URL url = plugin.getEntry ("/");
+//
+//		File file = null;
+//		try {
+//		// Resolve the URL
+//			URL resolvedURL = Platform.resolve (url);
+//			file = new File (resolvedURL.getFile ());
+//		} catch (Exception e) {
+//		// Something sensible if an error occurs
+//		}
+//		
+//		userDir = file.getAbsolutePath();
+//		userDir = userDir.substring(0, userDir.indexOf("..")-1);
 		
 		String junitDir = userDir + File.separator + "dropins" + File.separator + "junit_lib";
 		String junitPath = junitDir + File.separator + "junit.jar";
@@ -70,7 +70,7 @@ public class TraceCollector {
 		return appClassPath;
 	}
 	
-	public void run(String workingDir, String testClass, String testMethod){
+	public RunningResult run(String workingDir, String testClass, String testMethod){
 		
 		AppJavaClassPath appClassPath = initialize(workingDir, testClass, testMethod);
 		
@@ -80,12 +80,16 @@ public class TraceCollector {
 		TraceModelConstructor constructor = new TraceModelConstructor();
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
-		long t1 = System.currentTimeMillis();
-		Trace buggyTrace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum(), false);
-		long t2 = System.currentTimeMillis();
-		int time = (int) ((t2-t1)/1000);
-		buggyTrace.setConstructTime(time);
 		
-		System.currentTimeMillis();
+		Trace trace = null;
+		
+//		long t1 = System.currentTimeMillis();
+//		Trace trace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum(), false);
+//		long t2 = System.currentTimeMillis();
+//		int time = (int) ((t2-t1)/1000);
+//		trace.setConstructTime(time);
+		
+		RunningResult rs = new RunningResult(trace, executingStatements);
+		return rs;
 	}
 }

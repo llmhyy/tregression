@@ -14,8 +14,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import tregression.temporary.PathConfiguration;
-import tregression.temporary.TraceCollector;
+import tregression.separatesnapshots.DiffMatcher;
+import tregression.separatesnapshots.PathConfiguration;
+import tregression.separatesnapshots.RunningResult;
+import tregression.separatesnapshots.TraceCollector;
 
 public class SeparateVersionHandler extends AbstractHandler{
 
@@ -26,15 +28,23 @@ public class SeparateVersionHandler extends AbstractHandler{
 			protected IStatus run(IProgressMonitor monitor) {
 				TraceCollector collector = new TraceCollector();
 				
-				TestCase tc;
-				try {
-					tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
-					collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
-					
-					System.currentTimeMillis();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				DiffMatcher diffMatcher = new DiffMatcher(null, 
+						PathConfiguration.buggyPath+File.separator+"source", 
+						PathConfiguration.fixPath+File.separator+"source");
+				diffMatcher.matchCode(null, null);
+				
+//				try {
+//					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
+//					
+//					RunningResult buggyRS = collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
+//					RunningResult correctRs = collector.run(PathConfiguration.fixPath, tc.testClass, tc.testMethod);
+//					
+//					DiffMatcher diffMatcher = new DiffMatcher(null, PathConfiguration.buggyPath, PathConfiguration.fixPath);
+//					diffMatcher.matchCode(null, null);
+//					System.currentTimeMillis();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 				
 				
 				return Status.OK_STATUS;
