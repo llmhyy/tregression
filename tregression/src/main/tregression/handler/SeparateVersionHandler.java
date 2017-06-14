@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import microbat.util.Settings;
 import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.PathConfiguration;
@@ -32,18 +33,21 @@ public class SeparateVersionHandler extends AbstractHandler{
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				TraceCollector collector = new TraceCollector();
+				boolean isReuse = false;
 				
 				try {
 					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
 					
 					RunningResult buggyRS;
 					RunningResult correctRs;
-					if(cachedBuggyRS!=null && cachedCorrectRS!=null){
+					if(cachedBuggyRS!=null && cachedCorrectRS!=null && isReuse){
 						buggyRS = cachedBuggyRS;
 						correctRs = cachedCorrectRS;
 					}
 					else{
 						buggyRS = collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
+						
+						Settings.compilationUnitMap.clear();
 						correctRs = collector.run(PathConfiguration.fixPath, tc.testClass, tc.testMethod);
 						cachedBuggyRS = buggyRS;
 						cachedCorrectRS = correctRs;
@@ -73,6 +77,13 @@ public class SeparateVersionHandler extends AbstractHandler{
 		job.schedule();
 		
 		return null;
+	}
+	
+	private void clearOldData(){
+		Settings.interestedVariables.clear();
+		Settings.wrongPathNodeOrder.clear();
+		Settings.localVariableScopes.clear();
+		Settings.potentialCorrectPatterns.clear();
 	}
 
 	class TestCase{
