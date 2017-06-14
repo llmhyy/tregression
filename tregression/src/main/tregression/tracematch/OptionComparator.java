@@ -1,4 +1,4 @@
-package tregression.model;
+package tregression.tracematch;
 
 import java.util.Comparator;
 

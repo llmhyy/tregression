@@ -7,32 +7,44 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
+import tregression.separatesnapshots.DiffMatcher;
 
 public class DiffUtil {
-	/**
-	 * compare traces directly seems not working, which may report may false positive for the matching.
-	 * 
-	 * @param multisetList
-	 * @param commonTokenList
-	 * @param tokenList2
-	 */
-	@Deprecated
-	public static PairList generateMatchedTraceNodeList(Trace mutatedTrace, Trace correctTrace) {
-		
-		TraceNode[] mutatedTraceArray = mutatedTrace.getExectionList().toArray(new TraceNode[0]);
-		TraceNode[] correctTraceArray = correctTrace.getExectionList().toArray(new TraceNode[0]);
-		
-		return generateMatchedTraceNodeList(mutatedTraceArray, correctTraceArray, new TraceNodeComprehensiveSimilarityComparator());
+//	/**
+//	 * compare traces directly seems not working, which may report may false positive for the matching.
+//	 * 
+//	 * @param multisetList
+//	 * @param commonTokenList
+//	 * @param tokenList2
+//	 */
+//	@Deprecated
+//	public static PairList generateMatchedTraceNodeList(Trace mutatedTrace, Trace correctTrace) {
+//		
+//		TraceNode[] mutatedTraceArray = mutatedTrace.getExectionList().toArray(new TraceNode[0]);
+//		TraceNode[] correctTraceArray = correctTrace.getExectionList().toArray(new TraceNode[0]);
+//		
+//		return generateMatchedTraceNodeList(mutatedTraceArray, correctTraceArray, null, new TraceNodeComprehensiveSimilarityComparator());
+//	}
+	
+	private static boolean hasSameLocation(TraceNode mutatedNode, TraceNode originalNode, DiffMatcher matcher){
+		if(matcher != null){
+			boolean isMatch = matcher.isMatch(originalNode.getBreakPoint(), mutatedNode.getBreakPoint());
+			return isMatch;			
+		}
+		else{
+			return mutatedNode.hasSameLocation(originalNode);
+		}
 	}
 	
 	public static PairList generateMatchedTraceNodeList(TraceNode[] mutatedTraceArray, TraceNode[] correctTraceArray,
-			TraceNodeSimilarityComparator sc){
+			DiffMatcher matcher, TraceNodeSimilarityComparator sc){
 		
 		List<TraceNodePair> pairList = new ArrayList<>();
 		double[][] scoreTable = buildScoreTable(mutatedTraceArray, correctTraceArray, sc);
 
 		for (int i = mutatedTraceArray.length, j = correctTraceArray.length; (i > 0 && j > 0);) {
-			if (mutatedTraceArray[i - 1].hasSameLocation(correctTraceArray[j - 1])) {
+			//if (mutatedTraceArray[i - 1].hasSameLocation(correctTraceArray[j - 1])) {
+			if (hasSameLocation(mutatedTraceArray[i - 1], correctTraceArray[j - 1], matcher)) {	
 				
 				double sim = sc.compute(mutatedTraceArray[i - 1], correctTraceArray[j - 1]);
 				double increase = scoreTable[i][j]-scoreTable[i-1][j-1];

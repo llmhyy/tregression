@@ -22,13 +22,13 @@ import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
 import sav.strategies.dto.ClassLocation;
 import tregression.accuracy.Accuracy;
-import tregression.model.LCSMatcher;
 import tregression.model.PairList;
 import tregression.model.StateWrapper;
 import tregression.model.StepOperationTuple;
 import tregression.model.TraceNodePair;
 import tregression.model.TraceNodeWrapper;
 import tregression.model.Trial;
+import tregression.tracematch.LCSMatcher;
 import tregression.util.TraceNodeComprehensiveSimilarityComparator;
 
 public class SimulatedMicroBat {
@@ -47,7 +47,7 @@ public class SimulatedMicroBat {
 		
 		HierarchyGraphDiffer differ = new HierarchyGraphDiffer();
 		differ.diff(mutatedTraceNodeWrapper, correctTraceNodeWrapper, false, 
-				new LCSMatcher(new TraceNodeComprehensiveSimilarityComparator()), -1);
+				new LCSMatcher(null, new TraceNodeComprehensiveSimilarityComparator(null)), -1);
 		
 		List<GraphDiff> diffList = differ.getDiffs();
 		List<TraceNodePair> pList = new ArrayList<>();

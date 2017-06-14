@@ -11,9 +11,9 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
-import tregression.model.OptionComparator;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
+import tregression.tracematch.OptionComparator;
 
 public class SimulatedUser {
 

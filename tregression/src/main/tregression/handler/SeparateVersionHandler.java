@@ -28,8 +28,6 @@ public class SeparateVersionHandler extends AbstractHandler{
 			protected IStatus run(IProgressMonitor monitor) {
 				TraceCollector collector = new TraceCollector();
 				
-				
-				
 				try {
 					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
 					
@@ -41,7 +39,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 							PathConfiguration.fixPath+File.separator+"source");
 					diffMatcher.matchCode();
 					
-					
+					//TODO match trace
 					
 				} catch (IOException e) {
 					e.printStackTrace();
