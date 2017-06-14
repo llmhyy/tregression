@@ -51,6 +51,8 @@ public class TraceCollector {
 //		userDir = file.getAbsolutePath();
 //		userDir = userDir.substring(0, userDir.indexOf("..")-1);
 		
+		userDir = userDir.substring(0, userDir.lastIndexOf(File.separator+"eclipse"));
+		
 		String junitDir = userDir + File.separator + "dropins" + File.separator + "junit_lib";
 		String junitPath = junitDir + File.separator + "junit.jar";
 		String hamcrestCorePath = junitDir + File.separator + "org.hamcrest.core.jar";
@@ -81,13 +83,11 @@ public class TraceCollector {
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
 		
-		Trace trace = null;
-		
-//		long t1 = System.currentTimeMillis();
-//		Trace trace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum(), false);
-//		long t2 = System.currentTimeMillis();
-//		int time = (int) ((t2-t1)/1000);
-//		trace.setConstructTime(time);
+		long t1 = System.currentTimeMillis();
+		Trace trace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum(), false);
+		long t2 = System.currentTimeMillis();
+		int time = (int) ((t2-t1)/1000);
+		trace.setConstructTime(time);
 		
 		RunningResult rs = new RunningResult(trace, executingStatements);
 		return rs;

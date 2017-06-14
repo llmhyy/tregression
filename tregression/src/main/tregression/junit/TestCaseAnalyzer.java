@@ -51,6 +51,7 @@ import tregression.model.Trial;
 import tregression.views.AfterTraceView;
 import tregression.views.BeforeTraceView;
 import tregression.views.EvaluationViews;
+import tregression.views.Visualizer;
 
 public class TestCaseAnalyzer {
 	
@@ -176,7 +177,8 @@ public class TestCaseAnalyzer {
 		SimulatedMicroBat microbat = new SimulatedMicroBat();
 		ClassLocation mutatedLocation = new ClassLocation(mutatedClassName, null, mutatedLine);
 		microbat.prepare(killingMutatantTrace, correctTrace, mutatedLocation, testcaseName, mutationFile);
-		visualize(killingMutatantTrace, correctTrace, microbat.getPairList());
+		Visualizer visualizer = new Visualizer();
+		visualizer.visualize(killingMutatantTrace, correctTrace, microbat.getPairList());
 		
 		Trial trial;
 		try {
@@ -192,31 +194,6 @@ public class TestCaseAnalyzer {
 			e.printStackTrace();
 			System.err.println("Mutated File: " + mutatedFile);
 		}
-		
-	}
-
-	private void visualize(final Trace killingMutatantTrace, final Trace correctTrace, final PairList pairList) {
-		
-		Display.getDefault().asyncExec(new Runnable(){
-			
-			@Override
-			public void run() {
-				BeforeTraceView beforeView = EvaluationViews.getBeforeTraceView();
-				beforeView.setTrace(correctTrace);
-				beforeView.updateData();
-				beforeView.setPairList(pairList);
-				
-				AfterTraceView afterView = EvaluationViews.getAfterTraceView();
-				afterView.setTrace(killingMutatantTrace);
-				afterView.updateData();
-				afterView.setPairList(pairList);
-			}
-			
-		});
-		
-		
-		
-		
 		
 	}
 

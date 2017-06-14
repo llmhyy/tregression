@@ -26,13 +26,13 @@ public class DiffUtil {
 //		return generateMatchedTraceNodeList(mutatedTraceArray, correctTraceArray, null, new TraceNodeComprehensiveSimilarityComparator());
 //	}
 	
-	private static boolean hasSameLocation(TraceNode mutatedNode, TraceNode originalNode, DiffMatcher matcher){
+	private static boolean hasSameLocation(TraceNode mutatedNode, TraceNode correctNode, DiffMatcher matcher){
 		if(matcher != null){
-			boolean isMatch = matcher.isMatch(originalNode.getBreakPoint(), mutatedNode.getBreakPoint());
+			boolean isMatch = matcher.isMatch(mutatedNode.getBreakPoint(), correctNode.getBreakPoint());
 			return isMatch;			
 		}
 		else{
-			return mutatedNode.hasSameLocation(originalNode);
+			return mutatedNode.hasSameLocation(correctNode);
 		}
 	}
 	

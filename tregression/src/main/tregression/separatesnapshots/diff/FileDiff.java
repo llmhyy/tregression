@@ -35,7 +35,7 @@ public class FileDiff {
 	}
 	
 	public String getDeclaringCompilationUnit(String path, String sourceFolderName){
-		path = path.substring(path.indexOf(sourceFolderName)+sourceFolderName.length(), path.indexOf(".java"));
+		path = path.substring(path.indexOf(sourceFolderName)+sourceFolderName.length()+1, path.indexOf(".java"));
 		String qualifier = path.replace(File.separatorChar, '.');
 		
 		return qualifier;

@@ -2,7 +2,6 @@ package tregression.handler;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -14,13 +13,19 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.PathConfiguration;
 import tregression.separatesnapshots.RunningResult;
 import tregression.separatesnapshots.TraceCollector;
+import tregression.tracematch.TraceMatcher;
+import tregression.views.Visualizer;
 
 public class SeparateVersionHandler extends AbstractHandler{
 
+	private RunningResult cachedBuggyRS;
+	private RunningResult cachedCorrectRS;
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Job job = new Job("Do evaluation") {
@@ -31,15 +36,30 @@ public class SeparateVersionHandler extends AbstractHandler{
 				try {
 					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
 					
-					RunningResult buggyRS = collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
-					RunningResult correctRs = collector.run(PathConfiguration.fixPath, tc.testClass, tc.testMethod);
+					RunningResult buggyRS;
+					RunningResult correctRs;
+					if(cachedBuggyRS!=null && cachedCorrectRS!=null){
+						buggyRS = cachedBuggyRS;
+						correctRs = cachedCorrectRS;
+					}
+					else{
+						buggyRS = collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
+						correctRs = collector.run(PathConfiguration.fixPath, tc.testClass, tc.testMethod);
+						cachedBuggyRS = buggyRS;
+						cachedCorrectRS = correctRs;
+					}
 					
 					DiffMatcher diffMatcher = new DiffMatcher("source", 
 							PathConfiguration.buggyPath+File.separator+"source", 
 							PathConfiguration.fixPath+File.separator+"source");
 					diffMatcher.matchCode();
 					
-					//TODO match trace
+					TraceMatcher traceMatcher = new TraceMatcher();
+					PairList pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
+							correctRs.getRunningTrace(), diffMatcher); 
+					
+					Visualizer visualizer = new Visualizer();
+					visualizer.visualize(buggyRS.getRunningTrace(), correctRs.getRunningTrace(), pairList);
 					
 				} catch (IOException e) {
 					e.printStackTrace();
