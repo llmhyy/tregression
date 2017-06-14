@@ -33,17 +33,17 @@
       <view
             category="tregression.category"
             class="tregression.views.BeforeTraceView"
-            icon="icons/before.ico"
+            icon="icons/check_mark.png"
             id="tregression.evalView.beforeTraceView"
-            name="Before Trace"
+            name="Correct Trace"
             restorable="true">
       </view>
       <view
             category="tregression.category"
             class="tregression.views.AfterTraceView"
-            icon="icons/after.ico"
+            icon="icons/cross_mark.png"
             id="tregression.evalView.afterTraceView"
-            name="After Trace"
+            name="Buggy Trace"
             restorable="true">
       </view>
    </extension>
