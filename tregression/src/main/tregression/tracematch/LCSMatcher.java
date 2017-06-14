@@ -16,6 +16,11 @@ import tregression.util.TraceNodeSimilarityComparator;
 
 public class LCSMatcher implements Matcher {
 
+	/**
+	 * DiffMatcher contains the information of how source code should match with each other.
+	 * If this field is null, we assume there is only one-line modification between original
+	 * and regression version.
+	 */
 	private DiffMatcher matcher;
 	private TraceNodeSimilarityComparator comparator;
 	
