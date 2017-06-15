@@ -32,7 +32,7 @@
       </category>
       <view
             category="tregression.category"
-            class="tregression.views.BeforeTraceView"
+            class="tregression.views.CorrectTraceView"
             icon="icons/check_mark.png"
             id="tregression.evalView.beforeTraceView"
             name="Correct Trace"
@@ -40,7 +40,7 @@
       </view>
       <view
             category="tregression.category"
-            class="tregression.views.AfterTraceView"
+            class="tregression.views.BuggyTraceView"
             icon="icons/cross_mark.png"
             id="tregression.evalView.afterTraceView"
             name="Buggy Trace"
@@ -87,6 +87,36 @@
             </command>
          </menu>
       </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.compare.contentMergeViewers">
+      <viewer
+            class="tregression.uicompare.JavaViewerCreator"
+            extensions="java, java2"
+            id="tregression.uicompare.JavaViewerCreator">
+      </viewer>
+      <contentTypeBinding
+            contentMergeViewerId="tregression.uicompare.JavaViewerCreator"
+            contentTypeId="org.eclipse.jdt.core.javaSource">
+      </contentTypeBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="tregression.editors.CompareEditor"
+            default="false"
+            extensions=".java"
+            id="tregression.editor.compare"
+            name="Compare">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.documentProviders">
+      <provider
+            class="org.eclipse.ui.editors.text.TextFileDocumentProvider"
+            id="org.eclipse.ui.editors.text.StorageDocumentProvider"
+            inputTypes="org.eclipse.ui.IStorageEditorInput">
+      </provider>
    </extension>
 
 </plugin>

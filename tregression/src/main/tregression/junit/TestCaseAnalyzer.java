@@ -48,8 +48,8 @@ import tregression.io.ExcelReporter;
 import tregression.io.IgnoredTestCaseFiles;
 import tregression.model.PairList;
 import tregression.model.Trial;
-import tregression.views.AfterTraceView;
-import tregression.views.BeforeTraceView;
+import tregression.views.BuggyTraceView;
+import tregression.views.CorrectTraceView;
 import tregression.views.EvaluationViews;
 import tregression.views.Visualizer;
 
@@ -178,7 +178,7 @@ public class TestCaseAnalyzer {
 		ClassLocation mutatedLocation = new ClassLocation(mutatedClassName, null, mutatedLine);
 		microbat.prepare(killingMutatantTrace, correctTrace, mutatedLocation, testcaseName, mutationFile);
 		Visualizer visualizer = new Visualizer();
-		visualizer.visualize(killingMutatantTrace, correctTrace, microbat.getPairList());
+		visualizer.visualize(killingMutatantTrace, correctTrace, microbat.getPairList(), null);
 		
 		Trial trial;
 		try {

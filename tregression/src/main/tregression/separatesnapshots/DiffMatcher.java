@@ -21,15 +21,17 @@ import tregression.separatesnapshots.diff.LineChange;
 public class DiffMatcher {
 	
 	private String sourceFolderName;
+	private String testFolderName;
 	
 	private String buggyPath;
 	private String fixPath;
 	
 	private List<FileDiff> fileDiffList;
 	
-	public DiffMatcher(String sourceFolderName, String buggyPath, String fixPath) {
+	public DiffMatcher(String sourceFolderName, String testFolderName, String buggyPath, String fixPath) {
 		super();
 		this.sourceFolderName = sourceFolderName;
+		this.testFolderName = testFolderName;
 		this.buggyPath = buggyPath;
 		this.fixPath = fixPath;
 	}
@@ -41,8 +43,10 @@ public class DiffMatcher {
 		cmdList.add("diff");
 		cmdList.add("--no-index");
 		
-		cmdList.add(buggyPath);
-		cmdList.add(fixPath);
+		String buggySourcePath = buggyPath + File.separator + sourceFolderName;
+		cmdList.add(buggySourcePath);
+		String fixSourcePath = fixPath + File.separator + sourceFolderName;
+		cmdList.add(fixSourcePath);
 		
 		String[] cmds = cmdList.toArray(new String[0]);
 		try {
@@ -66,7 +70,7 @@ public class DiffMatcher {
 	}
 	
 	public boolean isMatch(BreakPoint srcPoint, BreakPoint targetPoint){
-		FileDiff fileDiff = findFileDiff(srcPoint);
+		FileDiff fileDiff = findSourceFileDiff(srcPoint);
 		if(fileDiff==null){
 			boolean isSameFile = srcPoint.getDeclaringCompilationUnitName().equals(targetPoint.getDeclaringCompilationUnitName());
 			boolean isSameLocation = srcPoint.getLineNumber()==targetPoint.getLineNumber();
@@ -85,7 +89,7 @@ public class DiffMatcher {
 		return false;
 	}
 
-	private FileDiff findFileDiff(BreakPoint srcPoint) {
+	public FileDiff findSourceFileDiff(BreakPoint srcPoint) {
 		for(FileDiff diff: this.fileDiffList){
 			if(diff.getSourceDeclaringCompilationUnit().equals(srcPoint.getDeclaringCompilationUnitName())){
 				return diff;
@@ -278,5 +282,16 @@ public class DiffMatcher {
 		this.fixPath = fixPath;
 	}
 	
+	public String getSourceFolderName(){
+		return this.sourceFolderName;
+	}
+
+	public String getTestFolderName() {
+		return testFolderName;
+	}
+
+	public void setTestFolderName(String testFolderName) {
+		this.testFolderName = testFolderName;
+	}
 	
 }

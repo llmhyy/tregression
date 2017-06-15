@@ -45,17 +45,18 @@ public class SeparateVersionHandler extends AbstractHandler{
 						correctRs = cachedCorrectRS;
 					}
 					else{
+						Settings.compilationUnitMap.clear();
 						buggyRS = collector.run(PathConfiguration.buggyPath, tc.testClass, tc.testMethod);
 						
 						Settings.compilationUnitMap.clear();
 						correctRs = collector.run(PathConfiguration.fixPath, tc.testClass, tc.testMethod);
+						
 						cachedBuggyRS = buggyRS;
 						cachedCorrectRS = correctRs;
 					}
 					
-					DiffMatcher diffMatcher = new DiffMatcher("source", 
-							PathConfiguration.buggyPath+File.separator+"source", 
-							PathConfiguration.fixPath+File.separator+"source");
+					DiffMatcher diffMatcher = new DiffMatcher("source", "tests",
+							PathConfiguration.buggyPath, PathConfiguration.fixPath);
 					diffMatcher.matchCode();
 					
 					TraceMatcher traceMatcher = new TraceMatcher();
@@ -63,7 +64,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 							correctRs.getRunningTrace(), diffMatcher); 
 					
 					Visualizer visualizer = new Visualizer();
-					visualizer.visualize(buggyRS.getRunningTrace(), correctRs.getRunningTrace(), pairList);
+					visualizer.visualize(buggyRS.getRunningTrace(), correctRs.getRunningTrace(), pairList, diffMatcher);
 					
 				} catch (IOException e) {
 					e.printStackTrace();

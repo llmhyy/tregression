@@ -7,10 +7,10 @@ public class EvaluationViews {
 	public static final String BEFORE_TRACE = "tregression.evalView.beforeTraceView";
 	public static final String AFTER_TRACE = "tregression.evalView.afterTraceView";
 	
-	public static BeforeTraceView getBeforeTraceView(){
-		BeforeTraceView view = null;
+	public static CorrectTraceView getBeforeTraceView(){
+		CorrectTraceView view = null;
 		try {
-			view = (BeforeTraceView)PlatformUI.getWorkbench().
+			view = (CorrectTraceView)PlatformUI.getWorkbench().
 					getActiveWorkbenchWindow().getActivePage().showView(BEFORE_TRACE);
 		} catch (PartInitException e) {
 			e.printStackTrace();
@@ -19,10 +19,10 @@ public class EvaluationViews {
 		return view;
 	}
 	
-	public static AfterTraceView getAfterTraceView(){
-		AfterTraceView view = null;
+	public static BuggyTraceView getAfterTraceView(){
+		BuggyTraceView view = null;
 		try {
-			view = (AfterTraceView)PlatformUI.getWorkbench().
+			view = (BuggyTraceView)PlatformUI.getWorkbench().
 					getActiveWorkbenchWindow().getActivePage().showView(AFTER_TRACE);
 		} catch (PartInitException e) {
 			e.printStackTrace();
