@@ -70,7 +70,7 @@ public class DiffMatcher {
 	}
 	
 	public boolean isMatch(BreakPoint srcPoint, BreakPoint targetPoint){
-		FileDiff fileDiff = findSourceFileDiff(srcPoint);
+		FileDiff fileDiff = findDiffBySourceFile(srcPoint);
 		if(fileDiff==null){
 			boolean isSameFile = srcPoint.getDeclaringCompilationUnitName().equals(targetPoint.getDeclaringCompilationUnitName());
 			boolean isSameLocation = srcPoint.getLineNumber()==targetPoint.getLineNumber();
@@ -88,8 +88,28 @@ public class DiffMatcher {
 		
 		return false;
 	}
+	
+	public FileDiff findDiffByTargetFile(String targetFile){
+		for(FileDiff diff: this.fileDiffList){
+			if(diff.getTargetFile().equals(targetFile)){
+				return diff;
+			}
+		}
+		
+		return null;
+	}
+	
+	public FileDiff findDiffBySourceFile(String sourceFile){
+		for(FileDiff diff: this.fileDiffList){
+			if(diff.getSourceFile().equals(sourceFile)){
+				return diff;
+			}
+		}
+		
+		return null;
+	}
 
-	public FileDiff findSourceFileDiff(BreakPoint srcPoint) {
+	public FileDiff findDiffBySourceFile(BreakPoint srcPoint) {
 		for(FileDiff diff: this.fileDiffList){
 			if(diff.getSourceDeclaringCompilationUnit().equals(srcPoint.getDeclaringCompilationUnitName())){
 				return diff;

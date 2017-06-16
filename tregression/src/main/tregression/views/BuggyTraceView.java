@@ -59,7 +59,7 @@ public class BuggyTraceView extends TraceView {
 		String buggyPath = diffMatcher.getBuggyPath() + File.separator + matcher.getSourceFolderName() + File.separator;
 		String fixPath = diffMatcher.getFixPath() + File.separator + matcher.getSourceFolderName() + File.separator;
 
-		FileDiff fileDiff = diffMatcher.findSourceFileDiff(breakPoint);
+		FileDiff fileDiff = diffMatcher.findDiffBySourceFile(breakPoint);
 		if (diffMatcher == null || fileDiff == null) {
 			String baseFileName = breakPoint.getDeclaringCompilationUnitName();
 			baseFileName = baseFileName.replace(".", File.separator) + ".java";
@@ -86,7 +86,8 @@ public class BuggyTraceView extends TraceView {
 		
 		CompareFileName cfn = generateCompareFile(breakPoint, diffMatcher);
 
-		CompareTextEditorInput input = new CompareTextEditorInput(cfn.buggyFileName, cfn.fixFileName, diffMatcher);
+		CompareTextEditorInput input = new CompareTextEditorInput(node, this.pairList, 
+				cfn.buggyFileName, cfn.fixFileName, diffMatcher);
 
 		openInCompare(input);
 

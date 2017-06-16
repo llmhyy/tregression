@@ -4,20 +4,28 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
+import microbat.model.trace.TraceNode;
+import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 
 public class CompareTextEditorInput implements IEditorInput {
 
+	private TraceNode selectedNode;
+	private PairList pairList;
+	
 	private String sourceFilePath;
 	private String targetFilePath;
 
 	private DiffMatcher matcher;
 
-	public CompareTextEditorInput(String sourceFilePath, String targetFilePath, DiffMatcher diffMatcher) {
+	public CompareTextEditorInput(TraceNode selectedNode, PairList pairList, String sourceFilePath,
+			String targetFilePath, DiffMatcher matcher) {
 		super();
+		this.setSelectedNode(selectedNode);
+		this.setPairList(pairList);
 		this.sourceFilePath = sourceFilePath;
 		this.targetFilePath = targetFilePath;
-		this.matcher = diffMatcher;
+		this.matcher = matcher;
 	}
 
 	public DiffMatcher getMatcher() {
@@ -75,6 +83,22 @@ public class CompareTextEditorInput implements IEditorInput {
 	public String getToolTipText() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public TraceNode getSelectedNode() {
+		return selectedNode;
+	}
+
+	public void setSelectedNode(TraceNode selectedNode) {
+		this.selectedNode = selectedNode;
+	}
+
+	public PairList getPairList() {
+		return pairList;
+	}
+
+	public void setPairList(PairList pairList) {
+		this.pairList = pairList;
 	}
 
 }

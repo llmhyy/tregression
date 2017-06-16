@@ -1,5 +1,6 @@
 package tregression.editors;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,9 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.Bullet;
 import org.eclipse.swt.custom.LineStyleEvent;
@@ -22,15 +22,21 @@ import org.eclipse.swt.graphics.GlyphMetrics;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.editors.text.TextFileDocumentProvider;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.part.EditorPart;
 
+import microbat.model.trace.TraceNode;
+import tregression.model.PairList;
+import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
+import tregression.separatesnapshots.diff.DiffChunk;
+import tregression.separatesnapshots.diff.FileDiff;
+import tregression.separatesnapshots.diff.LineChange;
 
-public class CompareEditor extends AbstractTextEditor {
+public class CompareEditor extends EditorPart {
 
 	public static final String ID = "tregression.editor.compare";
 	
@@ -48,15 +54,13 @@ public class CompareEditor extends AbstractTextEditor {
             throw new RuntimeException("Wrong input");
         }
 
-        
-        
         this.input = (CompareTextEditorInput) input;
         
         
-		TextFileDocumentProvider provider = new TextFileDocumentProvider();
-		setDocumentProvider(provider);
+//		TextFileDocumentProvider provider = new TextFileDocumentProvider();
+//		setDocumentProvider(provider);
 		
-//        super.init(site, input);
+//      super.init(site, input);
         
         setSite(site);
         setInput(input);
@@ -78,14 +82,14 @@ public class CompareEditor extends AbstractTextEditor {
 //		GridLayout sashLayout = new GridLayout(2, true);
 //		sashForm.setLayoutData(sashLayout);
 		
-		sourceText = generateText(sashForm, input.getSourceFilePath(), input.getMatcher());
-		targetText = generateText(sashForm, input.getTargetFilePath(), input.getMatcher());
+		sourceText = generateText(sashForm, input.getSourceFilePath(), input.getMatcher(), true);
+		targetText = generateText(sashForm, input.getTargetFilePath(), input.getMatcher(), false);
 		
 		sashForm.setWeights(new int[]{50, 50});
 	}
 
-	@SuppressWarnings("resource")
-	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher){
+	
+	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, boolean isSource){
 		final StyledText text = new StyledText(sashForm, SWT.H_SCROLL | SWT.V_SCROLL);
 		text.setEditable(false);
 		
@@ -95,6 +99,120 @@ public class CompareEditor extends AbstractTextEditor {
 			file = new File(path);
 		}
 		
+		String content = parseSourceContent(file);
+		text.setText(content);
+		
+//		appendLineNumber(text);
+		
+//		StyleRange range = new StyleRange();
+//		range.start = 0;
+//		range.length = 1000;
+//		range.background = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+//		text.setStyleRange(range);
+		
+		PairList list = this.input.getPairList();
+		TraceNode node = this.input.getSelectedNode();
+		if(isSource){
+			highlightSourceDiff(text, matcher, path);
+			text.setTopIndex(node.getLineNumber()-3);
+		}
+		else{
+			highlightTargetDiff(text, matcher, path);		
+			TraceNodePair pair = list.findByMutatedNode(node);
+			if(pair != null){
+				TraceNode correctNode = pair.getOriginalNode();
+				text.setTopIndex(correctNode.getLineNumber()-3);
+			}
+			else{
+				
+			}
+		}
+		
+		
+		return text;
+	}
+
+	private void highlightSourceDiff(StyledText text, DiffMatcher matcher, String path) {
+		
+		FileDiff diff = matcher.findDiffBySourceFile(path);
+		
+		if(diff==null){
+			return;
+		}
+		
+		for(DiffChunk chunk: diff.getChunks()){
+			int currentLine = chunk.getStartLineInSource();
+			for(LineChange line: chunk.getChangeList()){
+				if(line.getLineContent().startsWith("-")){
+					StyleRange range = new StyleRange();
+//					range.start = text.getOffsetAtLine(currentLine);
+					range.start = text.getOffsetAtLine(currentLine-1);
+					String content = line.getLineContent();
+					range.length = content.length();
+					range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+					
+					text.setStyleRange(range);
+				}
+				
+				if(!line.getLineContent().startsWith("+")){
+					currentLine++;					
+				}
+			}
+		}
+		
+		
+		
+	}
+	
+	private void highlightTargetDiff(StyledText text, DiffMatcher matcher, String path) {
+		
+		FileDiff diff = matcher.findDiffByTargetFile(path);
+		
+		if(diff==null){
+			return;
+		}
+		
+		for(DiffChunk chunk: diff.getChunks()){
+			int currentLine = chunk.getStartLineInSource();
+			for(LineChange line: chunk.getChangeList()){
+				if(line.getLineContent().startsWith("+")){
+					StyleRange range = new StyleRange();
+					range.start = text.getOffsetAtLine(currentLine-1);
+					String content = line.getLineContent();
+					range.length = content.length();
+					range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+					
+					text.setStyleRange(range);
+				}
+				
+				if(!line.getLineContent().startsWith("-")){
+					currentLine++;					
+				}
+			}
+		}
+		
+	}
+
+	private void appendLineNumber(final StyledText text) {
+		//add line number
+		text.addLineStyleListener(new LineStyleListener()
+		{
+		    public void lineGetStyle(LineStyleEvent e)
+		    {
+		        e.bulletIndex = text.getLineAtOffset(e.lineOffset);
+
+		        //Set the style, 12 pixles wide for each digit
+		        StyleRange style = new StyleRange();
+		        style.metrics = new GlyphMetrics(0, 0, Integer.toString(text.getLineCount()+1).length()*12);
+
+		        //Create and set the bullet
+		        e.bullet = new Bullet(ST.BULLET_NUMBER, style);
+		    }
+		});
+	}
+
+	@SuppressWarnings("resource")
+	private String parseSourceContent(File file) {
 		String content = "";
 		if(file.exists()){
 			InputStream stdin;
@@ -117,26 +235,32 @@ public class CompareEditor extends AbstractTextEditor {
 				e1.printStackTrace();
 			}
 		}
-		
-		text.setText(content);
-		
-		//add line number
-		text.addLineStyleListener(new LineStyleListener()
-		{
-		    public void lineGetStyle(LineStyleEvent e)
-		    {
-		        e.bulletIndex = text.getLineAtOffset(e.lineOffset);
+		return content;
+	}
 
-		        //Set the style, 12 pixles wide for each digit
-		        StyleRange style = new StyleRange();
-		        style.metrics = new GlyphMetrics(0, 0, Integer.toString(text.getLineCount()+1).length()*12);
-
-		        //Create and set the bullet
-		        e.bullet = new Bullet(ST.BULLET_NUMBER,style);
-		    }
-		});
+	@Override
+	public void doSave(IProgressMonitor monitor) {
 		
-		return text;
+	}
+
+	@Override
+	public void doSaveAs() {
+		
+	}
+
+	@Override
+	public boolean isDirty() {
+		return false;
+	}
+
+	@Override
+	public boolean isSaveAsAllowed() {
+		return false;
+	}
+
+	@Override
+	public void setFocus() {
+		
 	}
 
 }
