@@ -111,14 +111,18 @@ public class CompareEditor extends EditorPart {
 		TraceNode node = input.getSelectedNode();
 		if(isSource){
 			ranges = highlightSourceDiff(text, matcher, path);
-			text.setTopIndex(node.getLineNumber()-3);
+			int topLine = node.getLineNumber()-15;
+			topLine = (topLine<1) ? 1 : topLine;
+			text.setTopIndex(topLine);
 		}
 		else{
 			ranges = highlightTargetDiff(text, matcher, path);		
 			TraceNodePair pair = list.findByMutatedNode(node);
 			if(pair != null){
 				TraceNode correctNode = pair.getOriginalNode();
-				text.setTopIndex(correctNode.getLineNumber()-3);
+				int topLine = correctNode.getLineNumber()-15;
+				topLine = (topLine<1) ? 1 : topLine;
+				text.setTopIndex(topLine);
 			}
 			else{
 				
