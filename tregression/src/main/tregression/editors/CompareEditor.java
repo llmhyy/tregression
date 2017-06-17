@@ -8,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
@@ -18,6 +20,7 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GlyphMetrics;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -102,22 +105,16 @@ public class CompareEditor extends EditorPart {
 		String content = parseSourceContent(file);
 		text.setText(content);
 		
-//		appendLineNumber(text);
+		StyleRange[] ranges = null;
 		
-//		StyleRange range = new StyleRange();
-//		range.start = 0;
-//		range.length = 1000;
-//		range.background = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
-//		text.setStyleRange(range);
-		
-		PairList list = this.input.getPairList();
-		TraceNode node = this.input.getSelectedNode();
+		PairList list = input.getPairList();
+		TraceNode node = input.getSelectedNode();
 		if(isSource){
-			highlightSourceDiff(text, matcher, path);
+			ranges = highlightSourceDiff(text, matcher, path);
 			text.setTopIndex(node.getLineNumber()-3);
 		}
 		else{
-			highlightTargetDiff(text, matcher, path);		
+			ranges = highlightTargetDiff(text, matcher, path);		
 			TraceNodePair pair = list.findByMutatedNode(node);
 			if(pair != null){
 				TraceNode correctNode = pair.getOriginalNode();
@@ -128,16 +125,19 @@ public class CompareEditor extends EditorPart {
 			}
 		}
 		
+		appendLineNumber(text, ranges);
 		
 		return text;
 	}
 
-	private void highlightSourceDiff(StyledText text, DiffMatcher matcher, String path) {
+	private StyleRange[] highlightSourceDiff(StyledText text, DiffMatcher matcher, String path) {
+		
+		List<StyleRange> ranges = new ArrayList<>();
 		
 		FileDiff diff = matcher.findDiffBySourceFile(path);
 		
 		if(diff==null){
-			return;
+			return ranges.toArray(new StyleRange[0]);
 		}
 		
 		for(DiffChunk chunk: diff.getChunks()){
@@ -150,8 +150,11 @@ public class CompareEditor extends EditorPart {
 					String content = line.getLineContent();
 					range.length = content.length();
 					range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+					range.background = new Color(Display.getCurrent(), 255, 247, 248);
 					
-					text.setStyleRange(range);
+//					text.setStyleRange(range);
+					
+					ranges.add(range);
 				}
 				
 				if(!line.getLineContent().startsWith("+")){
@@ -160,16 +163,16 @@ public class CompareEditor extends EditorPart {
 			}
 		}
 		
-		
+		return ranges.toArray(new StyleRange[0]);
 		
 	}
 	
-	private void highlightTargetDiff(StyledText text, DiffMatcher matcher, String path) {
-		
+	private StyleRange[] highlightTargetDiff(StyledText text, DiffMatcher matcher, String path) {
+		List<StyleRange> ranges = new ArrayList<>();
 		FileDiff diff = matcher.findDiffByTargetFile(path);
 		
 		if(diff==null){
-			return;
+			return ranges.toArray(new StyleRange[0]);
 		}
 		
 		for(DiffChunk chunk: diff.getChunks()){
@@ -181,8 +184,10 @@ public class CompareEditor extends EditorPart {
 					String content = line.getLineContent();
 					range.length = content.length();
 					range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+					range.background = new Color(Display.getCurrent(), 255, 247, 248);
 					
-					text.setStyleRange(range);
+//					text.setStyleRange(range);
+					ranges.add(range);
 				}
 				
 				if(!line.getLineContent().startsWith("-")){
@@ -191,22 +196,27 @@ public class CompareEditor extends EditorPart {
 			}
 		}
 		
+		return ranges.toArray(new StyleRange[0]);
+		
 	}
 
-	private void appendLineNumber(final StyledText text) {
+	private void appendLineNumber(final StyledText text, final StyleRange[] ranges) {
 		//add line number
 		text.addLineStyleListener(new LineStyleListener()
 		{
 		    public void lineGetStyle(LineStyleEvent e)
 		    {
 		        e.bulletIndex = text.getLineAtOffset(e.lineOffset);
-
+		        e.styles = ranges;
+		        
 		        //Set the style, 12 pixles wide for each digit
 		        StyleRange style = new StyleRange();
+		        style.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GRAY);
 		        style.metrics = new GlyphMetrics(0, 0, Integer.toString(text.getLineCount()+1).length()*12);
 
 		        //Create and set the bullet
 		        e.bullet = new Bullet(ST.BULLET_NUMBER, style);
+		        
 		    }
 		});
 	}
