@@ -91,20 +91,19 @@ public class CompareEditor extends EditorPart {
 		sashForm.setWeights(new int[]{50, 50});
 	}
 
+	public void highLight(TraceNode node) {
+		input.setSelectedNode(node);
+		
+		
+		highlightStyles(true, sourceText, input.getMatcher(), input.getSourceFilePath());
+		highlightStyles(false, targetText, input.getMatcher(), input.getTargetFilePath());
+		
+		sourceText.redraw();
+		targetText.redraw();
+	}
 	
-	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, boolean isSource){
-		final StyledText text = new StyledText(sashForm, SWT.H_SCROLL | SWT.V_SCROLL);
-		text.setEditable(false);
-		
-		File file = new File(path);
-		if(!file.exists()){
-			path = path.replace(matcher.getSourceFolderName(), matcher.getTestFolderName());
-			file = new File(path);
-		}
-		
-		String content = parseSourceContent(file);
-		text.setText(content);
-		
+	
+	private void highlightStyles(boolean isSource, StyledText text, DiffMatcher matcher, String path){
 		List<StyleRange> ranges = new ArrayList<>();
 		
 		PairList list = input.getPairList();
@@ -137,6 +136,22 @@ public class CompareEditor extends EditorPart {
 		
 		StyleRange[] rangeArray = sortList(ranges);
 		appendLinStyle(text, rangeArray);
+	}
+	
+	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, boolean isSource){
+		final StyledText text = new StyledText(sashForm, SWT.H_SCROLL | SWT.V_SCROLL);
+		text.setEditable(false);
+		
+		File file = new File(path);
+		if(!file.exists()){
+			path = path.replace(matcher.getSourceFolderName(), matcher.getTestFolderName());
+			file = new File(path);
+		}
+		
+		String content = parseSourceContent(file);
+		text.setText(content);
+		
+		highlightStyles(isSource, text, matcher, path);
 		
 		return text;
 	}
@@ -240,25 +255,45 @@ public class CompareEditor extends EditorPart {
 		
 	}
 
-	private void appendLinStyle(final StyledText text, final StyleRange[] ranges) {
-		//add line number
-		text.addLineStyleListener(new LineStyleListener()
-		{
-		    public void lineGetStyle(LineStyleEvent e)
-		    {
-		        e.bulletIndex = text.getLineAtOffset(e.lineOffset);
-		        e.styles = ranges;
-		        
-		        //Set the style, 12 pixles wide for each digit
-		        StyleRange style = new StyleRange();
-		        style.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GRAY);
-		        style.metrics = new GlyphMetrics(0, 0, Integer.toString(text.getLineCount()+1).length()*12);
+	class CusLineStyleListener implements LineStyleListener{
 
-		        //Create and set the bullet
-		        e.bullet = new Bullet(ST.BULLET_NUMBER, style);
-		        
-		    }
-		});
+		private StyledText text;
+		private StyleRange[] ranges;
+		
+		
+		public CusLineStyleListener(StyledText text, StyleRange[] ranges) {
+			super();
+			this.text = text;
+			this.ranges = ranges;
+		}
+
+		@Override
+		public void lineGetStyle(LineStyleEvent e) {
+			e.bulletIndex = text.getLineAtOffset(e.lineOffset);
+	        e.styles = ranges;
+	        
+	        //Set the style, 12 pixles wide for each digit
+	        StyleRange style = new StyleRange();
+	        style.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GRAY);
+	        style.metrics = new GlyphMetrics(0, 0, Integer.toString(text.getLineCount()+1).length()*12);
+
+	        //Create and set the bullet
+	        e.bullet = new Bullet(ST.BULLET_NUMBER, style);
+			
+		}
+		
+	}
+	
+	private CusLineStyleListener styleListener;
+	
+	private void appendLinStyle(StyledText text, StyleRange[] ranges) {
+		
+		if(this.styleListener != null){
+			text.removeLineStyleListener(this.styleListener);	
+		}
+		
+		this.styleListener = new CusLineStyleListener(text, ranges);
+		text.addLineStyleListener(this.styleListener);
 	}
 
 	@SuppressWarnings("resource")

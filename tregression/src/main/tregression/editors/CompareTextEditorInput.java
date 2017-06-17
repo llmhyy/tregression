@@ -27,6 +27,37 @@ public class CompareTextEditorInput implements IEditorInput {
 		this.targetFilePath = targetFilePath;
 		this.matcher = matcher;
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((sourceFilePath == null) ? 0 : sourceFilePath.hashCode());
+		result = prime * result + ((targetFilePath == null) ? 0 : targetFilePath.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CompareTextEditorInput other = (CompareTextEditorInput) obj;
+		if (sourceFilePath == null) {
+			if (other.sourceFilePath != null)
+				return false;
+		} else if (!sourceFilePath.equals(other.sourceFilePath))
+			return false;
+		if (targetFilePath == null) {
+			if (other.targetFilePath != null)
+				return false;
+		} else if (!targetFilePath.equals(other.targetFilePath))
+			return false;
+		return true;
+	}
 
 	public DiffMatcher getMatcher() {
 		return matcher;

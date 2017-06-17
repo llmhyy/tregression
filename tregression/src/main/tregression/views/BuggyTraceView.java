@@ -2,6 +2,9 @@ package tregression.views;
 
 import java.io.File;
 
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -28,16 +31,25 @@ public class BuggyTraceView extends TraceView {
 	public BuggyTraceView() {
 	}
 
-	private void openInCompare(CompareTextEditorInput input) {
+	private void openInCompare(CompareTextEditorInput input, TraceNode node) {
 		IWorkbench wb = PlatformUI.getWorkbench();
 		IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
 		IWorkbenchPage workBenchPage = win.getActivePage();
 
-		try {
-			workBenchPage.openEditor(input, CompareEditor.ID);
-		} catch (PartInitException e) {
-			e.printStackTrace();
+		IEditorPart editPart = workBenchPage.findEditor(input);
+		if(editPart != null){
+			workBenchPage.activate(editPart);
+			CompareEditor editor = (CompareEditor)editPart;
+			editor.highLight(node);
 		}
+		else{
+			try {
+				workBenchPage.openEditor(input, CompareEditor.ID);
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			}
+		}
+		
 	}
 
 	class CompareFileName {
@@ -89,7 +101,7 @@ public class BuggyTraceView extends TraceView {
 		CompareTextEditorInput input = new CompareTextEditorInput(node, this.pairList, 
 				cfn.buggyFileName, cfn.fixFileName, diffMatcher);
 
-		openInCompare(input);
+		openInCompare(input, node);
 
 	}
 
