@@ -38,6 +38,7 @@ import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FileDiff;
 import tregression.separatesnapshots.diff.LineChange;
+import tregression.views.JavaLineStyler;
 
 public class CompareEditor extends EditorPart {
 
@@ -285,8 +286,11 @@ public class CompareEditor extends EditorPart {
 	}
 	
 	private CusLineStyleListener styleListener;
+//	private JavaLineStyler javaLineStyler;
 	
 	private void appendLinStyle(StyledText text, StyleRange[] ranges) {
+//		JavaLineStyler javaLineStyler = new JavaLineStyler();
+//		text.addLineStyleListener(javaLineStyler);
 		
 		if(this.styleListener != null){
 			text.removeLineStyleListener(this.styleListener);	
@@ -294,6 +298,7 @@ public class CompareEditor extends EditorPart {
 		
 		this.styleListener = new CusLineStyleListener(text, ranges);
 		text.addLineStyleListener(this.styleListener);
+		
 	}
 
 	@SuppressWarnings("resource")
