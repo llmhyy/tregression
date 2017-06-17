@@ -8,6 +8,8 @@ import tregression.model.PairList;
 
 public class CorrectTraceView extends TraceView {
 
+	public static final String ID = "tregression.evalView.correctTraceView";
+	
 	private PairList pairList;
 	
 	public CorrectTraceView() {

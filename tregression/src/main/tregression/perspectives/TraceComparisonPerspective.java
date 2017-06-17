@@ -6,7 +6,7 @@ import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.console.IConsoleConstants;
 
 import microbat.views.MicroBatViews;
-import tregression.views.EvaluationViews;
+import tregression.views.TregressionViews;
 
 public class TraceComparisonPerspective implements IPerspectiveFactory {
 
@@ -30,7 +30,7 @@ public class TraceComparisonPerspective implements IPerspectiveFactory {
 						IPageLayout.LEFT,
 						0.2f,
 						factory.getEditorArea());
-		topLeft.addView(EvaluationViews.AFTER_TRACE); 
+		topLeft.addView(TregressionViews.BUGGY_TRACE); 
 		topLeft.addView(IPageLayout.ID_PROJECT_EXPLORER);
 		
 		IFolderLayout topRight =
@@ -39,7 +39,7 @@ public class TraceComparisonPerspective implements IPerspectiveFactory {
 						IPageLayout.RIGHT,
 						0.8f,
 						factory.getEditorArea());
-		topRight.addView(EvaluationViews.BEFORE_TRACE); 
+		topRight.addView(TregressionViews.CORRECT_TRACE); 
 		
 		IFolderLayout bottom =
 			factory.createFolder(

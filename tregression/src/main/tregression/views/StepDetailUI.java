@@ -1,0 +1,581 @@
+package tregression.views;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.viewers.CheckStateChangedEvent;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ICheckStateListener;
+import org.eclipse.jface.viewers.ICheckStateProvider;
+import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.ITableLabelProvider;
+import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.ITreeViewerListener;
+import org.eclipse.jface.viewers.TreeExpansionEvent;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeColumn;
+import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.PlatformUI;
+
+import microbat.algorithm.graphdiff.GraphDiff;
+import microbat.behavior.Behavior;
+import microbat.behavior.BehaviorData;
+import microbat.behavior.BehaviorReporter;
+import microbat.handler.CheckingState;
+import microbat.model.BreakPointValue;
+import microbat.model.UserInterestedVariables;
+import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
+import microbat.model.value.ReferenceValue;
+import microbat.model.value.VarValue;
+import microbat.model.value.VirtualValue;
+import microbat.model.variable.Variable;
+import microbat.model.variable.VirtualVar;
+import microbat.recommendation.ChosenVariableOption;
+import microbat.recommendation.DebugState;
+import microbat.recommendation.UserFeedback;
+import microbat.util.JavaUtil;
+import microbat.util.MicroBatUtil;
+import microbat.util.Settings;
+import microbat.util.TempVariableInfo;
+import microbat.views.TraceView;
+
+public class StepDetailUI {
+	
+	public static final String RW = "rw";
+	public static final String STATE = "state";
+	
+	public UserInterestedVariables interestedVariables = new UserInterestedVariables();
+	
+	private UserFeedback feedback;
+
+	class FeedbackSubmitListener implements MouseListener{
+		public void mouseUp(MouseEvent e) {}
+		public void mouseDoubleClick(MouseEvent e) {}
+		
+		private void openChooseFeedbackDialog(){
+			MessageBox box = new MessageBox(PlatformUI.getWorkbench()
+					.getDisplay().getActiveShell());
+			box.setMessage("Please tell me whether this step is correct or not!");
+			box.open();
+		}
+		
+		public void mouseDown(MouseEvent e) {
+			if (feedback == null) {
+				openChooseFeedbackDialog();
+			} 
+			else {
+				Trace trace = traceView.getTrace();
+				
+				TraceNode suspiciousNode = null;
+				if(feedback.getFeedbackType().equals(UserFeedback.WRONG_VARIABLE_VALUE)){
+					VarValue readVar = feedback.getOption().getReadVar();
+					suspiciousNode = currentNode.findDataDominator(readVar);
+				}
+				else if(feedback.getFeedbackType().equals(UserFeedback.WRONG_PATH)){
+					suspiciousNode = currentNode.findAllControlDominatees().get(0);
+				}
+				
+				if(suspiciousNode != null){
+					jumpToNode(trace, suspiciousNode);	
+				}
+				
+			}
+		}
+		
+		private void jumpToNode(Trace trace, TraceNode suspiciousNode) {
+			traceView.jumpToNode(trace, suspiciousNode.getOrder(), true);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	class RWVariableContentProvider implements ITreeContentProvider {
+		/**
+		 * rw is true means read, and rw is false means write.
+		 */
+		boolean rw;
+
+		public RWVariableContentProvider(boolean rw) {
+			this.rw = rw;
+		}
+
+		@Override
+		public void dispose() {
+
+		}
+
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+
+		}
+
+		@Override
+		public Object[] getElements(Object inputElement) {
+			if (inputElement instanceof ArrayList) {
+				ArrayList<VarValue> elements = (ArrayList<VarValue>) inputElement;
+				return elements.toArray(new VarValue[0]);
+			}
+
+			return null;
+		}
+
+		@Override
+		public Object[] getChildren(Object parentElement) {
+			if (parentElement instanceof ReferenceValue) {
+				ReferenceValue parent = (ReferenceValue) parentElement;
+
+				List<VarValue> children = ((ReferenceValue) parentElement).getChildren();
+				if (children == null) {
+					String varID = parent.getVarID();
+					varID = Variable.truncateSimpleID(varID);
+					// varID = varID.substring(0, varID.indexOf(":"));
+
+					VarValue vv = null;
+					/** read */
+					if (rw) {
+						vv = currentNode.getProgramState().findVarValue(varID);
+					}
+					/** write */
+					else {
+						if (currentNode.getStepOverNext() != null) {
+							vv = currentNode.getStepOverNext().getProgramState().findVarValue(varID);
+						}
+
+						if (currentNode.getStepInNext() != null) {
+							vv = currentNode.getStepInNext().getProgramState().findVarValue(varID);
+						}
+					}
+
+					if (vv != null) {
+						List<VarValue> retrievedChildren = vv.getAllDescedentChildren();
+						MicroBatUtil.assignWrittenIdentifier(retrievedChildren, currentNode);
+
+						parent.setChildren(vv.getChildren());
+						return vv.getChildren().toArray(new VarValue[0]);
+					}
+				} else {
+					return parent.getChildren().toArray(new VarValue[0]);
+				}
+			}
+
+			return null;
+		}
+
+		@Override
+		public Object getParent(Object element) {
+			return null;
+		}
+
+		@Override
+		public boolean hasChildren(Object element) {
+			Object[] children = getChildren(element);
+			if (children == null || children.length == 0) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+	}
+
+	class RWVarListener implements ICheckStateListener {
+		private String RWType;
+
+		public RWVarListener(String RWType) {
+			this.RWType = RWType;
+		}
+
+		@Override
+		public void checkStateChanged(CheckStateChangedEvent event) {
+			Object obj = event.getElement();
+			VarValue value = null;
+
+			if (obj instanceof VarValue) {
+				Trace trace = traceView.getTrace();
+
+				value = (VarValue) obj;
+				String varID = value.getVarID();
+
+				if (!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)) {
+					String order = trace.findDefiningNodeOrder(RWType, currentNode, varID);
+					varID = varID + ":" + order;
+					value.setVarID(varID);
+				}
+
+				if (!interestedVariables.contains(varID)) {
+					interestedVariables.add(varID, trace.getCheckTime());
+
+					ChosenVariableOption option = feedback.getOption();
+					if (option == null) {
+						option = new ChosenVariableOption(null, null);
+					}
+
+					if (this.RWType.equals(Variable.READ)) {
+						option.setReadVar(value);
+					}
+					if (this.RWType.equals(Variable.WRITTEN)) {
+						option.setWrittenVar(value);
+					}
+					feedback.setOption(option);
+
+					TempVariableInfo.variableOption = option;
+					TempVariableInfo.line = currentNode.getLineNumber();
+					String cuName = currentNode.getBreakPoint().getDeclaringCompilationUnitName();
+					TempVariableInfo.cu = JavaUtil.findCompilationUnitInProject(cuName, null);
+				} else {
+					interestedVariables.remove(varID);
+				}
+
+				setChecks(writtenVariableTreeViewer, RW);
+				setChecks(readVariableTreeViewer, RW);
+				setChecks(stateTreeViewer, STATE);
+
+				writtenVariableTreeViewer.refresh();
+				readVariableTreeViewer.refresh();
+				stateTreeViewer.refresh();
+
+			}
+
+		}
+	}
+
+	class VariableCheckStateProvider implements ICheckStateProvider {
+
+		@Override
+		public boolean isChecked(Object element) {
+
+			VarValue value = null;
+			if (element instanceof VarValue) {
+				value = (VarValue) element;
+			} else if (element instanceof GraphDiff) {
+				value = (VarValue) ((GraphDiff) element).getChangedNode();
+			}
+
+			if (currentNode != null) {
+				// BreakPoint point = node.getBreakPoint();
+				// InterestedVariable iVar = new
+				// InterestedVariable(point.getDeclaringCompilationUnitName(),
+				// point.getLineNo(), value);
+				String varID = value.getVarID();
+				if (interestedVariables.contains(varID)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean isGrayed(Object element) {
+			return false;
+		}
+
+	}
+
+	class VariableContentProvider implements ITreeContentProvider {
+		public void dispose() {
+		}
+
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+		}
+
+		public Object[] getElements(Object inputElement) {
+			if (inputElement instanceof BreakPointValue) {
+				BreakPointValue value = (BreakPointValue) inputElement;
+				return value.getChildren().toArray(new VarValue[0]);
+			} else if (inputElement instanceof ReferenceValue) {
+				ReferenceValue value = (ReferenceValue) inputElement;
+				VarValue[] list = value.getChildren().toArray(new VarValue[0]);
+				if (list.length != 0) {
+					return list;
+				} else {
+					return null;
+				}
+			}
+
+			return null;
+		}
+
+		public Object[] getChildren(Object parentElement) {
+			return getElements(parentElement);
+		}
+
+		public Object getParent(Object element) {
+			return null;
+		}
+
+		public boolean hasChildren(Object element) {
+			if (element instanceof ReferenceValue) {
+				ReferenceValue rValue = (ReferenceValue) element;
+				List<VarValue> children = rValue.getChildren();
+				return children != null && !children.isEmpty();
+			}
+			return false;
+		}
+
+	}
+
+	class VariableLabelProvider implements ITableLabelProvider {
+
+		public void addListener(ILabelProviderListener listener) {
+		}
+
+		public void dispose() {
+		}
+
+		public boolean isLabelProperty(Object element, String property) {
+			return false;
+		}
+
+		public void removeListener(ILabelProviderListener listener) {
+		}
+
+		public Image getColumnImage(Object element, int columnIndex) {
+			return null;
+		}
+
+		public String getColumnText(Object element, int columnIndex) {
+			if (element instanceof VarValue) {
+				VarValue varValue = (VarValue) element;
+				switch (columnIndex) {
+				case 0:
+					String type = varValue.getType();
+					if (type.contains(".")) {
+						type = type.substring(type.lastIndexOf(".") + 1, type.length());
+					}
+					return type;
+				case 1:
+					String name = varValue.getVarName();
+					if (varValue instanceof VirtualValue) {
+						String methodName = name.substring(name.indexOf(":") + 1);
+						name = "return from " + methodName + "()";
+					}
+					return name;
+				case 2:
+					return varValue.getManifestationValue();
+				}
+			}
+
+			return null;
+		}
+
+	}
+
+	private CheckboxTreeViewer stateTreeViewer;
+	private CheckboxTreeViewer writtenVariableTreeViewer;
+	private CheckboxTreeViewer readVariableTreeViewer;
+
+	private ITreeViewerListener treeListener;
+	private TraceView traceView;
+	
+	public StepDetailUI(TraceView view, TraceNode node){
+		this.traceView = view;
+		this.currentNode = node;
+	}
+
+	private void addListener() {
+
+		treeListener = new ITreeViewerListener() {
+
+			@Override
+			public void treeExpanded(TreeExpansionEvent event) {
+
+				setChecks(readVariableTreeViewer, RW);
+				setChecks(writtenVariableTreeViewer, RW);
+				setChecks(stateTreeViewer, STATE);
+
+				Display.getDefault().asyncExec(new Runnable() {
+
+					@Override
+					public void run() {
+						readVariableTreeViewer.refresh();
+						writtenVariableTreeViewer.refresh();
+						stateTreeViewer.refresh();
+					}
+				});
+
+			}
+
+			@Override
+			public void treeCollapsed(TreeExpansionEvent event) {
+
+			}
+		};
+
+		this.readVariableTreeViewer.addTreeListener(treeListener);
+		this.writtenVariableTreeViewer.addTreeListener(treeListener);
+		this.stateTreeViewer.addTreeListener(treeListener);
+
+		this.writtenVariableTreeViewer.addCheckStateListener(new RWVarListener(Variable.WRITTEN));
+		this.readVariableTreeViewer.addCheckStateListener(new RWVarListener(Variable.READ));
+		this.stateTreeViewer.addCheckStateListener(new RWVarListener(Variable.READ));
+
+	}
+	
+	private CheckboxTreeViewer createVarGroup(Composite variableForm, String groupName) {
+		Group varGroup = new Group(variableForm, SWT.NONE);
+		varGroup.setText(groupName);
+		varGroup.setLayout(new FillLayout());
+
+		Tree tree = new Tree(varGroup, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.CHECK);		
+		tree.setHeaderVisible(true);
+		tree.setLinesVisible(true);
+
+		TreeColumn typeColumn = new TreeColumn(tree, SWT.LEFT);
+		typeColumn.setAlignment(SWT.LEFT);
+		typeColumn.setText("Variable Type");
+		typeColumn.setWidth(100);
+		
+		TreeColumn nameColumn = new TreeColumn(tree, SWT.LEFT);
+		nameColumn.setAlignment(SWT.LEFT);
+		nameColumn.setText("Variable Name");
+		nameColumn.setWidth(100);
+		
+		TreeColumn valueColumn = new TreeColumn(tree, SWT.LEFT);
+		valueColumn.setAlignment(SWT.LEFT);
+		valueColumn.setText("Variable Value");
+		valueColumn.setWidth(300);
+
+		return new CheckboxTreeViewer(tree);
+	}
+
+	public void createDetails(Composite panel) {
+		
+		createSlicingGroup(panel);
+		
+		this.writtenVariableTreeViewer = createVarGroup(panel, "Written Variables: ");
+		this.readVariableTreeViewer = createVarGroup(panel, "Read Variables: ");
+		this.stateTreeViewer = createVarGroup(panel, "States: ");
+
+//		refresh(this.currentNode);
+	}
+	
+	private Button dataButton;
+	private Button controlButton;
+	
+	private void createSlicingGroup(Composite panel) {
+		Group slicingGroup = new Group(panel, SWT.NONE);
+		GridData data = new GridData(SWT.FILL, SWT.UP, true, true);
+		slicingGroup.setLayoutData(data);
+		
+		GridLayout gl = new GridLayout(3, true);
+		slicingGroup.setLayout(gl);
+		
+		dataButton = new Button(slicingGroup, SWT.RADIO);
+		dataButton.setLayoutData(new GridData(SWT.LEFT, SWT.UP, true, false));
+		dataButton.setText("data ");
+		
+		controlButton = new Button(slicingGroup, SWT.RADIO);
+		controlButton.setLayoutData(new GridData(SWT.RIGHT, SWT.UP, true, false));
+		controlButton.setText("control ");
+		
+		Button submitButton = new Button(slicingGroup, SWT.NONE);
+		submitButton.setText("Go");
+		submitButton.setLayoutData(new GridData(SWT.RIGHT, SWT.UP, true, false));
+		
+	}
+	
+	private void createWrittenVariableContent(List<VarValue> writtenVariables) {
+		this.writtenVariableTreeViewer.setContentProvider(new RWVariableContentProvider(false));
+		this.writtenVariableTreeViewer.setLabelProvider(new VariableLabelProvider());
+		this.writtenVariableTreeViewer.setInput(writtenVariables);	
+		
+		setChecks(this.writtenVariableTreeViewer, RW);
+
+		this.writtenVariableTreeViewer.refresh(true);
+		
+	}
+
+	private void createReadVariableContect(List<VarValue> readVariables) {
+		this.readVariableTreeViewer.setContentProvider(new RWVariableContentProvider(true));
+		this.readVariableTreeViewer.setLabelProvider(new VariableLabelProvider());
+		this.readVariableTreeViewer.setInput(readVariables);	
+		
+		setChecks(this.readVariableTreeViewer, RW);
+
+		this.readVariableTreeViewer.refresh(true);
+	}
+
+	private void createStateContent(BreakPointValue value){
+		this.stateTreeViewer.setContentProvider(new VariableContentProvider());
+		this.stateTreeViewer.setLabelProvider(new VariableLabelProvider());
+		this.stateTreeViewer.setInput(value);	
+		
+		setChecks(this.stateTreeViewer, STATE);
+
+		this.stateTreeViewer.refresh(true);
+	}
+	
+	private void setChecks(CheckboxTreeViewer treeViewer, String type){
+		Tree tree = treeViewer.getTree();
+		for(TreeItem item: tree.getItems()){
+			setChecks(item, type);
+		}
+	}
+	
+	private void setChecks(TreeItem item, String type){
+		Object element = item.getData();
+		if(element == null){
+			return;
+		}
+		
+		VarValue ev = null;
+		if(element instanceof VarValue){
+			ev = (VarValue)element;
+		}
+		else if(element instanceof GraphDiff){
+			ev = (VarValue) ((GraphDiff)element).getChangedNode();
+		}
+		
+		String varID = ev.getVarID();
+		if(!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)){
+			Trace trace = traceView.getTrace();
+			String order = trace.findDefiningNodeOrder(Variable.READ, currentNode, varID);
+			varID = varID + ":" + order;
+		}
+		
+		System.currentTimeMillis();
+		
+		if(interestedVariables.contains(varID)){
+			item.setChecked(true);
+		}
+		else{
+			item.setChecked(false);
+		}
+
+		for(TreeItem childItem: item.getItems()){
+			setChecks(childItem, type);
+		}
+	}
+	
+	private TraceNode currentNode;
+	
+	public void refresh(TraceNode node){
+		this.currentNode = node;
+		
+		BreakPointValue thisState = node.getProgramState();
+		createStateContent(thisState);
+		createWrittenVariableContent(node.getWrittenVariables());
+		createReadVariableContect(node.getReadVariables());
+		
+		dataButton.setSelection(false);
+		controlButton.setSelection(false);
+		
+	}
+}

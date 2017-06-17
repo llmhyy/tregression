@@ -50,7 +50,7 @@ import tregression.model.PairList;
 import tregression.model.Trial;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
-import tregression.views.EvaluationViews;
+import tregression.views.TregressionViews;
 import tregression.views.Visualizer;
 
 public class TestCaseAnalyzer {

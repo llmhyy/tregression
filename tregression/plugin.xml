@@ -34,7 +34,7 @@
             category="tregression.category"
             class="tregression.views.CorrectTraceView"
             icon="icons/check_mark.png"
-            id="tregression.evalView.beforeTraceView"
+            id="tregression.evalView.correctTraceView"
             name="Correct Trace"
             restorable="true">
       </view>
@@ -42,8 +42,15 @@
             category="tregression.category"
             class="tregression.views.BuggyTraceView"
             icon="icons/cross_mark.png"
-            id="tregression.evalView.afterTraceView"
+            id="tregression.evalView.buggyTraceView"
             name="Buggy Trace"
+            restorable="true">
+      </view>
+      <view
+            category="tregression.category"
+            class="tregression.views.StepPropertyView"
+            id="tregression.view.stepProperty"
+            name="Step Properties"
             restorable="true">
       </view>
    </extension>

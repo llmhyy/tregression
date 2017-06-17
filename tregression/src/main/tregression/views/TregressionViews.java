@@ -3,15 +3,15 @@ package tregression.views;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-public class EvaluationViews {
-	public static final String BEFORE_TRACE = "tregression.evalView.beforeTraceView";
-	public static final String AFTER_TRACE = "tregression.evalView.afterTraceView";
+public class TregressionViews {
+	public static final String CORRECT_TRACE = "tregression.evalView.correctTraceView";
+	public static final String BUGGY_TRACE = "tregression.evalView.buggyTraceView";
 	
 	public static CorrectTraceView getBeforeTraceView(){
 		CorrectTraceView view = null;
 		try {
 			view = (CorrectTraceView)PlatformUI.getWorkbench().
-					getActiveWorkbenchWindow().getActivePage().showView(BEFORE_TRACE);
+					getActiveWorkbenchWindow().getActivePage().showView(CORRECT_TRACE);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
@@ -23,7 +23,7 @@ public class EvaluationViews {
 		BuggyTraceView view = null;
 		try {
 			view = (BuggyTraceView)PlatformUI.getWorkbench().
-					getActiveWorkbenchWindow().getActivePage().showView(AFTER_TRACE);
+					getActiveWorkbenchWindow().getActivePage().showView(BUGGY_TRACE);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}

@@ -2,9 +2,7 @@ package tregression.views;
 
 import java.io.File;
 
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -24,6 +22,8 @@ import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.FileDiff;
 
 public class BuggyTraceView extends TraceView {
+	
+	public static final String ID = "tregression.evalView.buggyTraceView";
 
 	private PairList pairList;
 	private DiffMatcher diffMatcher;
@@ -119,7 +119,7 @@ public class BuggyTraceView extends TraceView {
 			TraceNode originalNode = pair.getOriginalNode();
 
 			if (originalNode != null) {
-				CorrectTraceView view = EvaluationViews.getBeforeTraceView();
+				CorrectTraceView view = TregressionViews.getBeforeTraceView();
 				view.jumpToNode(view.getTrace(), originalNode.getOrder(), false);
 			}
 		}
