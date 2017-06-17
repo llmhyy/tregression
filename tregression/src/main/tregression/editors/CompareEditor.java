@@ -105,7 +105,7 @@ public class CompareEditor extends EditorPart {
 		String content = parseSourceContent(file);
 		text.setText(content);
 		
-		StyleRange[] ranges = null;
+		List<StyleRange> ranges = new ArrayList<>();
 		
 		PairList list = input.getPairList();
 		TraceNode node = input.getSelectedNode();
@@ -114,6 +114,9 @@ public class CompareEditor extends EditorPart {
 			int topLine = node.getLineNumber()-15;
 			topLine = (topLine<1) ? 1 : topLine;
 			text.setTopIndex(topLine);
+			
+			StyleRange selectedRange = selectedLineStyle(text, node.getLineNumber()); 
+			ranges.add(selectedRange);
 		}
 		else{
 			ranges = highlightTargetDiff(text, matcher, path);		
@@ -123,25 +126,62 @@ public class CompareEditor extends EditorPart {
 				int topLine = correctNode.getLineNumber()-15;
 				topLine = (topLine<1) ? 1 : topLine;
 				text.setTopIndex(topLine);
+				
+				StyleRange selectedRange = selectedLineStyle(text, correctNode.getLineNumber()); 
+				ranges.add(selectedRange);
 			}
 			else{
 				
 			}
 		}
 		
-		appendLineNumber(text, ranges);
+		StyleRange[] rangeArray = sortList(ranges);
+		appendLinStyle(text, rangeArray);
 		
 		return text;
 	}
+	
+	/**
+	 * Bubble sort
+	 * @return
+	 */
+	private StyleRange[] sortList(List<StyleRange> ranges){
+		StyleRange[] rangeArray = ranges.toArray(new StyleRange[0]);
+		for(int i=0; i<rangeArray.length; i++){
+			for(int j=1; j<rangeArray.length-i; j++){
+				int prev = rangeArray[j-1].start;
+				int post = rangeArray[j].start;
+				if(prev > post){
+					StyleRange temp = rangeArray[j];
+					rangeArray[j] = rangeArray[j-1];
+					rangeArray[j-1] = temp;
+				}
+			}
+		}
+		
+		System.currentTimeMillis();
+		
+		return rangeArray;
+	}
+	
+	private StyleRange selectedLineStyle(StyledText text, int line){
+		StyleRange range = new StyleRange();
+		range.start = text.getOffsetAtLine(line-1);
+		range.length = text.getOffsetAtLine(line)-range.start;
+		range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
+		range.background = new Color(Display.getCurrent(), 230, 255, 255);
+		
+		return range;
+	}
 
-	private StyleRange[] highlightSourceDiff(StyledText text, DiffMatcher matcher, String path) {
+	private List<StyleRange> highlightSourceDiff(StyledText text, DiffMatcher matcher, String path) {
 		
 		List<StyleRange> ranges = new ArrayList<>();
 		
 		FileDiff diff = matcher.findDiffBySourceFile(path);
 		
 		if(diff==null){
-			return ranges.toArray(new StyleRange[0]);
+			return ranges;
 		}
 		
 		for(DiffChunk chunk: diff.getChunks()){
@@ -149,14 +189,11 @@ public class CompareEditor extends EditorPart {
 			for(LineChange line: chunk.getChangeList()){
 				if(line.getLineContent().startsWith("-")){
 					StyleRange range = new StyleRange();
-//					range.start = text.getOffsetAtLine(currentLine);
 					range.start = text.getOffsetAtLine(currentLine-1);
 					String content = line.getLineContent();
 					range.length = content.length();
 					range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
 					range.background = new Color(Display.getCurrent(), 255, 247, 248);
-					
-//					text.setStyleRange(range);
 					
 					ranges.add(range);
 				}
@@ -167,16 +204,16 @@ public class CompareEditor extends EditorPart {
 			}
 		}
 		
-		return ranges.toArray(new StyleRange[0]);
+		return ranges;
 		
 	}
 	
-	private StyleRange[] highlightTargetDiff(StyledText text, DiffMatcher matcher, String path) {
+	private List<StyleRange> highlightTargetDiff(StyledText text, DiffMatcher matcher, String path) {
 		List<StyleRange> ranges = new ArrayList<>();
 		FileDiff diff = matcher.findDiffByTargetFile(path);
 		
 		if(diff==null){
-			return ranges.toArray(new StyleRange[0]);
+			return ranges;
 		}
 		
 		for(DiffChunk chunk: diff.getChunks()){
@@ -190,7 +227,6 @@ public class CompareEditor extends EditorPart {
 					range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
 					range.background = new Color(Display.getCurrent(), 255, 247, 248);
 					
-//					text.setStyleRange(range);
 					ranges.add(range);
 				}
 				
@@ -200,11 +236,11 @@ public class CompareEditor extends EditorPart {
 			}
 		}
 		
-		return ranges.toArray(new StyleRange[0]);
+		return ranges;
 		
 	}
 
-	private void appendLineNumber(final StyledText text, final StyleRange[] ranges) {
+	private void appendLinStyle(final StyledText text, final StyleRange[] ranges) {
 		//add line number
 		text.addLineStyleListener(new LineStyleListener()
 		{
