@@ -109,32 +109,31 @@ public class BuggyTraceView extends TraceView {
 	
 
 	@Override
-	protected void otherViewsBehavior(TraceNode node) {
+	protected void otherViewsBehavior(TraceNode buggyNode) {
 		if (this.refreshProgramState) {
 			
-			StepPropertyView view = null;
+			StepPropertyView stepPropertyView = null;
 			try {
-				view = (StepPropertyView)PlatformUI.getWorkbench().
+				stepPropertyView = (StepPropertyView)PlatformUI.getWorkbench().
 						getActiveWorkbenchWindow().getActivePage().showView(StepPropertyView.ID);
 			} catch (PartInitException e) {
 				e.printStackTrace();
 			}
 			
-			view.refresh(node);
-		}
-
-		TraceNodePair pair = pairList.findByMutatedNode(node);
-
-		if (pair != null) {
-			TraceNode originalNode = pair.getOriginalNode();
-
-			if (originalNode != null) {
-				CorrectTraceView view = TregressionViews.getBeforeTraceView();
-				view.jumpToNode(view.getTrace(), originalNode.getOrder(), false);
+			TraceNodePair pair = pairList.findByMutatedNode(buggyNode);
+			TraceNode correctNode = null;
+			if(pair != null){
+				correctNode = pair.getOriginalNode();
+				if (correctNode != null) {
+					CorrectTraceView correctTraceView = TregressionViews.getCorrectTraceView();
+					correctTraceView.jumpToNode(correctTraceView.getTrace(), correctNode.getOrder(), false);
+				}
 			}
+			
+			stepPropertyView.refresh(buggyNode, correctNode);
 		}
 
-		markJavaEditor(node);
+		markJavaEditor(buggyNode);
 	}
 
 	public PairList getPairList() {

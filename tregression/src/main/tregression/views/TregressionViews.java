@@ -7,7 +7,7 @@ public class TregressionViews {
 	public static final String CORRECT_TRACE = "tregression.evalView.correctTraceView";
 	public static final String BUGGY_TRACE = "tregression.evalView.buggyTraceView";
 	
-	public static CorrectTraceView getBeforeTraceView(){
+	public static CorrectTraceView getCorrectTraceView(){
 		CorrectTraceView view = null;
 		try {
 			view = (CorrectTraceView)PlatformUI.getWorkbench().
@@ -19,7 +19,7 @@ public class TregressionViews {
 		return view;
 	}
 	
-	public static BuggyTraceView getAfterTraceView(){
+	public static BuggyTraceView getBuggyTraceView(){
 		BuggyTraceView view = null;
 		try {
 			view = (BuggyTraceView)PlatformUI.getWorkbench().

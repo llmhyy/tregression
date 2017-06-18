@@ -465,6 +465,8 @@ public class StepDetailUI {
 		this.readVariableTreeViewer = createVarGroup(comp, "Read Variables: ");
 		this.stateTreeViewer = createVarGroup(comp, "States: ");
 		
+		addListener();
+		
 //		sashForm.setWeights(new int[]{10, 10, 10});
 
 //		refresh(this.currentNode);
@@ -575,10 +577,17 @@ public class StepDetailUI {
 	public void refresh(TraceNode node){
 		this.currentNode = node;
 		
-		BreakPointValue thisState = node.getProgramState();
-		createStateContent(thisState);
-		createWrittenVariableContent(node.getWrittenVariables());
-		createReadVariableContect(node.getReadVariables());
+		if(node != null){
+			BreakPointValue thisState = node.getProgramState();
+			createStateContent(thisState);
+			createWrittenVariableContent(node.getWrittenVariables());
+			createReadVariableContect(node.getReadVariables());			
+		}
+		else{
+			createStateContent(null);
+			createWrittenVariableContent(null);
+			createReadVariableContect(null);	
+		}
 		
 		dataButton.setSelection(false);
 		controlButton.setSelection(false);

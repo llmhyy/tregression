@@ -73,16 +73,29 @@ public class StepPropertyView extends ViewPart {
 		layout.numColumns = 1;
 		panel.setLayout(layout);
 		
-		detailUI = new StepDetailUI(view, null);
-		return detailUI.createDetails(panel);
+		if(view instanceof BuggyTraceView){
+			buggyDetailUI = new StepDetailUI(view, null);			
+			return buggyDetailUI.createDetails(panel);
+		}
+		else if(view instanceof CorrectTraceView){
+			correctDetailUI = new StepDetailUI(view, null);
+			return correctDetailUI.createDetails(panel);
+		}
 		
+		return null;
 	}
 	
-	private StepDetailUI detailUI;
+	private StepDetailUI buggyDetailUI;
+	private StepDetailUI correctDetailUI;
 	
-	public void refresh(TraceNode node){
-		if(detailUI != null){
-			detailUI.refresh(node);
+	public void refresh(TraceNode buggyNode, TraceNode correctNode){
+		
+		if(buggyDetailUI != null){
+			buggyDetailUI.refresh(buggyNode);
+		}
+		
+		if(correctDetailUI != null){
+			correctDetailUI.refresh(correctNode);
 		}
 	}
 	

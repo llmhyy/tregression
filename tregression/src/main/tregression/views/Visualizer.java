@@ -14,12 +14,12 @@ public class Visualizer {
 
 			@Override
 			public void run() {
-				CorrectTraceView correctView = TregressionViews.getBeforeTraceView();
+				CorrectTraceView correctView = TregressionViews.getCorrectTraceView();
 				correctView.setTrace(correctTrace);
 				correctView.updateData();
 				correctView.setPairList(pairList);
 
-				BuggyTraceView buggyView = TregressionViews.getAfterTraceView();
+				BuggyTraceView buggyView = TregressionViews.getBuggyTraceView();
 				buggyView.setTrace(killingMutatantTrace);
 				buggyView.updateData();
 				buggyView.setPairList(pairList);
