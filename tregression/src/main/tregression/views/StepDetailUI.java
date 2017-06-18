@@ -54,7 +54,7 @@ public class StepDetailUI {
 	
 	public UserInterestedVariables interestedVariables = new UserInterestedVariables();
 	
-	private UserFeedback feedback;
+	private UserFeedback feedback = new UserFeedback();
 
 	class FeedbackSubmitListener implements MouseListener{
 		public void mouseUp(MouseEvent e) {}
@@ -75,11 +75,11 @@ public class StepDetailUI {
 				Trace trace = traceView.getTrace();
 				
 				TraceNode suspiciousNode = null;
-				if(feedback.getFeedbackType().equals(UserFeedback.WRONG_VARIABLE_VALUE)){
+				if(dataButton.getSelection()){
 					VarValue readVar = feedback.getOption().getReadVar();
 					suspiciousNode = currentNode.findDataDominator(readVar);
 				}
-				else if(feedback.getFeedbackType().equals(UserFeedback.WRONG_PATH)){
+				else if(controlButton.getSelection()){
 					suspiciousNode = currentNode.findAllControlDominatees().get(0);
 				}
 				
@@ -469,6 +469,8 @@ public class StepDetailUI {
 	private Button dataButton;
 	private Button controlButton;
 	
+	
+	
 	private void createSlicingGroup(Composite panel) {
 		Group slicingGroup = new Group(panel, SWT.NONE);
 		GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
@@ -482,6 +484,7 @@ public class StepDetailUI {
 		dataButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		dataButton.setText("data ");
 		
+		
 		controlButton = new Button(slicingGroup, SWT.RADIO);
 		controlButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		controlButton.setText("control ");
@@ -489,7 +492,8 @@ public class StepDetailUI {
 		Button submitButton = new Button(slicingGroup, SWT.NONE);
 		submitButton.setText("Go");
 		submitButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
-		
+		FeedbackSubmitListener fListener = new FeedbackSubmitListener();
+		submitButton.addMouseListener(fListener);
 	}
 	
 	private void createWrittenVariableContent(List<VarValue> writtenVariables) {
