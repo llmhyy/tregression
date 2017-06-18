@@ -2,6 +2,7 @@ package tregression.views;
 
 import java.io.File;
 
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -104,13 +105,22 @@ public class BuggyTraceView extends TraceView {
 		openInCompare(input, node);
 
 	}
+	
+	
 
 	@Override
 	protected void otherViewsBehavior(TraceNode node) {
 		if (this.refreshProgramState) {
-			DebugFeedbackView feedbackView = MicroBatViews.getDebugFeedbackView();
-			feedbackView.setTraceView(BuggyTraceView.this);
-			feedbackView.refresh(node);
+			
+			StepPropertyView view = null;
+			try {
+				view = (StepPropertyView)PlatformUI.getWorkbench().
+						getActiveWorkbenchWindow().getActivePage().showView(StepPropertyView.ID);
+			} catch (PartInitException e) {
+				e.printStackTrace();
+			}
+			
+			view.refresh(node);
 		}
 
 		TraceNodePair pair = pairList.findByMutatedNode(node);

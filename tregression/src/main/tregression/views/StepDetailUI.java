@@ -2,11 +2,7 @@ package tregression.views;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -18,6 +14,8 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Image;
@@ -35,10 +33,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.algorithm.graphdiff.GraphDiff;
-import microbat.behavior.Behavior;
-import microbat.behavior.BehaviorData;
-import microbat.behavior.BehaviorReporter;
-import microbat.handler.CheckingState;
 import microbat.model.BreakPointValue;
 import microbat.model.UserInterestedVariables;
 import microbat.model.trace.Trace;
@@ -49,11 +43,9 @@ import microbat.model.value.VirtualValue;
 import microbat.model.variable.Variable;
 import microbat.model.variable.VirtualVar;
 import microbat.recommendation.ChosenVariableOption;
-import microbat.recommendation.DebugState;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
 import microbat.util.MicroBatUtil;
-import microbat.util.Settings;
 import microbat.util.TempVariableInfo;
 import microbat.views.TraceView;
 
@@ -430,6 +422,10 @@ public class StepDetailUI {
 	
 	private CheckboxTreeViewer createVarGroup(Composite variableForm, String groupName) {
 		Group varGroup = new Group(variableForm, SWT.NONE);
+		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		data.minimumHeight = 100;
+		varGroup.setLayoutData(data);
+		
 		varGroup.setText(groupName);
 		varGroup.setLayout(new FillLayout());
 
@@ -455,15 +451,24 @@ public class StepDetailUI {
 		return new CheckboxTreeViewer(tree);
 	}
 
-	public void createDetails(Composite panel) {
+	public Composite createDetails(Composite panel) {
+		Composite comp = new Composite(panel, SWT.NONE);
 		
-		createSlicingGroup(panel);
+		comp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		comp.setLayout(new GridLayout(1, true));
 		
-		this.writtenVariableTreeViewer = createVarGroup(panel, "Written Variables: ");
-		this.readVariableTreeViewer = createVarGroup(panel, "Read Variables: ");
-		this.stateTreeViewer = createVarGroup(panel, "States: ");
+		createSlicingGroup(comp);
+//		SashForm sashForm = new SashForm(comp, SWT.VERTICAL);
+//		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		
+		this.writtenVariableTreeViewer = createVarGroup(comp, "Written Variables: ");
+		this.readVariableTreeViewer = createVarGroup(comp, "Read Variables: ");
+		this.stateTreeViewer = createVarGroup(comp, "States: ");
+		
+//		sashForm.setWeights(new int[]{10, 10, 10});
 
 //		refresh(this.currentNode);
+		return comp;
 	}
 	
 	private Button dataButton;
@@ -471,23 +476,24 @@ public class StepDetailUI {
 	
 	private void createSlicingGroup(Composite panel) {
 		Group slicingGroup = new Group(panel, SWT.NONE);
-		GridData data = new GridData(SWT.FILL, SWT.UP, true, true);
+		GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
+		data.minimumHeight = 35;
 		slicingGroup.setLayoutData(data);
 		
 		GridLayout gl = new GridLayout(3, true);
 		slicingGroup.setLayout(gl);
 		
 		dataButton = new Button(slicingGroup, SWT.RADIO);
-		dataButton.setLayoutData(new GridData(SWT.LEFT, SWT.UP, true, false));
+		dataButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		dataButton.setText("data ");
 		
 		controlButton = new Button(slicingGroup, SWT.RADIO);
-		controlButton.setLayoutData(new GridData(SWT.RIGHT, SWT.UP, true, false));
+		controlButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		controlButton.setText("control ");
 		
 		Button submitButton = new Button(slicingGroup, SWT.NONE);
 		submitButton.setText("Go");
-		submitButton.setLayoutData(new GridData(SWT.RIGHT, SWT.UP, true, false));
+		submitButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
 		
 	}
 	
