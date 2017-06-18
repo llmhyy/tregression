@@ -461,8 +461,8 @@ public class StepDetailUI {
 //		SashForm sashForm = new SashForm(comp, SWT.VERTICAL);
 //		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		this.writtenVariableTreeViewer = createVarGroup(comp, "Written Variables: ");
 		this.readVariableTreeViewer = createVarGroup(comp, "Read Variables: ");
+		this.writtenVariableTreeViewer = createVarGroup(comp, "Written Variables: ");
 		this.stateTreeViewer = createVarGroup(comp, "States: ");
 		
 		addListener();
