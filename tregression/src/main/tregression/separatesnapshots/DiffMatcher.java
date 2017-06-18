@@ -313,5 +313,15 @@ public class DiffMatcher {
 	public void setTestFolderName(String testFolderName) {
 		this.testFolderName = testFolderName;
 	}
+
+	public FileDiff findDiffByTargetFile(BreakPoint tarPoint) {
+		for(FileDiff diff: this.fileDiffList){
+			if(diff.getTargetDeclaringCompilationUnit().equals(tarPoint.getDeclaringCompilationUnitName())){
+				return diff;
+			}
+		}
+		
+		return null;
+	}
 	
 }

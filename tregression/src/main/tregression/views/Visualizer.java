@@ -18,6 +18,7 @@ public class Visualizer {
 				correctView.setTrace(correctTrace);
 				correctView.updateData();
 				correctView.setPairList(pairList);
+				correctView.setDiffMatcher(diffMatcher);
 
 				BuggyTraceView buggyView = TregressionViews.getBuggyTraceView();
 				buggyView.setTrace(killingMutatantTrace);
