@@ -38,7 +38,6 @@ import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FileDiff;
 import tregression.separatesnapshots.diff.LineChange;
-import tregression.views.JavaLineStyler;
 
 public class CompareEditor extends EditorPart {
 
@@ -186,6 +185,7 @@ public class CompareEditor extends EditorPart {
 		range.length = text.getOffsetAtLine(line)-range.start;
 		range.foreground = Display.getCurrent().getSystemColor(SWT.COLOR_BLUE);
 		range.background = new Color(Display.getCurrent(), 230, 255, 255);
+		range.fontStyle = SWT.BOLD;
 		
 		return range;
 	}
