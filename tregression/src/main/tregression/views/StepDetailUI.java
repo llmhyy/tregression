@@ -14,8 +14,6 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Image;
@@ -458,8 +456,6 @@ public class StepDetailUI {
 		comp.setLayout(new GridLayout(1, true));
 		
 		createSlicingGroup(comp);
-//		SashForm sashForm = new SashForm(comp, SWT.VERTICAL);
-//		sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		this.readVariableTreeViewer = createVarGroup(comp, "Read Variables: ");
 		this.writtenVariableTreeViewer = createVarGroup(comp, "Written Variables: ");
@@ -467,9 +463,6 @@ public class StepDetailUI {
 		
 		addListener();
 		
-//		sashForm.setWeights(new int[]{10, 10, 10});
-
-//		refresh(this.currentNode);
 		return comp;
 	}
 	

@@ -2,7 +2,6 @@ package tregression.views;
 
 import java.io.File;
 
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -12,8 +11,6 @@ import org.eclipse.ui.PlatformUI;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
-import microbat.views.DebugFeedbackView;
-import microbat.views.MicroBatViews;
 import microbat.views.TraceView;
 import tregression.editors.CompareEditor;
 import tregression.editors.CompareTextEditorInput;
