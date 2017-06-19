@@ -49,6 +49,7 @@
       <view
             category="tregression.category"
             class="tregression.views.StepPropertyView"
+            icon="icons/property.png"
             id="tregression.view.stepProperty"
             name="Step Properties"
             restorable="true">
@@ -101,6 +102,7 @@
             class="tregression.editors.CompareEditor"
             default="false"
             extensions=".java"
+            icon="icons/compare.png"
             id="tregression.editor.compare"
             name="Compare">
       </editor>
