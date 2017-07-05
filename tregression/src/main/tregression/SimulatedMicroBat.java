@@ -67,12 +67,12 @@ public class SimulatedMicroBat {
 	}
 	
 	private boolean isObservedFaultWrongPath(TraceNode observableNode, PairList pairList){
-		TraceNodePair pair = pairList.findByMutatedNode(observableNode);
+		TraceNodePair pair = pairList.findByBuggyNode(observableNode);
 		if(pair == null){
 			return true;
 		}
 		
-		if(pair.getOriginalNode() == null){
+		if(pair.getCorrectNode() == null){
 			return true;
 		}
 		
@@ -251,8 +251,8 @@ public class SimulatedMicroBat {
 					mutatedTrace, pairList, maxUnclearFeedbackNum, confusingStack,
 					jumpingSteps, true, failedAttempts);
 			
-			TraceNodePair pair = pairList.findByMutatedNode(suspiciousNode);
-			TraceNode referenceNode = (pair==null)? null : pair.getOriginalNode();
+			TraceNodePair pair = pairList.findByBuggyNode(suspiciousNode);
+			TraceNode referenceNode = (pair==null)? null : pair.getCorrectNode();
 			
 			jumpingSteps.add(new StepOperationTuple(suspiciousNode, feedback, referenceNode, recommender.getState()));
 			
@@ -334,8 +334,8 @@ public class SimulatedMicroBat {
 						}
 						feedback = new UserFeedback(option, UserFeedback.WRONG_VARIABLE_VALUE);
 						
-						pair = pairList.findByMutatedNode(suspiciousNode);
-						referenceNode = (pair==null)? null : pair.getOriginalNode();
+						pair = pairList.findByBuggyNode(suspiciousNode);
+						referenceNode = (pair==null)? null : pair.getCorrectNode();
 						jumpingSteps.add(new StepOperationTuple(suspiciousNode, feedback, referenceNode, recommender.getState()));
 					}
 					else{
@@ -368,8 +368,8 @@ public class SimulatedMicroBat {
 							}
 						}
 						else{
-							pair = pairList.findByMutatedNode(suspiciousNode);
-							referenceNode = (pair==null)? null : pair.getOriginalNode();
+							pair = pairList.findByBuggyNode(suspiciousNode);
+							referenceNode = (pair==null)? null : pair.getCorrectNode();
 							
 							jumpingSteps.add(new StepOperationTuple(suspiciousNode, feedback, referenceNode, recommender.getState()));	
 							
@@ -416,8 +416,8 @@ public class SimulatedMicroBat {
 		TraceNode oldSuspiciousNode = tuple.getNode();
 		UserFeedback oldFeedback = tuple.getUserFeedback();
 		if(oldFeedback.getFeedbackType().equals(UserFeedback.WRONG_VARIABLE_VALUE)){
-			TraceNodePair oldPair = pairList.findByMutatedNode(oldSuspiciousNode);
-			TraceNode originalNode = oldPair.getOriginalNode();
+			TraceNodePair oldPair = pairList.findByBuggyNode(oldSuspiciousNode);
+			TraceNode originalNode = oldPair.getCorrectNode();
 			VarValue readVarInMutation = oldFeedback.getOption().getReadVar();
 			
 			VarValue readVarInOrigin = findMatchOriginalVar(readVarInMutation, originalNode);
@@ -429,13 +429,13 @@ public class SimulatedMicroBat {
 			 */
 			if(dataDominator != null){
 				TraceNode controlDom = dataDominator.getControlDominator();
-				TraceNodePair conPair = pairList.findByOriginalNode(controlDom);
+				TraceNodePair conPair = pairList.findByCorrectNode(controlDom);
 				while(conPair == null){
 					controlDom = controlDom.getControlDominator();
-					conPair = pairList.findByOriginalNode(controlDom);
+					conPair = pairList.findByCorrectNode(controlDom);
 				}
 				
-				suspiciousNode = conPair.getMutatedNode();
+				suspiciousNode = conPair.getBuggyNode();
 				feedback = operateFeedback(suspiciousNode,
 						mutatedTrace, pairList, maxUnclearFeedbackNum, confusingStack,
 						jumpingSteps, false, failedAttempts);
@@ -650,10 +650,10 @@ public class SimulatedMicroBat {
 	private Map<Integer, TraceNode> findAllWrongNodes(PairList pairList, Trace mutatedTrace){
 		Map<Integer, TraceNode> actualWrongNodes = new HashMap<>();
 		for(TraceNode mutatedTraceNode: mutatedTrace.getExectionList()){
-			TraceNodePair foundPair = pairList.findByMutatedNode(mutatedTraceNode);
+			TraceNodePair foundPair = pairList.findByBuggyNode(mutatedTraceNode);
 			if(foundPair != null){
 				if(!foundPair.isExactSame()){
-					TraceNode mutatedNode = foundPair.getMutatedNode();
+					TraceNode mutatedNode = foundPair.getBuggyNode();
 					actualWrongNodes.put(mutatedNode.getOrder(), mutatedNode);
 				}
 			}
@@ -705,10 +705,10 @@ public class SimulatedMicroBat {
 	private TraceNode findRootCause(String className, int lineNo, Trace mutatedTrace, PairList pairList) {
 		for(TraceNode node: mutatedTrace.getExectionList()){
 			if(node.getDeclaringCompilationUnitName().equals(className) && node.getLineNumber()==lineNo){
-				TraceNodePair pair = pairList.findByMutatedNode(node);
+				TraceNodePair pair = pairList.findByBuggyNode(node);
 				
 				if(pair != null){
-					return pair.getMutatedNode();
+					return pair.getBuggyNode();
 				}
 				
 			}

@@ -40,8 +40,8 @@ public class LCSMatcher implements Matcher {
 		
 		List<MatchingGraphPair> matchingList = new ArrayList<>();
 		for(TraceNodePair pair: pairList.getPairList()){
-			TraceNodeWrapper wrapperBefore = new TraceNodeWrapper(pair.getMutatedNode());
-			TraceNodeWrapper wrapperAfter = new TraceNodeWrapper(pair.getOriginalNode());
+			TraceNodeWrapper wrapperBefore = new TraceNodeWrapper(pair.getBuggyNode());
+			TraceNodeWrapper wrapperAfter = new TraceNodeWrapper(pair.getCorrectNode());
 			
 			MatchingGraphPair match = new MatchingGraphPair(wrapperBefore, wrapperAfter);
 			matchingList.add(match);

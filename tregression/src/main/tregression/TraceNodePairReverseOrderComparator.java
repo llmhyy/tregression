@@ -8,7 +8,7 @@ public class TraceNodePairReverseOrderComparator implements Comparator<TraceNode
 
 	@Override
 	public int compare(TraceNodePair pair1, TraceNodePair pair2) {
-		return pair2.getMutatedNode().getOrder() - pair1.getMutatedNode().getOrder();
+		return pair2.getBuggyNode().getOrder() - pair1.getBuggyNode().getOrder();
 	}
 
 	

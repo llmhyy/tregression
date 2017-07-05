@@ -33,19 +33,19 @@ public class TraceNodePair {
 		this.mutatedNode = mutatedNode;
 	}
 
-	public TraceNode getOriginalNode() {
+	public TraceNode getCorrectNode() {
 		return originalNode;
 	}
 
-	public void setOriginalNode(TraceNode originalNode) {
+	public void setCorrectNode(TraceNode originalNode) {
 		this.originalNode = originalNode;
 	}
 
-	public TraceNode getMutatedNode() {
+	public TraceNode getBuggyNode() {
 		return mutatedNode;
 	}
 
-	public void setMutatedNode(TraceNode mutatedNode) {
+	public void setBuggyNode(TraceNode mutatedNode) {
 		this.mutatedNode = mutatedNode;
 	}
 

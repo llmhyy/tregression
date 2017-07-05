@@ -25,18 +25,18 @@ public class PairList {
 		this.pairList.add(pair);
 	}
 
-	public TraceNodePair findByMutatedNode(TraceNode node) {
+	public TraceNodePair findByBuggyNode(TraceNode node) {
 		for(TraceNodePair pair: pairList){
-			if(pair.getMutatedNode().equals(node)){
+			if(pair.getBuggyNode().equals(node)){
 				return pair;
 			}
 		}
 		return null;
 	}
 	
-	public TraceNodePair findByOriginalNode(TraceNode node) {
+	public TraceNodePair findByCorrectNode(TraceNode node) {
 		for(TraceNodePair pair: pairList){
-			if(pair.getOriginalNode().equals(node)){
+			if(pair.getCorrectNode().equals(node)){
 				return pair;
 			}
 		}

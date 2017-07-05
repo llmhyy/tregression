@@ -70,8 +70,7 @@ public class DiffMatcher {
 	}
 	
 	public boolean isMatch(BreakPoint srcPoint, BreakPoint targetPoint){
-		
-		if(srcPoint.getLocationPrefix().contains("bug")){
+		if(!srcPoint.isSourceVersion()){
 			BreakPoint tmp = srcPoint;
 			srcPoint = targetPoint;
 			targetPoint = tmp;

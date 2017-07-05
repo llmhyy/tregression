@@ -72,7 +72,7 @@ public class SimulatedUser {
 			unclearFeedbackNum++;
 		}
 		else{
-			TraceNodePair pair = pairList.findByMutatedNode(suspiciousNode);
+			TraceNodePair pair = pairList.findByBuggyNode(suspiciousNode);
 			boolean isWrongPath = (pair==null);
 			if(isWrongPath){
 				feedback.setFeedbackType(UserFeedback.WRONG_PATH);

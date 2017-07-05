@@ -94,48 +94,61 @@ public class CompareEditor extends EditorPart {
 	public void highLight(TraceNode node) {
 		input.setSelectedNode(node);
 		
+		TraceNode sourceNode = null;
+		TraceNode targetNode = null;
 		
-		highlightStyles(true, sourceText, input.getMatcher(), input.getSourceFilePath());
-		highlightStyles(false, targetText, input.getMatcher(), input.getTargetFilePath());
+		PairList list = input.getPairList();
+		if(node.getBreakPoint().isSourceVersion()){
+			sourceNode = node;
+			TraceNodePair pair = list.findByBuggyNode(node);
+			if(pair != null){
+				targetNode = pair.getCorrectNode();
+			}
+		}
+		else{
+			targetNode = node;
+			TraceNodePair pair = list.findByCorrectNode(node);
+			if(pair != null){
+				sourceNode = pair.getBuggyNode();
+			}
+		}
+		
+		highlightStyles(true, sourceNode, sourceText, input.getMatcher(), input.getSourceFilePath());
+		highlightStyles(false, targetNode, targetText, input.getMatcher(), input.getTargetFilePath());
 		
 		sourceText.redraw();
 		targetText.redraw();
 	}
 	
 	
-	private void highlightStyles(boolean isSource, StyledText text, DiffMatcher matcher, String path){
+	private void highlightStyles(boolean isSource, TraceNode node, StyledText text, DiffMatcher matcher, String path){
 		List<StyleRange> ranges = new ArrayList<>();
 		
-		PairList list = input.getPairList();
-		TraceNode node = input.getSelectedNode();
 		if(isSource){
 			ranges = highlightSourceDiff(text, matcher, path);
-			int topLine = node.getLineNumber()-15;
-			topLine = (topLine<1) ? 1 : topLine;
-			text.setTopIndex(topLine);
-			
-			StyleRange selectedRange = selectedLineStyle(text, node.getLineNumber()); 
-			ranges.add(selectedRange);
+			if(node != null){
+				adjustTextForSelectedNode(node, text, ranges);	
+			}
 		}
 		else{
-			ranges = highlightTargetDiff(text, matcher, path);		
-			TraceNodePair pair = list.findByMutatedNode(node);
-			if(pair != null){
-				TraceNode correctNode = pair.getOriginalNode();
-				int topLine = correctNode.getLineNumber()-15;
-				topLine = (topLine<1) ? 1 : topLine;
-				text.setTopIndex(topLine);
-				
-				StyleRange selectedRange = selectedLineStyle(text, correctNode.getLineNumber()); 
-				ranges.add(selectedRange);
+			ranges = highlightTargetDiff(text, matcher, path);	
+			if(node != null){
+				adjustTextForSelectedNode(node, text, ranges);
 			}
-			else{
-				
-			}
+			
 		}
 		
 		StyleRange[] rangeArray = sortList(ranges);
 		appendLinStyle(text, rangeArray);
+	}
+
+	private void adjustTextForSelectedNode(TraceNode node, StyledText text, List<StyleRange> ranges) {
+		int topLine = node.getLineNumber()-15;
+		topLine = (topLine<1) ? 1 : topLine;
+		text.setTopIndex(topLine);
+		
+		StyleRange selectedRange = selectedLineStyle(text, node.getLineNumber()); 
+		ranges.add(selectedRange);
 	}
 	
 	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, boolean isSource){
@@ -151,7 +164,7 @@ public class CompareEditor extends EditorPart {
 		String content = parseSourceContent(file);
 		text.setText(content);
 		
-		highlightStyles(isSource, text, matcher, path);
+		highlightStyles(isSource, null, text, matcher, path);
 		
 		return text;
 	}
