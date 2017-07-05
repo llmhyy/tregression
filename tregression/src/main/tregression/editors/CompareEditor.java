@@ -18,14 +18,17 @@ import org.eclipse.swt.custom.LineStyleEvent;
 import org.eclipse.swt.custom.LineStyleListener;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GlyphMetrics;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -81,6 +84,8 @@ public class CompareEditor extends EditorPart {
 		SashForm sashForm = new SashForm(parent, SWT.HORIZONTAL);
 		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 		sashForm.setLayoutData(data);
+		
+		sashForm.setLayout(new FillLayout());
 		
 //		GridLayout sashLayout = new GridLayout(2, true);
 //		sashForm.setLayoutData(sashLayout);
@@ -152,7 +157,20 @@ public class CompareEditor extends EditorPart {
 	}
 	
 	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, boolean isSource){
-		final StyledText text = new StyledText(sashForm, SWT.H_SCROLL | SWT.V_SCROLL);
+//		ScrolledComposite scrolledComp = new ScrolledComposite(sashForm, SWT.H_SCROLL | SWT.V_SCROLL);
+//		scrolledComp.setExpandHorizontal(true);
+//		scrolledComp.setExpandVertical(true);
+
+		Composite composite = new Composite(sashForm, SWT.NONE);
+		composite.setLayout(new GridLayout(1, true));
+		
+		Label label = new Label(composite, SWT.NONE);
+		label.setText(path);
+		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		
+		final StyledText text = new StyledText(composite, 
+				SWT.MULTI | SWT.LEAD | SWT.BORDER | SWT.V_SCROLL);
+		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		text.setEditable(false);
 		
 		File file = new File(path);
@@ -165,6 +183,9 @@ public class CompareEditor extends EditorPart {
 		text.setText(content);
 		
 		highlightStyles(isSource, null, text, matcher, path);
+		
+//		scrolledComp.setContent(composite);
+//		scrolledComp.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
 		return text;
 	}
