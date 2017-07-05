@@ -27,7 +27,7 @@ public class PairList {
 
 	public TraceNodePair findByBuggyNode(TraceNode node) {
 		for(TraceNodePair pair: pairList){
-			if(pair.getBuggyNode().equals(node)){
+			if(pair.getAfterNode().equals(node)){
 				return pair;
 			}
 		}
@@ -36,7 +36,7 @@ public class PairList {
 	
 	public TraceNodePair findByCorrectNode(TraceNode node) {
 		for(TraceNodePair pair: pairList){
-			if(pair.getCorrectNode().equals(node)){
+			if(pair.getBeforeNode().equals(node)){
 				return pair;
 			}
 		}

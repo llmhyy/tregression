@@ -50,7 +50,7 @@ public class DiffUtil {
 				double increase = scoreTable[i][j]-scoreTable[i-1][j-1];
 				
 				if(Math.abs(sim - increase) < 0.01){
-					TraceNodePair pair = new TraceNodePair(mutatedTraceArray[i - 1], correctTraceArray[j - 1]);
+					TraceNodePair pair = new TraceNodePair(correctTraceArray[j - 1], mutatedTraceArray[i - 1]);
 					pairList.add(pair);
 					
 					pair.setExactSame(sim > 0.99);

@@ -121,7 +121,7 @@ public class CorrectTraceView extends TraceView {
 			TraceNodePair pair = pairList.findByCorrectNode(correctNode);
 			TraceNode buggyNode = null;
 			if(pair != null){
-				buggyNode = pair.getBuggyNode();
+				buggyNode = pair.getAfterNode();
 				if (buggyNode != null) {
 					BuggyTraceView buggyTraceView = TregressionViews.getBuggyTraceView();
 					buggyTraceView.jumpToNode(buggyTraceView.getTrace(), buggyNode.getOrder(), false);
@@ -131,7 +131,7 @@ public class CorrectTraceView extends TraceView {
 			stepPropertyView.refresh(correctNode, buggyNode);
 		}
 
-		markJavaEditor(correctNode);
+		//markJavaEditor(correctNode);
 	}
 
 	public PairList getPairList() {

@@ -23,30 +23,30 @@ import tregression.util.EvaluationSettings;
 
 public class TraceNodePair {
 
-	private TraceNode originalNode;
-	private TraceNode mutatedNode;
+	private TraceNode beforeNode;
+	private TraceNode afterdNode;
 	
 	private boolean isExactlySame;
 	
-	public TraceNodePair(TraceNode mutatedNode, TraceNode originalNode) {
-		this.originalNode = originalNode;
-		this.mutatedNode = mutatedNode;
+	public TraceNodePair(TraceNode beforeNode, TraceNode afterNode) {
+		this.beforeNode = beforeNode;
+		this.afterdNode = afterNode;
 	}
 
-	public TraceNode getCorrectNode() {
-		return originalNode;
+	public TraceNode getBeforeNode() {
+		return beforeNode;
 	}
 
-	public void setCorrectNode(TraceNode originalNode) {
-		this.originalNode = originalNode;
+	public void setBeforeNode(TraceNode originalNode) {
+		this.beforeNode = originalNode;
 	}
 
-	public TraceNode getBuggyNode() {
-		return mutatedNode;
+	public TraceNode getAfterNode() {
+		return afterdNode;
 	}
 
-	public void setBuggyNode(TraceNode mutatedNode) {
-		this.mutatedNode = mutatedNode;
+	public void setAfterNode(TraceNode mutatedNode) {
+		this.afterdNode = mutatedNode;
 	}
 
 	public void setExactSame(boolean b) {
@@ -59,8 +59,8 @@ public class TraceNodePair {
 
 	@Override
 	public String toString() {
-		return "TraceNodePair [originalNode=" + originalNode + ", mutatedNode="
-				+ mutatedNode + ", isExactlySame=" + isExactlySame + "]";
+		return "TraceNodePair [originalNode=" + beforeNode + ", mutatedNode="
+				+ afterdNode + ", isExactlySame=" + isExactlySame + "]";
 	}
 
 	
@@ -91,9 +91,9 @@ public class TraceNodePair {
 	public List<VarValue> findSingleWrongWrittenVarID(Trace trace){
 		List<VarValue> wrongVars = new ArrayList<>();
 		
-		for(VarValue mutatedWrittenVar: mutatedNode.getWrittenVariables()){
+		for(VarValue mutatedWrittenVar: afterdNode.getWrittenVariables()){
 			List<VarValue> mutatedVarList = findCorrespondingVarWithDifferentValue(mutatedWrittenVar, 
-					originalNode.getWrittenVariables(), mutatedNode.getWrittenVariables(), trace, Variable.WRITTEN);
+					beforeNode.getWrittenVariables(), afterdNode.getWrittenVariables(), trace, Variable.WRITTEN);
 			if(!mutatedVarList.isEmpty()){
 				for(VarValue value: mutatedVarList){
 					wrongVars.add(value);
@@ -114,9 +114,9 @@ public class TraceNodePair {
 		
 		List<VarValue> wrongVars = new ArrayList<>();
 		
-		for(VarValue mutatedReadVar: mutatedNode.getReadVariables()){
+		for(VarValue mutatedReadVar: afterdNode.getReadVariables()){
 			List<VarValue> mutatedVarList = findCorrespondingVarWithDifferentValue(mutatedReadVar, 
-					originalNode.getReadVariables(), mutatedNode.getReadVariables(), mutatedTrace, Variable.READ);
+					beforeNode.getReadVariables(), afterdNode.getReadVariables(), mutatedTrace, Variable.READ);
 			if(!mutatedVarList.isEmpty()){
 				for(VarValue value: mutatedVarList){
 					wrongVars.add(value);
@@ -205,9 +205,9 @@ public class TraceNodePair {
 				if(originalVar instanceof ReferenceValue){
 					if(mutatedVar.getVarName().equals(originalVar.getVarName())){
 						ReferenceValue mutatedRefVar = (ReferenceValue)mutatedVar;
-						setChildren(mutatedRefVar, mutatedNode, RW);
+						setChildren(mutatedRefVar, afterdNode, RW);
 						ReferenceValue originalRefVar = (ReferenceValue)originalVar;
-						setChildren(originalRefVar, originalNode, RW);
+						setChildren(originalRefVar, beforeNode, RW);
 						
 						if(mutatedRefVar.getChildren() != null && originalRefVar.getChildren() != null){
 							HierarchyGraphDiffer differ = new HierarchyGraphDiffer();
@@ -235,7 +235,7 @@ public class TraceNodePair {
 									if(!mutatedSubVarValue.equals(mutatedVar)){
 										String varID = mutatedSubVarValue.getVarID();
 										if(!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)){
-											String order = mutatedTrace.findDefiningNodeOrder(Variable.READ, mutatedNode, varID);
+											String order = mutatedTrace.findDefiningNodeOrder(Variable.READ, afterdNode, varID);
 											varID = varID + ":" + order;
 										}
 										mutatedSubVarValue.setVarID(varID);

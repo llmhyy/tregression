@@ -107,14 +107,14 @@ public class CompareEditor extends EditorPart {
 			sourceNode = node;
 			TraceNodePair pair = list.findByBuggyNode(node);
 			if(pair != null){
-				targetNode = pair.getCorrectNode();
+				targetNode = pair.getBeforeNode();
 			}
 		}
 		else{
 			targetNode = node;
 			TraceNodePair pair = list.findByCorrectNode(node);
 			if(pair != null){
-				sourceNode = pair.getBuggyNode();
+				sourceNode = pair.getAfterNode();
 			}
 		}
 		
@@ -169,7 +169,7 @@ public class CompareEditor extends EditorPart {
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		
 		final StyledText text = new StyledText(composite, 
-				SWT.MULTI | SWT.LEAD | SWT.BORDER | SWT.V_SCROLL);
+				SWT.MULTI | SWT.LEAD | SWT.V_SCROLL);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		text.setEditable(false);
 		
