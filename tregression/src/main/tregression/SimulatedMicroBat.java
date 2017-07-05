@@ -30,7 +30,7 @@ import tregression.model.TraceNodeWrapper;
 import tregression.model.Trial;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.tracematch.LCSMatcher;
-import tregression.tracematch.TraceMatcher;
+import tregression.tracematch.LCSBasedTraceMatcher;
 import tregression.util.TraceNodeComprehensiveSimilarityComparator;
 
 public class SimulatedMicroBat {
@@ -50,7 +50,7 @@ public class SimulatedMicroBat {
 	public void prepare(Trace mutatedTrace, Trace correctTrace, ClassLocation mutatedLocation, 
 			String testCaseName, String mutatedFile){
 //		PairList pairList = DiffUtil.generateMatchedTraceNodeList(mutatedTrace, correctTrace);
-		TraceMatcher traceMatcher = new TraceMatcher();
+		LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
 		this.pairList = traceMatcher.matchTraceNodePair(mutatedTrace, correctTrace, null); 
 		
 		rootCause = findRootCause(mutatedLocation.getClassCanonicalName(), 

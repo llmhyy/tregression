@@ -68,7 +68,7 @@ public class IndexTreeNode implements GraphNode {
 		}
 		
 		List<ControlNode> controlNodeList = new ArrayList<>();
-		for(int i=path.size(); i>=0; i--){
+		for(int i=path.size()-1; i>=0; i--){
 			IndexTreeNode node = path.get(i);
 			int appearingTime = calculateAppearingTime(controlNodeList, node);
 			

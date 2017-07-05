@@ -70,6 +70,13 @@ public class DiffMatcher {
 	}
 	
 	public boolean isMatch(BreakPoint srcPoint, BreakPoint targetPoint){
+		
+		if(srcPoint.getLocationPrefix().contains("bug")){
+			BreakPoint tmp = srcPoint;
+			srcPoint = targetPoint;
+			targetPoint = tmp;
+		}
+		
 		FileDiff fileDiff = findDiffBySourceFile(srcPoint);
 		if(fileDiff==null){
 			boolean isSameFile = srcPoint.getDeclaringCompilationUnitName().equals(targetPoint.getDeclaringCompilationUnitName());

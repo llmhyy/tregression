@@ -19,7 +19,8 @@ import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.PathConfiguration;
 import tregression.separatesnapshots.RunningResult;
 import tregression.separatesnapshots.TraceCollector;
-import tregression.tracematch.TraceMatcher;
+import tregression.tracematch.ControlPathBasedTraceMatcher;
+import tregression.tracematch.LCSBasedTraceMatcher;
 import tregression.views.Visualizer;
 
 public class SeparateVersionHandler extends AbstractHandler{
@@ -33,7 +34,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				TraceCollector collector = new TraceCollector();
-				boolean isReuse = false;
+				boolean isReuse = true;
 				
 				try {
 					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
@@ -59,7 +60,8 @@ public class SeparateVersionHandler extends AbstractHandler{
 							PathConfiguration.buggyPath, PathConfiguration.fixPath);
 					diffMatcher.matchCode();
 					
-					TraceMatcher traceMatcher = new TraceMatcher();
+//					LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
+					ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
 					PairList pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
 							correctRs.getRunningTrace(), diffMatcher); 
 					

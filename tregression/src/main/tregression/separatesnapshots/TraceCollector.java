@@ -82,6 +82,9 @@ public class TraceCollector {
 		TraceModelConstructor constructor = new TraceModelConstructor();
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
+		for(BreakPoint point: executingStatements){
+			point.setLocationPrefix(workingDir);
+		}
 		
 		long t1 = System.currentTimeMillis();
 		Trace trace = constructor.constructTraceModel(appClassPath, executingStatements, checker.getStepNum(), false);

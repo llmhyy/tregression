@@ -15,7 +15,7 @@ import tregression.model.TraceNodeWrapper;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.util.TraceNodeComprehensiveSimilarityComparator;
 
-public class TraceMatcher {
+public class LCSBasedTraceMatcher {
 	public PairList matchTraceNodePair(Trace mutatedTrace, Trace correctTrace, DiffMatcher matcher) {
 
 		TraceNodeWrapper mutatedTraceNodeWrapper = initVirtualRootWrapper(mutatedTrace);

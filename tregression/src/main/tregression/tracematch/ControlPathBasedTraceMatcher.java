@@ -11,10 +11,9 @@ import microbat.model.trace.TraceNode;
 import tregression.TraceNodePairReverseOrderComparator;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
-import tregression.model.TraceNodeWrapper;
 import tregression.separatesnapshots.DiffMatcher;
 
-public class TraceMatcher0{
+public class ControlPathBasedTraceMatcher{
 
 	
 	public PairList matchTraceNodePair(Trace mutatedTrace, Trace correctTrace, DiffMatcher matcher) {
@@ -29,8 +28,8 @@ public class TraceMatcher0{
 		List<TraceNodePair> pList = new ArrayList<>();
 		for (GraphDiff diff : diffList) {
 			if (diff.getDiffType().equals(GraphDiff.UPDATE)) {
-				TraceNodeWrapper wrapperBefore = (TraceNodeWrapper) diff.getNodeBefore();
-				TraceNodeWrapper wrapperAfter = (TraceNodeWrapper) diff.getNodeAfter();
+				IndexTreeNode wrapperBefore = (IndexTreeNode) diff.getNodeBefore();
+				IndexTreeNode wrapperAfter = (IndexTreeNode) diff.getNodeAfter();
 
 				TraceNodePair pair = new TraceNodePair(wrapperBefore.getTraceNode(), wrapperAfter.getTraceNode());
 				pair.setExactSame(false);
@@ -39,8 +38,8 @@ public class TraceMatcher0{
 		}
 
 		for (GraphDiff common : differ.getCommons()) {
-			TraceNodeWrapper wrapperBefore = (TraceNodeWrapper) common.getNodeBefore();
-			TraceNodeWrapper wrapperAfter = (TraceNodeWrapper) common.getNodeAfter();
+			IndexTreeNode wrapperBefore = (IndexTreeNode) common.getNodeBefore();
+			IndexTreeNode wrapperAfter = (IndexTreeNode) common.getNodeAfter();
 
 			TraceNodePair pair = new TraceNodePair(wrapperBefore.getTraceNode(), wrapperAfter.getTraceNode());
 			pair.setExactSame(true);
