@@ -131,7 +131,7 @@ public class CorrectTraceView extends TraceView {
 			stepPropertyView.refresh(correctNode, buggyNode);
 		}
 
-		//markJavaEditor(correctNode);
+		markJavaEditor(correctNode);
 	}
 
 	public PairList getPairList() {
