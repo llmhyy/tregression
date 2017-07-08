@@ -3,9 +3,15 @@ package tregression.tracematch;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+
 import microbat.algorithm.graphdiff.Matcher;
 import microbat.algorithm.graphdiff.MatchingGraphPair;
+import microbat.model.BreakPoint;
 import microbat.model.value.GraphNode;
+import microbat.util.JavaUtil;
 import tregression.separatesnapshots.DiffMatcher;
 
 public class IndexTreeMacher implements Matcher {
@@ -27,21 +33,153 @@ public class IndexTreeMacher implements Matcher {
 		
 		List<MatchingGraphPair> pairList = new ArrayList<>();
 		for(GraphNode gNodeBefore: childrenBefore){
-			for(GraphNode gNodeAfter: childrenAfter){
-				IndexTreeNode itNodeBefore = (IndexTreeNode)gNodeBefore;
-				IndexTreeNode itNodeAfter = (IndexTreeNode)gNodeAfter;
-				
-				if(diffMatcher.isMatch(itNodeBefore.getBreakPoint(), itNodeAfter.getBreakPoint())){
-					if(isControlPathCompatible(itNodeBefore, itNodeAfter)){
-						MatchingGraphPair pair = new MatchingGraphPair(itNodeBefore, itNodeAfter);
-						pairList.add(pair);
+			
+			IndexTreeNode gNodeAfter = findMostSimilarNode(gNodeBefore, childrenAfter, pairList);
+			
+			MatchingGraphPair pair = new MatchingGraphPair(gNodeBefore, gNodeAfter);
+			pairList.add(pair);
+			
+		}
+		
+		return pairList;
+		
+	}
+
+	private IndexTreeNode findMostSimilarNode(GraphNode gNodeBefore, List<? extends GraphNode> childrenAfter, 
+			List<MatchingGraphPair> pairList) {
+		IndexTreeNode mostSimilarNode = null;
+		double sim = -1;
+		
+		IndexTreeNode itNodeBefore = (IndexTreeNode)gNodeBefore;
+		if(itNodeBefore.getTraceNode().getOrder()==253){
+			System.currentTimeMillis();
+		}
+		
+		for(GraphNode gNodeAfter: childrenAfter){
+			IndexTreeNode itNodeAfter = (IndexTreeNode)gNodeAfter;
+			
+			if(itNodeAfter.getTraceNode().getOrder()==324){
+				System.currentTimeMillis();
+			}
+			
+			if(hasMatched(pairList, itNodeAfter)){
+				continue;
+			}
+			
+			if(diffMatcher.isMatch(itNodeBefore.getBreakPoint(), itNodeAfter.getBreakPoint())){
+				if(isControlPathCompatible(itNodeBefore, itNodeAfter)){
+					if(mostSimilarNode==null){
+						mostSimilarNode = itNodeAfter;
+						sim = sim(itNodeBefore, itNodeAfter);
+					}
+					else{
+						
+						
+						
+						double sim1 = sim(itNodeBefore, itNodeAfter);
+						if(sim1 > sim){
+							mostSimilarNode = itNodeAfter;
+							sim = sim1;
+						}
 					}
 				}
 			}
 		}
 		
-		return pairList;
+		return mostSimilarNode;
+	}
+
+	private boolean hasMatched(List<MatchingGraphPair> pairList, IndexTreeNode itNodeAfter) {
+		for(MatchingGraphPair pair: pairList){
+			if(pair.getNodeAfter()==itNodeAfter){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private double sim(IndexTreeNode itNodeBefore, IndexTreeNode itNodeAfter) {
+		BreakPoint pointBefore = itNodeBefore.getBreakPoint();
+		ASTNode nodeBefore = parseASTNodeInBreakpoint(itNodeBefore, pointBefore);
+
+		System.currentTimeMillis();
 		
+		BreakPoint pointAfter = itNodeAfter.getBreakPoint();
+		ASTNode nodeAfter = parseASTNodeInBreakpoint(itNodeAfter, pointAfter);
+		
+		if(nodeBefore.getNodeType()==nodeAfter.getNodeType()){
+			return 1;
+		}
+		else{
+			return 0;			
+		}
+		
+	}
+
+	private ASTNode parseASTNodeInBreakpoint(IndexTreeNode itNodeBefore, BreakPoint pointBefore) {
+		String compilationUnitName = itNodeBefore.getTraceNode().getDeclaringCompilationUnitName();
+		
+		String sourceFilePath = pointBefore.getLocationPrefix();
+		String testFilePath = pointBefore.getLocationPrefix().replace("source", "tests");
+		
+		CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(sourceFilePath, testFilePath, compilationUnitName);
+		ASTNode node = findSpecificNode(cu, pointBefore);
+		
+		return node;
+	}
+
+	class MinimumASTNodeFinder extends ASTVisitor{
+		private int line;
+		private CompilationUnit cu;
+		
+		private int startLine = -1;
+		private int endLine = -1;
+		
+		ASTNode minimumNode = null;
+
+		public MinimumASTNodeFinder(int line, CompilationUnit cu) {
+			super();
+			this.line = line;
+			this.cu = cu;
+		}
+
+		@Override
+		public void preVisit(ASTNode node) {
+			
+			int start = cu.getLineNumber(node.getStartPosition());
+			int end = cu.getLineNumber(node.getStartPosition()+node.getLength());
+			
+			if(start<=line && line<=end){
+				if(minimumNode == null){
+					startLine = start;
+					endLine = end;
+					minimumNode = node;
+				}
+				else{
+					boolean flag = false;
+					
+					if(startLine<start){
+						startLine = start;
+						flag = true;
+					}
+					
+					if(endLine>end){
+						endLine = end;
+						flag = true;
+					}
+					
+					if(flag){
+						minimumNode = node;						
+					}
+				}
+			}
+		}
+	}
+	
+	private ASTNode findSpecificNode(CompilationUnit cu, BreakPoint point) {
+		MinimumASTNodeFinder finder = new MinimumASTNodeFinder(point.getLineNumber(), cu);
+		cu.accept(finder);
+		return finder.minimumNode;
 	}
 
 	private boolean isControlPathCompatible(IndexTreeNode itNodeBefore, IndexTreeNode itNodeAfter) {

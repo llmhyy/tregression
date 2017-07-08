@@ -83,7 +83,7 @@ public class TraceCollector {
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
 		for(BreakPoint point: executingStatements){
-			point.setLocationPrefix(workingDir);
+			point.setLocationPrefix(appClassPath.getSoureCodePath());
 		}
 		
 		long t1 = System.currentTimeMillis();

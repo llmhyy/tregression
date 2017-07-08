@@ -17,6 +17,10 @@ public class IndexTreeNode implements GraphNode {
 	
 	private TraceNode node;
 	
+	public String toString(){
+		return node.toString();
+	}
+	
 	@Override
 	public List<? extends GraphNode> getChildren() {
 		List<TraceNode> invocationChildren = node.getInvocationChildren();

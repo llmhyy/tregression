@@ -117,10 +117,10 @@ public class BuggyTraceView extends TraceView {
 				e.printStackTrace();
 			}
 			
-			TraceNodePair pair = pairList.findByBuggyNode(buggyNode);
+			TraceNodePair pair = pairList.findByBeforeNode(buggyNode);
 			TraceNode correctNode = null;
 			if(pair != null){
-				correctNode = pair.getBeforeNode();
+				correctNode = pair.getAfterNode();
 				if (correctNode != null) {
 					CorrectTraceView correctTraceView = TregressionViews.getCorrectTraceView();
 					correctTraceView.jumpToNode(correctTraceView.getTrace(), correctNode.getOrder(), false);

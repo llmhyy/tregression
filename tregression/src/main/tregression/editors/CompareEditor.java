@@ -105,16 +105,16 @@ public class CompareEditor extends EditorPart {
 		PairList list = input.getPairList();
 		if(node.getBreakPoint().isSourceVersion()){
 			sourceNode = node;
-			TraceNodePair pair = list.findByBuggyNode(node);
+			TraceNodePair pair = list.findByBeforeNode(node);
 			if(pair != null){
-				targetNode = pair.getBeforeNode();
+				targetNode = pair.getAfterNode();
 			}
 		}
 		else{
 			targetNode = node;
-			TraceNodePair pair = list.findByCorrectNode(node);
+			TraceNodePair pair = list.findByAfterNode(node);
 			if(pair != null){
-				sourceNode = pair.getAfterNode();
+				sourceNode = pair.getBeforeNode();
 			}
 		}
 		

@@ -18,8 +18,8 @@ public class ControlPathBasedTraceMatcher{
 	
 	public PairList matchTraceNodePair(Trace mutatedTrace, Trace correctTrace, DiffMatcher matcher) {
 
-		IndexTreeNode afterRoot = initVirtualRootWrapper(mutatedTrace);
-		IndexTreeNode beforeRoot = initVirtualRootWrapper(correctTrace);
+		IndexTreeNode beforeRoot = initVirtualRootWrapper(mutatedTrace);
+		IndexTreeNode afterRoot = initVirtualRootWrapper(correctTrace);
 
 		HierarchyGraphDiffer differ = new HierarchyGraphDiffer();
 		differ.diff(beforeRoot, afterRoot, false, new IndexTreeMacher(matcher), -1);
