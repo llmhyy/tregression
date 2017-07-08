@@ -73,9 +73,6 @@ public class IndexTreeMacher implements Matcher {
 						sim = sim(itNodeBefore, itNodeAfter);
 					}
 					else{
-						
-						
-						
 						double sim1 = sim(itNodeBefore, itNodeAfter);
 						if(sim1 > sim){
 							mostSimilarNode = itNodeAfter;
@@ -84,6 +81,10 @@ public class IndexTreeMacher implements Matcher {
 					}
 				}
 			}
+		}
+		
+		if(sim==0){
+			mostSimilarNode = null;
 		}
 		
 		return mostSimilarNode;
