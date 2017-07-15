@@ -17,7 +17,7 @@ import tregression.editors.CompareTextEditorInput;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
-import tregression.separatesnapshots.diff.FileDiff;
+import tregression.separatesnapshots.diff.FilePairWithDiff;
 
 public class BuggyTraceView extends TraceView {
 	
@@ -69,7 +69,7 @@ public class BuggyTraceView extends TraceView {
 		String buggyPath = diffMatcher.getBuggyPath() + File.separator + matcher.getSourceFolderName() + File.separator;
 		String fixPath = diffMatcher.getFixPath() + File.separator + matcher.getSourceFolderName() + File.separator;
 
-		FileDiff fileDiff = diffMatcher.findDiffBySourceFile(breakPoint);
+		FilePairWithDiff fileDiff = diffMatcher.findDiffBySourceFile(breakPoint);
 		if (diffMatcher == null || fileDiff == null) {
 			String baseFileName = breakPoint.getDeclaringCompilationUnitName();
 			baseFileName = baseFileName.replace(".", File.separator) + ".java";

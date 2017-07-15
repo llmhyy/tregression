@@ -5,16 +5,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiffParser {
-	public List<FileDiff> parseDiff(List<String> diffContent, String sourceFolderName){
-		List<FileDiff> fileDiffList = new ArrayList<>();
-		FileDiff fileDiff = null;
+	public List<FilePairWithDiff> parseDiff(List<String> diffContent, String sourceFolderName){
+		List<FilePairWithDiff> fileDiffList = new ArrayList<>();
+		FilePairWithDiff fileDiff = null;
 		
 		for(String line: diffContent){
 			if(line.startsWith("diff")){
 				if(fileDiff != null){
 					fileDiffList.add(fileDiff);
 				}
-				fileDiff = new FileDiff();
+				fileDiff = new FilePairWithDiff();
 				fileDiff.setSourceFolderName(sourceFolderName);
 			}
 			else if(line.startsWith("---")){

@@ -13,9 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import microbat.model.BreakPoint;
+import microbat.model.ClassLocation;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.DiffParser;
-import tregression.separatesnapshots.diff.FileDiff;
+import tregression.separatesnapshots.diff.FilePairWithDiff;
 import tregression.separatesnapshots.diff.LineChange;
 
 public class DiffMatcher {
@@ -26,7 +27,7 @@ public class DiffMatcher {
 	private String buggyPath;
 	private String fixPath;
 	
-	private List<FileDiff> fileDiffList;
+	private List<FilePairWithDiff> fileDiffList;
 	
 	public DiffMatcher(String sourceFolderName, String testFolderName, String buggyPath, String fixPath) {
 		super();
@@ -76,7 +77,7 @@ public class DiffMatcher {
 			targetPoint = tmp;
 		}
 		
-		FileDiff fileDiff = findDiffBySourceFile(srcPoint);
+		FilePairWithDiff fileDiff = findDiffBySourceFile(srcPoint);
 		if(fileDiff==null){
 			boolean isSameFile = srcPoint.getDeclaringCompilationUnitName().equals(targetPoint.getDeclaringCompilationUnitName());
 			boolean isSameLocation = srcPoint.getLineNumber()==targetPoint.getLineNumber();
@@ -95,8 +96,10 @@ public class DiffMatcher {
 		return false;
 	}
 	
-	public FileDiff findDiffByTargetFile(String targetFile){
-		for(FileDiff diff: this.fileDiffList){
+	
+	
+	public FilePairWithDiff findDiffByTargetFile(String targetFile){
+		for(FilePairWithDiff diff: this.fileDiffList){
 			if(diff.getTargetFile().equals(targetFile)){
 				return diff;
 			}
@@ -105,8 +108,8 @@ public class DiffMatcher {
 		return null;
 	}
 	
-	public FileDiff findDiffBySourceFile(String sourceFile){
-		for(FileDiff diff: this.fileDiffList){
+	public FilePairWithDiff findDiffBySourceFile(String sourceFile){
+		for(FilePairWithDiff diff: this.fileDiffList){
 			if(diff.getSourceFile().equals(sourceFile)){
 				return diff;
 			}
@@ -115,8 +118,8 @@ public class DiffMatcher {
 		return null;
 	}
 
-	public FileDiff findDiffBySourceFile(BreakPoint srcPoint) {
-		for(FileDiff diff: this.fileDiffList){
+	public FilePairWithDiff findDiffBySourceFile(BreakPoint srcPoint) {
+		for(FilePairWithDiff diff: this.fileDiffList){
 			if(diff.getSourceDeclaringCompilationUnit().equals(srcPoint.getDeclaringCompilationUnitName())){
 				return diff;
 			}
@@ -129,9 +132,9 @@ public class DiffMatcher {
 		
 		List<String> diffContent = getRawDiffContent();
 		diffContent.add("diff end");
-		List<FileDiff> fileDiffs = new DiffParser().parseDiff(diffContent, sourceFolderName);
+		List<FilePairWithDiff> fileDiffs = new DiffParser().parseDiff(diffContent, sourceFolderName);
 
-		for(FileDiff fileDiff: fileDiffs){
+		for(FilePairWithDiff fileDiff: fileDiffs){
 			HashMap<Integer, List<Integer>> sourceToTargetMap = new HashMap<>();
 			HashMap<Integer, List<Integer>> targetToSourceMap = new HashMap<>();
 			
@@ -164,7 +167,7 @@ public class DiffMatcher {
 		return -1;
 	}
 	
-	private void constructMapping(FileDiff fileDiff, HashMap<Integer, List<Integer>> sourceToTargetMap,
+	private void constructMapping(FilePairWithDiff fileDiff, HashMap<Integer, List<Integer>> sourceToTargetMap,
 			HashMap<Integer, List<Integer>> targetToSourceMap) {
 		int sourceLineCursor = 1;
 		int targetLineCursor = 1;
@@ -320,10 +323,90 @@ public class DiffMatcher {
 		this.testFolderName = testFolderName;
 	}
 
-	public FileDiff findDiffByTargetFile(BreakPoint tarPoint) {
-		for(FileDiff diff: this.fileDiffList){
+	public FilePairWithDiff findDiffByTargetFile(BreakPoint tarPoint) {
+		for(FilePairWithDiff diff: this.fileDiffList){
 			if(diff.getTargetDeclaringCompilationUnit().equals(tarPoint.getDeclaringCompilationUnitName())){
 				return diff;
+			}
+		}
+		
+		return null;
+	}
+
+	public ClassLocation findCorrespondingLocation(BreakPoint breakPoint, boolean isSourceVersion) {
+		if(isSourceVersion){
+			return getCorrespondentLocationForSource(breakPoint);
+		}
+		else{
+			return getCorrespondentLocationForTarget(breakPoint);
+		}
+	}
+
+	private ClassLocation getCorrespondentLocationForSource(BreakPoint breakPoint) {
+		FilePairWithDiff diff = findDiffBySourceFile(breakPoint);
+		if(diff == null){
+			return (BreakPoint) breakPoint.clone();
+		}
+		else{
+			for(DiffChunk chunk: diff.getChunks()){
+				int startLine = chunk.getStartLineInSource();
+				int endLine = startLine + chunk.getChunkLengthInSource() - 1;
+				
+				if(startLine<=breakPoint.getLineNumber() && breakPoint.getLineNumber()<=endLine){
+					int count = 0;
+					for(int i=0; i<chunk.getChangeList().size(); i++){
+						LineChange change = chunk.getChangeList().get(i); 
+						if(change.getType() != LineChange.ADD){
+							int currentLine = startLine + count - 1;
+							
+							if(currentLine==breakPoint.getLineNumber()){
+								
+								List<Integer> lines = diff.getSourceToTargetMap().get(currentLine);
+								ClassLocation location = 
+										new ClassLocation(diff.getTargetDeclaringCompilationUnit(), null, lines.get(0));
+								return location;
+							}
+							
+							count++;
+						}
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	
+	private ClassLocation getCorrespondentLocationForTarget(BreakPoint breakPoint) {
+		FilePairWithDiff diff = findDiffByTargetFile(breakPoint);
+		if(diff == null){
+			return (BreakPoint) breakPoint.clone();
+		}
+		else{
+			for(DiffChunk chunk: diff.getChunks()){
+				int startLine = chunk.getStartLineInTarget();
+				int endLine = startLine + chunk.getChunkLengthInTarget() - 1;
+				
+				if(startLine<=breakPoint.getLineNumber() && breakPoint.getLineNumber()<=endLine){
+					int count = 0;
+					for(int i=0; i<chunk.getChangeList().size(); i++){
+						LineChange change = chunk.getChangeList().get(i); 
+						if(change.getType() != LineChange.REMOVE){
+							int currentLine = startLine + count - 1;
+							
+							if(currentLine==breakPoint.getLineNumber()){
+								
+								List<Integer> lines = diff.getTargetToSourceMap().get(currentLine);
+								ClassLocation location = 
+										new ClassLocation(diff.getSourceDeclaringCompilationUnit(), null, lines.get(0));
+								return location;
+							}
+							
+							count++;
+						}
+					}
+				}
 			}
 		}
 		

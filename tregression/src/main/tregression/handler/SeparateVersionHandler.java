@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.util.Settings;
+import tregression.SimulatorWithSingleLineModification;
 import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.PathConfiguration;
@@ -34,7 +35,10 @@ public class SeparateVersionHandler extends AbstractHandler{
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				TraceCollector collector = new TraceCollector();
-				boolean isReuse = true;
+				boolean isReuse = false;
+				
+				PathConfiguration.buggyPath = "/mnt/linyun/bug_code/Chart/6/bug";
+				PathConfiguration.fixPath = "/mnt/linyun/bug_code/Chart/6/fix";
 				
 				try {
 					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
@@ -67,6 +71,10 @@ public class SeparateVersionHandler extends AbstractHandler{
 					
 					Visualizer visualizer = new Visualizer();
 					visualizer.visualize(buggyRS.getRunningTrace(), correctRs.getRunningTrace(), pairList, diffMatcher);
+					
+					
+					
+					
 					
 				} catch (IOException e) {
 					e.printStackTrace();

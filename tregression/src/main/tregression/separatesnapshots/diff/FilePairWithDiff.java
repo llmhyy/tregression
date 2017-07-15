@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class FileDiff {
+/**
+ * The class represents a pair of files matched by Git. 
+ * @author linyun
+ *
+ */
+public class FilePairWithDiff {
 	
 	private HashMap<Integer, List<Integer>> sourceToTargetMap = new HashMap<>();
 	private HashMap<Integer, List<Integer>> targetToSourceMap = new HashMap<>();
@@ -17,14 +22,14 @@ public class FileDiff {
 	
 	private List<DiffChunk> chunks = new ArrayList<>();
 
-	public FileDiff(String sourceFile, String targetFile, String sourceFolderName) {
+	public FilePairWithDiff(String sourceFile, String targetFile, String sourceFolderName) {
 		super();
 		this.sourceFile = sourceFile;
 		this.targetFile = targetFile;
 		this.setSourceFolderName(sourceFolderName);
 	}
 
-	public FileDiff(){}
+	public FilePairWithDiff(){}
 	
 	public String getSourceDeclaringCompilationUnit(){
 		return getDeclaringCompilationUnit(sourceFile, getSourceFolderName());

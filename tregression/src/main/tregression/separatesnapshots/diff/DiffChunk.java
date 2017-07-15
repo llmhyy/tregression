@@ -7,7 +7,7 @@ public class DiffChunk {
 	private int startLineInSource;
 	private int chunkLengthInSource;
 	
-	private int  startLineInTarget;
+	private int startLineInTarget;
 	private int chunkLengthInTarget;
 	
 	private List<LineChange> changeList = new ArrayList<>();

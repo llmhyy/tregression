@@ -39,7 +39,7 @@ import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
-import tregression.separatesnapshots.diff.FileDiff;
+import tregression.separatesnapshots.diff.FilePairWithDiff;
 import tregression.separatesnapshots.diff.LineChange;
 
 public class CompareEditor extends EditorPart {
@@ -144,7 +144,7 @@ public class CompareEditor extends EditorPart {
 		}
 		
 		StyleRange[] rangeArray = sortList(ranges);
-		appendLinStyle(text, rangeArray);
+		appendLineStyle(text, rangeArray);
 	}
 
 	private void adjustTextForSelectedNode(TraceNode node, StyledText text, List<StyleRange> ranges) {
@@ -228,7 +228,7 @@ public class CompareEditor extends EditorPart {
 		
 		List<StyleRange> ranges = new ArrayList<>();
 		
-		FileDiff diff = matcher.findDiffBySourceFile(path);
+		FilePairWithDiff diff = matcher.findDiffBySourceFile(path);
 		
 		if(diff==null){
 			return ranges;
@@ -260,7 +260,7 @@ public class CompareEditor extends EditorPart {
 	
 	private List<StyleRange> highlightTargetDiff(StyledText text, DiffMatcher matcher, String path) {
 		List<StyleRange> ranges = new ArrayList<>();
-		FileDiff diff = matcher.findDiffByTargetFile(path);
+		FilePairWithDiff diff = matcher.findDiffByTargetFile(path);
 		
 		if(diff==null){
 			return ranges;
@@ -322,7 +322,7 @@ public class CompareEditor extends EditorPart {
 	private CusLineStyleListener styleListener;
 //	private JavaLineStyler javaLineStyler;
 	
-	private void appendLinStyle(StyledText text, StyleRange[] ranges) {
+	private void appendLineStyle(StyledText text, StyleRange[] ranges) {
 //		JavaLineStyler javaLineStyler = new JavaLineStyler();
 //		text.addLineStyleListener(javaLineStyler);
 		

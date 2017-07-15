@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import microbat.algorithm.graphdiff.GraphDiff;
-import microbat.algorithm.graphdiff.HierarchyGraphDiffer;
 import microbat.handler.CheckingState;
 import microbat.model.UserInterestedVariables;
 import microbat.model.trace.Trace;
@@ -21,42 +19,31 @@ import microbat.recommendation.StepRecommender;
 import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
 import sav.strategies.dto.ClassLocation;
-import tregression.accuracy.Accuracy;
 import tregression.model.PairList;
 import tregression.model.StateWrapper;
 import tregression.model.StepOperationTuple;
 import tregression.model.TraceNodePair;
-import tregression.model.TraceNodeWrapper;
 import tregression.model.Trial;
-import tregression.separatesnapshots.DiffMatcher;
-import tregression.tracematch.LCSMatcher;
-import tregression.tracematch.LCSBasedTraceMatcher;
-import tregression.util.TraceNodeComprehensiveSimilarityComparator;
 
-public class SimulatedMicroBat {
-	
-	
-	List<TraceNode> falsePositive = new ArrayList<>();
-	List<TraceNode> falseNegative = new ArrayList<>();
-	
+public class SimulatorWithSingleLineModification extends Simulator{
 	private SimulatedUser user = new SimulatedUser();
 	private StepRecommender recommender;
 	
-	private PairList pairList;
-	TraceNode rootCause;
-	Map<Integer, TraceNode> allWrongNodeMap;
-	TraceNode observedFaultNode;
+	protected TraceNode rootCause;
 	
-	public void prepare(Trace mutatedTrace, Trace correctTrace, ClassLocation mutatedLocation, 
-			String testCaseName, String mutatedFile){
-//		PairList pairList = DiffUtil.generateMatchedTraceNodeList(mutatedTrace, correctTrace);
-		LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
-		this.pairList = traceMatcher.matchTraceNodePair(mutatedTrace, correctTrace, null); 
+	public void prepare(Trace mutatedTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo){
+		
+		ClassLocation mutatedLocation = null;
+		if(sourceDiffInfo instanceof ClassLocation){
+			mutatedLocation = (ClassLocation)sourceDiffInfo;
+		}
+		
+		this.pairList = pairList;
 		
 		rootCause = findRootCause(mutatedLocation.getClassCanonicalName(), 
 				mutatedLocation.getLineNo(), mutatedTrace, getPairList());
 		
-		allWrongNodeMap = findAllWrongNodes(getPairList(), mutatedTrace);
+		Map<Integer, TraceNode> allWrongNodeMap = findAllWrongNodes(getPairList(), mutatedTrace);
 		
 		if(!allWrongNodeMap.isEmpty()){
 			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
@@ -66,51 +53,6 @@ public class SimulatedMicroBat {
 		
 	}
 	
-	private boolean isObservedFaultWrongPath(TraceNode observableNode, PairList pairList){
-		TraceNodePair pair = pairList.findByAfterNode(observableNode);
-		if(pair == null){
-			return true;
-		}
-		
-		if(pair.getBeforeNode() == null){
-			return true;
-		}
-		
-		return false;
-	}
-	
-	private TraceNode findObservedFault(List<TraceNode> wrongNodeList, PairList pairList){
-		TraceNode observedFaultNode = wrongNodeList.get(0);
-		
-		/**
-		 * If the last portion of steps in trace are all wrong-path nodes, then we choose
-		 * the one at the beginning of this portion as the observable step. 
-		 */
-		if(isObservedFaultWrongPath(observedFaultNode, pairList)){
-			int index = 1;
-			observedFaultNode = wrongNodeList.get(index);
-			while(isObservedFaultWrongPath(observedFaultNode, pairList)){
-				index++;
-				if(index < wrongNodeList.size()){
-					observedFaultNode = wrongNodeList.get(index);					
-				}
-				else{
-					break;
-				}
-			}
-			
-			observedFaultNode = wrongNodeList.get(index-1);
-			
-			if(observedFaultNode.getControlDominator() == null){
-				if(index < wrongNodeList.size()){
-					observedFaultNode = wrongNodeList.get(index);					
-				}
-			}
-		}
-		
-		return observedFaultNode;
-	}
-
 	public Trial detectMutatedBug(Trace mutatedTrace, Trace correctTrace, ClassLocation mutatedLocation, 
 			String testCaseName, String mutatedFile, double unclearRate, boolean enableLoopInference, int optionSearchLimit) 
 					throws SimulationFailException {
@@ -118,7 +60,7 @@ public class SimulatedMicroBat {
 		if(observedFaultNode != null){
 			try {
 				Trial trial = startSimulation(observedFaultNode, rootCause, mutatedTrace, correctTrace, 
-						allWrongNodeMap, getPairList(), testCaseName, mutatedFile, unclearRate, 
+						getPairList(), testCaseName, mutatedFile, unclearRate, 
 						enableLoopInference, optionSearchLimit);
 //				System.currentTimeMillis();
 				return trial;			
@@ -132,28 +74,6 @@ public class SimulatedMicroBat {
 		}
 		
 		return null;
-	}
-	
-	/** 
-	 * Adjust the effect of constraints. 
-	 * If last feedback is wrong-path, then this step should not be
-	 * a correct step.
-	 */
-	private boolean hasConflicts(ArrayList<StepOperationTuple> jumpingSteps, UserFeedback currentFeedback){
-		
-		if(jumpingSteps.size() < 2){
-			return false;
-		}
-		
-		String lastFeedbackType = jumpingSteps.isEmpty() ? null : 
-			jumpingSteps.get(jumpingSteps.size()-2).getUserFeedback().getFeedbackType();
-		
-		if(lastFeedbackType != null && lastFeedbackType.equals(UserFeedback.WRONG_PATH) 
-				&& currentFeedback.getFeedbackType().equals(UserFeedback.CORRECT)){
-			return true;
-		}
-		
-		return false;
 	}
 	
 	class Attempt{
@@ -214,7 +134,7 @@ public class SimulatedMicroBat {
 	}
 	
 	private Trial startSimulation(TraceNode observedFaultNode, TraceNode rootCause, Trace mutatedTrace, Trace originalTrace,
-			Map<Integer, TraceNode> allWrongNodeMap, PairList pairList, String testCaseName, String mutatedFile, 
+			PairList pairList, String testCaseName, String mutatedFile, 
 			double unclearRate, boolean enableLoopInference, int optionSearchLimit) 
 					throws SimulationFailException {
 		
@@ -266,10 +186,6 @@ public class SimulatedMicroBat {
 			
 			boolean isBugFound = rootCause.getLineNumber()==suspiciousNode.getLineNumber();
 			while(!isBugFound){
-				if(hasConflicts(jumpingSteps, feedback)){
-					return null;
-				}
-				
 				TraceNode originalSuspiciousNode = suspiciousNode;
 				
 				suspiciousNode = findSuspicioiusNode(suspiciousNode, mutatedTrace, feedback);	
@@ -647,61 +563,6 @@ public class SimulatedMicroBat {
 		return new ArrayList<>(allDominatees.values());
 	}
 	
-	private Map<Integer, TraceNode> findAllWrongNodes(PairList pairList, Trace mutatedTrace){
-		Map<Integer, TraceNode> actualWrongNodes = new HashMap<>();
-		for(TraceNode mutatedTraceNode: mutatedTrace.getExectionList()){
-			TraceNodePair foundPair = pairList.findByAfterNode(mutatedTraceNode);
-			if(foundPair != null){
-				if(!foundPair.isExactSame()){
-					TraceNode mutatedNode = foundPair.getAfterNode();
-					actualWrongNodes.put(mutatedNode.getOrder(), mutatedNode);
-				}
-			}
-			else{
-				actualWrongNodes.put(mutatedTraceNode.getOrder(), mutatedTraceNode);
-			}
-		}
-		return actualWrongNodes;
-	}
-	
-	public Accuracy computeAccuracy(List<TraceNode> dominatees, List<TraceNode> actualWrongNodes) {
-		double modelInfluencedSize = dominatees.size();
-		
-		List<TraceNode> commonNodes = findCommonNodes(dominatees, actualWrongNodes);
-		
-		double precision = (double)commonNodes.size()/modelInfluencedSize;
-		double recall = (double)commonNodes.size()/actualWrongNodes.size();
-		
-		Accuracy accuracy = new Accuracy(precision, recall);
-		
-		return accuracy;
-	}
-
-	private List<TraceNode> findCommonNodes(List<TraceNode> dominatees,
-			List<TraceNode> actualWrongNodes) {
-		List<TraceNode> commonNodes = new ArrayList<>();
-		
-		falsePositive = new ArrayList<>();
-		falseNegative = new ArrayList<>();
-		
-		for(TraceNode domiantee: dominatees){
-			if(actualWrongNodes.contains(domiantee)){
-				commonNodes.add(domiantee);
-			}
-			else{
-				falsePositive.add(domiantee);
-			}
-		}
-		
-		for(TraceNode acturalWrongNode: actualWrongNodes){
-			if(!commonNodes.contains(acturalWrongNode)){
-				falseNegative.add(acturalWrongNode);
-			}
-		}
-		
-		return commonNodes;
-	}
-
 	private TraceNode findRootCause(String className, int lineNo, Trace mutatedTrace, PairList pairList) {
 		for(TraceNode node: mutatedTrace.getExectionList()){
 			if(node.getDeclaringCompilationUnitName().equals(className) && node.getLineNumber()==lineNo){
@@ -713,8 +574,6 @@ public class SimulatedMicroBat {
 				
 			}
 		}
-		
-		System.currentTimeMillis();
 		
 		return null;
 	}
@@ -750,17 +609,4 @@ public class SimulatedMicroBat {
 		currentNode.setCheckTime(checkTime);
 		trace.setCheckTime(checkTime);
 	}
-
-
-	public PairList getPairList() {
-		return pairList;
-	}
-
-
-	public void setPairList(PairList pairList) {
-		this.pairList = pairList;
-	}
-
-
-	
 }

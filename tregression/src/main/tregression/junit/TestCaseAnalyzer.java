@@ -42,12 +42,13 @@ import mutation.mutator.Mutator;
 import sav.strategies.dto.AppJavaClassPath;
 import sav.strategies.dto.ClassLocation;
 import sav.strategies.mutanbug.MutationResult;
-import tregression.SimulatedMicroBat;
+import tregression.SimulatorWithSingleLineModification;
 import tregression.TraceModelConstructor;
 import tregression.io.ExcelReporter;
 import tregression.io.IgnoredTestCaseFiles;
 import tregression.model.PairList;
 import tregression.model.Trial;
+import tregression.tracematch.LCSBasedTraceMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
 import tregression.views.TregressionViews;
@@ -174,9 +175,13 @@ public class TestCaseAnalyzer {
 			killingMutatantTrace = cachedMutatedTrace;
 		}
 		
-		SimulatedMicroBat microbat = new SimulatedMicroBat();
+		SimulatorWithSingleLineModification microbat = new SimulatorWithSingleLineModification();
+		
 		ClassLocation mutatedLocation = new ClassLocation(mutatedClassName, null, mutatedLine);
-		microbat.prepare(killingMutatantTrace, correctTrace, mutatedLocation, testcaseName, mutationFile);
+		LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
+		PairList pairList = traceMatcher.matchTraceNodePair(killingMutatantTrace, correctTrace, null); 
+		
+		microbat.prepare(killingMutatantTrace, correctTrace, pairList, mutatedLocation);
 		Visualizer visualizer = new Visualizer();
 		visualizer.visualize(killingMutatantTrace, correctTrace, microbat.getPairList(), null);
 		
@@ -372,8 +377,11 @@ public class TestCaseAnalyzer {
 				
 				ClassLocation mutatedLocation = new ClassLocation(tobeMutatedClass, null, line);
 				
-				SimulatedMicroBat microbat = new SimulatedMicroBat();
-				microbat.prepare(killingMutatantTrace, correctTrace, mutatedLocation, testCaseName, mutationFile.toString());
+				LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
+				PairList pairList = traceMatcher.matchTraceNodePair(killingMutatantTrace, correctTrace, null); 
+				
+				SimulatorWithSingleLineModification microbat = new SimulatorWithSingleLineModification();
+				microbat.prepare(killingMutatantTrace, correctTrace, pairList, mutatedLocation);
 				
 				boolean isValid = true;
 				List<Trial> trialList = new ArrayList<>();
