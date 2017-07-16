@@ -28,7 +28,6 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.swt.widgets.Display;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
@@ -36,8 +35,6 @@ import microbat.util.JTestUtil;
 import microbat.util.JavaUtil;
 import microbat.util.MicroBatUtil;
 import microbat.util.Settings;
-import microbat.views.MicroBatViews;
-import microbat.views.TraceView;
 import mutation.mutator.Mutator;
 import sav.strategies.dto.AppJavaClassPath;
 import sav.strategies.dto.ClassLocation;
@@ -49,9 +46,6 @@ import tregression.io.IgnoredTestCaseFiles;
 import tregression.model.PairList;
 import tregression.model.Trial;
 import tregression.tracematch.LCSBasedTraceMatcher;
-import tregression.views.BuggyTraceView;
-import tregression.views.CorrectTraceView;
-import tregression.views.TregressionViews;
 import tregression.views.Visualizer;
 
 public class TestCaseAnalyzer {

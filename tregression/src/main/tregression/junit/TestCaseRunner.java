@@ -4,18 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import microbat.codeanalysis.runtime.ExecutionStatementCollector;
-import microbat.codeanalysis.runtime.VMStarter;
-import microbat.model.BreakPoint;
-import microbat.util.JTestUtil;
-import microbat.util.JavaUtil;
-import microbat.util.Settings;
-
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-
-import sav.strategies.dto.AppJavaClassPath;
-
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.BooleanType;
 import com.sun.jdi.BooleanValue;
@@ -33,13 +21,17 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventQueue;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.ExceptionEvent;
-import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.event.VMDeathEvent;
 import com.sun.jdi.event.VMDisconnectEvent;
 import com.sun.jdi.event.VMStartEvent;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
+
+import microbat.codeanalysis.runtime.ExecutionStatementCollector;
+import microbat.codeanalysis.runtime.VMStarter;
+import microbat.model.BreakPoint;
+import sav.strategies.dto.AppJavaClassPath;
 
 @SuppressWarnings("restriction")
 public class TestCaseRunner extends ExecutionStatementCollector{

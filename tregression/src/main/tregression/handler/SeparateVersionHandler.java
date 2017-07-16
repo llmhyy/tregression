@@ -14,14 +14,12 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.util.Settings;
-import tregression.SimulatorWithSingleLineModification;
 import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.PathConfiguration;
 import tregression.separatesnapshots.RunningResult;
 import tregression.separatesnapshots.TraceCollector;
 import tregression.tracematch.ControlPathBasedTraceMatcher;
-import tregression.tracematch.LCSBasedTraceMatcher;
 import tregression.views.Visualizer;
 
 public class SeparateVersionHandler extends AbstractHandler{
@@ -90,13 +88,6 @@ public class SeparateVersionHandler extends AbstractHandler{
 		return null;
 	}
 	
-	private void clearOldData(){
-		Settings.interestedVariables.clear();
-		Settings.wrongPathNodeOrder.clear();
-		Settings.localVariableScopes.clear();
-		Settings.potentialCorrectPatterns.clear();
-	}
-
 	class TestCase{
 		public String testClass;
 		public String testMethod;
