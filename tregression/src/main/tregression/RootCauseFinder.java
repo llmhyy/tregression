@@ -20,20 +20,33 @@ import tregression.separatesnapshots.DiffMatcher;
  *
  */
 public class RootCauseFinder {
+	
+	class TraceNodeW{
+		TraceNode node;
+		boolean isOnBefore;
+		public TraceNodeW(TraceNode node, boolean isOnBefore) {
+			super();
+			this.node = node;
+			this.isOnBefore = isOnBefore;
+		}
+	}
+	
 	private List<TraceNode> regressionNodeList = new ArrayList<>();
 	private List<TraceNode> correctNodeList = new ArrayList<>();
 	
 	public void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
 		regressionNodeList.add(observedFaultNode);
 		
-		List<TraceNode> workList = new ArrayList<>();
-		workList.add(observedFaultNode);
+		List<TraceNodeW> workList = new ArrayList<>();
+		workList.add(new TraceNodeW(observedFaultNode, true));
 		
 		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker();
-		boolean isOnBeforeTrace = true;
+		
 		
 		while(!workList.isEmpty()){
-			TraceNode step = workList.remove(0);
+			TraceNodeW stepW = workList.remove(0);
+			TraceNode step = stepW.node;
+			boolean isOnBeforeTrace = stepW.isOnBefore;
 			
 			StepChangeType changeType = typeChecker.getType(step, isOnBeforeTrace, pairList, matcher);
 			Trace trace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
@@ -119,13 +132,15 @@ public class RootCauseFinder {
 	private List<BreakPoint> collectAllControlScope(BreakPoint p, HashSet<BreakPoint> allControlScope, 
 			List<BreakPoint> executedStatements) {
 		ControlScope scope = (ControlScope) p.getControlScope();
-		for(ClassLocation location: scope.getRangeList()){
-			BreakPoint point = findCorrespondingPoint(location, executedStatements);
-			if(!allControlScope.contains(point)){
-				allControlScope.add(point);
-				
-				collectAllControlScope(point, allControlScope, executedStatements);
-			}
+		if(scope != null) {
+			for(ClassLocation location: scope.getRangeList()){
+				BreakPoint point = findCorrespondingPoint(location, executedStatements);
+				if(point != null && !allControlScope.contains(point)){
+					allControlScope.add(point);
+					
+					collectAllControlScope(point, allControlScope, executedStatements);
+				}
+			}			
 		}
 		return null;
 	}
@@ -156,19 +171,29 @@ public class RootCauseFinder {
 		return node;
 	}
 
-	private void addWorkNode(List<TraceNode> workList, TraceNode node, boolean isOnBeforeTrace) {
+	private void addWorkNode(List<TraceNodeW> workList, TraceNode node, boolean isOnBeforeTrace) {
 		if(node != null){
-			workList.add(node);
+			boolean isVisited = false;
 			
 			if(isOnBeforeTrace){
 				if(!regressionNodeList.contains(node)){
 					regressionNodeList.add(node);
+				}
+				else {
+					isVisited = true;
 				}
 			}
 			else{
 				if(!correctNodeList.contains(node)){
 					correctNodeList.add(node);
 				}
+				else {
+					isVisited = true;
+				}
+			}
+			
+			if(!isVisited) {
+				workList.add(new TraceNodeW(node, isOnBeforeTrace));				
 			}
 		}
 		

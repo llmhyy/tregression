@@ -13,7 +13,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import microbat.model.trace.Trace;
 import microbat.util.Settings;
+import tregression.SimulationFailException;
+import tregression.SimulatorWithCompilcatedModification;
 import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.PathConfiguration;
@@ -33,7 +36,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				TraceCollector collector = new TraceCollector();
-				boolean isReuse = false;
+				boolean isReuse = true;
 				
 				PathConfiguration.buggyPath = "/mnt/linyun/bug_code/Chart/6/bug";
 				PathConfiguration.fixPath = "/mnt/linyun/bug_code/Chart/6/fix";
@@ -68,13 +71,17 @@ public class SeparateVersionHandler extends AbstractHandler{
 							correctRs.getRunningTrace(), diffMatcher); 
 					
 					Visualizer visualizer = new Visualizer();
-					visualizer.visualize(buggyRS.getRunningTrace(), correctRs.getRunningTrace(), pairList, diffMatcher);
 					
+					Trace buggyTrace = buggyRS.getRunningTrace();
+					Trace correctTrace = correctRs.getRunningTrace();
+					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
 					
+					SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
+					simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 					
+					simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 					
-					
-				} catch (IOException e) {
+				} catch (IOException | SimulationFailException e) {
 					e.printStackTrace();
 				}
 				

@@ -20,24 +20,17 @@ import tregression.separatesnapshots.DiffMatcher;
  * @author linyun
  *
  */
-public class SimulatorCompilcatedModification extends Simulator{
+public class SimulatorWithCompilcatedModification extends Simulator{
 	
 	List<TraceNode> rootCauseNodes;
 	
 	public void prepare(Trace buggyTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo){
 		this.pairList = pairList;
-		
 		setObservedFaultNode(buggyTrace);
 		
-		findRootCause(buggyTrace, correctTrace, pairList, sourceDiffInfo);
+//		System.currentTimeMillis();
 	}
 
-	private void findRootCause(Trace buggyTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo) {
-		DiffMatcher matcher = (DiffMatcher)sourceDiffInfo;
-		
-		
-		
-	}
 
 	private void setObservedFaultNode(Trace buggyTrace) {
 		Map<Integer, TraceNode> allWrongNodeMap = findAllWrongNodes(getPairList(), buggyTrace);
@@ -53,6 +46,11 @@ public class SimulatorCompilcatedModification extends Simulator{
 	public Trial detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher, int optionSearchLimit) 
 					throws SimulationFailException {
 		if(observedFaultNode != null){
+			
+			RootCauseFinder finder = new RootCauseFinder();
+			finder.checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
+			
+			
 			Trial trial = startSimulation(observedFaultNode, buggyTrace, correctTrace, getPairList(), optionSearchLimit);
 			return trial;
 		}
@@ -62,6 +60,9 @@ public class SimulatorCompilcatedModification extends Simulator{
 
 	private Trial startSimulation(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList,
 			int optionSearchLimit) {
+		
+		
+		
 		
 		return null;
 	}

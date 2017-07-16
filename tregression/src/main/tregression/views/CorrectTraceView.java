@@ -116,6 +116,7 @@ public class CorrectTraceView extends TraceView {
 			}
 			
 			TraceNodePair pair = pairList.findByAfterNode(correctNode);
+			correctNode.toString();
 			TraceNode buggyNode = null;
 			if(pair != null){
 				buggyNode = pair.getBeforeNode();
