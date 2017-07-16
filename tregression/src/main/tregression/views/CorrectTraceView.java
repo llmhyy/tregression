@@ -11,8 +11,6 @@ import org.eclipse.ui.PlatformUI;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
-import microbat.views.DebugFeedbackView;
-import microbat.views.MicroBatViews;
 import microbat.views.TraceView;
 import tregression.editors.CompareEditor;
 import tregression.editors.CompareTextEditorInput;
@@ -20,7 +18,6 @@ import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
-import tregression.views.BuggyTraceView.CompareFileName;
 
 public class CorrectTraceView extends TraceView {
 
