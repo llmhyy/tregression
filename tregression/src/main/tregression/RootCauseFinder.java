@@ -11,6 +11,7 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import tregression.model.PairList;
+import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 
 /**
@@ -71,16 +72,22 @@ public class RootCauseFinder {
 				}
 			}
 			else if(changeType.getType()==StepChangeType.CTL){
-				TraceNode controlDom = step.getControlDominator();
+//				TraceNode controlDom = step.getControlDominator();
+				TraceNode controlDom = getInvocationMethodOrDominator(step);
 				addWorkNode(workList, controlDom, isOnBeforeTrace);
 				
 				isOnBeforeTrace = !isOnBeforeTrace;
 				
 				trace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 				
+				if(controlDom.getOrder()==322) {
+					System.currentTimeMillis();
+					System.currentTimeMillis();
+				}
+				
 				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(controlDom.getBreakPoint(), isOnBeforeTrace);
 				
-				TraceNode otherControlDom = findLatestControlDom(trace, isOnBeforeTrace, correspondingLocation);
+				TraceNode otherControlDom = findResponsibleControlDomOnOtherTrace(step, pairList, trace, isOnBeforeTrace, correspondingLocation);
 				addWorkNode(workList, otherControlDom, isOnBeforeTrace);
 				
 			}
@@ -88,23 +95,49 @@ public class RootCauseFinder {
 		
 	}
 
-	private TraceNode findLatestControlDom(Trace trace, boolean isOnBeforeTrace, ClassLocation correspondingLocation) {
-		List<TraceNode> visitedNodeList = isOnBeforeTrace ? regressionNodeList : correctNodeList;
-		TraceNode latestNode = findLatestNode(visitedNodeList);
-		if(null == latestNode){
-			latestNode = trace.getLastestNode();
+	private TraceNode getInvocationMethodOrDominator(TraceNode step) {
+		TraceNode controlDom = step.getControlDominator();
+		TraceNode invocationParent = step.getInvocationParent();
+		
+		if(controlDom!=null && invocationParent!=null) {
+			if(controlDom.getOrder()<invocationParent.getOrder()) {
+				return invocationParent;
+			}
+			else {
+				return controlDom;
+			}
+		}
+		else if(controlDom!=null && invocationParent==null) {
+			return controlDom;
+		}
+		else if(controlDom==null && invocationParent!=null) {
+			return invocationParent;
 		}
 		
-		TraceNode invocationParent = latestNode.getInvocationParent();
-		List<BreakPoint> executedStatement = findAllExecutedStatement(trace);
+		return null;
+	}
+
+	private TraceNode findResponsibleControlDomOnOtherTrace(TraceNode problematicStep, PairList pairList,
+			Trace otherTrace, boolean isOtherTraceTheBeforeTrace, ClassLocation correspondingLocation) {
 		
-		for(int i=latestNode.getOrder(); i>=invocationParent.getOrder(); i--){
-			TraceNode node = trace.getExectionList().get(i-1);
+		int startOrder = findStartOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
+		int endOrder = findEndOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
+		
+//		System.currentTimeMillis();
+		
+		
+		List<BreakPoint> executedStatement = findAllExecutedStatement(otherTrace);
+		
+		//TODO this implementation is problematic, I need to use soot to analyze the static control dependence relation.
+		for(int i=endOrder; i>=startOrder; i--){
+			TraceNode node = otherTrace.getExectionList().get(i-1);
 			if(node.isConditional()){
-				HashSet<BreakPoint> allControlScope = new HashSet<>(); 
-				collectAllControlScope(node.getBreakPoint(), allControlScope, executedStatement);
+				HashSet<BreakPoint> allInfluenceScope = new HashSet<>(); 
 				
-				for(BreakPoint location: allControlScope){
+				//TODO this method is problematic, I need Soot to parse the static dependence relation.
+				collectAllInfluenceScope(node.getBreakPoint(), allInfluenceScope, executedStatement);
+				
+				for(BreakPoint location: allInfluenceScope){
 					if(location.getDeclaringCompilationUnitName().equals(correspondingLocation.getClassCanonicalName()) &&
 							location.getLineNumber()==correspondingLocation.getLineNumber()){
 						return node;
@@ -113,10 +146,84 @@ public class RootCauseFinder {
 			}
 		}
 		
-		return invocationParent;
+		return null;
 	}
 
 	
+	private int findStartOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
+		TraceNode node = problematicStep.getStepInPrevious();
+		while(node != null) {
+			TraceNode matchedNode = null;
+			if(isOnBeforeTrace) {
+				TraceNodePair pair = pairList.findByBeforeNode(node);
+				if(pair != null) {
+					matchedNode = pair.getAfterNode();
+				}
+			}
+			else {
+				TraceNodePair pair = pairList.findByAfterNode(node);
+				if(pair != null) {
+					matchedNode = pair.getBeforeNode();
+				}
+			}
+			
+			
+			if(matchedNode != null) {
+				return matchedNode.getOrder();
+			}
+			
+			node = node.getStepInPrevious();
+		}
+		
+		return 1;
+	}
+	
+	private int findEndOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
+		TraceNode node = problematicStep.getStepInNext();
+		while(node != null) {
+			TraceNode matchedNode = null;
+			if(isOnBeforeTrace) {
+				TraceNodePair pair = pairList.findByBeforeNode(node);
+				if(pair != null) {
+					matchedNode = pair.getAfterNode();
+				}
+			}
+			else {
+				TraceNodePair pair = pairList.findByAfterNode(node);
+				if(pair != null) {
+					matchedNode = pair.getBeforeNode();
+				}
+			}
+			
+			
+			if(matchedNode != null) {
+				return matchedNode.getOrder();
+			}
+			
+			node = node.getStepInNext();
+		}
+		
+		/**
+		 * The the length of the other trace.
+		 */
+		TraceNode n = null;
+		int size = pairList.getPairList().size();
+		if(isOnBeforeTrace) {
+			n = pairList.getPairList().get(size-1).getAfterNode();
+		}
+		else {
+			n = pairList.getPairList().get(size-1).getBeforeNode();
+		}
+		int order = n.getOrder();
+		while(n!=null) {
+			n = n.getStepInNext();
+			if(n!=null) {
+				order = n.getOrder();
+			}
+		}
+		return order;
+	}
+
 	private List<BreakPoint> findAllExecutedStatement(Trace trace) {
 		List<BreakPoint> pointList = new ArrayList<>();
 		for(TraceNode node: trace.getExectionList()){
@@ -129,7 +236,7 @@ public class RootCauseFinder {
 		return pointList;
 	}
 
-	private List<BreakPoint> collectAllControlScope(BreakPoint p, HashSet<BreakPoint> allControlScope, 
+	private List<BreakPoint> collectAllInfluenceScope(BreakPoint p, HashSet<BreakPoint> allControlScope, 
 			List<BreakPoint> executedStatements) {
 		ControlScope scope = (ControlScope) p.getControlScope();
 		if(scope != null) {
@@ -138,7 +245,7 @@ public class RootCauseFinder {
 				if(point != null && !allControlScope.contains(point)){
 					allControlScope.add(point);
 					
-					collectAllControlScope(point, allControlScope, executedStatements);
+					collectAllInfluenceScope(point, allControlScope, executedStatements);
 				}
 			}			
 		}

@@ -348,33 +348,37 @@ public class DiffMatcher {
 			return (BreakPoint) breakPoint.clone();
 		}
 		else{
-			for(DiffChunk chunk: diff.getChunks()){
-				int startLine = chunk.getStartLineInSource();
-				int endLine = startLine + chunk.getChunkLengthInSource() - 1;
-				
-				if(startLine<=breakPoint.getLineNumber() && breakPoint.getLineNumber()<=endLine){
-					int count = 0;
-					for(int i=0; i<chunk.getChangeList().size(); i++){
-						LineChange change = chunk.getChangeList().get(i); 
-						if(change.getType() != LineChange.ADD){
-							int currentLine = startLine + count - 1;
-							
-							if(currentLine==breakPoint.getLineNumber()){
-								
-								List<Integer> lines = diff.getSourceToTargetMap().get(currentLine);
-								ClassLocation location = 
-										new ClassLocation(diff.getTargetDeclaringCompilationUnit(), null, lines.get(0));
-								return location;
-							}
-							
-							count++;
-						}
-					}
-				}
-			}
+			List<Integer> lines = diff.getTargetToSourceMap().get(breakPoint.getLineNumber());
+			ClassLocation location = 
+					new ClassLocation(diff.getSourceDeclaringCompilationUnit(), null, lines.get(0));
+			return location;
+//			for(DiffChunk chunk: diff.getChunks()){
+//				int startLine = chunk.getStartLineInSource();
+//				int endLine = startLine + chunk.getChunkLengthInSource() - 1;
+//				
+//				if(startLine<=breakPoint.getLineNumber() && breakPoint.getLineNumber()<=endLine){
+//					int count = 0;
+//					for(int i=0; i<chunk.getChangeList().size(); i++){
+//						LineChange change = chunk.getChangeList().get(i); 
+//						if(change.getType() != LineChange.ADD){
+//							int currentLine = startLine + count - 1;
+//							
+//							if(currentLine==breakPoint.getLineNumber()){
+//								
+//								List<Integer> lines = diff.getSourceToTargetMap().get(currentLine);
+//								ClassLocation location = 
+//										new ClassLocation(diff.getTargetDeclaringCompilationUnit(), null, lines.get(0));
+//								return location;
+//							}
+//							
+//							count++;
+//						}
+//					}
+//				}
+//			}
 		}
 		
-		return null;
+//		return null;
 	}
 	
 	
@@ -384,33 +388,38 @@ public class DiffMatcher {
 			return (BreakPoint) breakPoint.clone();
 		}
 		else{
-			for(DiffChunk chunk: diff.getChunks()){
-				int startLine = chunk.getStartLineInTarget();
-				int endLine = startLine + chunk.getChunkLengthInTarget() - 1;
-				
-				if(startLine<=breakPoint.getLineNumber() && breakPoint.getLineNumber()<=endLine){
-					int count = 0;
-					for(int i=0; i<chunk.getChangeList().size(); i++){
-						LineChange change = chunk.getChangeList().get(i); 
-						if(change.getType() != LineChange.REMOVE){
-							int currentLine = startLine + count - 1;
-							
-							if(currentLine==breakPoint.getLineNumber()){
-								
-								List<Integer> lines = diff.getTargetToSourceMap().get(currentLine);
-								ClassLocation location = 
-										new ClassLocation(diff.getSourceDeclaringCompilationUnit(), null, lines.get(0));
-								return location;
-							}
-							
-							count++;
-						}
-					}
-				}
-			}
+			List<Integer> lines = diff.getSourceToTargetMap().get(breakPoint.getLineNumber());
+			ClassLocation location = 
+					new ClassLocation(diff.getTargetDeclaringCompilationUnit(), null, lines.get(0));
+			return location;
+			
+//			for(DiffChunk chunk: diff.getChunks()){
+//				int startLine = chunk.getStartLineInTarget();
+//				int endLine = startLine + chunk.getChunkLengthInSource() - 1;
+//				
+//				if(startLine<=breakPoint.getLineNumber() && breakPoint.getLineNumber()<=endLine){
+//					int count = 0;
+//					for(int i=0; i<chunk.getChangeList().size(); i++){
+//						LineChange change = chunk.getChangeList().get(i); 
+//						if(change.getType() != LineChange.REMOVE){
+//							int currentLine = startLine + count - 1;
+//							
+//							if(currentLine==breakPoint.getLineNumber()){
+//								
+//								List<Integer> lines = diff.getTargetToSourceMap().get(currentLine);
+//								ClassLocation location = 
+//										new ClassLocation(diff.getSourceDeclaringCompilationUnit(), null, lines.get(0));
+//								return location;
+//							}
+//							
+//							count++;
+//						}
+//					}
+//				}
+//			}
 		}
 		
-		return null;
+//		return null;
 	}
 	
 }
