@@ -99,31 +99,37 @@ public class SimulatorWithCompilcatedModification extends Simulator{
 			 * when it is a correct node
 			 */
 			else {
-				int overskipLen = 0;
-				
-				TraceNode latestNode = checkingList.get(checkingList.size()-1);
-				
-				List<TraceNode> regressionNodes = rootCauseFinder.getRegressionNodeList();
-				List<TraceNode> correctNodes = rootCauseFinder.getCorrectNodeList();
-				
-				if(!regressionNodes.isEmpty()) {
-					Collections.sort(regressionNodes, new TraceNodeOrderComparator());
-					TraceNode regressionNode = regressionNodes.get(0);
-					overskipLen = regressionNode.getOrder() - latestNode.getOrder();
-				}
-				else if(!correctNodes.isEmpty()){
-					Collections.sort(correctNodes, new TraceNodeOrderComparator());
-					TraceNode correctNode = correctNodes.get(0);
-					
-					int startOrder  = rootCauseFinder.findStartOrderInOtherTrace(correctNode, pairList, false);
-					overskipLen = startOrder - latestNode.getOrder();
-				}
+				int overskipLen = checkOverskipLength(pairList, rootCauseFinder, checkingList);
 				
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, checkingList);
 				return trial;
 			}
 			
 		}
+	}
+
+
+	private int checkOverskipLength(PairList pairList, RootCauseFinder rootCauseFinder, List<TraceNode> checkingList) {
+		TraceNode latestNode = checkingList.get(checkingList.size()-1);
+		
+		List<TraceNode> regressionNodes = rootCauseFinder.getRegressionNodeList();
+		List<TraceNode> correctNodes = rootCauseFinder.getCorrectNodeList();
+		
+		if(!regressionNodes.isEmpty()) {
+			Collections.sort(regressionNodes, new TraceNodeOrderComparator());
+			TraceNode regressionNode = regressionNodes.get(0);
+			int overskipLen = regressionNode.getOrder() - latestNode.getOrder();
+			return overskipLen;
+		}
+		else if(!correctNodes.isEmpty()){
+			Collections.sort(correctNodes, new TraceNodeOrderComparator());
+			TraceNode correctNode = correctNodes.get(0);
+			
+			int startOrder  = rootCauseFinder.findStartOrderInOtherTrace(correctNode, pairList, false);
+			int overskipLen = startOrder - latestNode.getOrder();
+			return overskipLen;
+		}
+		return 0;
 	}
 
 
