@@ -298,7 +298,19 @@ public class RootCauseFinder {
 			}
 			
 			if(!isVisited) {
-				workList.add(new TraceNodeW(node, isOnBeforeTrace));				
+				workList.add(new TraceNodeW(node, isOnBeforeTrace));
+				
+				/**
+				 * method invocation will cause a return step with the same line number
+				 */
+				TraceNode previous = node.getStepOverPrevious();
+				if(previous!=null && previous.getLineNumber()==node.getLineNumber()) {
+					addWorkNode(workList, previous, isOnBeforeTrace);
+				}
+				TraceNode next = node.getStepOverNext();
+				if(next!=null && next.getLineNumber()==node.getLineNumber()) {
+					addWorkNode(workList, next, isOnBeforeTrace);
+				}
 			}
 		}
 		

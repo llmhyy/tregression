@@ -109,14 +109,14 @@ public class SimulatorWithCompilcatedModification extends Simulator{
 				if(!regressionNodes.isEmpty()) {
 					Collections.sort(regressionNodes, new TraceNodeOrderComparator());
 					TraceNode regressionNode = regressionNodes.get(0);
-					overskipLen = latestNode.getOrder() - regressionNode.getOrder() + 1;
+					overskipLen = regressionNode.getOrder() - latestNode.getOrder();
 				}
 				else if(!correctNodes.isEmpty()){
 					Collections.sort(correctNodes, new TraceNodeOrderComparator());
 					TraceNode correctNode = correctNodes.get(0);
 					
 					int startOrder  = rootCauseFinder.findStartOrderInOtherTrace(correctNode, pairList, false);
-					overskipLen = latestNode.getOrder() - startOrder + 1;
+					overskipLen = startOrder - latestNode.getOrder();
 				}
 				
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, checkingList);
