@@ -36,7 +36,7 @@ public class RootCauseFinder {
 	private List<TraceNode> correctNodeList = new ArrayList<>();
 	
 	public void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
-		regressionNodeList.add(observedFaultNode);
+		getRegressionNodeList().add(observedFaultNode);
 		
 		List<TraceNodeW> workList = new ArrayList<>();
 		workList.add(new TraceNodeW(observedFaultNode, true));
@@ -123,8 +123,6 @@ public class RootCauseFinder {
 		int startOrder = findStartOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
 		int endOrder = findEndOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
 		
-//		System.currentTimeMillis();
-		
 		
 		List<BreakPoint> executedStatement = findAllExecutedStatement(otherTrace);
 		
@@ -150,7 +148,7 @@ public class RootCauseFinder {
 	}
 
 	
-	private int findStartOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
+	public int findStartOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
 		TraceNode node = problematicStep.getStepInPrevious();
 		while(node != null) {
 			TraceNode matchedNode = null;
@@ -178,7 +176,7 @@ public class RootCauseFinder {
 		return 1;
 	}
 	
-	private int findEndOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
+	public int findEndOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
 		TraceNode node = problematicStep.getStepInNext();
 		while(node != null) {
 			TraceNode matchedNode = null;
@@ -283,16 +281,16 @@ public class RootCauseFinder {
 			boolean isVisited = false;
 			
 			if(isOnBeforeTrace){
-				if(!regressionNodeList.contains(node)){
-					regressionNodeList.add(node);
+				if(!getRegressionNodeList().contains(node)){
+					getRegressionNodeList().add(node);
 				}
 				else {
 					isVisited = true;
 				}
 			}
 			else{
-				if(!correctNodeList.contains(node)){
-					correctNodeList.add(node);
+				if(!getCorrectNodeList().contains(node)){
+					getCorrectNodeList().add(node);
 				}
 				else {
 					isVisited = true;
@@ -308,6 +306,22 @@ public class RootCauseFinder {
 
 	private Trace getCorrespondingTrace(boolean isOnBeforeTrace, Trace buggyTrace, Trace correctTrace) {
 		return isOnBeforeTrace ? buggyTrace : correctTrace;
+	}
+
+	public List<TraceNode> getRegressionNodeList() {
+		return regressionNodeList;
+	}
+
+	public void setRegressionNodeList(List<TraceNode> regressionNodeList) {
+		this.regressionNodeList = regressionNodeList;
+	}
+
+	public List<TraceNode> getCorrectNodeList() {
+		return correctNodeList;
+	}
+
+	public void setCorrectNodeList(List<TraceNode> correctNodeList) {
+		this.correctNodeList = correctNodeList;
 	}
 	
 	

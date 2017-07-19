@@ -51,7 +51,7 @@ public class StepChangeTypeChecker {
 	private List<VarValue> checkWrongVariable(TraceNode step, TraceNode matchedStep) {
 		List<VarValue> wrongVariableList = new ArrayList<>();
 		for(VarValue readVar: step.getReadVariables()){
-			if(canbeMatched(readVar, matchedStep)){
+			if(!canbeMatched(readVar, matchedStep)){
 				wrongVariableList.add(readVar);
 			}
 		}
