@@ -20,6 +20,18 @@ public class EmpiricalTrial {
 		this.overskipLength = overskipLength;
 		this.setCheckList(checkList);
 	}
+	
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		String type = (this.bugType==FIND_BUG) ? "bug_found" : "over_skip";
+		buffer.append("trial type: " + type + "\n");
+		buffer.append("over skip length: " + this.overskipLength + "\n");
+		buffer.append("debugging trace: \n");
+		for(TraceNode node: checkList) {
+			buffer.append(node.toString() + "\n");
+		}
+		return buffer.toString();
+	}
 
 	public int getBugType() {
 		return bugType;
