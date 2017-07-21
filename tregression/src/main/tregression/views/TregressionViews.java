@@ -4,14 +4,12 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 public class TregressionViews {
-	public static final String CORRECT_TRACE = "tregression.evalView.correctTraceView";
-	public static final String BUGGY_TRACE = "tregression.evalView.buggyTraceView";
 	
 	public static CorrectTraceView getCorrectTraceView(){
 		CorrectTraceView view = null;
 		try {
 			view = (CorrectTraceView)PlatformUI.getWorkbench().
-					getActiveWorkbenchWindow().getActivePage().showView(CORRECT_TRACE);
+					getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
@@ -23,7 +21,19 @@ public class TregressionViews {
 		BuggyTraceView view = null;
 		try {
 			view = (BuggyTraceView)PlatformUI.getWorkbench().
-					getActiveWorkbenchWindow().getActivePage().showView(BUGGY_TRACE);
+					getActiveWorkbenchWindow().getActivePage().showView(BuggyTraceView.ID);
+		} catch (PartInitException e) {
+			e.printStackTrace();
+		}
+		
+		return view;
+	}
+	
+	public static StepPropertyView getStepPropertyView(){
+		StepPropertyView view = null;
+		try {
+			view = (StepPropertyView)PlatformUI.getWorkbench().
+					getActiveWorkbenchWindow().getActivePage().showView(StepPropertyView.ID);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
