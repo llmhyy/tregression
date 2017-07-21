@@ -25,18 +25,18 @@ public abstract class Simulator {
 		this.pairList = pairList;
 	}
 	
-	protected Map<Integer, TraceNode> findAllWrongNodes(PairList pairList, Trace mutatedTrace){
+	protected Map<Integer, TraceNode> findAllWrongNodes(PairList pairList, Trace buggyTrace){
 		Map<Integer, TraceNode> actualWrongNodes = new HashMap<>();
-		for(TraceNode mutatedTraceNode: mutatedTrace.getExectionList()){
-			TraceNodePair foundPair = pairList.findByAfterNode(mutatedTraceNode);
+		for(TraceNode buggyTraceNode: buggyTrace.getExectionList()){
+			TraceNodePair foundPair = pairList.findByBeforeNode(buggyTraceNode);
 			if(foundPair != null){
 				if(!foundPair.isExactSame()){
-					TraceNode mutatedNode = foundPair.getAfterNode();
+					TraceNode mutatedNode = foundPair.getBeforeNode();
 					actualWrongNodes.put(mutatedNode.getOrder(), mutatedNode);
 				}
 			}
 			else{
-				actualWrongNodes.put(mutatedTraceNode.getOrder(), mutatedTraceNode);
+				actualWrongNodes.put(buggyTraceNode.getOrder(), buggyTraceNode);
 			}
 		}
 		return actualWrongNodes;
