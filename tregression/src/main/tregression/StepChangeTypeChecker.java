@@ -61,7 +61,9 @@ public class StepChangeTypeChecker {
 	private boolean canbeMatched(VarValue readVar, TraceNode matchedStep) {
 		for(VarValue var: matchedStep.getReadVariables()){
 			if(var.getVarName().equals(readVar.getVarName())){
-				if(var.getStringValue().equals(readVar.getStringValue())){
+				String thisStringValue = (var.getStringValue()==null)?"null":var.getStringValue();
+				String thatStringValue = (readVar.getStringValue()==null)?"null":readVar.getStringValue();
+				if(thisStringValue.equals(thatStringValue)){
 					return true;
 				}
 			}
