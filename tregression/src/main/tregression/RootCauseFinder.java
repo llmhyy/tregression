@@ -10,6 +10,7 @@ import microbat.model.ControlScope;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.model.variable.Variable;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
@@ -47,48 +48,45 @@ public class RootCauseFinder {
 		while(!workList.isEmpty()){
 			TraceNodeW stepW = workList.remove(0);
 			TraceNode step = stepW.node;
-			boolean isOnBeforeTrace = stepW.isOnBefore;
+//			boolean isOnBeforeTrace = stepW.isOnBefore;
 			
-			StepChangeType changeType = typeChecker.getType(step, isOnBeforeTrace, pairList, matcher);
-			Trace trace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
+			StepChangeType changeType = typeChecker.getType(step, stepW.isOnBefore, pairList, matcher);
+			Trace trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 			
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
 				for(VarValue readVar: changeType.getWrongVariableList()){
-					TraceNode dataDom = trace.getLatestProducer(step.getOrder(), readVar.getVarID());
-					addWorkNode(workList, dataDom, isOnBeforeTrace);
+					TraceNode dataDom = trace.getLatestProducerBySimpleVarIDForm(step.getOrder(), Variable.truncateSimpleID(readVar.getVarID()));
+					addWorkNode(workList, dataDom, stepW.isOnBefore);
 					
-					TraceNode matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, step, pairList);
-					addWorkNode(workList, matchedStep, isOnBeforeTrace);
+					TraceNode matchedStep = MatchStepFinder.findMatchedStep(stepW.isOnBefore, step, pairList);
+					addWorkNode(workList, matchedStep, !stepW.isOnBefore);
 					
-					isOnBeforeTrace = !isOnBeforeTrace;
-					trace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
+					trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
 					
 					VarValue matchedVar = MatchStepFinder.findMatchVariable(readVar, matchedStep);
-					TraceNode otherDataDom = trace.getLatestProducer(matchedStep.getOrder(), matchedVar.getVarID());
-					addWorkNode(workList, otherDataDom, isOnBeforeTrace);
+					TraceNode otherDataDom = trace.getLatestProducerBySimpleVarIDForm(matchedStep.getOrder(), Variable.truncateSimpleID(matchedVar.getVarID()));
+					addWorkNode(workList, otherDataDom, !stepW.isOnBefore);
 				}
 			}
 			else if(changeType.getType()==StepChangeType.CTL){
 //				TraceNode controlDom = step.getControlDominator();
 				TraceNode controlDom = getInvocationMethodOrDominator(step);
-				addWorkNode(workList, controlDom, isOnBeforeTrace);
+				addWorkNode(workList, controlDom, stepW.isOnBefore);
 				
-				isOnBeforeTrace = !isOnBeforeTrace;
-				
-				trace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
+				trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
 				
 				if(controlDom.getOrder()==322) {
 					System.currentTimeMillis();
 					System.currentTimeMillis();
 				}
 				
-				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(controlDom.getBreakPoint(), isOnBeforeTrace);
+				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(controlDom.getBreakPoint(), !stepW.isOnBefore);
 				
-				TraceNode otherControlDom = findResponsibleControlDomOnOtherTrace(step, pairList, trace, isOnBeforeTrace, correspondingLocation);
-				addWorkNode(workList, otherControlDom, isOnBeforeTrace);
+				TraceNode otherControlDom = findResponsibleControlDomOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
+				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);
 				
 			}
 		}
