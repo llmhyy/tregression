@@ -26,6 +26,13 @@ public class StepOperationTuple {
 		this.debugState = debugState;
 	}
 	
+	public StepOperationTuple(TraceNode node, UserFeedback userFeedback, TraceNode referenceNode) {
+		super();
+		this.node = node;
+		this.userFeedback = userFeedback;
+		this.referenceNode = referenceNode;
+	}
+	
 	public TraceNode getNode() {
 		return node;
 	}

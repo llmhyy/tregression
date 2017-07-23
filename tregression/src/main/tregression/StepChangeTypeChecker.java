@@ -6,7 +6,6 @@ import java.util.List;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import tregression.model.PairList;
-import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
@@ -26,23 +25,24 @@ public class StepChangeTypeChecker {
 	 */
 	public StepChangeType getType(TraceNode step, boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
 		
-		boolean isSourceDiff = checkSourceDiff(step, isOnBeforeTrace, matcher);
-		if(isSourceDiff){
-			return new StepChangeType(StepChangeType.SRC);
-		}
-		
 		TraceNode matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, step, pairList);
 		
+		boolean isSourceDiff = checkSourceDiff(step, isOnBeforeTrace, matcher);
+		if(isSourceDiff){
+			return new StepChangeType(StepChangeType.SRC, matchedStep);
+		}
+		
+		
 		if (matchedStep == null) {
-			return new StepChangeType(StepChangeType.CTL);
+			return new StepChangeType(StepChangeType.CTL, matchedStep);
 		}
 		else{
 			List<VarValue> wrongVariableList = checkWrongVariable(step, matchedStep);
 			if(wrongVariableList.isEmpty()){
-				return new StepChangeType(StepChangeType.IDT);
+				return new StepChangeType(StepChangeType.IDT, matchedStep);
 			}
 			else{
-				return new StepChangeType(StepChangeType.DAT, wrongVariableList);
+				return new StepChangeType(StepChangeType.DAT, matchedStep, wrongVariableList);
 			}
 		}
 

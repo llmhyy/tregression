@@ -3,7 +3,7 @@ package tregression;
 import java.util.ArrayList;
 import java.util.List;
 
-import microbat.model.trace.TraceNode;
+import tregression.model.StepOperationTuple;
 
 public class EmpiricalTrial {
 	public static final int FIND_BUG = 0;
@@ -12,13 +12,13 @@ public class EmpiricalTrial {
 	private int bugType;
 	private int overskipLength = 0;
 	
-	private List<TraceNode> checkList = new ArrayList<>();
+	private List<StepOperationTuple> checkList = new ArrayList<>();
 
-	public EmpiricalTrial(int bugType, int overskipLength, List<TraceNode> checkList) {
+	public EmpiricalTrial(int bugType, int overskipLength, List<StepOperationTuple> checkList) {
 		super();
 		this.bugType = bugType;
 		this.overskipLength = overskipLength;
-		this.setCheckList(checkList);
+		this.checkList = checkList;
 	}
 	
 	public String toString() {
@@ -27,8 +27,8 @@ public class EmpiricalTrial {
 		buffer.append("trial type: " + type + "\n");
 		buffer.append("over skip length: " + this.overskipLength + "\n");
 		buffer.append("debugging trace: \n");
-		for(TraceNode node: checkList) {
-			buffer.append(node.toString() + "\n");
+		for(StepOperationTuple tuple: checkList) {
+			buffer.append(tuple.toString() + "\n");
 		}
 		return buffer.toString();
 	}
@@ -49,11 +49,11 @@ public class EmpiricalTrial {
 		this.overskipLength = overskipLength;
 	}
 
-	public List<TraceNode> getCheckList() {
+	public List<StepOperationTuple> getCheckList() {
 		return checkList;
 	}
 
-	public void setCheckList(List<TraceNode> checkList) {
+	public void setCheckList(List<StepOperationTuple> checkList) {
 		this.checkList = checkList;
 	}
 
