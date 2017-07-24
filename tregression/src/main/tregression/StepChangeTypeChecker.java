@@ -25,7 +25,15 @@ public class StepChangeTypeChecker {
 	 */
 	public StepChangeType getType(TraceNode step, boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
 		
+		
 		TraceNode matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, step, pairList);
+		
+		if(matchedStep==null) {
+			TraceNode stepOverStep = findPreviousStepOverStepWithSameLine(step);
+			if(stepOverStep!=null) {
+				matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, stepOverStep, pairList);				
+			}
+		}
 		
 		boolean isSourceDiff = checkSourceDiff(step, isOnBeforeTrace, matcher);
 		if(isSourceDiff){
@@ -48,6 +56,25 @@ public class StepChangeTypeChecker {
 
 	}
 	
+	/**
+	 * When invoking a method m() at line k, we will have two steps running into line k, i.e., a step s_1 
+	 * invoking m() and a step s_2 returning from the invocation. Suppose s_1 is matched and s_2 is not, 
+	 * we should not check s_2's control dominator, instead, we need to check s_1 instead.
+	 * 
+	 * In this implementation, we only consider case of non-cascading invocation. In other word, we do not
+	 * consider m0(m1(m2(...))). In such case, we need to consider a list of previous-step-over-step.
+	 * @param step
+	 * @return
+	 */
+	private TraceNode findPreviousStepOverStepWithSameLine(TraceNode step) {
+		TraceNode node = step.getStepOverPrevious();
+		if(node != null && node.getLineNumber()==step.getLineNumber()) {
+			return node;
+		}
+		
+		return null;
+	}
+
 	private List<VarValue> checkWrongVariable(TraceNode step, TraceNode matchedStep) {
 		List<VarValue> wrongVariableList = new ArrayList<>();
 		for(VarValue readVar: step.getReadVariables()){
