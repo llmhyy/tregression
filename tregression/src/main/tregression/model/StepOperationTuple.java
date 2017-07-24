@@ -1,7 +1,8 @@
 package tregression.model;
 
 import microbat.model.trace.TraceNode;
-import microbat.recommendation.DebugState;
+import microbat.model.value.VarValue;
+import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 
 public class StepOperationTuple {
@@ -49,15 +50,24 @@ public class StepOperationTuple {
 	@Override
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("StepOperationTuple [node=" + node + ", userFeedback=" + userFeedback);
 		
-		String state = DebugState.printState(this.debugState);
-		buffer.append(", state=" + state);
+		buffer.append(userFeedback.getFeedbackType() + ": ");
+
+		int order = node.getOrder();
+		int lineNumber = node.getBreakPoint().getLineNumber();
+		buffer.append("order " + order + ", ");
+		buffer.append("line " + lineNumber + ", ");
+		
+		ChosenVariableOption option = userFeedback.getOption();
+		if(option!=null && option.getReadVar()!=null) {
+			VarValue var = option.getReadVar();
+			buffer.append(var + ", ");
+		}
 		
 		if(getReferenceNode() != null){
-			buffer.append(", reference node=" + getReferenceNode());
+			buffer.append("reference node order " + getReferenceNode().getOrder());
 		}
-		buffer.append("]");
+		
 		return buffer.toString();
 	}
 
