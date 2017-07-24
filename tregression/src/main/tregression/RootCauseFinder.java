@@ -1,6 +1,7 @@
 package tregression;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -9,8 +10,8 @@ import microbat.model.ClassLocation;
 import microbat.model.ControlScope;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.model.trace.TraceNodeOrderComparator;
 import microbat.model.value.VarValue;
-import microbat.model.variable.Variable;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
@@ -35,6 +36,30 @@ public class RootCauseFinder {
 	
 	private List<TraceNode> regressionNodeList = new ArrayList<>();
 	private List<TraceNode> correctNodeList = new ArrayList<>();
+	
+	public TraceNode retrieveRootCause(PairList pairList, DiffMatcher matcher, Trace buggyTrace) {
+		Collections.sort(regressionNodeList, new TraceNodeOrderComparator());
+		Collections.sort(correctNodeList, new TraceNodeOrderComparator());
+		
+		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker();
+		
+		for(TraceNode node: regressionNodeList) {
+			StepChangeType type = typeChecker.getType(node, true, pairList, matcher);
+			if(type.getType()==StepChangeType.SRC) {
+				return node;
+			}
+		}
+		
+		for(TraceNode node: correctNodeList) {
+			StepChangeType type = typeChecker.getType(node, false, pairList, matcher);
+			if(type.getType()==StepChangeType.SRC) {
+				int startOrder  = findStartOrderInOtherTrace(node, pairList, false);
+				return buggyTrace.getExectionList().get(startOrder-1);
+			}
+		}
+		
+		return null;
+	}
 	
 	public void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
 		getRegressionNodeList().add(observedFaultNode);
@@ -63,15 +88,17 @@ public class RootCauseFinder {
 					TraceNode dataDom = trace.getStepVariableTable().get(readVar.getVarID()).getProducers().get(0); 
 					addWorkNode(workList, dataDom, stepW.isOnBefore);
 					
-					TraceNode matchedStep = MatchStepFinder.findMatchedStep(stepW.isOnBefore, step, pairList);
+					TraceNode matchedStep = changeType.getMatchingStep();
 					addWorkNode(workList, matchedStep, !stepW.isOnBefore);
 					
 					trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
 					
 					VarValue matchedVar = MatchStepFinder.findMatchVariable(readVar, matchedStep);
 					
-					TraceNode otherDataDom = trace.getStepVariableTable().get(matchedVar.getVarID()).getProducers().get(0);
-					addWorkNode(workList, otherDataDom, !stepW.isOnBefore);
+					if(matchedVar != null) {
+						TraceNode otherDataDom = trace.getStepVariableTable().get(matchedVar.getVarID()).getProducers().get(0);
+						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);						
+					}
 				}
 			}
 			else if(changeType.getType()==StepChangeType.CTL){

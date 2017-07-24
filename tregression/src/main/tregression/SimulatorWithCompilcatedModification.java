@@ -7,10 +7,8 @@ import java.util.Map;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import microbat.model.trace.TraceNodeOrderComparator;
 import microbat.model.trace.TraceNodeReverseOrderComparator;
 import microbat.model.value.VarValue;
-import microbat.model.variable.Variable;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import tregression.model.PairList;
@@ -112,7 +110,7 @@ public class SimulatorWithCompilcatedModification extends Simulator{
 				StepOperationTuple operation = new StepOperationTuple(currentNode, new UserFeedback(UserFeedback.CORRECT), null);
 				checkingList.add(operation);
 				
-				int overskipLen = checkOverskipLength(pairList, rootCauseFinder, checkingList);
+				int overskipLen = checkOverskipLength(pairList, matcher, buggyTrace, rootCauseFinder, checkingList);
 				
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, checkingList);
 				System.out.println(trial);
@@ -133,26 +131,16 @@ public class SimulatorWithCompilcatedModification extends Simulator{
 	}
 
 
-	private int checkOverskipLength(PairList pairList, RootCauseFinder rootCauseFinder, List<StepOperationTuple> checkingList) {
+	private int checkOverskipLength(PairList pairList, DiffMatcher matcher, Trace buggyTrace, 
+			RootCauseFinder rootCauseFinder, List<StepOperationTuple> checkingList) {
 		TraceNode latestNode = checkingList.get(checkingList.size()-1).getNode();
 		
-		List<TraceNode> regressionNodes = rootCauseFinder.getRegressionNodeList();
-		List<TraceNode> correctNodes = rootCauseFinder.getCorrectNodeList();
+		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace);
 		
-		if(!regressionNodes.isEmpty()) {
-			Collections.sort(regressionNodes, new TraceNodeOrderComparator());
-			TraceNode regressionNode = regressionNodes.get(0);
-			int overskipLen = regressionNode.getOrder() - latestNode.getOrder();
-			return overskipLen;
+		if(rootcauseNode!=null) {
+			return rootcauseNode.getOrder() - latestNode.getOrder();
 		}
-		else if(!correctNodes.isEmpty()){
-			Collections.sort(correctNodes, new TraceNodeOrderComparator());
-			TraceNode correctNode = correctNodes.get(0);
-			
-			int startOrder  = rootCauseFinder.findStartOrderInOtherTrace(correctNode, pairList, false);
-			int overskipLen = startOrder - latestNode.getOrder();
-			return overskipLen;
-		}
+		
 		return 0;
 	}
 
