@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -15,6 +16,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.model.trace.Trace;
 import microbat.util.Settings;
+import tregression.EmpiricalTrial;
 import tregression.SimulationFailException;
 import tregression.SimulatorWithCompilcatedModification;
 import tregression.model.PairList;
@@ -38,8 +40,8 @@ public class SeparateVersionHandler extends AbstractHandler{
 				TraceCollector collector = new TraceCollector();
 				boolean isReuse = true;
 				
-				PathConfiguration.buggyPath = "/mnt/linyun/bug_code/Chart/6/bug";
-				PathConfiguration.fixPath = "/mnt/linyun/bug_code/Chart/6/fix";
+				PathConfiguration.buggyPath = "/home/linyun/doc/bug_repo/Chart/1/bug";
+				PathConfiguration.fixPath = "/home/linyun/doc/bug_repo/Chart/1/fix";
 				
 				try {
 					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
@@ -79,7 +81,12 @@ public class SeparateVersionHandler extends AbstractHandler{
 					SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
 					simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 					
-					simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
+					List<EmpiricalTrial> trials = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
+					System.out.println("all the trials");
+					for(int i=0; i<trials.size(); i++) {
+						System.out.println("Trial " + (i+1));
+						System.out.println(trials.get(i));
+					}
 					
 				} catch (IOException | SimulationFailException e) {
 					e.printStackTrace();
