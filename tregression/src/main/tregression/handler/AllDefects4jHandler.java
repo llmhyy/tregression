@@ -32,21 +32,26 @@ public class AllDefects4jHandler extends AbstractHandler {
 				String prefix = config.substring(0, config.indexOf(projects[0]));
 				
 				for(int i=0; i<projects.length; i++) {
-					String buggyPath = prefix + projects[i] + "/" + bugNum[i] + "/bug";
-					String fixPath = prefix + projects[i] + "/" + bugNum[i] + "/fix";
 					
-					System.out.println("analyzing the " + bugNum[i] + "th bug in " + projects[i] + " project.");
-					
-					TrialGenerator generator = new TrialGenerator();
-					List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, false);
-					
-					TrialRecorder recorder;
-					try {
-						recorder = new TrialRecorder();
-						recorder.export(trials, projects[i], bugNum[i]);
-					} catch (IOException e) {
-						e.printStackTrace();
+					for(int j=1; j<=bugNum[i]; j++) {
+						String buggyPath = prefix + projects[i] + "/" + j + "/bug";
+						String fixPath = prefix + projects[i] + "/" + j + "/fix";
+						
+						System.out.println("analyzing the " + j + "th bug in " + projects[i] + " project.");
+						
+						TrialGenerator generator = new TrialGenerator();
+						List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, false);
+						
+						TrialRecorder recorder;
+						try {
+							recorder = new TrialRecorder();
+							recorder.export(trials, projects[i], j);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						
 					}
+					
 					
 //					System.out.println("all the trials");
 //					for(int j=0; j<trials.size(); j++) {
