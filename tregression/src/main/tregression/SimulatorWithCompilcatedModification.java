@@ -2,8 +2,11 @@ package tregression;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -16,111 +19,221 @@ import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.DiffMatcher;
 
 /**
- * This class is for empirical study. I will check 
- * (1) whether and when a miss-alignment bug happens and 
- * (2) what is the possible fix for that bug.
+ * This class is for empirical study. I will check (1) whether and when a
+ * miss-alignment bug happens and (2) what is the possible fix for that bug.
  * 
  * @author linyun
  *
  */
-public class SimulatorWithCompilcatedModification extends Simulator{
-	
+public class SimulatorWithCompilcatedModification extends Simulator {
+
 	List<TraceNode> rootCauseNodes;
-	
-	public void prepare(Trace buggyTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo){
+
+	public void prepare(Trace buggyTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo) {
 		this.pairList = pairList;
 		setObservedFaultNode(buggyTrace);
-		
-//		System.currentTimeMillis();
-	}
 
+		// System.currentTimeMillis();
+	}
 
 	private void setObservedFaultNode(Trace buggyTrace) {
 		Map<Integer, TraceNode> allWrongNodeMap = findAllWrongNodes(getPairList(), buggyTrace);
-		
-		if(!allWrongNodeMap.isEmpty()){
+
+		if (!allWrongNodeMap.isEmpty()) {
 			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
 			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
 			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
 		}
 	}
 
-	
-	public EmpiricalTrial detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher, int optionSearchLimit) 
-					throws SimulationFailException {
-		if(observedFaultNode != null){
-			
+	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
+			int optionSearchLimit) throws SimulationFailException {
+		if (observedFaultNode != null) {
+
 			RootCauseFinder finder = new RootCauseFinder();
 			finder.checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
-			
-			
-			EmpiricalTrial trial = startSimulation(observedFaultNode, buggyTrace, correctTrace, getPairList(), matcher, finder);
-			return trial;
+
+			List<EmpiricalTrial> trials = startSimulation(observedFaultNode, buggyTrace, correctTrace, getPairList(), matcher, finder);
+			return trials;
 		}
-		
+
 		return null;
 	}
 
-	private EmpiricalTrial startSimulation(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList,
-			DiffMatcher matcher, RootCauseFinder rootCauseFinder) {
+	class DebuggingState {
+		TraceNode currentNode;
+		List<StepOperationTuple> checkingList;
+		VarValue wrongReadVar;
+
+		public DebuggingState(TraceNode currentNode, List<StepOperationTuple> checkingList, VarValue wrongReadVar) {
+			super();
+			this.currentNode = currentNode;
+			this.checkingList = checkingList;
+			this.wrongReadVar = wrongReadVar;
+		}
 		
-		List<StepOperationTuple> checkingList = new ArrayList<>();
-//		checkingList.add(observedFaultNode);
-		
-		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker();
-		
-		TraceNode currentNode = observedFaultNode;
-		while(true) {
-			StepChangeType changeType = typeChecker.getType(currentNode, true, pairList, matcher);
+		@Override
+		public boolean equals(Object obj) {
+			if(obj instanceof DebuggingState) {
+				DebuggingState thatState = (DebuggingState)obj;
+				if(thatState.currentNode.getOrder()==currentNode.getOrder() &&
+						thatState.wrongReadVar.getVarName().equals(wrongReadVar.getVarName())) {
+					return true;
+				}
+			}
 			
-			if(changeType.getType()==StepChangeType.SRC){
-				StepOperationTuple operation = new StepOperationTuple(currentNode, new UserFeedback(UserFeedback.UNCLEAR), null);
+			return false;
+		}
+		
+		@Override
+		public int hashCode() {
+			int hashCode1 = currentNode.getOrder();
+			int hashCode2 = wrongReadVar.getVarName().hashCode();
+			return hashCode1*hashCode2;
+		}
+
+	}
+
+	private List<EmpiricalTrial> startSimulation(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace,
+			PairList pairList, DiffMatcher matcher, RootCauseFinder rootCauseFinder) {
+
+		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker();
+		List<EmpiricalTrial> trials = new ArrayList<>();
+		TraceNode currentNode = observedFaultNode;
+		
+		Stack<DebuggingState> stack = new Stack<>();
+		stack.push(new DebuggingState(currentNode, new ArrayList<StepOperationTuple>(), null));
+		Set<DebuggingState> visitedStates = new HashSet<>();
+		
+		while (!stack.isEmpty()){
+			DebuggingState state = stack.pop();
+			
+			EmpiricalTrial trial = workSingleTrial(buggyTrace, pairList, matcher, rootCauseFinder, typeChecker,
+					currentNode, stack, visitedStates, state);
+			trials.add(trial);
+		} 
+		
+		return trials;
+	}
+
+	/**
+	 * This method returns a debugging trial, and backup all the new debugging state in the input stack.
+	 * 
+	 * visitedStates records all the backed up debugging state so that we do not repetatively debug the same step with
+	 * the same wrong variable twice.
+	 * 
+	 * stack is used to backup the new debugging state.
+	 * 
+	 * @param buggyTrace
+	 * @param pairList
+	 * @param matcher
+	 * @param rootCauseFinder
+	 * @param typeChecker
+	 * @param currentNode
+	 * @param stack
+	 * @param visitedStates
+	 * @param state
+	 * @return
+	 */
+	private EmpiricalTrial workSingleTrial(Trace buggyTrace, PairList pairList, DiffMatcher matcher,
+			RootCauseFinder rootCauseFinder, StepChangeTypeChecker typeChecker,
+			TraceNode currentNode, Stack<DebuggingState> stack, Set<DebuggingState> visitedStates,
+			DebuggingState state) {
+		/**
+		 * recover the debugging state
+		 */
+		VarValue wrongReadVar = state.wrongReadVar;
+		List<StepOperationTuple> checkingList = state.checkingList;
+		currentNode = state.currentNode;
+		
+		/**
+		 * start debugging
+		 */
+		while (true) {
+			StepChangeType changeType = typeChecker.getType(currentNode, true, pairList, matcher);
+
+			if (changeType.getType() == StepChangeType.SRC) {
+				StepOperationTuple operation = new StepOperationTuple(currentNode,
+						new UserFeedback(UserFeedback.UNCLEAR), null);
 				checkingList.add(operation);
-				
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.FIND_BUG, 0, null, checkingList);
 				return trial;
-			}
-			else if(changeType.getType()==StepChangeType.DAT){
-				
-				/**
-				 * TODO we can generate more trials here, a new wrong variable can create a trial
-				 */
-				for(VarValue readVar: changeType.getWrongVariableList()){
+			} else if (changeType.getType() == StepChangeType.DAT) {
+				if(wrongReadVar == null) {
+					for(int i=0; i<changeType.getWrongVariableList().size(); i++) {
+						VarValue readVar = changeType.getWrongVariableList().get(i);
+						if(i!=0) {
+							backupDebuggingState(currentNode, stack, visitedStates, checkingList, readVar);
+						}
+					}
+					
+					VarValue readVar = changeType.getWrongVariableList().get(0);
 					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 					checkingList.add(operation);
 					
-					TraceNode dataDom = buggyTrace.getStepVariableTable().get(readVar.getVarID()).getProducers().get(0); 
+					TraceNode dataDom = buggyTrace.getStepVariableTable().get(readVar.getVarID()).getProducers().get(0);
 					currentNode = dataDom;
 					
-					break;
 				}
-			}
-			else if(changeType.getType()==StepChangeType.CTL){
+				else {
+					/**
+					 * use the designated variable from the recovered state for debugging
+					 */
+					VarValue readVar = wrongReadVar;
+					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
+					checkingList.add(operation);
+					
+					TraceNode dataDom = buggyTrace.getStepVariableTable().get(readVar.getVarID()).getProducers().get(0);
+					currentNode = dataDom;
+					
+					wrongReadVar = null;
+				}
+			} else if (changeType.getType() == StepChangeType.CTL) {
 				TraceNode controlDom = currentNode.getControlDominator();
-				
-				StepOperationTuple operation = new StepOperationTuple(currentNode, new UserFeedback(UserFeedback.WRONG_PATH), null);
+
+				StepOperationTuple operation = new StepOperationTuple(currentNode,
+						new UserFeedback(UserFeedback.WRONG_PATH), null);
 				checkingList.add(operation);
-				
+
 				currentNode = controlDom;
 			}
 			/**
 			 * when it is a correct node
 			 */
 			else {
-				StepOperationTuple operation = new StepOperationTuple(currentNode, new UserFeedback(UserFeedback.CORRECT), null);
+				StepOperationTuple operation = new StepOperationTuple(currentNode,
+						new UserFeedback(UserFeedback.CORRECT), null);
 				checkingList.add(operation);
-				
+
 				TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace);
 				int overskipLen = checkOverskipLength(pairList, matcher, buggyTrace, rootcauseNode, checkingList);
-				
-				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, checkingList);
-				System.out.println(trial);
+
+				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode,
+						checkingList);
 				return trial;
 			}
-			
+
+		}
+		
+	}
+
+	private void backupDebuggingState(TraceNode currentNode, Stack<DebuggingState> stack,
+			Set<DebuggingState> visitedStates, List<StepOperationTuple> checkingList, VarValue readVar) {
+		List<StepOperationTuple> clonedCheckingList = cloneList(checkingList);
+		DebuggingState backupState = new DebuggingState(currentNode, clonedCheckingList, readVar);
+		if(!visitedStates.contains(backupState)) {
+			stack.push(backupState);
+			visitedStates.add(backupState);
 		}
 	}
 
+	private List<StepOperationTuple> cloneList(List<StepOperationTuple> checkingList) {
+		List<StepOperationTuple> list = new ArrayList<>();
+		for(StepOperationTuple t: checkingList) {
+			list.add(t);
+		}
+		return list;
+	}
 
 	private StepOperationTuple generateDataFeedback(TraceNode currentNode, StepChangeType changeType,
 			VarValue readVar) {
@@ -131,18 +244,15 @@ public class SimulatorWithCompilcatedModification extends Simulator{
 		return operation;
 	}
 
+	private int checkOverskipLength(PairList pairList, DiffMatcher matcher, Trace buggyTrace, TraceNode rootcauseNode,
+			List<StepOperationTuple> checkingList) {
+		TraceNode latestNode = checkingList.get(checkingList.size() - 1).getNode();
 
-	private int checkOverskipLength(PairList pairList, DiffMatcher matcher, Trace buggyTrace, 
-			TraceNode rootcauseNode, List<StepOperationTuple> checkingList) {
-		TraceNode latestNode = checkingList.get(checkingList.size()-1).getNode();
-		
-		if(rootcauseNode!=null) {
+		if (rootcauseNode != null) {
 			return rootcauseNode.getOrder() - latestNode.getOrder();
 		}
-		
+
 		return 0;
 	}
 
-
-	
 }
