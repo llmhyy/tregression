@@ -73,21 +73,23 @@ public class TrialRecorder {
 	
 	public void export(List<EmpiricalTrial> trialList, String project, int bugID) {
 		
-		for(EmpiricalTrial trial: trialList) {
-			Row row = sheet.createRow(lastRowNum);
-			fillRowInformation(row, trial, project, bugID);
-			lastRowNum++;
-		}
-        
-        writeToExcel(book, file.getName());
-        
-        if(lastRowNum > trialNumberLimitPerFile){
-        	filePage++;
-        	String fileName = "defects4j" + filePage + ".xlsx";
-			file = new File(fileName);
+		if(!trialList.isEmpty()) {
+			for(EmpiricalTrial trial: trialList) {
+				Row row = sheet.createRow(lastRowNum);
+				fillRowInformation(row, trial, project, bugID);
+				lastRowNum++;
+			}
 			
-			initializeNewExcel();
-        }
+			writeToExcel(book, file.getName());
+			
+			if(lastRowNum > trialNumberLimitPerFile){
+				filePage++;
+				String fileName = "defects4j" + filePage + ".xlsx";
+				file = new File(fileName);
+				
+				initializeNewExcel();
+			}
+		}
 	}
 	
 	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, int bugID) {
