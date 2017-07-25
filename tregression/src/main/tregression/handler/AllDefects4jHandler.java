@@ -1,5 +1,6 @@
 package tregression.handler;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -13,6 +14,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import microbat.Activator;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.TrialRecorder;
 import tregression.preference.TregressionPreference;
 
 public class AllDefects4jHandler extends AbstractHandler {
@@ -32,14 +34,25 @@ public class AllDefects4jHandler extends AbstractHandler {
 				for(int i=0; i<projects.length; i++) {
 					String buggyPath = prefix + projects[i] + "/" + bugNum[i] + "/bug";
 					String fixPath = prefix + projects[i] + "/" + bugNum[i] + "/fix";
+					
+					System.out.println("analyzing the " + bugNum[i] + "th bug in " + projects[i] + " project.");
+					
 					TrialGenerator generator = new TrialGenerator();
 					List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, false);
 					
-					System.out.println("all the trials");
-					for(int j=0; j<trials.size(); j++) {
-						System.out.println("Trial " + (j+1));
-						System.out.println(trials.get(j));
+					TrialRecorder recorder;
+					try {
+						recorder = new TrialRecorder();
+						recorder.export(trials, projects[i], bugNum[i]);
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
+					
+//					System.out.println("all the trials");
+//					for(int j=0; j<trials.size(); j++) {
+//						System.out.println("Trial " + (j+1));
+//						System.out.println(trials.get(j));
+//					}
 				}
 				
 				return Status.OK_STATUS;
