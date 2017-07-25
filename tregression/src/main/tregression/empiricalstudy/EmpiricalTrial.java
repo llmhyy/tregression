@@ -25,6 +25,17 @@ public class EmpiricalTrial {
 		this.checkList = checkList;
 	}
 	
+	public static String getTypeStringName(int t) {
+		if(t==FIND_BUG) {
+			return "find_bug";
+		}
+		else if(t==OVER_SKIP) {
+			return "over_skip";
+		}
+		
+		return null;
+	}
+	
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
 		String type = (this.bugType==FIND_BUG) ? "bug_found" : "over_skip";
@@ -61,6 +72,10 @@ public class EmpiricalTrial {
 
 	public void setCheckList(List<StepOperationTuple> checkList) {
 		this.checkList = checkList;
+	}
+	
+	public TraceNode getRootcauseNode() {
+		return this.rootcauseNode;
 	}
 
 }

@@ -1,5 +1,6 @@
 package tregression.handler;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -13,6 +14,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import microbat.Activator;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.TrialRecorder;
 import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
@@ -26,12 +28,20 @@ public class SeparateVersionHandler extends AbstractHandler{
 			protected IStatus run(IProgressMonitor monitor) {
 				String buggyPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String fixPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CORRECT_PATH);
-				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, true);
+				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, true, true);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {
 					System.out.println("Trial " + (i+1));
 					System.out.println(trials.get(i));
+				}
+				
+				TrialRecorder recorder;
+				try {
+					recorder = new TrialRecorder();
+					recorder.export(trials, "Chart", 2);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 				
 				return Status.OK_STATUS;
