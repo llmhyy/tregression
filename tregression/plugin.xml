@@ -23,6 +23,11 @@
              id="tregression.command.runSeparateVersions"
              name="Run for Separate Versions">
        </command>
+       <command
+             defaultHandler="tregression.handler.AllDefects4jHandler"
+             id="tregression.command.runAllDefects4jProjects"
+             name="Run All Defects4j Projects">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
