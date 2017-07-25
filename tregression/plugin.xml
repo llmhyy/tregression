@@ -98,6 +98,11 @@
                   label="Run for Separate Versions"
                   style="push">
             </command>
+            <command
+                  commandId="tregression.command.runAllDefects4jProjects"
+                  label="Run All Defects4j Projects"
+                  style="push">
+            </command>
          </menu>
       </menuContribution>
    </extension>
