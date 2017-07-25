@@ -1,4 +1,4 @@
-package tregression;
+package tregression.empiricalstudy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +14,11 @@ import microbat.model.trace.TraceNodeReverseOrderComparator;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
+import tregression.RootCauseFinder;
+import tregression.SimulationFailException;
+import tregression.Simulator;
+import tregression.StepChangeType;
+import tregression.StepChangeTypeChecker;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.DiffMatcher;

@@ -1,4 +1,4 @@
-package tregression;
+package tregression.empiricalstudy;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package tregression;
+package tregression.empiricalstudy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,6 +19,9 @@ import microbat.recommendation.StepRecommender;
 import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
 import sav.strategies.dto.ClassLocation;
+import tregression.SimulatedUser;
+import tregression.SimulationFailException;
+import tregression.Simulator;
 import tregression.model.PairList;
 import tregression.model.StateWrapper;
 import tregression.model.StepOperationTuple;
