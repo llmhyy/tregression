@@ -115,5 +115,13 @@
             inputTypes="org.eclipse.ui.IStorageEditorInput">
       </provider>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="tregression.preference.TregressionPreference"
+            id="tregression.preference"
+            name="Tregression (Defects4j)">
+      </page>
+   </extension>
 
 </plugin>
