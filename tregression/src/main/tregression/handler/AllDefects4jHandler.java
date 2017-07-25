@@ -10,8 +10,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import microbat.Activator;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.preference.TregressionPreference;
 
 public class AllDefects4jHandler extends AbstractHandler {
 
@@ -24,9 +26,12 @@ public class AllDefects4jHandler extends AbstractHandler {
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 				int[] bugNum = {26, 133, 65, 106, 38, 27};
 				
+				String config = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
+				String prefix = config.substring(0, config.indexOf(projects[0]));
+				
 				for(int i=0; i<projects.length; i++) {
-					String buggyPath = "/mnt/linyun/bug_code/" + projects[i] + "/" + bugNum[i] + "/bug";
-					String fixPath = "/mnt/linyun/bug_code/" + projects[i] + "/" + bugNum[i] + "/fix";
+					String buggyPath = prefix + projects[i] + "/" + bugNum[i] + "/bug";
+					String fixPath = prefix + projects[i] + "/" + bugNum[i] + "/fix";
 					TrialGenerator generator = new TrialGenerator();
 					List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, false);
 					
