@@ -14,12 +14,14 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import microbat.Activator;
 import microbat.model.trace.Trace;
 import microbat.util.Settings;
 import tregression.EmpiricalTrial;
 import tregression.SimulationFailException;
 import tregression.SimulatorWithCompilcatedModification;
 import tregression.model.PairList;
+import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.PathConfiguration;
 import tregression.separatesnapshots.RunningResult;
@@ -40,8 +42,8 @@ public class SeparateVersionHandler extends AbstractHandler{
 				TraceCollector collector = new TraceCollector();
 				boolean isReuse = true;
 				
-				PathConfiguration.buggyPath = "/home/linyun/doc/bug_repo/Chart/1/bug";
-				PathConfiguration.fixPath = "/home/linyun/doc/bug_repo/Chart/1/fix";
+				PathConfiguration.buggyPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
+				PathConfiguration.fixPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CORRECT_PATH);
 				
 				try {
 					TestCase tc = retrieveD4jFailingTestCase(PathConfiguration.buggyPath);
