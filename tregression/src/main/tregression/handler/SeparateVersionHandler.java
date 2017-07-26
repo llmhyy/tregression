@@ -26,7 +26,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 			protected IStatus run(IProgressMonitor monitor) {
 				String buggyPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String fixPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CORRECT_PATH);
-				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, true);
+				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, true, true);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {

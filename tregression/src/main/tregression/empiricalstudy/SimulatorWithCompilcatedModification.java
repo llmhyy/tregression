@@ -178,7 +178,8 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 					checkingList.add(operation);
 					
-					TraceNode dataDom = buggyTrace.getStepVariableTable().get(readVar.getVarID()).getProducers().get(0);
+					TraceNode dataDom = buggyTrace.findDataDominator(currentNode, readVar);
+					
 					currentNode = dataDom;
 					
 				}
@@ -190,7 +191,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 					checkingList.add(operation);
 					
-					TraceNode dataDom = buggyTrace.getStepVariableTable().get(readVar.getVarID()).getProducers().get(0);
+					TraceNode dataDom = buggyTrace.findDataDominator(currentNode, readVar);
 					currentNode = dataDom;
 					
 					wrongReadVar = null;

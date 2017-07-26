@@ -86,7 +86,7 @@ public class RootCauseFinder {
 				for(VarValue readVar: changeType.getWrongVariableList()){
 					trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 					
-					TraceNode dataDom = trace.getStepVariableTable().get(readVar.getVarID()).getProducers().get(0); 
+					TraceNode dataDom = trace.findDataDominator(step, readVar); 
 					addWorkNode(workList, dataDom, stepW.isOnBefore);
 					
 					TraceNode matchedStep = changeType.getMatchingStep();
@@ -97,7 +97,7 @@ public class RootCauseFinder {
 					VarValue matchedVar = MatchStepFinder.findMatchVariable(readVar, matchedStep);
 					
 					if(matchedVar != null) {
-						TraceNode otherDataDom = trace.getStepVariableTable().get(matchedVar.getVarID()).getProducers().get(0);
+						TraceNode otherDataDom = trace.findDataDominator(matchedStep, matchedVar);
 						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);						
 					}
 				}
