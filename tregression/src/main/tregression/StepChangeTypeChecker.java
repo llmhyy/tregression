@@ -114,37 +114,41 @@ public class StepChangeTypeChecker {
 			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList) {
 		
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
-		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, thisTrace, thisTrace);
+		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		
 		for(VarValue thatVar: thatStep.getReadVariables()){
 			if(thatVar.getVarName().equals(thisVar.getVarName())){
 				String thisStringValue = (thatVar.getStringValue()==null)?"null":thatVar.getStringValue();
 				String thatStringValue = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
 				
-				if((thatVar instanceof ReferenceValue) && (thisVar instanceof ReferenceValue)){
-					TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
-					TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
-					
-					if(isOnBeforeTrace) {
-						TraceNodePair pair = pairList.findByAfterNode(thatDom);
-						if(pair != null) {
-							return pair.getBeforeNode().getOrder()==thisDom.getOrder();
-						}
-						return false;
-					}
-					else {
-						TraceNodePair pair = pairList.findByAfterNode(thisDom);
-						if(pair != null) {
-							return pair.getBeforeNode().getOrder()==thatDom.getOrder();
-						}
-						return false;
-					}
-				}
-				else {
-					if(thisStringValue.equals(thatStringValue)){
-						return true;
-					}					
-				}
+				if(thisStringValue.equals(thatStringValue)){
+					return true;
+				}	
+				
+//				if((thatVar instanceof ReferenceValue) && (thisVar instanceof ReferenceValue)){
+//					TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
+//					TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
+//					
+//					if(isOnBeforeTrace) {
+//						TraceNodePair pair = pairList.findByAfterNode(thatDom);
+//						if(pair != null) {
+//							return pair.getBeforeNode().getOrder()==thisDom.getOrder();
+//						}
+//						return false;
+//					}
+//					else {
+//						TraceNodePair pair = pairList.findByAfterNode(thisDom);
+//						if(pair != null) {
+//							return pair.getBeforeNode().getOrder()==thatDom.getOrder();
+//						}
+//						return false;
+//					}
+//				}
+//				else {
+//					if(thisStringValue.equals(thatStringValue)){
+//						return true;
+//					}					
+//				}
 			}
 		}
 		return false;
