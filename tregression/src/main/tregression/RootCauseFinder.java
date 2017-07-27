@@ -74,13 +74,13 @@ public class RootCauseFinder {
 		while(!workList.isEmpty()){
 			TraceNodeW stepW = workList.remove(0);
 			TraceNode step = stepW.node;
-//			boolean isOnBeforeTrace = stepW.isOnBefore;
 			
 			StepChangeType changeType = typeChecker.getType(step, stepW.isOnBefore, pairList, matcher);
 			Trace trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 			
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
+				System.currentTimeMillis();
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
 				for(VarValue readVar: changeType.getWrongVariableList()){
