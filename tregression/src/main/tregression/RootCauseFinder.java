@@ -38,11 +38,11 @@ public class RootCauseFinder {
 	private List<TraceNode> regressionNodeList = new ArrayList<>();
 	private List<TraceNode> correctNodeList = new ArrayList<>();
 	
-	public TraceNode retrieveRootCause(PairList pairList, DiffMatcher matcher, Trace buggyTrace) {
+	public TraceNode retrieveRootCause(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
 		Collections.sort(regressionNodeList, new TraceNodeOrderComparator());
 		Collections.sort(correctNodeList, new TraceNodeOrderComparator());
 		
-		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker();
+		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 		
 		for(TraceNode node: regressionNodeList) {
 			StepChangeType type = typeChecker.getType(node, true, pairList, matcher);
@@ -68,7 +68,7 @@ public class RootCauseFinder {
 		List<TraceNodeW> workList = new ArrayList<>();
 		workList.add(new TraceNodeW(observedFaultNode, true));
 		
-		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker();
+		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 		
 		
 		while(!workList.isEmpty()){
@@ -287,22 +287,6 @@ public class RootCauseFinder {
 			}
 		}
 		return null;
-	}
-
-	private TraceNode findLatestNode(List<TraceNode> visitedNodeList) {
-		TraceNode node = null;
-		for(TraceNode n: visitedNodeList){
-			if(node == null){
-				node = n;
-			}
-			else{
-				if(n.getOrder()<node.getOrder()){
-					node = n;
-				}
-			}
-		}
-		
-		return node;
 	}
 
 	private void addWorkNode(List<TraceNodeW> workList, TraceNode node, boolean isOnBeforeTrace) {

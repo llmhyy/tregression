@@ -102,7 +102,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 	private List<EmpiricalTrial> startSimulation(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace,
 			PairList pairList, DiffMatcher matcher, RootCauseFinder rootCauseFinder) {
 
-		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker();
+		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TraceNode currentNode = observedFaultNode;
 		
@@ -113,8 +113,8 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		while (!stack.isEmpty()){
 			DebuggingState state = stack.pop();
 			
-			EmpiricalTrial trial = workSingleTrial(buggyTrace, pairList, matcher, rootCauseFinder, typeChecker,
-					currentNode, stack, visitedStates, state);
+			EmpiricalTrial trial = workSingleTrial(buggyTrace, correctTrace, pairList, matcher, 
+					rootCauseFinder, typeChecker, currentNode, stack, visitedStates, state);
 			trials.add(trial);
 		} 
 		
@@ -124,7 +124,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 	/**
 	 * This method returns a debugging trial, and backup all the new debugging state in the input stack.
 	 * 
-	 * visitedStates records all the backed up debugging state so that we do not repetatively debug the same step with
+	 * visitedStates records all the backed up debugging state so that we do not repetitively debug the same step with
 	 * the same wrong variable twice.
 	 * 
 	 * stack is used to backup the new debugging state.
@@ -140,7 +140,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 	 * @param state
 	 * @return
 	 */
-	private EmpiricalTrial workSingleTrial(Trace buggyTrace, PairList pairList, DiffMatcher matcher,
+	private EmpiricalTrial workSingleTrial(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
 			RootCauseFinder rootCauseFinder, StepChangeTypeChecker typeChecker,
 			TraceNode currentNode, Stack<DebuggingState> stack, Set<DebuggingState> visitedStates,
 			DebuggingState state) {
@@ -151,7 +151,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		List<StepOperationTuple> checkingList = state.checkingList;
 		currentNode = state.currentNode;
 		
-		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace);
+		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
 		
 		/**
 		 * start debugging
