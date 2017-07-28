@@ -80,7 +80,7 @@ public class StepDetailUI {
 					suspiciousNode = currentNode.findDataDominator(readVar);
 				}
 				else if(controlButton.getSelection()){
-					suspiciousNode = currentNode.findAllControlDominatees().get(0);
+					suspiciousNode = currentNode.getControlDominator();
 				}
 				
 				if(suspiciousNode != null){
