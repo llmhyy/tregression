@@ -178,6 +178,7 @@ public class StepChangeTypeChecker {
 					int end = start + chunk.getChunkLengthInTarget() - 1;
 					int type = findLineChange(step, chunk, start, end, isOnBeforeTrace);
 					if(type == StepChangeType.SRC){
+						System.currentTimeMillis();
 						return true;
 					}
 					else if(type == -1){

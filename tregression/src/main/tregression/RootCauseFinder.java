@@ -75,6 +75,10 @@ public class RootCauseFinder {
 			TraceNodeW stepW = workList.remove(0);
 			TraceNode step = stepW.node;
 			
+			if(step.getOrder()==31816) {
+				System.currentTimeMillis();
+			}
+			
 			StepChangeType changeType = typeChecker.getType(step, stepW.isOnBefore, pairList, matcher);
 			Trace trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 			
@@ -114,7 +118,7 @@ public class RootCauseFinder {
 					System.currentTimeMillis();
 				}
 				
-				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(controlDom.getBreakPoint(), !stepW.isOnBefore);
+				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(step.getBreakPoint(), !stepW.isOnBefore);
 				
 				TraceNode otherControlDom = findResponsibleControlDomOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
 				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);

@@ -349,8 +349,7 @@ public class DiffMatcher {
 		}
 		else{
 			List<Integer> lines = diff.getTargetToSourceMap().get(breakPoint.getLineNumber());
-			ClassLocation location = 
-					new ClassLocation(diff.getSourceDeclaringCompilationUnit(), null, lines.get(0));
+			ClassLocation location = new ClassLocation(diff.getSourceDeclaringCompilationUnit(), null, lines.get(0));
 			return location;
 //			for(DiffChunk chunk: diff.getChunks()){
 //				int startLine = chunk.getStartLineInSource();
