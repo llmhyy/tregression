@@ -21,6 +21,10 @@ public class TrialGenerator {
 	private RunningResult cachedBuggyRS;
 	private RunningResult cachedCorrectRS;
 	
+	private DiffMatcher cachedDiffMatcher;
+	private PairList cachedPairList;
+	
+	
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, boolean requireVisualization){
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TraceCollector collector = new TraceCollector();
@@ -28,11 +32,20 @@ public class TrialGenerator {
 		try {
 			TestCase tc = retrieveD4jFailingTestCase(buggyPath);
 			
+			long time1 = 0;
+			long time2 = 0;
+			
 			RunningResult buggyRS;
 			RunningResult correctRs;
+			
+			DiffMatcher diffMatcher;
+			PairList pairList;
+			
 			if(cachedBuggyRS!=null && cachedCorrectRS!=null && isReuse){
 				buggyRS = cachedBuggyRS;
 				correctRs = cachedCorrectRS;
+				diffMatcher = cachedDiffMatcher;
+				pairList = cachedPairList;
 			}
 			else{
 				Settings.compilationUnitMap.clear();
@@ -43,14 +56,23 @@ public class TrialGenerator {
 				
 				cachedBuggyRS = buggyRS;
 				cachedCorrectRS = correctRs;
+				
+				System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
+						+ ", correct trace length: " + correctRs.getRunningTrace().size());
+				time1 = System.currentTimeMillis();
+				diffMatcher = new DiffMatcher("source", "tests", buggyPath, fixPath);
+				diffMatcher.matchCode();
+				
+				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+				pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
+						correctRs.getRunningTrace(), diffMatcher); 
+				time2 = System.currentTimeMillis();
+				System.out.println("finish matching trace, taking " + (time2-time1)/1000 + "s");
+				
+				cachedDiffMatcher = diffMatcher;
+				cachedPairList = pairList;
 			}
 			
-			DiffMatcher diffMatcher = new DiffMatcher("source", "tests", buggyPath, fixPath);
-			diffMatcher.matchCode();
-			
-			ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-			PairList pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
-					correctRs.getRunningTrace(), diffMatcher); 
 			
 			Trace buggyTrace = buggyRS.getRunningTrace();
 			Trace correctTrace = correctRs.getRunningTrace();
@@ -60,10 +82,14 @@ public class TrialGenerator {
 				visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
 			}
 			
+			time1 = System.currentTimeMillis();
+			System.out.println("start simulating debugging...");
 			SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
 			simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 			
 			trials = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
+			time2 = System.currentTimeMillis();
+			System.out.println("finish simulating debugging, taking " + (time2-time1)/1000 + "s");
 			
 		} catch (IOException | SimulationFailException e) {
 			e.printStackTrace();
