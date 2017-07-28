@@ -97,7 +97,12 @@ public class TrialRecorder {
 		row.createCell(1).setCellValue(bugID);
 		row.createCell(2).setCellValue(EmpiricalTrial.getTypeStringName(trial.getBugType()));
 		row.createCell(3).setCellValue(trial.getOverskipLength());
-		row.createCell(4).setCellValue(trial.getRootcauseNode().getOrder());
+		
+		int order = -1;
+		if(trial.getRootcauseNode()!=null) {
+			order = trial.getRootcauseNode().getOrder();
+		}
+		row.createCell(4).setCellValue(order);
 		
 		StringBuffer buf = new StringBuffer();
 		for(StepOperationTuple t: trial.getCheckList()) {
