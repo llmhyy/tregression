@@ -90,11 +90,11 @@ public class StepPropertyView extends ViewPart {
 	
 	public void refresh(TraceNode correctNode, TraceNode buggyNode){
 		
-		if(buggyDetailUI != null){
+		if(buggyDetailUI != null && buggyNode != null){
 			buggyDetailUI.refresh(buggyNode);
 		}
 		
-		if(correctDetailUI != null){
+		if(correctDetailUI != null && correctNode != null){
 			correctDetailUI.refresh(correctNode);
 		}
 	}
