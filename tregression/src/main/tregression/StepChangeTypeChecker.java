@@ -5,11 +5,9 @@ import java.util.List;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
-import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
