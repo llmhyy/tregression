@@ -177,9 +177,9 @@ public class TraceNodeVariableSimilarityComparator implements TraceNodeSimilarit
 				
 				VarValue vv = node.getProgramState().findVarValue(varID);
 				if(vv != null){
-					List<VarValue> retrievedChildren = vv.getAllDescedentChildren();
+					//List<VarValue> retrievedChildren = vv.getAllDescedentChildren();
 					
-					MicroBatUtil.assignWrittenIdentifier(retrievedChildren, node);
+					//MicroBatUtil.assignWrittenIdentifier(retrievedChildren, node);
 					
 					refVar.setChildren(vv.getChildren());
 				}				
