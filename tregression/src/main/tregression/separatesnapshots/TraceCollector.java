@@ -83,7 +83,19 @@ public class TraceCollector {
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
 		for(BreakPoint point: executingStatements){
-			point.setLocationPrefix(appClassPath.getSoureCodePath());
+			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
+			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
+			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
+			
+			if(new File(sourcePath).exists()) {
+				point.setFullJavaFilePath(sourcePath);
+			}
+			else if(new File(testPath).exists()) {
+				point.setFullJavaFilePath(testPath);
+			}
+			else {
+				System.err.println("cannot find the source code file for " + point);
+			}
 		}
 		
 		long t1 = System.currentTimeMillis();

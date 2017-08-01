@@ -1,5 +1,8 @@
 package tregression.tracematch;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,11 +104,20 @@ public class IndexTreeMacher implements Matcher {
 
 	private double sim(IndexTreeNode itNodeBefore, IndexTreeNode itNodeAfter) {
 		BreakPoint pointBefore = itNodeBefore.getBreakPoint();
-		ASTNode nodeBefore = parseASTNodeInBreakpoint(itNodeBefore, pointBefore);
-
-		System.currentTimeMillis();
-		
 		BreakPoint pointAfter = itNodeAfter.getBreakPoint();
+		
+		try {
+			String textBefore = Files.readAllLines(Paths.get(pointBefore.getFullJavaFilePath())).get(pointBefore.getLineNumber());
+			String textAfter = Files.readAllLines(Paths.get(pointAfter.getFullJavaFilePath())).get(pointAfter.getLineNumber());
+			
+			if(textBefore.equals(textAfter)) {
+				return 1;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		ASTNode nodeBefore = parseASTNodeInBreakpoint(itNodeBefore, pointBefore);
 		ASTNode nodeAfter = parseASTNodeInBreakpoint(itNodeAfter, pointAfter);
 		
 		if(nodeBefore.getNodeType()==nodeAfter.getNodeType()){
@@ -120,10 +132,8 @@ public class IndexTreeMacher implements Matcher {
 	private ASTNode parseASTNodeInBreakpoint(IndexTreeNode itNodeBefore, BreakPoint pointBefore) {
 		String compilationUnitName = itNodeBefore.getTraceNode().getDeclaringCompilationUnitName();
 		
-		String sourceFilePath = pointBefore.getLocationPrefix();
-		String testFilePath = pointBefore.getLocationPrefix().replace("source", "tests");
-		
-		CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(sourceFilePath, testFilePath, compilationUnitName);
+		CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(pointBefore.getFullJavaFilePath(), 
+				compilationUnitName);
 		ASTNode node = findSpecificNode(cu, pointBefore);
 		
 		return node;

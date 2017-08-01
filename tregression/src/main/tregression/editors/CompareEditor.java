@@ -18,7 +18,6 @@ import org.eclipse.swt.custom.LineStyleEvent;
 import org.eclipse.swt.custom.LineStyleListener;
 import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
@@ -267,7 +266,7 @@ public class CompareEditor extends EditorPart {
 		}
 		
 		for(DiffChunk chunk: diff.getChunks()){
-			int currentLine = chunk.getStartLineInSource();
+			int currentLine = chunk.getStartLineInTarget();
 			for(LineChange line: chunk.getChangeList()){
 				if(line.getLineContent().startsWith("+")){
 					StyleRange range = new StyleRange();
