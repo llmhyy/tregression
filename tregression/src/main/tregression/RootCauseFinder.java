@@ -113,7 +113,7 @@ public class RootCauseFinder {
 				
 				trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
 				
-				if(controlDom.getOrder()==322) {
+				if(controlDom!=null && controlDom.getOrder()==322) {
 					System.currentTimeMillis();
 					System.currentTimeMillis();
 				}
