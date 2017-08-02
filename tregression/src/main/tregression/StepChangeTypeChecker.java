@@ -1,10 +1,12 @@
 package tregression;
 
+import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
@@ -139,10 +141,22 @@ public class StepChangeTypeChecker {
 		
 		
 		for(VarValue thatVar: thatStep.getReadVariables()){
-			if (thatVar.isTheSameWith(thisVar)) {
-				return true;
+			if (thatVar.getVarName().equals(thisVar.getVarName())) {
+				if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
+					ReferenceValue thisRefVar = (ReferenceValue)thisVar;
+					ReferenceValue thatRefVar = (ReferenceValue)thatVar;
+					
+					return thisRefVar.getStringContainingAllChildren().equals(thatRefVar.getStringContainingAllChildren());
+				}
+				else {
+					String thisString = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
+					String thatString = (thatVar.getStringValue()==null)?"null":thatVar.getStringValue();
+					
+					return thisString.equals(thatString);
+				}
 			}
 		}
+		
 		return false;
 	}
 
