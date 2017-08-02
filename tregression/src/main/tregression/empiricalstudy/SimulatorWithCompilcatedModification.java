@@ -47,7 +47,8 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		if (!allWrongNodeMap.isEmpty()) {
 			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
 			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
-			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
+			observedFaultNode = wrongNodeList.get(0);
+//			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
 		}
 	}
 
