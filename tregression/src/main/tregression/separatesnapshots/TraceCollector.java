@@ -1,34 +1,37 @@
 package tregression.separatesnapshots;
 
 import java.io.File;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import sav.commons.TestConfiguration;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.TraceModelConstructor;
+import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.junit.TestCaseAnalyzer;
 import tregression.junit.TestCaseRunner;
 
 public class TraceCollector {
-	public AppJavaClassPath initialize(String workingDir, String testClass, String testMethod){
+	public AppJavaClassPath initialize(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config){
 		AppJavaClassPath appClassPath = new AppJavaClassPath();
 		
-		String testTargetPath = workingDir + File.separator + "build-tests";
-		String codeTargetPath = workingDir + File.separator + "build";
+		String testTargetPath = workingDir + File.separator + config.bytecodeTestFolder;
+		String codeTargetPath = workingDir + File.separator + config.bytecodeSourceFolder;
 		
 		appClassPath.addClasspath(testTargetPath);
 		appClassPath.addClasspath(codeTargetPath);
 		
-		String sourceCodePath = workingDir + File.separator + "source";
+		List<String> libJars = findLibJars(workingDir);
+		for(String libJar: libJars) {
+			appClassPath.addClasspath(libJar);
+		}
+		
+		String sourceCodePath = workingDir + File.separator + config.srcSourceFolder;
 		appClassPath.setSourceCodePath(sourceCodePath);
 		
-		String testCodePath = workingDir + File.separator + "tests";
+		String testCodePath = workingDir + File.separator + config.srcTestFolder;
 		appClassPath.setTestCodePath(testCodePath);
 		
 		/**
@@ -72,9 +75,25 @@ public class TraceCollector {
 		return appClassPath;
 	}
 	
-	public RunningResult run(String workingDir, String testClass, String testMethod){
+	private List<String> findLibJars(String workingDir) {
+		List<String> libJars = new ArrayList<>();
 		
-		AppJavaClassPath appClassPath = initialize(workingDir, testClass, testMethod);
+		String fileString = workingDir + File.separator + "lib";
+		File file = new File(fileString);
+		if(file.exists() && file.isDirectory()) {
+			for(File childFile: file.listFiles()) {
+				String childString = childFile.getAbsolutePath();
+				if (childString.endsWith("jar")) {
+					libJars.add(childString);
+				}
+			}
+		}
+		return libJars;
+	}
+
+	public RunningResult run(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config){
+		
+		AppJavaClassPath appClassPath = initialize(workingDir, testClass, testMethod, config);
 		
 		TestCaseRunner checker = new TestCaseRunner();
 		checker.checkValidity(appClassPath);
