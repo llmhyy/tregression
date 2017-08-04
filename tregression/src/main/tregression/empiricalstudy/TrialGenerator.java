@@ -25,7 +25,8 @@ public class TrialGenerator {
 	private PairList cachedPairList;
 	
 	
-	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, boolean requireVisualization){
+	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, 
+			boolean requireVisualization, Defects4jProjectConfig config){
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TraceCollector collector = new TraceCollector();
 		
@@ -49,10 +50,10 @@ public class TrialGenerator {
 			}
 			else{
 				Settings.compilationUnitMap.clear();
-				buggyRS = collector.run(buggyPath, tc.testClass, tc.testMethod);
+				buggyRS = collector.run(buggyPath, tc.testClass, tc.testMethod, config);
 				
 				Settings.compilationUnitMap.clear();
-				correctRs = collector.run(fixPath, tc.testClass, tc.testMethod);
+				correctRs = collector.run(fixPath, tc.testClass, tc.testMethod, config);
 				
 				cachedBuggyRS = buggyRS;
 				cachedCorrectRS = correctRs;
