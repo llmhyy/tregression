@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
+import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.preference.TregressionPreference;
@@ -26,7 +27,12 @@ public class SeparateVersionHandler extends AbstractHandler{
 			protected IStatus run(IProgressMonitor monitor) {
 				String buggyPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String fixPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CORRECT_PATH);
-				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, true, true);
+				
+				int startIndex = buggyPath.indexOf("/", 20);
+				String projectName = buggyPath.substring(startIndex+1, buggyPath.indexOf("/", startIndex+1));
+				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName);
+				
+				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, true, config);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {
