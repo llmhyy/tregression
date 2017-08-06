@@ -12,20 +12,21 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
+import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialRecorder;
 import tregression.preference.TregressionPreference;
 
 public class AllDefects4jHandler extends AbstractHandler {
-
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-				int skippedNum = 24;
+				int skippedNum = 26;
 				
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 				int[] bugNum = {26, 133, 65, 106, 38, 27};
@@ -48,7 +49,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 						System.out.println("analyzing the " + j + "th bug in " + projects[i] + " project.");
 						
 						TrialGenerator generator = new TrialGenerator();
-						List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, false);
+						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i]);
+						List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, false, d4jConfig);
 						
 						TrialRecorder recorder;
 						try {
@@ -76,5 +78,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 		
 		return null;
 	}
+	
+	
 
 }
