@@ -61,7 +61,7 @@ public class TrialGenerator {
 				System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
 						+ ", correct trace length: " + correctRs.getRunningTrace().size());
 				time1 = System.currentTimeMillis();
-				diffMatcher = new DiffMatcher("source", "tests", buggyPath, fixPath);
+				diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
 				diffMatcher.matchCode();
 				
 				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
