@@ -1,8 +1,12 @@
 package tregression.separatesnapshots;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
@@ -75,7 +79,7 @@ public class TraceCollector {
 		return appClassPath;
 	}
 	
-	private List<String> findLibJars(String workingDir) {
+	public List<String> findLibJars(String workingDir) {
 		List<String> libJars = new ArrayList<>();
 		
 		String fileString = workingDir + File.separator + "lib";
@@ -95,7 +99,13 @@ public class TraceCollector {
 		
 		AppJavaClassPath appClassPath = initialize(workingDir, testClass, testMethod, config);
 		
+		List<String> libJars = findLibJars(workingDir);
+		List<String> exlcudes = extractExcludeFiles("", libJars);
+		
 		TestCaseRunner checker = new TestCaseRunner();
+		checker.addExcludeList(exlcudes);
+		System.currentTimeMillis();
+		
 		checker.checkValidity(appClassPath);
 		
 		TraceModelConstructor constructor = new TraceModelConstructor();
@@ -125,5 +135,39 @@ public class TraceCollector {
 		
 		RunningResult rs = new RunningResult(trace, executingStatements);
 		return rs;
+	}
+
+	private List<String> extractExcludeFiles(String parentDirectory, List<String> libJars) {
+		List<String> excludes = new ArrayList<>();
+		for(String libJar: libJars) {
+			File file = new File(libJar);
+			try {
+				JarFile jarFile = new JarFile(file);
+				Enumeration<JarEntry> enumeration = jarFile.entries();
+				while(enumeration.hasMoreElements()) {
+					JarEntry entry = enumeration.nextElement();
+					List<String> subExcludes = findSubExcludes(parentDirectory, entry);
+					excludes.addAll(subExcludes);
+				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		return excludes;
+	}
+
+	private List<String> findSubExcludes(String parentDirectory, JarEntry entry) {
+		List<String> subExcludes = new ArrayList<>();
+		
+		String classFilePath = entry.getName();
+		if (classFilePath.endsWith(".class")) {
+			classFilePath = classFilePath.substring(0, classFilePath.indexOf(".class"));
+			String className = classFilePath.replace(File.separatorChar, '.');
+			subExcludes.add(className);
+		}
+		
+		return subExcludes;
 	}
 }
