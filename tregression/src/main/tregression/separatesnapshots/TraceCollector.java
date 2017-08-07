@@ -30,6 +30,13 @@ public class TraceCollector {
 		List<String> libJars = findLibJars(workingDir);
 		for(String libJar: libJars) {
 			appClassPath.addClasspath(libJar);
+			appClassPath.addExternalLibPath(libJar);
+		}
+		
+		List<String> extraLibs = findLibJars(workingDir+File.separator+config.buildFolder);
+		for(String lib: extraLibs) {
+			appClassPath.addClasspath(lib);
+			appClassPath.addExternalLibPath(lib);
 		}
 		
 		String sourceCodePath = workingDir + File.separator + config.srcSourceFolder;
@@ -99,7 +106,7 @@ public class TraceCollector {
 		
 		AppJavaClassPath appClassPath = initialize(workingDir, testClass, testMethod, config);
 		
-		List<String> libJars = findLibJars(workingDir);
+		List<String> libJars = appClassPath.getExternalLibPaths();
 		List<String> exlcudes = extractExcludeFiles("", libJars);
 		
 		TestCaseRunner checker = new TestCaseRunner();
