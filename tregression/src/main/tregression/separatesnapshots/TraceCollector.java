@@ -10,6 +10,7 @@ import java.util.jar.JarFile;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
+import microbat.util.MicroBatUtil;
 import sav.commons.TestConfiguration;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.TraceModelConstructor;
@@ -107,7 +108,7 @@ public class TraceCollector {
 		AppJavaClassPath appClassPath = initialize(workingDir, testClass, testMethod, config);
 		
 		List<String> libJars = appClassPath.getExternalLibPaths();
-		List<String> exlcudes = extractExcludeFiles("", libJars);
+		List<String> exlcudes = MicroBatUtil.extractExcludeFiles("", libJars);
 		
 		TestCaseRunner checker = new TestCaseRunner();
 		checker.addExcludeList(exlcudes);
@@ -144,37 +145,5 @@ public class TraceCollector {
 		return rs;
 	}
 
-	private List<String> extractExcludeFiles(String parentDirectory, List<String> libJars) {
-		List<String> excludes = new ArrayList<>();
-		for(String libJar: libJars) {
-			File file = new File(libJar);
-			try {
-				JarFile jarFile = new JarFile(file);
-				Enumeration<JarEntry> enumeration = jarFile.entries();
-				while(enumeration.hasMoreElements()) {
-					JarEntry entry = enumeration.nextElement();
-					List<String> subExcludes = findSubExcludes(parentDirectory, entry);
-					excludes.addAll(subExcludes);
-				}
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
-		}
-		return excludes;
-	}
-
-	private List<String> findSubExcludes(String parentDirectory, JarEntry entry) {
-		List<String> subExcludes = new ArrayList<>();
-		
-		String classFilePath = entry.getName();
-		if (classFilePath.endsWith(".class")) {
-			classFilePath = classFilePath.substring(0, classFilePath.indexOf(".class"));
-			String className = classFilePath.replace(File.separatorChar, '.');
-			subExcludes.add(className);
-		}
-		
-		return subExcludes;
-	}
+	
 }

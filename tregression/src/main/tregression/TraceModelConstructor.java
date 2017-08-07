@@ -22,6 +22,7 @@ import sav.common.core.SavException;
 import sav.commons.TestConfiguration;
 import sav.strategies.dto.AppJavaClassPath;
 
+@SuppressWarnings("deprecation")
 public class TraceModelConstructor {
 	/**
 	 * Take care of project name, buggy class name, buggy line number, ...
@@ -30,8 +31,8 @@ public class TraceModelConstructor {
 		//TODO
 	}
 	
-	public Trace constructTraceModel(AppJavaClassPath appClassPath, List<BreakPoint> executingStatements, int stepNum, boolean isForEvaluation)
-			throws TimeoutException{
+	public Trace constructTraceModel(AppJavaClassPath appClassPath, List<BreakPoint> executingStatements, 
+			int stepNum, boolean isForEvaluation) throws TimeoutException{
 		
 		setup();
 		
