@@ -1,12 +1,8 @@
 package tregression.separatesnapshots;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
@@ -111,14 +107,15 @@ public class TraceCollector {
 		List<String> exlcudes = MicroBatUtil.extractExcludeFiles("", libJars);
 		
 		TestCaseRunner checker = new TestCaseRunner();
-		checker.addExcludeList(exlcudes);
-		System.currentTimeMillis();
 		
-		checker.checkValidity(appClassPath);
+//		checker.checkValidity(appClassPath);
 		
 		TraceModelConstructor constructor = new TraceModelConstructor();
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
+		checker.addLibExcludeList(exlcudes);
+		System.out.println("There are " + checker.getExecutionOrderList().size() + " steps for this trace.");
+		
 		for(BreakPoint point: executingStatements){
 			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
 			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
