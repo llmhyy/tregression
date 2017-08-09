@@ -31,7 +31,7 @@ public class TraceModelConstructor {
 		//TODO
 	}
 	
-	public Trace constructTraceModel(AppJavaClassPath appClassPath, List<BreakPoint> executingStatements, 
+	public Trace constructTraceModel(AppJavaClassPath appClassPath, List<BreakPoint> executingStatements, List<BreakPoint> executionOrderList,
 			int stepNum, boolean isForEvaluation) throws TimeoutException{
 		
 		setup();
@@ -62,7 +62,7 @@ public class TraceModelConstructor {
 		/** 4. extract runtime variables*/
 		tcExecutor.setConfig(appClassPath);
 		try {
-			tcExecutor.run(runningStatements, 
+			tcExecutor.run(runningStatements, executionOrderList,
 					new SubProgressMonitor(new NullProgressMonitor(), 0), stepNum, true);
 		} catch (SavException e) {
 			e.printStackTrace();

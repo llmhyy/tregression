@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.hssf.record.PageBreakRecord.Break;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
@@ -153,13 +154,14 @@ public class TestCaseAnalyzer {
 			TestCaseRunner checker = new TestCaseRunner();
 			
 			List<BreakPoint> executingStatements = checker.collectBreakPoints(testcaseConfig, true);
+			List<BreakPoint> executionOrderList = checker.getExecutionOrderList();
 			if(checker.isOverLong()){
 				return;
 			}
 			
 			System.out.println("The correct consists of " + checker.getStepNum() + " steps");
 			correctTrace = new TraceModelConstructor().
-					constructTraceModel(testcaseConfig, executingStatements, checker.getStepNum(), true);
+					constructTraceModel(testcaseConfig, executingStatements, executionOrderList, checker.getStepNum(), true);
 			
 			cachedCorrectTrace = correctTrace;
 			cachedMutatedTrace = killingMutatantTrace;
@@ -250,6 +252,7 @@ public class TestCaseAnalyzer {
 		if(checker.isPassingTest()){
 			System.out.println(testCaseName + " is a passed test case");
 			List<BreakPoint> executingStatements = checker.collectBreakPoints(testcaseConfig, true);
+			List<BreakPoint> executionOrderList = checker.getExecutionOrderList();
 			if(checker.isOverLong()){
 				return false;
 			}
@@ -293,7 +296,7 @@ public class TestCaseAnalyzer {
 							}
 							
 							EvaluationInfo evalInfo = runEvaluationForSingleTrial(tobeMutatedClass, mutationFile, 
-									testcaseConfig, line, testCaseName, correctTrace, executingStatements, 
+									testcaseConfig, line, testCaseName, correctTrace, executingStatements, executionOrderList,
 									reporter, tmpTrial, unclearRates, checker.getStepNum(), optionSearchLimit);
 							correctTrace = evalInfo.correctTrace;
 							
@@ -343,7 +346,7 @@ public class TestCaseAnalyzer {
 	}
 	
 	private EvaluationInfo runEvaluationForSingleTrial(String tobeMutatedClass, File mutationFile, AppJavaClassPath testcaseConfig, 
-			int line, String testCaseName, Trace correctTrace, List<BreakPoint> executingStatements, 
+			int line, String testCaseName, Trace correctTrace, List<BreakPoint> executingStatements, List<BreakPoint> executionOrderList,
 			ExcelReporter reporter, Trial tmpTrial, double[] unclearRates, int stepNum, int optionSearchLimit) throws JavaModelException {
 		try {
 			MutateInfo mutateInfo = 
@@ -366,7 +369,7 @@ public class TestCaseAnalyzer {
 				if(null == correctTrace){
 					System.out.println("The correct trace of " + stepNum + " steps is to be generated for " + testCaseName);
 					correctTrace = new TraceModelConstructor().
-							constructTraceModel(testcaseConfig, executingStatements, stepNum, true);
+							constructTraceModel(testcaseConfig, executingStatements, executionOrderList, stepNum, true);
 				}
 				
 				ClassLocation mutatedLocation = new ClassLocation(tobeMutatedClass, null, line);
@@ -470,6 +473,7 @@ public class TestCaseAnalyzer {
 				TraceModelConstructor constructor = new TraceModelConstructor();
 				
 				List<BreakPoint> executingStatements = checker.collectBreakPoints(testcaseConfig, true);
+				List<BreakPoint> executionOrderList = checker.getExecutionOrderList();
 				System.currentTimeMillis();
 				
 				if(checker.isOverLong()){
@@ -482,7 +486,7 @@ public class TestCaseAnalyzer {
 							" steps is to be generated for " + testMethod + " (mutation: " + mutatedFile + ")");
 					killingMutantTrace = null;
 					long t1 = System.currentTimeMillis();
-					killingMutantTrace = constructor.constructTraceModel(testcaseConfig, executingStatements, checker.getStepNum(), true);
+					killingMutantTrace = constructor.constructTraceModel(testcaseConfig, executingStatements, executionOrderList, checker.getStepNum(), true);
 					long t2 = System.currentTimeMillis();
 					int time = (int) ((t2-t1)/1000);
 					killingMutantTrace.setConstructTime(time);
