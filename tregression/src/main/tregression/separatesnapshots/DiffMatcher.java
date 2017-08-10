@@ -14,6 +14,7 @@ import java.util.List;
 
 import microbat.model.BreakPoint;
 import microbat.model.ClassLocation;
+import tregression.StepChangeType;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.DiffParser;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
@@ -35,6 +36,87 @@ public class DiffMatcher {
 		this.testFolderName = testFolderName;
 		this.buggyPath = buggyPath;
 		this.fixPath = fixPath;
+	}
+	
+	public boolean checkSourceDiff(BreakPoint breakPoint, boolean isOnBeforeTrace) {
+		if (isOnBeforeTrace) {
+			FilePairWithDiff diff = findDiffBySourceFile(breakPoint);
+			if(diff != null){
+				for (DiffChunk chunk : diff.getChunks()) {
+					int start = chunk.getStartLineInSource();
+					int end = start + chunk.getChunkLengthInSource() - 1;
+					int type = findLineChange(breakPoint, chunk, start, end, isOnBeforeTrace);
+					if(type == StepChangeType.SRC){
+						return true;
+					}
+					else if(type == -1){
+						break;
+					}
+				}
+			}
+		} else {
+			FilePairWithDiff diff = findDiffByTargetFile(breakPoint);
+			if(diff != null){
+				for (DiffChunk chunk : diff.getChunks()) {
+					int start = chunk.getStartLineInTarget();
+					int end = start + chunk.getChunkLengthInTarget() - 1;
+					int type = findLineChange(breakPoint, chunk, start, end, isOnBeforeTrace);
+					if(type == StepChangeType.SRC){
+						System.currentTimeMillis();
+						return true;
+					}
+					else if(type == -1){
+						break;
+					}
+				}
+				
+			}
+		}
+		
+		return false;
+	}
+
+	/**
+	 * return SRC if the code of step is contained in chunk and the code is a diff
+	 * return -1 if the code of step is contained in chunk and the code is not a diff
+	 * return -2 if the code of step is not contained in chunk.
+	 * 
+	 * @param step
+	 * @param chunk
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	private int findLineChange(BreakPoint breakPoint, DiffChunk chunk, int start, int end, boolean isOnBeforeTrace) {
+		int stepLineNo = breakPoint.getLineNumber();
+		if (start <= stepLineNo && stepLineNo <= end) {
+			int count = 0;
+			for (int i = 0; i < chunk.getChangeList().size(); i++) {
+				LineChange lineChange = chunk.getChangeList().get(i);
+				if(isOnBeforeTrace){
+					if(lineChange.getType() != LineChange.ADD){
+						count++;
+					}
+				}
+				else{
+					if(lineChange.getType() != LineChange.REMOVE){
+						count++;
+					}
+				}
+				
+				int currentLineNo = start + count - 1;
+				if (stepLineNo == currentLineNo) {
+					if(lineChange.getType() != LineChange.UNCHANGE){
+						return StepChangeType.SRC;
+					}
+					else{
+						return -1;
+					}
+				}
+			}
+		}
+		
+		return -2;
 	}
 	
 	private List<String> getRawDiffContent(){
