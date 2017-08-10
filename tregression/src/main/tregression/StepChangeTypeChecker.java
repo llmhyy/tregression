@@ -1,6 +1,5 @@
 package tregression;
 
-import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,8 +22,8 @@ public class StepChangeTypeChecker {
 	
 	public StepChangeTypeChecker(Trace buggyTrace, Trace correctTrace) {
 		super();
-		this.buggyTrace = buggyTrace;
-		this.correctTrace = correctTrace;
+		this.setBuggyTrace(buggyTrace);
+		this.setCorrectTrace(correctTrace);
 	}
 
 	/**
@@ -239,5 +238,21 @@ public class StepChangeTypeChecker {
 		}
 		
 		return -2;
+	}
+
+	public Trace getBuggyTrace() {
+		return buggyTrace;
+	}
+
+	public void setBuggyTrace(Trace buggyTrace) {
+		this.buggyTrace = buggyTrace;
+	}
+
+	public Trace getCorrectTrace() {
+		return correctTrace;
+	}
+
+	public void setCorrectTrace(Trace correctTrace) {
+		this.correctTrace = correctTrace;
 	}
 }
