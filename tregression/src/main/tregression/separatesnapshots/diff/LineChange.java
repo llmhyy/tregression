@@ -17,6 +17,10 @@ public class LineChange {
 		this.type = type;
 		this.lineContent = lineContent;
 	}
+	
+	public String toString() {
+		return this.lineContent;
+	}
 
 	public int getIndex() {
 		return index;
