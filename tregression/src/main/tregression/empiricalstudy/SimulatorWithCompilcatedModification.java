@@ -153,6 +153,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		currentNode = state.currentNode;
 		
 		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
+		TraceNode realcauseNode = rootCauseFinder.getRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
 		
 		/**
 		 * start debugging
@@ -164,7 +165,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 				StepOperationTuple operation = new StepOperationTuple(currentNode,
 						new UserFeedback(UserFeedback.UNCLEAR), null);
 				checkingList.add(operation);
-				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.FIND_BUG, 0, rootcauseNode, checkingList);
+				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.FIND_BUG, 0, rootcauseNode, realcauseNode, checkingList);
 				return trial;
 			} else if (changeType.getType() == StepChangeType.DAT) {
 				if(wrongReadVar == null) {
@@ -199,6 +200,9 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 				}
 			} else if (changeType.getType() == StepChangeType.CTL) {
 				TraceNode controlDom = currentNode.getControlDominator();
+				if(controlDom==null) {
+					controlDom = currentNode.getInvocationParent();
+				}
 
 				StepOperationTuple operation = new StepOperationTuple(currentNode,
 						new UserFeedback(UserFeedback.WRONG_PATH), null);
@@ -216,7 +220,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 
 				int overskipLen = checkOverskipLength(pairList, matcher, buggyTrace, rootcauseNode, checkingList);
 
-				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode,
+				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, realcauseNode,
 						checkingList);
 				return trial;
 			}

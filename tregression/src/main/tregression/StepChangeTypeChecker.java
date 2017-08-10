@@ -10,9 +10,6 @@ import microbat.model.value.VarValue;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
-import tregression.separatesnapshots.diff.DiffChunk;
-import tregression.separatesnapshots.diff.FilePairWithDiff;
-import tregression.separatesnapshots.diff.LineChange;
 
 public class StepChangeTypeChecker {
 	
@@ -50,7 +47,7 @@ public class StepChangeTypeChecker {
 			}
 		}
 		
-		boolean isSourceDiff = checkSourceDiff(step, isOnBeforeTrace, matcher);
+		boolean isSourceDiff = matcher.checkSourceDiff(step.getBreakPoint(), isOnBeforeTrace);
 		if(isSourceDiff){
 			return new StepChangeType(StepChangeType.SRC, matchedStep);
 		}
@@ -157,87 +154,6 @@ public class StepChangeTypeChecker {
 		}
 		
 		return false;
-	}
-
-	private boolean checkSourceDiff(TraceNode step, boolean isOnBeforeTrace, DiffMatcher matcher) {
-		if (isOnBeforeTrace) {
-			FilePairWithDiff diff = matcher.findDiffBySourceFile(step.getBreakPoint());
-			if(diff != null){
-				for (DiffChunk chunk : diff.getChunks()) {
-					int start = chunk.getStartLineInSource();
-					int end = start + chunk.getChunkLengthInSource() - 1;
-					int type = findLineChange(step, chunk, start, end, isOnBeforeTrace);
-					if(type == StepChangeType.SRC){
-						return true;
-					}
-					else if(type == -1){
-						break;
-					}
-				}
-			}
-		} else {
-			FilePairWithDiff diff = matcher.findDiffByTargetFile(step.getBreakPoint());
-			if(diff != null){
-				for (DiffChunk chunk : diff.getChunks()) {
-					int start = chunk.getStartLineInTarget();
-					int end = start + chunk.getChunkLengthInTarget() - 1;
-					int type = findLineChange(step, chunk, start, end, isOnBeforeTrace);
-					if(type == StepChangeType.SRC){
-						System.currentTimeMillis();
-						return true;
-					}
-					else if(type == -1){
-						break;
-					}
-				}
-				
-			}
-		}
-		
-		return false;
-	}
-
-	/**
-	 * return SRC if the code of step is contained in chunk and the code is a diff
-	 * return -1 if the code of step is contained in chunk and the code is not a diff
-	 * return -2 if the code of step is not contained in chunk.
-	 * 
-	 * @param step
-	 * @param chunk
-	 * @param start
-	 * @param end
-	 * @return
-	 */
-	private int findLineChange(TraceNode step, DiffChunk chunk, int start, int end, boolean isOnBeforeTrace) {
-		int stepLineNo = step.getBreakPoint().getLineNumber();
-		if (start <= stepLineNo && stepLineNo <= end) {
-			int count = 0;
-			for (int i = 0; i < chunk.getChangeList().size(); i++) {
-				LineChange lineChange = chunk.getChangeList().get(i);
-				if(isOnBeforeTrace){
-					if(lineChange.getType() != LineChange.ADD){
-						count++;
-					}
-				}
-				else{
-					if(lineChange.getType() != LineChange.REMOVE){
-						count++;
-					}
-				}
-				
-				int currentLineNo = start + count - 1;
-				if (stepLineNo == currentLineNo) {
-					if(lineChange.getType() != LineChange.UNCHANGE){
-						return StepChangeType.SRC;
-					}
-					else{
-						return -1;
-					}
-				}
-			}
-		}
-		
-		return -2;
 	}
 
 	public Trace getBuggyTrace() {
