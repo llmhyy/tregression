@@ -14,15 +14,18 @@ public class EmpiricalTrial {
 	private int overskipLength = 0;
 	
 	private TraceNode rootcauseNode;
+	private TraceNode realcauseNode;
 	
 	private List<StepOperationTuple> checkList = new ArrayList<>();
 
-	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, List<StepOperationTuple> checkList) {
+	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
+			TraceNode realcauseNode, List<StepOperationTuple> checkList) {
 		super();
 		this.bugType = bugType;
 		this.overskipLength = overskipLength;
 		this.rootcauseNode = rootcauseNode;
 		this.checkList = checkList;
+		this.realcauseNode = realcauseNode;
 	}
 	
 	public static String getTypeStringName(int t) {
@@ -41,7 +44,8 @@ public class EmpiricalTrial {
 		String type = (this.bugType==FIND_BUG) ? "bug_found" : "over_skip";
 		buffer.append("trial type: " + type + "\n");
 		int rootcauseOrder = (this.rootcauseNode==null)? -1 : this.rootcauseNode.getOrder();
-		buffer.append("root cause: " + rootcauseOrder + "\n");
+		buffer.append("found root cause: " + rootcauseOrder + "\n");
+		buffer.append("real root cause: " + this.realcauseNode + "\n");
 		buffer.append("over skip length: " + this.overskipLength + "\n");
 		buffer.append("debugging trace: \n");
 		for(StepOperationTuple tuple: checkList) {
@@ -76,6 +80,14 @@ public class EmpiricalTrial {
 	
 	public TraceNode getRootcauseNode() {
 		return this.rootcauseNode;
+	}
+
+	public TraceNode getRealcauseNode() {
+		return realcauseNode;
+	}
+
+	public void setRealcauseNode(TraceNode realcauseNode) {
+		this.realcauseNode = realcauseNode;
 	}
 
 }

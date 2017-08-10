@@ -38,6 +38,8 @@ public class RootCauseFinder {
 	private List<TraceNode> regressionNodeList = new ArrayList<>();
 	private List<TraceNode> correctNodeList = new ArrayList<>();
 	
+	private TraceNode rootCause;
+	
 	public TraceNode retrieveRootCause(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
 		Collections.sort(regressionNodeList, new TraceNodeOrderComparator());
 		Collections.sort(correctNodeList, new TraceNodeOrderComparator());
@@ -56,6 +58,61 @@ public class RootCauseFinder {
 			if(type.getType()==StepChangeType.SRC) {
 				int startOrder  = findStartOrderInOtherTrace(node, pairList, false);
 				return buggyTrace.getExectionList().get(startOrder-1);
+			}
+		}
+		
+		return null;
+	}
+	
+	private TraceNode findCorrespondingCorrectNode(PairList pairList, TraceNode buggyNode) {
+		TraceNodePair pair = pairList.findByAfterNode(buggyNode);
+		if (pair != null) {
+			TraceNode correctNode = pair.getAfterNode();
+			if(correctNode!=null) {
+				return correctNode;
+			}
+		}
+		
+		return null;
+	}
+	
+	public TraceNode getRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
+		TraceNode endCorrectTraceNode = correctTrace.getLastestNode();
+		for(int i=buggyTrace.size()-1; i>=0; i--) {
+			TraceNode buggyNode = buggyTrace.getExectionList().get(i);
+			if (buggyNode.getDeclaringCompilationUnitName().contains("RemoveUnusedVars")) {
+				System.currentTimeMillis();
+			}
+			
+			if(matcher.checkSourceDiff(buggyNode.getBreakPoint(), true)) {
+				return buggyNode;
+			}
+			
+			TraceNode correctNode = findCorrespondingCorrectNode(pairList, buggyNode);
+			if(correctNode!=null) {
+				if (correctNode.getDeclaringCompilationUnitName().contains("RemoveUnusedVars")) {
+					System.currentTimeMillis();
+				}
+				if (matcher.checkSourceDiff(correctNode.getBreakPoint(), false)) {
+					return buggyNode;					
+				}
+			}
+			
+			if(correctNode!=null && correctNode.getOrder()-1 != endCorrectTraceNode.getOrder()) {
+				for(int j=correctNode.getOrder()+1; j<endCorrectTraceNode.getOrder(); j++) {
+					TraceNode intermediateNode = correctTrace.getExectionList().get(j-1);
+					if (intermediateNode.getDeclaringCompilationUnitName().contains("RemoveUnusedVars")) {
+						System.currentTimeMillis();
+					}
+					
+					if (matcher.checkSourceDiff(intermediateNode.getBreakPoint(), false)) {
+						return buggyNode;
+					}
+				}
+			}
+			
+			if(correctNode!=null) {
+				endCorrectTraceNode = correctNode;					
 			}
 		}
 		
@@ -353,6 +410,14 @@ public class RootCauseFinder {
 
 	public void setCorrectNodeList(List<TraceNode> correctNodeList) {
 		this.correctNodeList = correctNodeList;
+	}
+
+	public TraceNode getRootCause() {
+		return rootCause;
+	}
+
+	public void setRootCause(TraceNode rootCause) {
+		this.rootCause = rootCause;
 	}
 	
 	
