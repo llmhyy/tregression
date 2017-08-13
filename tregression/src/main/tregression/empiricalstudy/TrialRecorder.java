@@ -127,16 +127,16 @@ public class TrialRecorder {
 		row.createCell(5).setCellValue(trial.getBuggyTraceLength());
 		row.createCell(6).setCellValue(trial.getCorrectTranceLength());
 		
-		row.createCell(5).setCellValue(trial.getTraceCollectionTime());
-		row.createCell(6).setCellValue(trial.getTraceMatchTime());
-		row.createCell(7).setCellValue(trial.getSimulationTime());
+		row.createCell(7).setCellValue(trial.getTraceCollectionTime());
+		row.createCell(8).setCellValue(trial.getTraceMatchTime());
+		row.createCell(9).setCellValue(trial.getSimulationTime());
 		
 		StringBuffer buf = new StringBuffer();
 		for(StepOperationTuple t: trial.getCheckList()) {
 			buf.append(t.toString());
 			buf.append("\n");
 		}
-		row.createCell(8).setCellValue(buf.toString());
+		row.createCell(10).setCellValue(buf.toString());
 		
 	}
 	
