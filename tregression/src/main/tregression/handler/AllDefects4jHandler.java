@@ -43,6 +43,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 							continue;
 						}
 						
+						System.out.println("working on the " + j + "th bug of " + projects[i] + " project.");
+						
 						String buggyPath = prefix + projects[i] + "/" + j + "/bug";
 						String fixPath = prefix + projects[i] + "/" + j + "/fix";
 						
