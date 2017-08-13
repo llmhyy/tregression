@@ -80,9 +80,6 @@ public class RootCauseFinder {
 		TraceNode endCorrectTraceNode = correctTrace.getLastestNode();
 		for(int i=buggyTrace.size()-1; i>=0; i--) {
 			TraceNode buggyNode = buggyTrace.getExectionList().get(i);
-			if (buggyNode.getDeclaringCompilationUnitName().contains("RemoveUnusedVars")) {
-				System.currentTimeMillis();
-			}
 			
 			if(matcher.checkSourceDiff(buggyNode.getBreakPoint(), true)) {
 				return buggyNode;
@@ -90,9 +87,6 @@ public class RootCauseFinder {
 			
 			TraceNode correctNode = findCorrespondingCorrectNode(pairList, buggyNode);
 			if(correctNode!=null) {
-				if (correctNode.getDeclaringCompilationUnitName().contains("RemoveUnusedVars")) {
-					System.currentTimeMillis();
-				}
 				if (matcher.checkSourceDiff(correctNode.getBreakPoint(), false)) {
 					return buggyNode;					
 				}
@@ -101,10 +95,6 @@ public class RootCauseFinder {
 			if(correctNode!=null && correctNode.getOrder()-1 != endCorrectTraceNode.getOrder()) {
 				for(int j=correctNode.getOrder()+1; j<endCorrectTraceNode.getOrder(); j++) {
 					TraceNode intermediateNode = correctTrace.getExectionList().get(j-1);
-					if (intermediateNode.getDeclaringCompilationUnitName().contains("RemoveUnusedVars")) {
-						System.currentTimeMillis();
-					}
-					
 					if (matcher.checkSourceDiff(intermediateNode.getBreakPoint(), false)) {
 						return buggyNode;
 					}
@@ -294,24 +284,30 @@ public class RootCauseFinder {
 		}
 		
 		/**
+		 * Then, all the steps after problemStep cannot be matched in the other trace. 
+		 */
+		int order0 = findStartOrderInOtherTrace(problematicStep, pairList, isOnBeforeTrace);
+		return order0+1;
+		
+		/**
 		 * The the length of the other trace.
 		 */
-		TraceNode n = null;
-		int size = pairList.getPairList().size();
-		if(isOnBeforeTrace) {
-			n = pairList.getPairList().get(size-1).getAfterNode();
-		}
-		else {
-			n = pairList.getPairList().get(size-1).getBeforeNode();
-		}
-		int order = n.getOrder();
-		while(n!=null) {
-			n = n.getStepInNext();
-			if(n!=null) {
-				order = n.getOrder();
-			}
-		}
-		return order;
+//		TraceNode n = null;
+//		int size = pairList.getPairList().size();
+//		if(isOnBeforeTrace) {
+//			n = pairList.getPairList().get(size-1).getAfterNode();
+//		}
+//		else {
+//			n = pairList.getPairList().get(size-1).getBeforeNode();
+//		}
+//		int order = n.getOrder();
+//		while(n!=null) {
+//			n = n.getStepInNext();
+//			if(n!=null) {
+//				order = n.getOrder();
+//			}
+//		}
+//		return order;
 	}
 
 	private List<BreakPoint> findAllExecutedStatement(Trace trace) {
