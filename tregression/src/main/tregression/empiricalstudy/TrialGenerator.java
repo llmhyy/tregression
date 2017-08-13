@@ -36,11 +36,11 @@ public class TrialGenerator {
 			long time1 = 0;
 			long time2 = 0;
 			
-			RunningResult buggyRS;
-			RunningResult correctRs;
+			RunningResult buggyRS = null;
+			RunningResult correctRs = null;
 			
-			DiffMatcher diffMatcher;
-			PairList pairList;
+			DiffMatcher diffMatcher = null;
+			PairList pairList = null;
 			
 			if(cachedBuggyRS!=null && cachedCorrectRS!=null && isReuse){
 				buggyRS = cachedBuggyRS;
@@ -52,46 +52,52 @@ public class TrialGenerator {
 				Settings.compilationUnitMap.clear();
 				buggyRS = collector.run(buggyPath, tc.testClass, tc.testMethod, config);
 				
-				Settings.compilationUnitMap.clear();
-				correctRs = collector.run(fixPath, tc.testClass, tc.testMethod, config);
+				if (buggyRS!=null) {
+					Settings.compilationUnitMap.clear();
+					correctRs = collector.run(fixPath, tc.testClass, tc.testMethod, config);
+				}
 				
-				cachedBuggyRS = buggyRS;
-				cachedCorrectRS = correctRs;
 				
-				System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
-						+ ", correct trace length: " + correctRs.getRunningTrace().size());
+				if (buggyRS!=null && correctRs!=null) {
+					cachedBuggyRS = buggyRS;
+					cachedCorrectRS = correctRs;
+					
+					System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
+							+ ", correct trace length: " + correctRs.getRunningTrace().size());
+					time1 = System.currentTimeMillis();
+					diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
+					diffMatcher.matchCode();
+					
+					ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+					pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
+							correctRs.getRunningTrace(), diffMatcher); 
+					time2 = System.currentTimeMillis();
+					System.out.println("finish matching trace, taking " + (time2-time1)/1000 + "s");
+					
+					cachedDiffMatcher = diffMatcher;
+					cachedPairList = pairList;
+				}
+				
+			}
+			
+			if (buggyRS!=null && correctRs!=null) {
+				Trace buggyTrace = buggyRS.getRunningTrace();
+				Trace correctTrace = correctRs.getRunningTrace();
+				
+				if(requireVisualization) {
+					Visualizer visualizer = new Visualizer();
+					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
+				}
+				
 				time1 = System.currentTimeMillis();
-				diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
-				diffMatcher.matchCode();
+				System.out.println("start simulating debugging...");
+				SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
+				simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 				
-				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-				pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
-						correctRs.getRunningTrace(), diffMatcher); 
+				trials = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 				time2 = System.currentTimeMillis();
-				System.out.println("finish matching trace, taking " + (time2-time1)/1000 + "s");
-				
-				cachedDiffMatcher = diffMatcher;
-				cachedPairList = pairList;
+				System.out.println("finish simulating debugging, taking " + (time2-time1)/1000 + "s");
 			}
-			
-			
-			Trace buggyTrace = buggyRS.getRunningTrace();
-			Trace correctTrace = correctRs.getRunningTrace();
-			
-			if(requireVisualization) {
-				Visualizer visualizer = new Visualizer();
-				visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
-			}
-			
-			time1 = System.currentTimeMillis();
-			System.out.println("start simulating debugging...");
-			SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
-			simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
-			
-			trials = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
-			time2 = System.currentTimeMillis();
-			System.out.println("finish simulating debugging, taking " + (time2-time1)/1000 + "s");
-			
 		} catch (IOException | SimulationFailException e) {
 			e.printStackTrace();
 		}

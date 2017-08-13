@@ -110,8 +110,19 @@ public class TraceCollector {
 		
 		TraceModelConstructor constructor = new TraceModelConstructor();
 		
-		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
 		checker.addLibExcludeList(exlcudes);
+		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
+		
+		if(checker.isOverLong()) {
+			System.out.println("The trace is over long!");
+			return null;
+		}
+		
+		if(checker.isMultiThread()) {
+			System.out.println("It is multi-thread program!");
+			return null;
+		}
+		
 		System.out.println("There are " + checker.getExecutionOrderList().size() + " steps for this trace.");
 		
 		for(BreakPoint point: executingStatements){
