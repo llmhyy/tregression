@@ -28,9 +28,14 @@ public class SeparateVersionHandler extends AbstractHandler{
 				String buggyPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String fixPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CORRECT_PATH);
 				
-				int startIndex = buggyPath.indexOf("/", 20);
+				int startIndex = buggyPath.indexOf("/", buggyPath.indexOf("bug_repo")+1);
 				String projectName = buggyPath.substring(startIndex+1, buggyPath.indexOf("/", startIndex+1));
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName);
+				
+				startIndex = buggyPath.indexOf("/", buggyPath.indexOf(projectName)+1);
+				String id = buggyPath.substring(startIndex+1, buggyPath.indexOf("/", startIndex+1));
+				
+				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 				
 				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, true, config);
 				
