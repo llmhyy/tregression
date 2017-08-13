@@ -108,8 +108,6 @@ public class TraceCollector {
 		
 		TestCaseRunner checker = new TestCaseRunner();
 		
-//		checker.checkValidity(appClassPath);
-		
 		TraceModelConstructor constructor = new TraceModelConstructor();
 		
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
