@@ -145,7 +145,7 @@ public class TraceCollector {
 		Trace trace = constructor.constructTraceModel(appClassPath, executingStatements, 
 				checker.getExecutionOrderList(), checker.getStepNum(), false);
 		long t2 = System.currentTimeMillis();
-		int time = (int) ((t2-t1)/1000);
+		int time = (int) (t2-t1);
 		trace.setConstructTime(time);
 		
 		RunningResult rs = new RunningResult(trace, executingStatements);

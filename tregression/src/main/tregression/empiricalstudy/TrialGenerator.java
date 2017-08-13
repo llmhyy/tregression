@@ -42,6 +42,8 @@ public class TrialGenerator {
 			DiffMatcher diffMatcher = null;
 			PairList pairList = null;
 			
+			int matchTime = -1;
+			
 			if(cachedBuggyRS!=null && cachedCorrectRS!=null && isReuse){
 				buggyRS = cachedBuggyRS;
 				correctRs = cachedCorrectRS;
@@ -72,7 +74,8 @@ public class TrialGenerator {
 					pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
 							correctRs.getRunningTrace(), diffMatcher); 
 					time2 = System.currentTimeMillis();
-					System.out.println("finish matching trace, taking " + (time2-time1)/1000 + "s");
+					matchTime = (int)(time2-time1);
+					System.out.println("finish matching trace, taking " + matchTime/1000 + "s");
 					
 					cachedDiffMatcher = diffMatcher;
 					cachedPairList = pairList;
@@ -96,7 +99,14 @@ public class TrialGenerator {
 				
 				trials = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 				time2 = System.currentTimeMillis();
-				System.out.println("finish simulating debugging, taking " + (time2-time1)/1000 + "s");
+				int simulationTime = (int) (time2 - time1);
+				System.out.println("finish simulating debugging, taking " + simulationTime/1000 + "s");
+				
+				for(EmpiricalTrial trial: trials) {
+					trial.setTraceCollectionTime(buggyTrace.getConstructTime()+correctTrace.getConstructTime());
+					trial.setTraceMatchTime(matchTime);
+					trial.setSimulationTime(simulationTime);
+				}
 			}
 		} catch (IOException | SimulationFailException e) {
 			e.printStackTrace();

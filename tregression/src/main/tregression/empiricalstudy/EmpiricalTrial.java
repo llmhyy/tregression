@@ -16,16 +16,29 @@ public class EmpiricalTrial {
 	private TraceNode rootcauseNode;
 	private TraceNode realcauseNode;
 	
+	private int traceCollectionTime;
+	private int traceMatchTime;
+	private int simulationTime;
+	
+	private int buggyTraceLength;
+	private int correctTranceLength;
+	
 	private List<StepOperationTuple> checkList = new ArrayList<>();
 
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
-			TraceNode realcauseNode, List<StepOperationTuple> checkList) {
+			TraceNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
+			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength) {
 		super();
 		this.bugType = bugType;
 		this.overskipLength = overskipLength;
 		this.rootcauseNode = rootcauseNode;
 		this.checkList = checkList;
 		this.realcauseNode = realcauseNode;
+		this.setTraceCollectionTime(traceCollectionTime);
+		this.setTraceMatchTime(traceMatchTime);
+		this.setSimulationTime(simulationTime);
+		this.buggyTraceLength = buggyTraceLength;
+		this.correctTranceLength = correctTraceLength;
 	}
 	
 	public static String getTypeStringName(int t) {
@@ -88,6 +101,46 @@ public class EmpiricalTrial {
 
 	public void setRealcauseNode(TraceNode realcauseNode) {
 		this.realcauseNode = realcauseNode;
+	}
+
+	public int getTraceCollectionTime() {
+		return traceCollectionTime;
+	}
+
+	public void setTraceCollectionTime(int traceCollectionTime) {
+		this.traceCollectionTime = traceCollectionTime;
+	}
+
+	public int getTraceMatchTime() {
+		return traceMatchTime;
+	}
+
+	public void setTraceMatchTime(int traceMatchTime) {
+		this.traceMatchTime = traceMatchTime;
+	}
+
+	public int getSimulationTime() {
+		return simulationTime;
+	}
+
+	public void setSimulationTime(int simulationTime) {
+		this.simulationTime = simulationTime;
+	}
+
+	public int getBuggyTraceLength() {
+		return buggyTraceLength;
+	}
+
+	public void setBuggyTraceLength(int buggyTraceLength) {
+		this.buggyTraceLength = buggyTraceLength;
+	}
+
+	public int getCorrectTranceLength() {
+		return correctTranceLength;
+	}
+
+	public void setCorrectTranceLength(int correctTranceLength) {
+		this.correctTranceLength = correctTranceLength;
 	}
 
 }

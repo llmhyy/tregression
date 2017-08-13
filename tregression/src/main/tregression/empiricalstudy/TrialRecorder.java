@@ -62,7 +62,13 @@ public class TrialRecorder {
 		titles.add("bug_ID");
 		titles.add("type");
 		titles.add("overskip steps");
-		titles.add("rootcause node");
+		titles.add("found cause");
+		titles.add("general cause");
+		titles.add("buggy trace length");
+		titles.add("correct trace length");
+		titles.add("trace collection time");
+		titles.add("trace match time");
+		titles.add("simulation time");
 		titles.add("checklist");
 		
 		Row row = sheet.createRow(0);
@@ -79,20 +85,28 @@ public class TrialRecorder {
 				fillRowInformation(row, trial, project, bugID);
 				lastRowNum++;
 			}
+		}
+		else {
+			Row row = sheet.createRow(lastRowNum);
+			fillRowInformation(row, null, project, bugID);
+		}
+		
+		writeToExcel(book, file.getName());
+		
+		if(lastRowNum > trialNumberLimitPerFile){
+			filePage++;
+			String fileName = "defects4j" + filePage + ".xlsx";
+			file = new File(fileName);
 			
-			writeToExcel(book, file.getName());
-			
-			if(lastRowNum > trialNumberLimitPerFile){
-				filePage++;
-				String fileName = "defects4j" + filePage + ".xlsx";
-				file = new File(fileName);
-				
-				initializeNewExcel();
-			}
+			initializeNewExcel();
 		}
 	}
 	
 	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, int bugID) {
+		if (trial==null) {
+			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1);
+		}
+		
 		row.createCell(0).setCellValue(project);
 		row.createCell(1).setCellValue(bugID);
 		row.createCell(2).setCellValue(EmpiricalTrial.getTypeStringName(trial.getBugType()));
@@ -104,12 +118,25 @@ public class TrialRecorder {
 		}
 		row.createCell(4).setCellValue(order);
 		
+		order = -1;
+		if(trial.getRealcauseNode()!=null) {
+			order = trial.getRealcauseNode().getOrder();
+		}
+		row.createCell(4).setCellValue(order);
+		
+		row.createCell(5).setCellValue(trial.getBuggyTraceLength());
+		row.createCell(6).setCellValue(trial.getCorrectTranceLength());
+		
+		row.createCell(5).setCellValue(trial.getTraceCollectionTime());
+		row.createCell(6).setCellValue(trial.getTraceMatchTime());
+		row.createCell(7).setCellValue(trial.getSimulationTime());
+		
 		StringBuffer buf = new StringBuffer();
 		for(StepOperationTuple t: trial.getCheckList()) {
 			buf.append(t.toString());
 			buf.append("\n");
 		}
-		row.createCell(5).setCellValue(buf.toString());
+		row.createCell(8).setCellValue(buf.toString());
 		
 	}
 	
