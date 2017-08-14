@@ -122,21 +122,23 @@ public class TrialRecorder {
 		if(trial.getRealcauseNode()!=null) {
 			order = trial.getRealcauseNode().getOrder();
 		}
-		row.createCell(4).setCellValue(order);
+		row.createCell(5).setCellValue(order);
 		
-		row.createCell(5).setCellValue(trial.getBuggyTraceLength());
-		row.createCell(6).setCellValue(trial.getCorrectTranceLength());
+		row.createCell(6).setCellValue(trial.getBuggyTraceLength());
+		row.createCell(7).setCellValue(trial.getCorrectTranceLength());
 		
-		row.createCell(7).setCellValue(trial.getTraceCollectionTime());
-		row.createCell(8).setCellValue(trial.getTraceMatchTime());
-		row.createCell(9).setCellValue(trial.getSimulationTime());
+		row.createCell(8).setCellValue(trial.getTraceCollectionTime());
+		row.createCell(9).setCellValue(trial.getTraceMatchTime());
+		row.createCell(10).setCellValue(trial.getSimulationTime());
 		
 		StringBuffer buf = new StringBuffer();
-		for(StepOperationTuple t: trial.getCheckList()) {
-			buf.append(t.toString());
-			buf.append("\n");
+		if(trial.getCheckList()!=null) {
+			for(StepOperationTuple t: trial.getCheckList()) {
+				buf.append(t.toString());
+				buf.append("\n");
+			}
+			row.createCell(11).setCellValue(buf.toString());
 		}
-		row.createCell(10).setCellValue(buf.toString());
 		
 	}
 	
