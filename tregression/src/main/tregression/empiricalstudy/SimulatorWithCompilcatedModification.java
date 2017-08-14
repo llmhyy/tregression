@@ -47,15 +47,14 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		if (!allWrongNodeMap.isEmpty()) {
 			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
 			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
-			observedFaultNode = wrongNodeList.get(0);
-//			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
+//			observedFaultNode = wrongNodeList.get(0);
+			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
 		}
 	}
-
+	
 	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
 			int optionSearchLimit) throws SimulationFailException {
 		if (observedFaultNode != null) {
-
 			RootCauseFinder finder = new RootCauseFinder();
 			finder.checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
 
