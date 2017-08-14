@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jface.preference.BooleanPropertyAction;
-
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.util.MicroBatUtil;
@@ -26,14 +24,34 @@ public class TraceCollector {
 		appClassPath.addClasspath(testTargetPath);
 		appClassPath.addClasspath(codeTargetPath);
 		
-		List<String> libJars = findLibJars(workingDir);
+		List<String> libJars = findLibJars(workingDir+File.separator+"lib");
 		for(String libJar: libJars) {
 			appClassPath.addClasspath(libJar);
 			appClassPath.addExternalLibPath(libJar);
 		}
 		
-		List<String> extraLibs = findLibJars(workingDir+File.separator+config.buildFolder);
-		for(String lib: extraLibs) {
+		List<String> compileLibJars = findLibJars(workingDir+File.separator+"compileLib");
+		for(String libJar: compileLibJars) {
+			appClassPath.addClasspath(libJar);
+			appClassPath.addExternalLibPath(libJar);
+		}
+		
+		List<String> extraLibs0 = findLibJars(workingDir+File.separator+config.buildFolder+File.separator+"lib");
+		for(String lib: extraLibs0) {
+			appClassPath.addClasspath(lib);
+			appClassPath.addExternalLibPath(lib);
+		}
+		
+		List<String> extraLibs1 = findLibJars(workingDir+File.separator+config.buildFolder+File.separator+"libs");
+		for(String lib: extraLibs1) {
+			appClassPath.addClasspath(lib);
+			appClassPath.addExternalLibPath(lib);
+		}
+		
+		String parentLibDir = workingDir.substring(0, workingDir.lastIndexOf(File.separator));
+		parentLibDir = workingDir.substring(0, parentLibDir.lastIndexOf(File.separator)) + File.separator + "lib";
+		List<String> extraLibs2 = findLibJars(parentLibDir);
+		for(String lib: extraLibs2) {
 			appClassPath.addClasspath(lib);
 			appClassPath.addExternalLibPath(lib);
 		}
@@ -88,13 +106,19 @@ public class TraceCollector {
 	public List<String> findLibJars(String workingDir) {
 		List<String> libJars = new ArrayList<>();
 		
-		String fileString = workingDir + File.separator + "lib";
-		File file = new File(fileString);
+		File file = new File(workingDir);
 		if(file.exists() && file.isDirectory()) {
 			for(File childFile: file.listFiles()) {
 				String childString = childFile.getAbsolutePath();
-				if (childString.endsWith("jar")) {
-					libJars.add(childString);
+				if(childFile.isDirectory()) {
+					String newWorkingDir = childString;
+					List<String> childLibJars = findLibJars(newWorkingDir);
+					libJars.addAll(childLibJars);
+				}
+				else {
+					if (childString.endsWith("jar")) {
+						libJars.add(childString);
+					}					
 				}
 			}
 		}
