@@ -81,7 +81,10 @@ public class TrialGenerator {
 					return false;
 				}
 				
+				Settings.compilationUnitMap.clear();
 				buggyRS = collector.run(buggyRS);
+				
+				Settings.compilationUnitMap.clear();
 				correctRs = collector.run(correctRs);
 
 				if (buggyRS != null && correctRs != null) {
