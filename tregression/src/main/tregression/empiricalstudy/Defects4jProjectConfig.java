@@ -28,11 +28,11 @@ public class Defects4jProjectConfig {
 		else if (projectName.equals("Lang")) {
 			return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/classes", "target/tests", "target");
 		}
-		else if (projectName.equals("Match")) {
+		else if (projectName.equals("Math")) {
 			return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/classes", "target/test-classes", "target");
 		}
 		else if (projectName.equals("Mockito")) {
-			return new Defects4jProjectConfig("test", "src", "buildSrc/build/classes/main", "buildSrc/build/classes/test", "buildSrc/build");
+			return new Defects4jProjectConfig("test", "src", "build/classes/main", "build/classes/test", "build");
 		}
 		else if (projectName.equals("Time")) {
 			return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/classes", "target/test-classes", "target");
