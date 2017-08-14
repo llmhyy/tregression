@@ -20,123 +20,160 @@ import tregression.views.Visualizer;
 public class TrialGenerator {
 	private RunningResult cachedBuggyRS;
 	private RunningResult cachedCorrectRS;
-	
+
 	private DiffMatcher cachedDiffMatcher;
 	private PairList cachedPairList;
-	
-	
-	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, 
-			boolean requireVisualization, Defects4jProjectConfig config){
-		List<EmpiricalTrial> trials = new ArrayList<>();
-		TraceCollector collector = new TraceCollector();
-		
+
+	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse,
+			boolean requireVisualization, Defects4jProjectConfig config) {
+		List<TestCase> list;
 		try {
-			TestCase tc = retrieveD4jFailingTestCase(buggyPath);
+			list = retrieveD4jFailingTestCase(buggyPath);
+			for(TestCase tc: list) {
+				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
+				List<EmpiricalTrial> trials = new ArrayList<>();
+				boolean isNormal = analyzeTestCase(buggyPath, fixPath,isReuse, trials, tc, config, requireVisualization);
+				if (isNormal) {
+					return trials;
+				}
+				else {
+					System.out.println("[NOTICE] Two traces have the same length, change a new test case.");
+				}
+			}
 			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return new ArrayList<>();
+	}
+
+	private boolean analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, List<EmpiricalTrial> trials, 
+			TestCase tc, Defects4jProjectConfig config, boolean requireVisualization) {
+		TraceCollector collector = new TraceCollector();
+		try {
 			long time1 = 0;
 			long time2 = 0;
-			
+
 			RunningResult buggyRS = null;
 			RunningResult correctRs = null;
-			
+
 			DiffMatcher diffMatcher = null;
 			PairList pairList = null;
-			
+
 			int matchTime = -1;
-			
-			if(cachedBuggyRS!=null && cachedCorrectRS!=null && isReuse){
+
+			if (cachedBuggyRS != null && cachedCorrectRS != null && isReuse) {
 				buggyRS = cachedBuggyRS;
 				correctRs = cachedCorrectRS;
 				diffMatcher = cachedDiffMatcher;
 				pairList = cachedPairList;
-			}
-			else{
+			} else {
 				Settings.compilationUnitMap.clear();
-				buggyRS = collector.run(buggyPath, tc.testClass, tc.testMethod, config);
-				
-				if (buggyRS!=null) {
+				buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config);
+
+				if (buggyRS != null) {
 					Settings.compilationUnitMap.clear();
-					correctRs = collector.run(fixPath, tc.testClass, tc.testMethod, config);
+					correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config);
 				}
 				
+				if (correctRs != null && buggyRS.getChecker().getStepNum()==correctRs.getChecker().getStepNum()) {
+					return false;
+				}
 				
-				if (buggyRS!=null && correctRs!=null) {
+				buggyRS = collector.run(buggyRS);
+				correctRs = collector.run(correctRs);
+
+				if (buggyRS != null && correctRs != null) {
 					cachedBuggyRS = buggyRS;
 					cachedCorrectRS = correctRs;
-					
-					System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
-							+ ", correct trace length: " + correctRs.getRunningTrace().size());
+
+					System.out
+							.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
+									+ ", correct trace length: " + correctRs.getRunningTrace().size());
 					time1 = System.currentTimeMillis();
 					diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
 					diffMatcher.matchCode();
-					
+
 					ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-					pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), 
-							correctRs.getRunningTrace(), diffMatcher); 
+					pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(),
+							diffMatcher);
 					time2 = System.currentTimeMillis();
-					matchTime = (int)(time2-time1);
-					System.out.println("finish matching trace, taking " + matchTime/1000 + "s");
-					
+					matchTime = (int) (time2 - time1);
+					System.out.println("finish matching trace, taking " + matchTime / 1000 + "s");
+
 					cachedDiffMatcher = diffMatcher;
 					cachedPairList = pairList;
 				}
-				
+
 			}
-			
-			if (buggyRS!=null && correctRs!=null) {
+
+			if (buggyRS != null && correctRs != null) {
 				Trace buggyTrace = buggyRS.getRunningTrace();
 				Trace correctTrace = correctRs.getRunningTrace();
-				
-				if(requireVisualization) {
+
+				if (requireVisualization) {
 					Visualizer visualizer = new Visualizer();
 					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
 				}
-				
+
 				time1 = System.currentTimeMillis();
 				System.out.println("start simulating debugging...");
 				SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
 				simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
-				
-				trials = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
+
+				List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 				time2 = System.currentTimeMillis();
 				int simulationTime = (int) (time2 - time1);
-				System.out.println("finish simulating debugging, taking " + simulationTime/1000 + "s");
-				
-				for(EmpiricalTrial trial: trials) {
-					trial.setTraceCollectionTime(buggyTrace.getConstructTime()+correctTrace.getConstructTime());
+				System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
+
+				for (EmpiricalTrial trial : trials) {
+					trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
 					trial.setTraceMatchTime(matchTime);
 					trial.setSimulationTime(simulationTime);
 				}
+				
+				trials.addAll(trials0);
 			}
-		} catch (IOException | SimulationFailException e) {
+		} catch (SimulationFailException e) {
 			e.printStackTrace();
 		}
 		
-		return trials;
+		return true;
 	}
-	
-	class TestCase{
+
+	class TestCase {
 		public String testClass;
 		public String testMethod;
+
 		public TestCase(String testClass, String testMethod) {
 			super();
 			this.testClass = testClass;
 			this.testMethod = testMethod;
 		}
 	}
-	
-	public TestCase retrieveD4jFailingTestCase(String buggyVersionPath) throws IOException{
+
+	public List<TestCase> retrieveD4jFailingTestCase(String buggyVersionPath) throws IOException {
 		String failingFile = buggyVersionPath + File.separator + "failing_tests";
 		File file = new File(failingFile);
-		
+
 		BufferedReader reader = new BufferedReader(new FileReader(file));
-		String line = reader.readLine();
+
+		List<TestCase> list = new ArrayList<>();
+		String line = null;
+		while ((line = reader.readLine()) != null) {
+			if (line.startsWith("---")) {
+				String testClass = line.substring(line.indexOf(" ") + 1, line.indexOf("::"));
+				String testMethod = line.substring(line.indexOf("::") + 2, line.length());
+				
+				TestCase tc = new TestCase(testClass, testMethod);
+				list.add(tc);
+			}
+			
+		}
+
 		reader.close();
-		
-		String testClass = line.substring(line.indexOf(" ")+1, line.indexOf("::"));
-		String testMethod = line.substring(line.indexOf("::")+2, line.length());
-		
-		TestCase tc = new TestCase(testClass, testMethod);
-		return tc;
+
+		return list;
 	}
 }

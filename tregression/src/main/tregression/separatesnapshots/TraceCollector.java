@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.preference.BooleanPropertyAction;
+
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.util.MicroBatUtil;
@@ -98,17 +100,14 @@ public class TraceCollector {
 		}
 		return libJars;
 	}
-
-	public RunningResult run(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config){
-		
+	
+	public RunningResult preCheck(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config) {
 		AppJavaClassPath appClassPath = initialize(workingDir, testClass, testMethod, config);
 		
 		List<String> libJars = appClassPath.getExternalLibPaths();
 		List<String> exlcudes = MicroBatUtil.extractExcludeFiles("", libJars);
 		
 		TestCaseRunner checker = new TestCaseRunner();
-		
-		TraceModelConstructor constructor = new TraceModelConstructor();
 		
 		checker.addLibExcludeList(exlcudes);
 		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
@@ -141,15 +140,24 @@ public class TraceCollector {
 			}
 		}
 		
+		RunningResult rs = new RunningResult(null, executingStatements, checker, appClassPath);
+		return rs;
+	}
+
+	public RunningResult run(RunningResult result){
+		
+		TraceModelConstructor constructor = new TraceModelConstructor();
+		TestCaseRunner checker = result.getChecker();
+		
 		long t1 = System.currentTimeMillis();
-		Trace trace = constructor.constructTraceModel(appClassPath, executingStatements, 
+		Trace trace = constructor.constructTraceModel(result.getAppClassPath(), result.getExecutedStatements(), 
 				checker.getExecutionOrderList(), checker.getStepNum(), false);
 		long t2 = System.currentTimeMillis();
 		int time = (int) (t2-t1);
 		trace.setConstructTime(time);
 		
-		RunningResult rs = new RunningResult(trace, executingStatements);
-		return rs;
+		result.setRunningTrace(trace);
+		return result;
 	}
 
 	

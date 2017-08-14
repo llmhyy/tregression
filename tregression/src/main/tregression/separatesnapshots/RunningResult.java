@@ -4,15 +4,21 @@ import java.util.List;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
+import sav.strategies.dto.AppJavaClassPath;
+import tregression.junit.TestCaseRunner;
 
 public class RunningResult {
 	private Trace runningTrace;
 	private List<BreakPoint> executedStatements;
+	private TestCaseRunner checker;
+	private AppJavaClassPath appClassPath;
 
-	public RunningResult(Trace runningTrace, List<BreakPoint> executedStatements) {
+	public RunningResult(Trace runningTrace, List<BreakPoint> executedStatements, TestCaseRunner checker, AppJavaClassPath appClassPath) {
 		super();
 		this.runningTrace = runningTrace;
 		this.executedStatements = executedStatements;
+		this.setChecker(checker);
+		this.appClassPath = appClassPath;
 	}
 
 	public Trace getRunningTrace() {
@@ -34,6 +40,22 @@ public class RunningResult {
 	@Override
 	public String toString() {
 		return "RunningResult [runningTrace=" + runningTrace + ", executedStatements=" + executedStatements + "]";
+	}
+
+	public TestCaseRunner getChecker() {
+		return checker;
+	}
+
+	public void setChecker(TestCaseRunner checker) {
+		this.checker = checker;
+	}
+
+	public AppJavaClassPath getAppClassPath() {
+		return appClassPath;
+	}
+
+	public void setAppClassPath(AppJavaClassPath appClassPath) {
+		this.appClassPath = appClassPath;
 	}
 
 }
