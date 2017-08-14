@@ -56,8 +56,8 @@ public class TraceModelConstructor {
 		 * 1) Identifying the same local variable in different trace nodes.
 		 * 2) Generating variable ID for local variable.
 		 */
-		List<String> classScope = parseScope(runningStatements);
-		parseLocalVariables(classScope, appClassPath);
+//		List<String> classScope = parseScope(runningStatements);
+//		parseLocalVariables(classScope, appClassPath);
 		
 		/** 4. extract runtime variables*/
 		tcExecutor.setConfig(appClassPath);
@@ -77,27 +77,27 @@ public class TraceModelConstructor {
 	}
 	
 	
-	private void parseLocalVariables(final List<String> classScope, AppJavaClassPath appPath) {
-		VariableScopeParser vsParser = new VariableScopeParser();
-		vsParser.parseLocalVariableScopes(classScope, appPath);
-		List<LocalVariableScope> lvsList = vsParser.getVariableScopeList();
-		Settings.localVariableScopes.setVariableScopes(lvsList);
-	}
-	
-	private List<String> parseScope(List<BreakPoint> breakpoints) {
-		List<String> classes = new ArrayList<>();
-		for(BreakPoint bp: breakpoints){
-			if(!classes.contains(bp.getDeclaringCompilationUnitName())){
-				classes.add(bp.getDeclaringCompilationUnitName());
-			}
-		}
-		return classes;
-	}
+//	private void parseLocalVariables(final List<String> classScope, AppJavaClassPath appPath) {
+//		VariableScopeParser vsParser = new VariableScopeParser();
+//		vsParser.parseLocalVariableScopes(classScope, appPath);
+//		List<LocalVariableScope> lvsList = vsParser.getVariableScopeList();
+//		Settings.localVariableScopes.setVariableScopes(lvsList);
+//	}
+//	
+//	private List<String> parseScope(List<BreakPoint> breakpoints) {
+//		List<String> classes = new ArrayList<>();
+//		for(BreakPoint bp: breakpoints){
+//			if(!classes.contains(bp.getDeclaringCompilationUnitName())){
+//				classes.add(bp.getDeclaringCompilationUnitName());
+//			}
+//		}
+//		return classes;
+//	}
 	
 	private void clearOldData(){
 		Settings.interestedVariables.clear();
 		Settings.wrongPathNodeOrder.clear();
-		Settings.localVariableScopes.clear();
+//		Settings.localVariableScopes.clear();
 		Settings.potentialCorrectPatterns.clear();
 	}
 	

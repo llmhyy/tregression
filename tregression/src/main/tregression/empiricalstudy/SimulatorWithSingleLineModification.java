@@ -142,7 +142,7 @@ public class SimulatorWithSingleLineModification extends Simulator{
 					throws SimulationFailException {
 		
 		Settings.interestedVariables.clear();
-		Settings.localVariableScopes.clear();
+//		Settings.localVariableScopes.clear();
 		Settings.potentialCorrectPatterns.clear();
 		
 		/**
