@@ -43,38 +43,34 @@ public abstract class Simulator {
 	}
 	
 	protected TraceNode findObservedFault(List<TraceNode> wrongNodeList, PairList pairList){
-		TraceNode observedFaultNode = wrongNodeList.get(0);
+		TraceNode exceptionNode = findExceptionNode(wrongNodeList);
+		if(exceptionNode!=null) {
+			return exceptionNode;
+		}
 		
-		/**
-		 * If the last portion of steps in trace are all wrong-path nodes, then we choose
-		 * the one at the beginning of this portion as the observable step. 
-		 */
-		if(isObservedFaultWrongPath(observedFaultNode, pairList)){
-			int index = 1;
-			observedFaultNode = wrongNodeList.get(index);
-			while(isObservedFaultWrongPath(observedFaultNode, pairList)){
-				index++;
-				if(index < wrongNodeList.size()){
-					observedFaultNode = wrongNodeList.get(index);					
-				}
-				else{
-					break;
-				}
+		for(TraceNode node: wrongNodeList) {
+			if(isObservedFaultWrongPath(node, pairList) && node.getControlDominator()==null) {
+				continue;
 			}
-			
-			observedFaultNode = wrongNodeList.get(index-1);
-			
-			if(observedFaultNode.getControlDominator() == null){
-				if(index < wrongNodeList.size()){
-					observedFaultNode = wrongNodeList.get(index);					
-				}
+			else {
+				return node;
 			}
 		}
 		
-		return observedFaultNode;
+		return null;
 	}
 	
-	private boolean isObservedFaultWrongPath(TraceNode observableNode, PairList pairList){
+	private TraceNode findExceptionNode(List<TraceNode> wrongNodeList) {
+		for(TraceNode node: wrongNodeList) {
+			if(node.isException()) {
+				return node;
+			}
+		}
+		return null;
+	}
+
+
+	protected boolean isObservedFaultWrongPath(TraceNode observableNode, PairList pairList){
 		TraceNodePair pair = pairList.findByAfterNode(observableNode);
 		if(pair == null){
 			return true;
