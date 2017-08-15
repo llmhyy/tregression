@@ -52,11 +52,11 @@ public class TrialGenerator {
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse,
 			boolean requireVisualization, Defects4jProjectConfig config) {
 		List<TestCase> list;
+		List<EmpiricalTrial> trials = new ArrayList<>();
 		try {
 			list = retrieveD4jFailingTestCase(buggyPath);
 			for(TestCase tc: list) {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
-				List<EmpiricalTrial> trials = new ArrayList<>();
 				int res = analyzeTestCase(buggyPath, fixPath,isReuse, trials, tc, config, requireVisualization);
 				if (res==NORMAL) {
 					return trials;
@@ -74,7 +74,7 @@ public class TrialGenerator {
 			e.printStackTrace();
 		}
 
-		return new ArrayList<>();
+		return trials;
 	}
 	
 
