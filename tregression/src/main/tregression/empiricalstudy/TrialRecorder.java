@@ -61,8 +61,6 @@ public class TrialRecorder {
 		titles.add("project");
 		titles.add("bug_ID");
 		titles.add("test case");
-		titles.add("type");
-		titles.add("overskip steps");
 		titles.add("found cause");
 		titles.add("general cause");
 		titles.add("buggy trace length");
@@ -70,6 +68,12 @@ public class TrialRecorder {
 		titles.add("trace collection time");
 		titles.add("trace match time");
 		titles.add("simulation time");
+		titles.add("explanation size");
+		titles.add("regression explanation nodes");
+		titles.add("correct explanation nodes");
+		
+		titles.add("type");
+		titles.add("overskip steps");
 		titles.add("checklist");
 		
 		Row row = sheet.createRow(0);
@@ -105,43 +109,55 @@ public class TrialRecorder {
 	
 	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, int bugID) {
 		if (trial==null) {
-			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1);
+			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
 		}
 		
 		row.createCell(0).setCellValue(project);
 		row.createCell(1).setCellValue(bugID);
-		row.createCell(2).setCellValue(EmpiricalTrial.getTypeStringName(trial.getBugType()));
-		row.createCell(3).setCellValue(trial.getOverskipLength());
-		row.createCell(4).setCellValue(trial.getTestcase());
+		row.createCell(2).setCellValue(trial.getTestcase());
 		
 		int order = -1;
 		if(trial.getRootcauseNode()!=null) {
 			order = trial.getRootcauseNode().getOrder();
 		}
-		row.createCell(5).setCellValue(order);
+		row.createCell(3).setCellValue(order);
 		
 		order = -1;
 		if(trial.getRealcauseNode()!=null) {
 			order = trial.getRealcauseNode().getOrder();
 		}
-		row.createCell(6).setCellValue(order);
+		row.createCell(4).setCellValue(order);
 		
-		row.createCell(7).setCellValue(trial.getBuggyTraceLength());
-		row.createCell(8).setCellValue(trial.getCorrectTranceLength());
+		row.createCell(5).setCellValue(trial.getBuggyTraceLength());
+		row.createCell(6).setCellValue(trial.getCorrectTranceLength());
 		
-		row.createCell(9).setCellValue(trial.getTraceCollectionTime());
-		row.createCell(10).setCellValue(trial.getTraceMatchTime());
-		row.createCell(11).setCellValue(trial.getSimulationTime());
+		row.createCell(7).setCellValue(trial.getTraceCollectionTime());
+		row.createCell(8).setCellValue(trial.getTraceMatchTime());
+		row.createCell(9).setCellValue(trial.getSimulationTime());
+		row.createCell(10).setCellValue(trial.getTotalVisitedNodesNum());
 		
+		if(trial.getVisitedRegressionNodes()!=null) {
+			row.createCell(11).setCellValue(trial.getVisitedRegressionNodes().toString());			
+		}
+		
+		if(trial.getVisitedCorrectNodes()!=null) {
+			row.createCell(12).setCellValue(trial.getVisitedCorrectNodes().toString());			
+		}
+		
+		row.createCell(13).setCellValue(EmpiricalTrial.getTypeStringName(trial.getBugType()));
+		row.createCell(14).setCellValue(trial.getOverskipLength());
 		StringBuffer buf = new StringBuffer();
 		if(trial.getCheckList()!=null) {
 			for(StepOperationTuple t: trial.getCheckList()) {
 				buf.append(t.toString());
 				buf.append("\n");
 			}
-			row.createCell(12).setCellValue(buf.toString());
+			row.createCell(15).setCellValue(buf.toString());
 		}
 		
+		if (trial.getExceptionExplanation()!=null) {
+			row.createCell(16).setCellValue(trial.getExceptionExplanation());
+		}
 	}
 	
 	private void writeToExcel(Workbook book, String fileName){

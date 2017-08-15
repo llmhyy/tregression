@@ -25,11 +25,19 @@ public class EmpiricalTrial {
 	private int buggyTraceLength;
 	private int correctTranceLength;
 	
+	private List<TraceNode> visitedRegressionNodes;
+	private List<TraceNode> visitedCorrectNodes;
+	
+	private int totalVisitedNodesNum;
+	
 	private List<StepOperationTuple> checkList = new ArrayList<>();
+	
+	private String exceptionExplanation;
 
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
 			TraceNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
-			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength) {
+			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength,
+			List<TraceNode> visitedRegressionNodes, List<TraceNode> visitedCorrectNodes, int totalVisitedNodesNum) {
 		super();
 		this.bugType = bugType;
 		this.overskipLength = overskipLength;
@@ -41,6 +49,9 @@ public class EmpiricalTrial {
 		this.setSimulationTime(simulationTime);
 		this.buggyTraceLength = buggyTraceLength;
 		this.correctTranceLength = correctTraceLength;
+		this.visitedRegressionNodes = visitedRegressionNodes;
+		this.visitedCorrectNodes = visitedCorrectNodes;
+		this.totalVisitedNodesNum = totalVisitedNodesNum;
 	}
 	
 	public static String getTypeStringName(int t) {
@@ -151,6 +162,38 @@ public class EmpiricalTrial {
 
 	public void setTestcase(String testcase) {
 		this.testcase = testcase;
+	}
+
+	public List<TraceNode> getVisitedRegressionNodes() {
+		return visitedRegressionNodes;
+	}
+
+	public void setVisitedRegressionNodes(List<TraceNode> visitedRegressionNodes) {
+		this.visitedRegressionNodes = visitedRegressionNodes;
+	}
+
+	public List<TraceNode> getVisitedCorrectNodes() {
+		return visitedCorrectNodes;
+	}
+
+	public void setVisitedCorrectNodes(List<TraceNode> visitedCorrectNodes) {
+		this.visitedCorrectNodes = visitedCorrectNodes;
+	}
+
+	public int getTotalVisitedNodesNum() {
+		return totalVisitedNodesNum;
+	}
+
+	public void setTotalVisitedNodesNum(int totalVisitedNodesNum) {
+		this.totalVisitedNodesNum = totalVisitedNodesNum;
+	}
+
+	public String getExceptionExplanation() {
+		return exceptionExplanation;
+	}
+
+	public void setExceptionExplanation(String exceptionExplanation) {
+		this.exceptionExplanation = exceptionExplanation;
 	}
 
 }

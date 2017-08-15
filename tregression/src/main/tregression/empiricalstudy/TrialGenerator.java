@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import microbat.evaluation.model.Trial;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.util.Settings;
@@ -63,6 +64,9 @@ public class TrialGenerator {
 				else {
 					String explanation = getProblemType(res);
 					System.out.println("[*NOTICE*] " + explanation);
+					EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
+					trial.setExceptionExplanation(explanation);
+					trials.add(trial);
 				}
 			}
 			
@@ -168,7 +172,6 @@ public class TrialGenerator {
 				trial.setTestcase(tc.testClass+"#"+tc.testMethod);
 				trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
 				trial.setTraceMatchTime(matchTime);
-				trial.setSimulationTime(simulationTime);
 			}
 			
 			trials.add(trials0.get(0));

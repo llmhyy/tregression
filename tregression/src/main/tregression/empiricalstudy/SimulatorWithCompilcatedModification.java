@@ -3,6 +3,7 @@ package tregression.empiricalstudy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,9 +57,19 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 			int optionSearchLimit) throws SimulationFailException {
 		if (observedFaultNode != null) {
 			RootCauseFinder finder = new RootCauseFinder();
+			
+			long start = System.currentTimeMillis();
 			finder.checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
+			long end = System.currentTimeMillis();
+			int checkTime = (int) (end-start);
 
 			List<EmpiricalTrial> trials = startSimulation(observedFaultNode, buggyTrace, correctTrace, getPairList(), matcher, finder);
+			if(trials!=null) {
+				for(EmpiricalTrial trial: trials) {
+					trial.setSimulationTime(checkTime);
+				}
+			}
+			
 			return trials;
 		}
 
@@ -169,7 +180,9 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 				
 				long endTime = System.currentTimeMillis();
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.FIND_BUG, 0, rootcauseNode, 
-						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size());
+						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
+						rootCauseFinder.getRegressionNodeList(), rootCauseFinder.getCorrectNodeList(), 
+						rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size());
 				return trial;
 			} else if (changeType.getType() == StepChangeType.DAT) {
 				if(wrongReadVar == null) {
@@ -226,7 +239,9 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 
 				long endTime = System.currentTimeMillis();
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, 
-						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size());
+						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
+						rootCauseFinder.getRegressionNodeList(), rootCauseFinder.getCorrectNodeList(), 
+						rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size());
 				return trial;
 			}
 
