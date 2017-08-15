@@ -43,13 +43,20 @@ public abstract class Simulator {
 	}
 	
 	protected TraceNode findObservedFault(List<TraceNode> wrongNodeList, PairList pairList){
-		TraceNode exceptionNode = findExceptionNode(wrongNodeList);
-		if(exceptionNode!=null) {
-			return exceptionNode;
-		}
+//		TraceNode exceptionNode = findExceptionNode(wrongNodeList);
+//		if(exceptionNode!=null) {
+//			return exceptionNode;
+//		}
 		
 		for(TraceNode node: wrongNodeList) {
-			if(isObservedFaultWrongPath(node, pairList) && node.getControlDominator()==null) {
+			if (isInvokedByTearDownMethod(node)) {
+				continue;
+			}
+			else if(isObservedFaultWrongPath(node, pairList) && node.getControlDominator()==null) {
+				if(node.isException()) {
+					return node;
+				}
+				
 				continue;
 			}
 			else {
@@ -60,6 +67,21 @@ public abstract class Simulator {
 		return null;
 	}
 	
+	private boolean isInvokedByTearDownMethod(TraceNode node) {
+		TraceNode n = node;
+		while(n!=null) {
+			if(n.getMethodSign()!=null && n.getMethodSign().contains(".tearDown()V")) {
+				return true;
+			}
+			else {
+				n = n.getInvocationParent();
+			}
+		}
+		
+		return false;
+	}
+
+
 	private TraceNode findExceptionNode(List<TraceNode> wrongNodeList) {
 		for(TraceNode node: wrongNodeList) {
 			if(node.isException()) {
