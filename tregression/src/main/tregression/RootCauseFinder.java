@@ -203,26 +203,15 @@ public class RootCauseFinder {
 		int startOrder = findStartOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
 		int endOrder = findEndOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
 		
-		
-//		List<BreakPoint> executedStatement = findAllExecutedStatement(otherTrace);
-		
 		//TODO this implementation is problematic, I need to use soot to analyze the static control dependence relation.
 		for(int i=endOrder; i>=startOrder; i--){
-			TraceNode node = otherTrace.getExectionList().get(i-1);
-			if(node.isConditional()){
-				
-				if(node.getControlScope().containLocation(correspondingLocation)) {
-					return node;
-				}
-				
-				//TODO this method is problematic, I need Soot to parse the static dependence relation.
-				//collectAllInfluenceScope(node.getBreakPoint(), allInfluenceScope, executedStatement);
-//				for(ClassLocation location: allInfluenceScope){
-//					if(location.getDeclaringCompilationUnitName().equals(correspondingLocation.getClassCanonicalName()) &&
-//							location.getLineNumber()==correspondingLocation.getLineNumber()){
-//						return node;
-//					}
-//				}
+			if(i<=otherTrace.size()) {
+				TraceNode node = otherTrace.getExectionList().get(i-1);
+				if(node.isConditional()){
+					if(node.getControlScope().containLocation(correspondingLocation)) {
+						return node;
+					}
+				}				
 			}
 		}
 		
