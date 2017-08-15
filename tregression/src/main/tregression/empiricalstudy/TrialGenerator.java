@@ -171,7 +171,7 @@ public class TrialGenerator {
 				trial.setSimulationTime(simulationTime);
 			}
 			
-			trials.addAll(trials0);
+			trials.add(trials0.get(0));
 			return NORMAL;
 		}
 		
