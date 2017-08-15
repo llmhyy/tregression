@@ -11,6 +11,7 @@ import sav.commons.TestConfiguration;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.TraceModelConstructor;
 import tregression.empiricalstudy.Defects4jProjectConfig;
+import tregression.empiricalstudy.TrialGenerator;
 import tregression.junit.TestCaseAnalyzer;
 import tregression.junit.TestCaseRunner;
 
@@ -138,12 +139,16 @@ public class TraceCollector {
 		
 		if(checker.isOverLong()) {
 			System.out.println("The trace is over long!");
-			return null;
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator.OVER_LONG);
+			return rs;
 		}
 		
 		if(checker.isMultiThread()) {
 			System.out.println("It is multi-thread program!");
-			return null;
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator.MULTI_THREAD);
+			return rs;
 		}
 		
 		System.out.println("There are " + checker.getExecutionOrderList().size() + " steps for this trace.");
