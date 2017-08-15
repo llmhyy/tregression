@@ -130,6 +130,7 @@ public class TrialGenerator {
 				System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
 
 				for (EmpiricalTrial trial : trials0) {
+					trial.setTestcase(tc.testClass+"#"+tc.testMethod);
 					trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
 					trial.setTraceMatchTime(matchTime);
 					trial.setSimulationTime(simulationTime);

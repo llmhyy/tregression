@@ -13,6 +13,8 @@ public class EmpiricalTrial {
 	private int bugType;
 	private int overskipLength = 0;
 	
+	private String testcase;
+	
 	private TraceNode rootcauseNode;
 	private TraceNode realcauseNode;
 	
@@ -141,6 +143,14 @@ public class EmpiricalTrial {
 
 	public void setCorrectTranceLength(int correctTranceLength) {
 		this.correctTranceLength = correctTranceLength;
+	}
+
+	public String getTestcase() {
+		return testcase;
+	}
+
+	public void setTestcase(String testcase) {
+		this.testcase = testcase;
 	}
 
 }

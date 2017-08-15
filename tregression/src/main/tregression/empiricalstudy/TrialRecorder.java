@@ -60,6 +60,7 @@ public class TrialRecorder {
 		List<String> titles = new ArrayList<>();
 		titles.add("project");
 		titles.add("bug_ID");
+		titles.add("test case");
 		titles.add("type");
 		titles.add("overskip steps");
 		titles.add("found cause");
@@ -111,25 +112,26 @@ public class TrialRecorder {
 		row.createCell(1).setCellValue(bugID);
 		row.createCell(2).setCellValue(EmpiricalTrial.getTypeStringName(trial.getBugType()));
 		row.createCell(3).setCellValue(trial.getOverskipLength());
+		row.createCell(4).setCellValue(trial.getTestcase());
 		
 		int order = -1;
 		if(trial.getRootcauseNode()!=null) {
 			order = trial.getRootcauseNode().getOrder();
 		}
-		row.createCell(4).setCellValue(order);
+		row.createCell(5).setCellValue(order);
 		
 		order = -1;
 		if(trial.getRealcauseNode()!=null) {
 			order = trial.getRealcauseNode().getOrder();
 		}
-		row.createCell(5).setCellValue(order);
+		row.createCell(6).setCellValue(order);
 		
-		row.createCell(6).setCellValue(trial.getBuggyTraceLength());
-		row.createCell(7).setCellValue(trial.getCorrectTranceLength());
+		row.createCell(7).setCellValue(trial.getBuggyTraceLength());
+		row.createCell(8).setCellValue(trial.getCorrectTranceLength());
 		
-		row.createCell(8).setCellValue(trial.getTraceCollectionTime());
-		row.createCell(9).setCellValue(trial.getTraceMatchTime());
-		row.createCell(10).setCellValue(trial.getSimulationTime());
+		row.createCell(9).setCellValue(trial.getTraceCollectionTime());
+		row.createCell(10).setCellValue(trial.getTraceMatchTime());
+		row.createCell(11).setCellValue(trial.getSimulationTime());
 		
 		StringBuffer buf = new StringBuffer();
 		if(trial.getCheckList()!=null) {
@@ -137,7 +139,7 @@ public class TrialRecorder {
 				buf.append(t.toString());
 				buf.append("\n");
 			}
-			row.createCell(11).setCellValue(buf.toString());
+			row.createCell(12).setCellValue(buf.toString());
 		}
 		
 	}
