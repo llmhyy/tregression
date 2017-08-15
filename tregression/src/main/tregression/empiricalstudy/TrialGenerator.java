@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
 import microbat.util.Settings;
+import tregression.RootCauseFinder;
 import tregression.SimulationFailException;
 import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
@@ -150,17 +152,19 @@ public class TrialGenerator {
 		SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 
+		TraceNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
+		if (realcauseNode==null) {
+			return INSUFFICIENT_TRACE;
+		}
+		
 		List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
+		
 		time2 = System.currentTimeMillis();
 		int simulationTime = (int) (time2 - time1);
 		System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
 
 		if (trials0!=null) {
 			for (EmpiricalTrial trial : trials0) {
-				if (trial.getRealcauseNode()==null) {
-					return INSUFFICIENT_TRACE;
-				}
-				
 				trial.setTestcase(tc.testClass+"#"+tc.testMethod);
 				trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
 				trial.setTraceMatchTime(matchTime);
