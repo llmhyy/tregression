@@ -129,14 +129,16 @@ public class TrialGenerator {
 				int simulationTime = (int) (time2 - time1);
 				System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
 
-				for (EmpiricalTrial trial : trials0) {
-					trial.setTestcase(tc.testClass+"#"+tc.testMethod);
-					trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
-					trial.setTraceMatchTime(matchTime);
-					trial.setSimulationTime(simulationTime);
+				if (trials0!=null) {
+					for (EmpiricalTrial trial : trials0) {
+						trial.setTestcase(tc.testClass+"#"+tc.testMethod);
+						trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
+						trial.setTraceMatchTime(matchTime);
+						trial.setSimulationTime(simulationTime);
+					}
+					
+					trials.addAll(trials0);
 				}
-				
-				trials.addAll(trials0);
 			}
 		} catch (SimulationFailException e) {
 			e.printStackTrace();
