@@ -53,10 +53,13 @@ public class TrialGenerator {
 			boolean requireVisualization, Defects4jProjectConfig config) {
 		List<TestCase> list;
 		List<EmpiricalTrial> trials = new ArrayList<>();
+		TestCase workingTC = null;
 		try {
 			list = retrieveD4jFailingTestCase(buggyPath);
 			for(TestCase tc: list) {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
+				workingTC = tc;
+				
 				int res = analyzeTestCase(buggyPath, fixPath,isReuse, trials, tc, config, requireVisualization);
 				if (res==NORMAL) {
 					return trials;
@@ -65,6 +68,7 @@ public class TrialGenerator {
 					String explanation = getProblemType(res);
 					System.out.println("[*NOTICE*] " + explanation);
 					EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
+					trial.setTestcase(tc.testClass+"::"+tc.testMethod);
 					trial.setExceptionExplanation(explanation);
 					trials.add(trial);
 				}
@@ -77,6 +81,7 @@ public class TrialGenerator {
 		if (trials.isEmpty()) {
 			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
 			trial.setExceptionExplanation("runtime exception occurs");
+			trial.setTestcase(workingTC.testClass+"::"+workingTC.testMethod);
 			trials.add(trial);
 		}
 		
