@@ -144,12 +144,12 @@ public class TraceCollector {
 			return rs;
 		}
 		
-		if(checker.isMultiThread()) {
-			System.out.println("It is multi-thread program!");
-			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator.MULTI_THREAD);
-			return rs;
-		}
+//		if(checker.isMultiThread()) {
+//			System.out.println("It is multi-thread program!");
+//			RunningResult rs = new RunningResult();
+//			rs.setFailureType(TrialGenerator.MULTI_THREAD);
+//			return rs;
+//		}
 		
 		System.out.println("There are " + checker.getExecutionOrderList().size() + " steps for this trace.");
 		
