@@ -70,10 +70,16 @@ public class TrialGenerator {
 				}
 			}
 			
-		} catch (IOException | SimulationFailException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+		if (trials.isEmpty()) {
+			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
+			trial.setExceptionExplanation("runtime exception occurs");
+			trials.add(trial);
+		}
+		
 		return trials;
 	}
 	
