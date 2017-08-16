@@ -1,6 +1,7 @@
 package tregression.tracematch;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -107,8 +108,10 @@ public class IndexTreeMacher implements Matcher {
 		BreakPoint pointAfter = itNodeAfter.getBreakPoint();
 		
 		try {
-			String textBefore = Files.readAllLines(Paths.get(pointBefore.getFullJavaFilePath())).get(pointBefore.getLineNumber());
-			String textAfter = Files.readAllLines(Paths.get(pointAfter.getFullJavaFilePath())).get(pointAfter.getLineNumber());
+			String textBefore = Files.readAllLines(Paths.get(pointBefore.getFullJavaFilePath()), StandardCharsets.US_ASCII)
+					.get(pointBefore.getLineNumber());
+			String textAfter = Files.readAllLines(Paths.get(pointAfter.getFullJavaFilePath()), StandardCharsets.US_ASCII)
+					.get(pointAfter.getLineNumber());
 			
 			if(textBefore.equals(textAfter)) {
 				return 1;
