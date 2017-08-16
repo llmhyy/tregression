@@ -116,10 +116,6 @@ public class TrialGenerator {
 				return correctRs.getRunningType();
 			}
 			
-//			if (buggyRS.getChecker().getStepNum()==correctRs.getChecker().getStepNum()) {
-//				return SAME_LENGTH;
-//			}
-			
 			if (buggyRS != null && correctRs != null) {
 				Settings.compilationUnitMap.clear();
 				buggyRS = collector.run(buggyRS);
