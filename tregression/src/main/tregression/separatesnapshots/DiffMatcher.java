@@ -168,6 +168,10 @@ public class DiffMatcher {
 		}
 		else{
 			List<Integer> targetLines = fileDiff.getSourceToTargetMap().get(srcPoint.getLineNumber());
+			if(targetLines==null){
+				return false;
+			}
+			
 			if(fileDiff.getTargetDeclaringCompilationUnit().equals(targetPoint.getDeclaringCompilationUnitName())){
 				if(targetLines.contains(targetPoint.getLineNumber())){
 					return true;
@@ -221,6 +225,7 @@ public class DiffMatcher {
 			HashMap<Integer, List<Integer>> targetToSourceMap = new HashMap<>();
 			
 			constructMapping(fileDiff, sourceToTargetMap, targetToSourceMap);
+			System.currentTimeMillis();
 			
 			fileDiff.setSourceToTargetMap(sourceToTargetMap);
 			fileDiff.setTargetToSourceMap(targetToSourceMap);
