@@ -68,6 +68,16 @@ public class StepDetailUI {
 		}
 		
 		public void mouseDown(MouseEvent e) {
+			
+			for(int i=66644; i<=67830; i++){
+				TraceNode n = traceView.getTrace().getExectionList().get(i-1);
+				for(VarValue var: n.getReadVariables()){
+					if(var.getVarName().contains("code")){
+						//System.out.println(n.getOrder()+":" + var.getVarName());
+					}
+				}
+			}
+			
 			if (feedback == null) {
 				openChooseFeedbackDialog();
 			} 
@@ -78,6 +88,7 @@ public class StepDetailUI {
 				if(dataButton.getSelection()){
 					VarValue readVar = feedback.getOption().getReadVar();
 					suspiciousNode = currentNode.findDataDominator(readVar);
+					feedback = new UserFeedback();
 				}
 				else if(controlButton.getSelection()){
 					suspiciousNode = currentNode.getControlDominator();
@@ -86,7 +97,6 @@ public class StepDetailUI {
 				if(suspiciousNode != null){
 					jumpToNode(trace, suspiciousNode);	
 				}
-				
 			}
 		}
 		
