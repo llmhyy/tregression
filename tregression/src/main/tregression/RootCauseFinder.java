@@ -65,7 +65,7 @@ public class RootCauseFinder {
 	}
 	
 	private TraceNode findCorrespondingCorrectNode(PairList pairList, TraceNode buggyNode) {
-		TraceNodePair pair = pairList.findByAfterNode(buggyNode);
+		TraceNodePair pair = pairList.findByBeforeNode(buggyNode);
 		if (pair != null) {
 			TraceNode correctNode = pair.getAfterNode();
 			if(correctNode!=null) {
@@ -105,7 +105,7 @@ public class RootCauseFinder {
 				endCorrectTraceNode = correctNode;					
 			}
 		}
-		
+		System.currentTimeMillis();
 		return null;
 	}
 	
