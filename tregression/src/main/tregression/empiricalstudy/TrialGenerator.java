@@ -7,13 +7,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import microbat.evaluation.model.Trial;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.util.Settings;
 import tregression.RootCauseFinder;
 import tregression.SimulationFailException;
 import tregression.model.PairList;
+import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.RunningResult;
 import tregression.separatesnapshots.TraceCollector;
@@ -79,7 +79,7 @@ public class TrialGenerator {
 		}
 
 		if (trials.isEmpty()) {
-			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
+			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0, -1, -1, null, null, 0);
 			trial.setExceptionExplanation("runtime exception occurs");
 			trial.setTestcase(workingTC.testClass+"::"+workingTC.testMethod);
 			trials.add(trial);
