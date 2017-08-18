@@ -171,6 +171,15 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		 * start debugging
 		 */
 		while (true) {
+			if(currentNode==null){
+				long endTime = System.currentTimeMillis();
+				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, 0, rootcauseNode, 
+						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
+						rootCauseFinder.getRegressionNodeList(), rootCauseFinder.getCorrectNodeList(), 
+						rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size());
+				return trial;
+			}
+			
 			StepChangeType changeType = typeChecker.getType(currentNode, true, pairList, matcher);
 
 			if (changeType.getType() == StepChangeType.SRC) {
