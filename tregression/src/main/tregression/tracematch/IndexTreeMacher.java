@@ -108,9 +108,9 @@ public class IndexTreeMacher implements Matcher {
 		BreakPoint pointAfter = itNodeAfter.getBreakPoint();
 		
 		try {
-			String textBefore = Files.readAllLines(Paths.get(pointBefore.getFullJavaFilePath()), StandardCharsets.US_ASCII)
+			String textBefore = Files.readAllLines(Paths.get(pointBefore.getFullJavaFilePath()), StandardCharsets.ISO_8859_1)
 					.get(pointBefore.getLineNumber());
-			String textAfter = Files.readAllLines(Paths.get(pointAfter.getFullJavaFilePath()), StandardCharsets.US_ASCII)
+			String textAfter = Files.readAllLines(Paths.get(pointAfter.getFullJavaFilePath()), StandardCharsets.ISO_8859_1)
 					.get(pointAfter.getLineNumber());
 			
 			if(textBefore.equals(textAfter)) {
