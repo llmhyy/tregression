@@ -69,14 +69,14 @@ public class StepDetailUI {
 		
 		public void mouseDown(MouseEvent e) {
 			
-			for(int i=66644; i<=67830; i++){
-				TraceNode n = traceView.getTrace().getExectionList().get(i-1);
+			//for(int i=66644; i<=67830; i++){
+				TraceNode n = traceView.getTrace().getExectionList().get(1);
 				for(VarValue var: n.getReadVariables()){
 					if(var.getVarName().contains("code")){
 						//System.out.println(n.getOrder()+":" + var.getVarName());
 					}
 				}
-			}
+			//}
 			
 			if (feedback == null) {
 				openChooseFeedbackDialog();
