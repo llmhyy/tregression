@@ -70,8 +70,14 @@ public class TraceModelConstructor {
 		
 		/** 5. construct dominance and loop-parent relation*/
 		Trace trace = tcExecutor.getTrace();
-		trace.constructDomianceRelation();
-		trace.constructLoopParentRelation();
+		
+		try{
+			trace.constructDomianceRelation();
+			trace.constructLoopParentRelation();			
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 		
 		return trace;
 	}
