@@ -26,7 +26,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-				int skippedNum = 0;
+				int skippedNum = 159;
+				int endNum = 500;
 				
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 				int[] bugNum = {26, 133, 65, 106, 38, 27};
@@ -34,14 +35,17 @@ public class AllDefects4jHandler extends AbstractHandler {
 				String config = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String prefix = config.substring(0, config.indexOf(projects[0]));
 				
-				int count = 1;
+				int count = 0;
 				for(int i=0; i<projects.length; i++) {
 					
 					for(int j=1; j<=bugNum[i]; j++) {
 						
-						if(count++ <= skippedNum) {
+						count++;
+						if(count <= skippedNum || count > endNum) {
 							continue;
 						}
+						
+						
 						
 						System.out.println("working on the " + j + "th bug of " + projects[i] + " project.");
 						
@@ -51,7 +55,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 						System.out.println("analyzing the " + j + "th bug in " + projects[i] + " project.");
 						
 						TrialGenerator generator = new TrialGenerator();
-						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i]);
+						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, false, d4jConfig);
 						
 						TrialRecorder recorder;
