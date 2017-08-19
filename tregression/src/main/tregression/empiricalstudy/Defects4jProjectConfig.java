@@ -34,7 +34,12 @@ public class Defects4jProjectConfig {
 			}
 		}
 		else if (projectName.equals("Math")) {
-			return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target");
+			if(bugID<85){
+				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target");	
+			}
+			else{
+				return new Defects4jProjectConfig("src/test", "src/java", "target/test-classes", "target/classes", "target");
+			}
 		}
 		else if (projectName.equals("Mockito")) {
 			return new Defects4jProjectConfig("test", "src", "build/classes/test", "build/classes/main", "build");
