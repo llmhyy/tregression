@@ -45,7 +45,12 @@ public class Defects4jProjectConfig {
 			return new Defects4jProjectConfig("test", "src", "build/classes/test", "build/classes/main", "build");
 		}
 		else if (projectName.equals("Time")) {
-			return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target");
+			if(bugID<12){
+				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target");				
+			}
+			else{
+				return new Defects4jProjectConfig("src/test/java", "src/main/java", "build/tests", "build/classes", "build");
+			}
 		}
 		
 		return null;
