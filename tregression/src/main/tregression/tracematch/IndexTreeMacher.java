@@ -5,7 +5,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -55,17 +57,8 @@ public class IndexTreeMacher implements Matcher {
 		double sim = -1;
 		
 		IndexTreeNode itNodeBefore = (IndexTreeNode)gNodeBefore;
-		if(itNodeBefore.getTraceNode().getOrder()==253){
-			System.currentTimeMillis();
-		}
-		
 		for(GraphNode gNodeAfter: childrenAfter){
 			IndexTreeNode itNodeAfter = (IndexTreeNode)gNodeAfter;
-			
-			if(itNodeAfter.getTraceNode().getOrder()==324){
-				System.currentTimeMillis();
-			}
-			
 			if(hasMatched(pairList, itNodeAfter)){
 				continue;
 			}
@@ -93,7 +86,7 @@ public class IndexTreeMacher implements Matcher {
 		
 		return mostSimilarNode;
 	}
-
+	
 	private boolean hasMatched(List<MatchingGraphPair> pairList, IndexTreeNode itNodeAfter) {
 		for(MatchingGraphPair pair: pairList){
 			if(pair.getNodeAfter()==itNodeAfter){
@@ -102,15 +95,28 @@ public class IndexTreeMacher implements Matcher {
 		}
 		return false;
 	}
+	
+	private Map<String, List<String>> lineMap = new HashMap<>();
 
 	private double sim(IndexTreeNode itNodeBefore, IndexTreeNode itNodeAfter) {
 		BreakPoint pointBefore = itNodeBefore.getBreakPoint();
 		BreakPoint pointAfter = itNodeAfter.getBreakPoint();
 		
 		try {
-			List<String> stringLinesBefore = Files.readAllLines(Paths.get(pointBefore.getFullJavaFilePath()), StandardCharsets.ISO_8859_1);
+			String pathBefore = pointBefore.getFullJavaFilePath();
+			List<String> stringLinesBefore = lineMap.get(pathBefore);
+			if(stringLinesBefore==null){
+				stringLinesBefore = Files.readAllLines(Paths.get(pointBefore.getFullJavaFilePath()), StandardCharsets.ISO_8859_1);
+				lineMap.put(pathBefore, stringLinesBefore);
+			}
 			String textBefore = stringLinesBefore.get(pointBefore.getLineNumber()-1);
-			List<String> stringLinesAfter = Files.readAllLines(Paths.get(pointAfter.getFullJavaFilePath()), StandardCharsets.ISO_8859_1);
+			
+			String pathAfter = pointAfter.getFullJavaFilePath();
+			List<String> stringLinesAfter = lineMap.get(pathAfter); 
+			if(stringLinesAfter==null){
+				stringLinesAfter = Files.readAllLines(Paths.get(pointAfter.getFullJavaFilePath()), StandardCharsets.ISO_8859_1);
+				lineMap.put(pathAfter, stringLinesAfter);
+			}
 			String textAfter = stringLinesAfter.get(pointAfter.getLineNumber()-1);
 			
 			if(textBefore.equals(textAfter)) {
