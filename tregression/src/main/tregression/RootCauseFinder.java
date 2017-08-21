@@ -204,13 +204,19 @@ public class RootCauseFinder {
 		int endOrder = findEndOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace, otherTrace);
 //		System.currentTimeMillis();
 		//TODO this implementation is problematic, I need to use soot to analyze the static control dependence relation.
-		TraceNode exceptionNode = null;
 		for(int i=endOrder; i>=startOrder; i--){
 			if(i<=otherTrace.size()) {
 				TraceNode node = otherTrace.getExectionList().get(i-1);
 				if(node.isConditional()){
 					if(node.getControlScope().containLocation(correspondingLocation)) {
 						return node;
+					}
+					else{
+						for(TraceNode controlDominatee: node.getControlDominatees()){
+							if(controlDominatee.isException()){
+								return node;
+							}
+						}
 					}
 				}				
 			}
@@ -281,10 +287,20 @@ public class RootCauseFinder {
 			TraceNode n = otherTrace.getExectionList().get(order0-1);
 			while(n!=null){
 				if(n.isConditional()){
-					return n.getOrder();
+					if(n.getStepOverNext()!=null){
+						return n.getStepOverNext().getOrder();
+					}
+					else{
+						return n.getOrder();						
+					}
 				}
 				else{
-					n=n.getStepOverNext();
+					if(n.getStepOverNext()!=null){
+						n=n.getStepOverNext();						
+					}
+					else{
+						n=n.getStepInNext();
+					}
 				}
 			}
 		}
