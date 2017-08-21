@@ -212,7 +212,9 @@ public class RootCauseFinder {
 						return node;
 					}
 					else{
-						for(TraceNode controlDominatee: node.getControlDominatees()){
+						List<TraceNode> allControlDominatees = new ArrayList<>();
+						retrieveAllControlDominatees(node, allControlDominatees);
+						for(TraceNode controlDominatee: allControlDominatees){
 							if(controlDominatee.isException()){
 								return node;
 							}
@@ -226,6 +228,15 @@ public class RootCauseFinder {
 	}
 
 	
+	private void retrieveAllControlDominatees(TraceNode node, List<TraceNode> allControlDominatees) {
+		for(TraceNode controlDominatee: node.getControlDominatees()){
+			if(!allControlDominatees.contains(controlDominatee)){
+				allControlDominatees.add(controlDominatee);
+				retrieveAllControlDominatees(controlDominatee, allControlDominatees);
+			}
+		}
+	}
+
 	public int findStartOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
 		TraceNode node = problematicStep.getStepInPrevious();
 		while(node != null) {
