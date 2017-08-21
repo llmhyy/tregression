@@ -55,7 +55,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 	
 	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
 			int optionSearchLimit) throws SimulationFailException {
-		if (observedFaults.isEmpty()) {
+		if (!observedFaults.isEmpty()) {
 			RootCauseFinder finder = new RootCauseFinder();
 			
 			long start = System.currentTimeMillis();
