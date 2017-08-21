@@ -9,6 +9,7 @@ import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
+import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 
 public class StepChangeTypeChecker {
@@ -108,36 +109,32 @@ public class StepChangeTypeChecker {
 
 	private boolean canbeMatched(boolean isOnBeforeTrace, 
 			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList) {
-//		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
-//		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
-//		if((thatVar instanceof ReferenceValue) && (thisVar instanceof ReferenceValue)){
-//			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
-//			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
-//			
-//			if(isOnBeforeTrace) {
-//				TraceNodePair pair = pairList.findByAfterNode(thatDom);
-//				if(pair != null) {
-//					return pair.getBeforeNode().getOrder()==thisDom.getOrder();
-//				}
-//				return false;
-//			}
-//			else {
-//				TraceNodePair pair = pairList.findByAfterNode(thisDom);
-//				if(pair != null) {
-//					return pair.getBeforeNode().getOrder()==thatDom.getOrder();
-//				}
-//				return false;
-//			}
-//		}
-//		else {
-//			if(thisStringValue.equals(thatStringValue)){
-//				return true;
-//			}					
-//		}
+		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
+		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		
 		
 		for(VarValue thatVar: thatStep.getReadVariables()){
 			if (thatVar.getVarName().equals(thisVar.getVarName())) {
+				TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
+				TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
+				
+				if(isOnBeforeTrace) {
+					TraceNodePair pair = pairList.findByAfterNode(thatDom);
+					if(pair != null && pair.getBeforeNode()!=null && thisDom!=null) {
+						if(pair.getBeforeNode().getOrder()!=thisDom.getOrder()){
+							return false;
+						}
+					}
+				}
+				else {
+					TraceNodePair pair = pairList.findByAfterNode(thisDom);
+					if(pair != null && pair.getBeforeNode()!=null && thatDom!=null) {
+						if(pair.getBeforeNode().getOrder()==thatDom.getOrder()){
+							return false;
+						}
+					}
+				}
+				
 				if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
 					ReferenceValue thisRefVar = (ReferenceValue)thisVar;
 					ReferenceValue thatRefVar = (ReferenceValue)thatVar;
