@@ -73,6 +73,7 @@ public class EmpiricalTrial {
 		buffer.append("found root cause: " + rootcauseOrder + "\n");
 		buffer.append("real root cause: " + this.realcauseNode + "\n");
 		buffer.append("over skip length: " + this.overskipLength + "\n");
+		buffer.append("explanation size: " + this.totalVisitedNodesNum + "\n");
 		buffer.append("debugging trace: \n");
 		if(checkList!=null) {
 			for(StepOperationTuple tuple: checkList) {
