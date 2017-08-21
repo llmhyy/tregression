@@ -26,13 +26,13 @@ public class TrialGenerator {
 	public static final int MULTI_THREAD = 2;
 	public static final int INSUFFICIENT_TRACE = 3;
 	public static final int SAME_LENGTH = 4;
-	
+
 	private RunningResult cachedBuggyRS;
 	private RunningResult cachedCorrectRS;
 
 	private DiffMatcher cachedDiffMatcher;
 	private PairList cachedPairList;
-	
+
 	private String getProblemType(int type) {
 		switch (type) {
 		case OVER_LONG:
@@ -56,40 +56,39 @@ public class TrialGenerator {
 		TestCase workingTC = null;
 		try {
 			list = retrieveD4jFailingTestCase(buggyPath);
-			for(TestCase tc: list) {
+			for (TestCase tc : list) {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
-				
-				int res = analyzeTestCase(buggyPath, fixPath,isReuse, trials, tc, config, requireVisualization);
-				if (res==NORMAL) {
+
+				int res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization);
+				if (res == NORMAL) {
 					return trials;
-				}
-				else {
+				} else {
 					String explanation = getProblemType(res);
 					System.out.println("[*NOTICE*] " + explanation);
 					EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
-					trial.setTestcase(tc.testClass+"::"+tc.testMethod);
+					trial.setTestcase(tc.testClass + "::" + tc.testMethod);
 					trial.setExceptionExplanation(explanation);
 					trials.add(trial);
 				}
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		if (trials.isEmpty()) {
-			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0, -1, -1, null, null, 0);
+			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
+					-1, -1, null, null, 0);
 			trial.setExceptionExplanation("runtime exception occurs");
-			trial.setTestcase(workingTC.testClass+"::"+workingTC.testMethod);
+			trial.setTestcase(workingTC.testClass + "::" + workingTC.testMethod);
 			trials.add(trial);
 		}
-		
+
 		return trials;
 	}
-	
 
-	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, List<EmpiricalTrial> trials, 
+	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, List<EmpiricalTrial> trials,
 			TestCase tc, Defects4jProjectConfig config, boolean requireVisualization) throws SimulationFailException {
 		TraceCollector collector = new TraceCollector();
 		long time1 = 0;
@@ -106,33 +105,48 @@ public class TrialGenerator {
 		if (cachedBuggyRS != null && cachedCorrectRS != null && isReuse) {
 			buggyRS = cachedBuggyRS;
 			correctRs = cachedCorrectRS;
+
+//			System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
+//					+ ", correct trace length: " + correctRs.getRunningTrace().size());
+//			time1 = System.currentTimeMillis();
+//			diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
+//			diffMatcher.matchCode();
+//
+//			ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+//			pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(),
+//					diffMatcher);
+//			time2 = System.currentTimeMillis();
+//			matchTime = (int) (time2 - time1);
+//			System.out.println("finish matching trace, taking " + matchTime / 1000 + "s");
+//			cachedDiffMatcher = diffMatcher;
+//			cachedPairList = pairList;
+
 			diffMatcher = cachedDiffMatcher;
 			pairList = cachedPairList;
 		} else {
 			Settings.compilationUnitMap.clear();
 			buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config);
-			if (buggyRS.getRunningType()!=NORMAL) {
+			if (buggyRS.getRunningType() != NORMAL) {
 				return buggyRS.getRunningType();
 			}
-			
+
 			Settings.compilationUnitMap.clear();
 			correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config);
-			if (correctRs.getRunningType()!=NORMAL) {
+			if (correctRs.getRunningType() != NORMAL) {
 				return correctRs.getRunningType();
 			}
-			
+
 			if (buggyRS != null && correctRs != null) {
 				Settings.compilationUnitMap.clear();
 				buggyRS = collector.run(buggyRS);
 				Settings.compilationUnitMap.clear();
 				correctRs = collector.run(correctRs);
-				
+
 				cachedBuggyRS = buggyRS;
 				cachedCorrectRS = correctRs;
 
-				System.out
-						.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
-								+ ", correct trace length: " + correctRs.getRunningTrace().size());
+				System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
+						+ ", correct trace length: " + correctRs.getRunningTrace().size());
 				time1 = System.currentTimeMillis();
 				diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
 				diffMatcher.matchCode();
@@ -163,28 +177,29 @@ public class TrialGenerator {
 		SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 
-		TraceNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
-		if (realcauseNode==null) {
+		TraceNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace,
+				correctTrace);
+		if (realcauseNode == null) {
 			return INSUFFICIENT_TRACE;
 		}
-		
+
 		List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
-		
+
 		time2 = System.currentTimeMillis();
 		int simulationTime = (int) (time2 - time1);
 		System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
 
-		if (trials0!=null) {
+		if (trials0 != null) {
 			for (EmpiricalTrial trial : trials0) {
-				trial.setTestcase(tc.testClass+"#"+tc.testMethod);
+				trial.setTestcase(tc.testClass + "#" + tc.testMethod);
 				trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
 				trial.setTraceMatchTime(matchTime);
 			}
-			
+
 			trials.add(trials0.get(0));
 			return NORMAL;
 		}
-		
+
 		return INSUFFICIENT_TRACE;
 	}
 
@@ -211,11 +226,11 @@ public class TrialGenerator {
 			if (line.startsWith("---")) {
 				String testClass = line.substring(line.indexOf(" ") + 1, line.indexOf("::"));
 				String testMethod = line.substring(line.indexOf("::") + 2, line.length());
-				
+
 				TestCase tc = new TestCase(testClass, testMethod);
 				list.add(tc);
 			}
-			
+
 		}
 
 		reader.close();
