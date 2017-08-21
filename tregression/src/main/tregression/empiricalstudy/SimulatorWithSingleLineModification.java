@@ -51,7 +51,7 @@ public class SimulatorWithSingleLineModification extends Simulator{
 		if(!allWrongNodeMap.isEmpty()){
 			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
 			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
-			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
+			observedFaults = findObservedFault(wrongNodeList, getPairList());
 		}
 		
 	}
@@ -60,9 +60,9 @@ public class SimulatorWithSingleLineModification extends Simulator{
 			String testCaseName, String mutatedFile, double unclearRate, boolean enableLoopInference, int optionSearchLimit) 
 					throws SimulationFailException {
 		mutatedTrace.resetCheckTime();
-		if(observedFaultNode != null){
+		if(observedFaults.isEmpty()){
 			try {
-				Trial trial = startSimulation(observedFaultNode, rootCause, mutatedTrace, correctTrace, 
+				Trial trial = startSimulation(observedFaults.get(0), rootCause, mutatedTrace, correctTrace, 
 						getPairList(), testCaseName, mutatedFile, unclearRate, 
 						enableLoopInference, optionSearchLimit);
 //				System.currentTimeMillis();

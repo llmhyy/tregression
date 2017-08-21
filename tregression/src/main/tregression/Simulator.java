@@ -1,5 +1,6 @@
 package tregression;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,7 @@ import tregression.model.TraceNodePair;
 public abstract class Simulator {
 	
 	protected PairList pairList;
-	protected TraceNode observedFaultNode;
+	protected List<TraceNode> observedFaults;
 	
 	public abstract void prepare(Trace mutatedTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo);
 	
@@ -42,25 +43,27 @@ public abstract class Simulator {
 		return actualWrongNodes;
 	}
 	
-	protected TraceNode findObservedFault(List<TraceNode> wrongNodeList, PairList pairList){
-		
+	protected List<TraceNode> findObservedFault(List<TraceNode> wrongNodeList, PairList pairList){
+		List<TraceNode> observedFaults = new ArrayList<>();
 		for(TraceNode node: wrongNodeList) {
 			if (isInvokedByTearDownMethod(node)) {
 				continue;
 			}
 			else if(isObservedFaultWrongPath(node, pairList) && node.getControlDominator()==null) {
+				observedFaults.add(node);
 				if(node.isException()) {
-					return node;
+					return observedFaults;
 				}
 				
 				continue;
 			}
 			else {
-				return node;
+				observedFaults.add(node);
+				return observedFaults;
 			}
 		}
 		
-		return null;
+		return observedFaults;
 	}
 	
 	private boolean isInvokedByTearDownMethod(TraceNode node) {

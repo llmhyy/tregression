@@ -109,14 +109,13 @@ public class RootCauseFinder {
 		return null;
 	}
 	
-	public void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
+	private void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
 		getRegressionNodeList().add(observedFaultNode);
 		
 		List<TraceNodeW> workList = new ArrayList<>();
 		workList.add(new TraceNodeW(observedFaultNode, true));
 		
 		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-		
 		
 		while(!workList.isEmpty()){
 			TraceNodeW stepW = workList.remove(0);
@@ -168,7 +167,12 @@ public class RootCauseFinder {
 				
 			}
 		}
-		
+	}
+	
+	public void checkRootCause(List<TraceNode> observedFaults, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
+		for(TraceNode observedFaultNode:observedFaults){
+			checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
+		}
 	}
 
 	private TraceNode getInvocationMethodOrDominator(TraceNode step) {

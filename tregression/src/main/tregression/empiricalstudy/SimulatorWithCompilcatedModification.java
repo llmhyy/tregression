@@ -3,7 +3,6 @@ package tregression.empiricalstudy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,22 +48,22 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
 			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
 //			observedFaultNode = wrongNodeList.get(0);
-			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
-//			System.currentTimeMillis();
+			observedFaults = findObservedFault(wrongNodeList, getPairList());
+			System.currentTimeMillis();
 		}
 	}
 	
 	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
 			int optionSearchLimit) throws SimulationFailException {
-		if (observedFaultNode != null) {
+		if (observedFaults.isEmpty()) {
 			RootCauseFinder finder = new RootCauseFinder();
 			
 			long start = System.currentTimeMillis();
-			finder.checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
+			finder.checkRootCause(observedFaults, buggyTrace, correctTrace, pairList, matcher);
 			long end = System.currentTimeMillis();
 			int checkTime = (int) (end-start);
 
-			List<EmpiricalTrial> trials = startSimulation(observedFaultNode, buggyTrace, correctTrace, getPairList(), matcher, finder);
+			List<EmpiricalTrial> trials = startSimulation(observedFaults.get(0), buggyTrace, correctTrace, getPairList(), matcher, finder);
 			if(trials!=null) {
 				for(EmpiricalTrial trial: trials) {
 					trial.setSimulationTime(checkTime);
