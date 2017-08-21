@@ -50,6 +50,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
 //			observedFaultNode = wrongNodeList.get(0);
 			observedFaultNode = findObservedFault(wrongNodeList, getPairList());
+//			System.currentTimeMillis();
 		}
 	}
 	

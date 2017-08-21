@@ -43,10 +43,6 @@ public abstract class Simulator {
 	}
 	
 	protected TraceNode findObservedFault(List<TraceNode> wrongNodeList, PairList pairList){
-//		TraceNode exceptionNode = findExceptionNode(wrongNodeList);
-//		if(exceptionNode!=null) {
-//			return exceptionNode;
-//		}
 		
 		for(TraceNode node: wrongNodeList) {
 			if (isInvokedByTearDownMethod(node)) {
@@ -93,7 +89,7 @@ public abstract class Simulator {
 
 
 	protected boolean isObservedFaultWrongPath(TraceNode observableNode, PairList pairList){
-		TraceNodePair pair = pairList.findByAfterNode(observableNode);
+		TraceNodePair pair = pairList.findByBeforeNode(observableNode);
 		if(pair == null){
 			return true;
 		}
