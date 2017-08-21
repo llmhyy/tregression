@@ -54,7 +54,7 @@ public class ControlPathBasedTraceMatcher{
 	private IndexTreeNode initVirtualRootWrapper(Trace trace) {
 		TraceNode virtualNode = new TraceNode(null, null, -1);
 //		List<TraceNode> topList = trace.getTopMethodLevelNodes();
-		List<TraceNode> topList = trace.getTopAbstractionLevelNodes();
+		List<TraceNode> topList = trace.getTopMethodLevelNodes();
 		virtualNode.setInvocationChildren(topList);
 		
 		IndexTreeNode root = new IndexTreeNode(virtualNode);
