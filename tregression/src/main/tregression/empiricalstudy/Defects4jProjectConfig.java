@@ -7,49 +7,54 @@ public class Defects4jProjectConfig {
 	public String bytecodeSourceFolder;
 	public String buildFolder;
 	
+	public String projectName;
+	public int bugID;
+	
 
 	public Defects4jProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
-			String bytecodeSourceFolder, String buildFolder) {
+			String bytecodeSourceFolder, String buildFolder, String projectName, int bugID) {
 		super();
 		this.srcTestFolder = srcTestFolder;
 		this.srcSourceFolder = srcSourceFolder;
 		this.bytecodeTestFolder = bytecodeTestFolder;
 		this.bytecodeSourceFolder = bytecodeSourceFolder;
 		this.buildFolder = buildFolder;
+		this.projectName = projectName;
+		this.bugID = bugID;
 	}
 	
 	public static Defects4jProjectConfig getD4JConfig(String projectName, int bugID) {
 		if(projectName.equals("Chart")) {
-			return new Defects4jProjectConfig("tests", "source", "build-tests", "build", "build");
+			return new Defects4jProjectConfig("tests", "source", "build-tests", "build", "build", projectName, bugID);
 		}
 		else if (projectName.equals("Closure")) {
-			return new Defects4jProjectConfig("test", "src", "build/test", "build/classes", "build");
+			return new Defects4jProjectConfig("test", "src", "build/test", "build/classes", "build", projectName, bugID);
 		}
 		else if (projectName.equals("Lang")) {
 			if(bugID<42){
-				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/tests", "target/classes", "target");				
+				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/tests", "target/classes", "target", projectName, bugID);				
 			}
 			else{
-				return new Defects4jProjectConfig("src/test", "src/java", "target/tests", "target/classes", "target");
+				return new Defects4jProjectConfig("src/test", "src/java", "target/tests", "target/classes", "target", projectName, bugID);
 			}
 		}
 		else if (projectName.equals("Math")) {
 			if(bugID<85){
-				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target");	
+				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target", projectName, bugID);	
 			}
 			else{
-				return new Defects4jProjectConfig("src/test", "src/java", "target/test-classes", "target/classes", "target");
+				return new Defects4jProjectConfig("src/test", "src/java", "target/test-classes", "target/classes", "target", projectName, bugID);
 			}
 		}
 		else if (projectName.equals("Mockito")) {
-			return new Defects4jProjectConfig("test", "src", "build/classes/test", "build/classes/main", "build");
+			return new Defects4jProjectConfig("test", "src", "build/classes/test", "build/classes/main", "build", projectName, bugID);
 		}
 		else if (projectName.equals("Time")) {
 			if(bugID<12){
-				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target");				
+				return new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target", projectName, bugID);				
 			}
 			else{
-				return new Defects4jProjectConfig("src/test/java", "src/main/java", "build/tests", "build/classes", "build");
+				return new Defects4jProjectConfig("src/test/java", "src/main/java", "build/tests", "build/classes", "build", projectName, bugID);
 			}
 		}
 		

@@ -13,7 +13,7 @@ import tregression.model.TraceNodePair;
 public abstract class Simulator {
 	
 	protected PairList pairList;
-	protected List<TraceNode> observedFaults;
+	private List<TraceNode> observedFaults;
 	
 	public abstract void prepare(Trace mutatedTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo);
 	
@@ -102,5 +102,15 @@ public abstract class Simulator {
 		}
 		
 		return false;
+	}
+
+
+	public List<TraceNode> getObservedFaults() {
+		return observedFaults;
+	}
+
+
+	public void setObservedFaults(List<TraceNode> observedFaults) {
+		this.observedFaults = observedFaults;
 	}
 }

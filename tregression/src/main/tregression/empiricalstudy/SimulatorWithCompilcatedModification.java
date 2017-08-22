@@ -48,22 +48,22 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
 			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
 //			observedFaultNode = wrongNodeList.get(0);
-			observedFaults = findObservedFault(wrongNodeList, getPairList());
+			setObservedFaults(findObservedFault(wrongNodeList, getPairList()));
 			System.currentTimeMillis();
 		}
 	}
 	
 	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
 			int optionSearchLimit) throws SimulationFailException {
-		if (!observedFaults.isEmpty()) {
+		if (!getObservedFaults().isEmpty()) {
 			RootCauseFinder finder = new RootCauseFinder();
 			
 			long start = System.currentTimeMillis();
-			finder.checkRootCause(observedFaults, buggyTrace, correctTrace, pairList, matcher);
+			finder.checkRootCause(getObservedFaults(), buggyTrace, correctTrace, pairList, matcher);
 			long end = System.currentTimeMillis();
 			int checkTime = (int) (end-start);
 
-			List<EmpiricalTrial> trials = startSimulation(observedFaults.get(0), buggyTrace, correctTrace, getPairList(), matcher, finder);
+			List<EmpiricalTrial> trials = startSimulation(getObservedFaults().get(0), buggyTrace, correctTrace, getPairList(), matcher, finder);
 			if(trials!=null) {
 				for(EmpiricalTrial trial: trials) {
 					trial.setSimulationTime(checkTime);

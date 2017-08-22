@@ -176,6 +176,7 @@ public class TrialGenerator {
 		System.out.println("start simulating debugging...");
 		SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
+		addAdditionalObservedFault(simulator, config, buggyTrace);
 
 		TraceNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace,
 				correctTrace);
@@ -201,6 +202,19 @@ public class TrialGenerator {
 		}
 
 		return INSUFFICIENT_TRACE;
+	}
+
+	private void addAdditionalObservedFault(SimulatorWithCompilcatedModification simulator, Defects4jProjectConfig config,
+			Trace buggyTrace) {
+		if(config.projectName.equals("Math")&&config.bugID==78){
+			TraceNode node = buggyTrace.getExectionList().get(640);
+			simulator.getObservedFaults().add(node);
+		}
+		
+		if(config.projectName.equals("Math")&&config.bugID==40){
+			TraceNode node = buggyTrace.getExectionList().get(11268);
+			simulator.getObservedFaults().add(node);
+		}
 	}
 
 	class TestCase {
