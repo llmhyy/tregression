@@ -172,6 +172,10 @@ public class RootCauseFinder {
 	public void checkRootCause(List<TraceNode> observedFaults, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
 		for(TraceNode observedFaultNode:observedFaults){
 			checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
+			TraceNode root = retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
+			if(root!=null){
+				break;
+			}
 		}
 	}
 
