@@ -245,11 +245,11 @@ public class StepDetailUI {
 
 				setChecks(writtenVariableTreeViewer, RW);
 				setChecks(readVariableTreeViewer, RW);
-				setChecks(stateTreeViewer, STATE);
+				//setChecks(stateTreeViewer, STATE);
 
 				writtenVariableTreeViewer.refresh();
 				readVariableTreeViewer.refresh();
-				stateTreeViewer.refresh();
+				//stateTreeViewer.refresh();
 
 			}
 
@@ -377,7 +377,7 @@ public class StepDetailUI {
 
 	}
 
-	private CheckboxTreeViewer stateTreeViewer;
+	//private CheckboxTreeViewer stateTreeViewer;
 	private CheckboxTreeViewer writtenVariableTreeViewer;
 	private CheckboxTreeViewer readVariableTreeViewer;
 
@@ -398,7 +398,7 @@ public class StepDetailUI {
 
 				setChecks(readVariableTreeViewer, RW);
 				setChecks(writtenVariableTreeViewer, RW);
-				setChecks(stateTreeViewer, STATE);
+				//setChecks(stateTreeViewer, STATE);
 
 				Display.getDefault().asyncExec(new Runnable() {
 
@@ -406,7 +406,7 @@ public class StepDetailUI {
 					public void run() {
 						readVariableTreeViewer.refresh();
 						writtenVariableTreeViewer.refresh();
-						stateTreeViewer.refresh();
+						//stateTreeViewer.refresh();
 					}
 				});
 
@@ -420,11 +420,11 @@ public class StepDetailUI {
 
 		this.readVariableTreeViewer.addTreeListener(treeListener);
 		this.writtenVariableTreeViewer.addTreeListener(treeListener);
-		this.stateTreeViewer.addTreeListener(treeListener);
+		//this.stateTreeViewer.addTreeListener(treeListener);
 
 		this.writtenVariableTreeViewer.addCheckStateListener(new RWVarListener(Variable.WRITTEN));
 		this.readVariableTreeViewer.addCheckStateListener(new RWVarListener(Variable.READ));
-		this.stateTreeViewer.addCheckStateListener(new RWVarListener(Variable.READ));
+		//this.stateTreeViewer.addCheckStateListener(new RWVarListener(Variable.READ));
 
 	}
 	
@@ -469,7 +469,7 @@ public class StepDetailUI {
 		
 		this.readVariableTreeViewer = createVarGroup(comp, "Read Variables: ");
 		this.writtenVariableTreeViewer = createVarGroup(comp, "Written Variables: ");
-		this.stateTreeViewer = createVarGroup(comp, "States: ");
+		//this.stateTreeViewer = createVarGroup(comp, "States: ");
 		
 		addListener();
 		
@@ -527,15 +527,15 @@ public class StepDetailUI {
 		this.readVariableTreeViewer.refresh(true);
 	}
 
-	private void createStateContent(BreakPointValue value){
-		this.stateTreeViewer.setContentProvider(new VariableContentProvider());
-		this.stateTreeViewer.setLabelProvider(new VariableLabelProvider());
-		this.stateTreeViewer.setInput(value);	
-		
-		setChecks(this.stateTreeViewer, STATE);
-
-		this.stateTreeViewer.refresh(true);
-	}
+//	private void createStateContent(BreakPointValue value){
+//		this.stateTreeViewer.setContentProvider(new VariableContentProvider());
+//		this.stateTreeViewer.setLabelProvider(new VariableLabelProvider());
+//		this.stateTreeViewer.setInput(value);	
+//		
+//		setChecks(this.stateTreeViewer, STATE);
+//
+//		this.stateTreeViewer.refresh(true);
+//	}
 	
 	private void setChecks(CheckboxTreeViewer treeViewer, String type){
 		Tree tree = treeViewer.getTree();
@@ -585,13 +585,13 @@ public class StepDetailUI {
 		this.currentNode = node;
 		
 		if(node != null){
-			BreakPointValue thisState = node.getProgramState();
-			createStateContent(thisState);
+			//BreakPointValue thisState = node.getProgramState();
+			//createStateContent(thisState);
 			createWrittenVariableContent(node.getWrittenVariables());
 			createReadVariableContect(node.getReadVariables());			
 		}
 		else{
-			createStateContent(null);
+			//createStateContent(null);
 			createWrittenVariableContent(null);
 			createReadVariableContect(null);	
 		}
