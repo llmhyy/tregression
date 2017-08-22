@@ -299,7 +299,7 @@ public class RootCauseFinder {
 		 */
 		int order0 = findStartOrderInOtherTrace(problematicStep, pairList, isOnBeforeTrace);
 		if(order0+1<=otherTrace.size()){
-			TraceNode n = otherTrace.getExectionList().get(order0-1);
+			TraceNode n = otherTrace.getExectionList().get(order0);
 			while(n!=null){
 				if(n.isConditional()){
 					if(n.getStepOverNext()!=null){
