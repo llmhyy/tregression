@@ -7,6 +7,7 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
+import microbat.model.value.VirtualValue;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
@@ -112,6 +113,7 @@ public class StepChangeTypeChecker {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		
+		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
 		
 		for(VarValue thatVar: thatStep.getReadVariables()){
 			if (thatVar.getVarName().equals(thisVar.getVarName())) {
@@ -136,6 +138,10 @@ public class StepChangeTypeChecker {
 				}
 				
 				if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
+					if(containsVirtual){
+						return true;
+					}
+					
 					ReferenceValue thisRefVar = (ReferenceValue)thisVar;
 					ReferenceValue thatRefVar = (ReferenceValue)thatVar;
 					
@@ -153,6 +159,24 @@ public class StepChangeTypeChecker {
 		}
 		
 		return false;
+	}
+
+	private boolean checkReturnVariable(TraceNode thisStep, TraceNode thatStep) {
+		boolean isThisStepContainVirtual = false;
+		boolean isThatStepContainVirtual = false;
+		for(VarValue readVar: thisStep.getReadVariables()){
+			if(readVar instanceof VirtualValue){
+				isThisStepContainVirtual = true;
+			}
+		}
+		
+		for(VarValue readVar: thatStep.getReadVariables()){
+			if(readVar instanceof VirtualValue){
+				isThatStepContainVirtual = true;
+			}
+		}
+		
+		return isThisStepContainVirtual&&isThatStepContainVirtual;
 	}
 
 	public Trace getBuggyTrace() {
