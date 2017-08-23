@@ -171,11 +171,11 @@ public class IndexTreeMacher implements Matcher {
 	
 	private List<Bucket> divideBuckets(List<? extends GraphNode> childrenBefore,
 			List<? extends GraphNode> childrenAfter) {
-		BreakPoint sourcePoint = ((IndexTreeNode)childrenBefore.get(0)).getBreakPoint();
-		FilePairWithDiff diff = diffMatcher.findDiffBySourceFile(sourcePoint);
 		List<Bucket> buckets = new ArrayList<>();
 		
 		for(GraphNode nodeBefore: childrenBefore){
+			BreakPoint sourcePoint = ((IndexTreeNode)nodeBefore).getBreakPoint();
+			FilePairWithDiff diff = diffMatcher.findDiffBySourceFile(sourcePoint);
 			IndexTreeNode tNodeBefore = (IndexTreeNode)nodeBefore;
 			List<Integer> targetLines = null;
 			if(diff!=null){
@@ -194,6 +194,8 @@ public class IndexTreeMacher implements Matcher {
 		}
 		
 		for(GraphNode nodeAfter: childrenAfter){
+			BreakPoint targetPoint = ((IndexTreeNode)nodeAfter).getBreakPoint();
+			FilePairWithDiff diff = diffMatcher.findDiffByTargetFile(targetPoint);
 			IndexTreeNode tNodeAfter = (IndexTreeNode)nodeAfter;
 			List<Integer> sourceLines = null;
 			if(diff!=null){
