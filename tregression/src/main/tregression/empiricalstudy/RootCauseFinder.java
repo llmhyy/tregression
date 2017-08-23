@@ -1,4 +1,4 @@
-package tregression;
+package tregression.empiricalstudy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +12,8 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.trace.TraceNodeOrderComparator;
 import microbat.model.value.VarValue;
-import tregression.empiricalstudy.MatchStepFinder;
+import tregression.StepChangeType;
+import tregression.StepChangeTypeChecker;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
@@ -76,36 +77,21 @@ public class RootCauseFinder {
 		return null;
 	}
 	
-	public TraceNode getRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
-		TraceNode endCorrectTraceNode = correctTrace.getLastestNode();
+	public RootCauseNode getRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
 		for(int i=buggyTrace.size()-1; i>=0; i--) {
 			TraceNode buggyNode = buggyTrace.getExectionList().get(i);
-			
 			if(matcher.checkSourceDiff(buggyNode.getBreakPoint(), true)) {
-				return buggyNode;
-			}
-			
-			TraceNode correctNode = findCorrespondingCorrectNode(pairList, buggyNode);
-			if(correctNode!=null) {
-				if (matcher.checkSourceDiff(correctNode.getBreakPoint(), false)) {
-					return buggyNode;					
-				}
-			}
-			
-			if(correctNode!=null && correctNode.getOrder()-1 != endCorrectTraceNode.getOrder()) {
-				for(int j=correctNode.getOrder()+1; j<endCorrectTraceNode.getOrder(); j++) {
-					TraceNode intermediateNode = correctTrace.getExectionList().get(j-1);
-					if (matcher.checkSourceDiff(intermediateNode.getBreakPoint(), false)) {
-						return buggyNode;
-					}
-				}
-			}
-			
-			if(correctNode!=null) {
-				endCorrectTraceNode = correctNode;					
+				return new RootCauseNode(buggyNode, true);
 			}
 		}
-		System.currentTimeMillis();
+		
+		for(int i=correctTrace.size()-1; i>=0; i--) {
+			TraceNode correctTraceNode = correctTrace.getExectionList().get(i);
+			if(matcher.checkSourceDiff(correctTraceNode.getBreakPoint(), false)) {
+				return new RootCauseNode(correctTraceNode, false);
+			}
+		}
+		
 		return null;
 	}
 	
@@ -126,6 +112,7 @@ public class RootCauseFinder {
 			
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
+				System.currentTimeMillis();
 				System.currentTimeMillis();
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
@@ -173,6 +160,7 @@ public class RootCauseFinder {
 		for(TraceNode observedFaultNode:observedFaults){
 			checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
 			TraceNode root = retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
+			System.currentTimeMillis();
 			if(root!=null){
 				break;
 			}

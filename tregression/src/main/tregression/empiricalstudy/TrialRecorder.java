@@ -124,7 +124,7 @@ public class TrialRecorder {
 		
 		order = -1;
 		if(trial.getRealcauseNode()!=null) {
-			order = trial.getRealcauseNode().getOrder();
+			order = trial.getRealcauseNode().getRoot().getOrder();
 		}
 		row.createCell(4).setCellValue(order);
 		

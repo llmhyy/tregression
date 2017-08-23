@@ -14,7 +14,6 @@ import microbat.model.trace.TraceNodeReverseOrderComparator;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
-import tregression.RootCauseFinder;
 import tregression.SimulationFailException;
 import tregression.Simulator;
 import tregression.StepChangeType;
@@ -163,7 +162,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		currentNode = state.currentNode;
 		
 		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
-		TraceNode realcauseNode = rootCauseFinder.getRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
+		RootCauseNode realcauseNode = rootCauseFinder.getRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
 		
 		long startTime = System.currentTimeMillis();
 		

@@ -16,7 +16,7 @@ public class EmpiricalTrial {
 	private String testcase;
 	
 	private TraceNode rootcauseNode;
-	private TraceNode realcauseNode;
+	private RootCauseNode realcauseNode;
 	
 	private int traceCollectionTime;
 	private int traceMatchTime;
@@ -35,7 +35,7 @@ public class EmpiricalTrial {
 	private String exceptionExplanation;
 
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
-			TraceNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
+			RootCauseNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
 			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength,
 			List<TraceNode> visitedRegressionNodes, List<TraceNode> visitedCorrectNodes, int totalVisitedNodesNum) {
 		super();
@@ -71,7 +71,8 @@ public class EmpiricalTrial {
 		buffer.append("trial type: " + type + "\n");
 		int rootcauseOrder = (this.rootcauseNode==null)? -1 : this.rootcauseNode.getOrder();
 		buffer.append("found root cause: " + rootcauseOrder + "\n");
-		buffer.append("real root cause: " + this.realcauseNode + "\n");
+		String realcauseOrder = (this.realcauseNode==null)? "-1" : this.realcauseNode.toString();
+		buffer.append("real root cause: " + realcauseOrder + "\n");
 		buffer.append("over skip length: " + this.overskipLength + "\n");
 		buffer.append("explanation size: " + this.totalVisitedNodesNum + "\n");
 		buffer.append("debugging trace: \n");
@@ -111,11 +112,11 @@ public class EmpiricalTrial {
 		return this.rootcauseNode;
 	}
 
-	public TraceNode getRealcauseNode() {
+	public RootCauseNode getRealcauseNode() {
 		return realcauseNode;
 	}
 
-	public void setRealcauseNode(TraceNode realcauseNode) {
+	public void setRealcauseNode(RootCauseNode realcauseNode) {
 		this.realcauseNode = realcauseNode;
 	}
 

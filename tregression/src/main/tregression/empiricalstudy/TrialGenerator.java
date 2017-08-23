@@ -10,7 +10,6 @@ import java.util.List;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.util.Settings;
-import tregression.RootCauseFinder;
 import tregression.SimulationFailException;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
@@ -178,7 +177,7 @@ public class TrialGenerator {
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		addAdditionalObservedFault(simulator, config, buggyTrace);
 
-		TraceNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace,
+		RootCauseNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace,
 				correctTrace);
 		if (realcauseNode == null) {
 			return INSUFFICIENT_TRACE;
@@ -200,25 +199,27 @@ public class TrialGenerator {
 			trials.add(trials0.get(0));
 			return NORMAL;
 		}
-
+		
 		return INSUFFICIENT_TRACE;
 	}
 
 	private void addAdditionalObservedFault(SimulatorWithCompilcatedModification simulator, Defects4jProjectConfig config,
 			Trace buggyTrace) {
-		simulator.getObservedFaults().clear();
 		
 		if(config.projectName.equals("Math")&&config.bugID==78){
+			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExectionList().get(640);
 			simulator.getObservedFaults().add(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==40){
+			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExectionList().get(11268);
 			simulator.getObservedFaults().add(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==49){
+			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExectionList().get(449);
 			simulator.getObservedFaults().add(node);
 		}
