@@ -139,7 +139,9 @@ public class StepChangeTypeChecker {
 					ReferenceValue thisRefVar = (ReferenceValue)thisVar;
 					ReferenceValue thatRefVar = (ReferenceValue)thatVar;
 					
-					return thisRefVar.getStringContainingAllChildren().equals(thatRefVar.getStringContainingAllChildren());
+					String thisString = thisRefVar.getStringContainingAllChildren();
+					String thatString = thatRefVar.getStringContainingAllChildren();
+					return thisString.equals(thatString);
 				}
 				else {
 					String thisString = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
