@@ -122,15 +122,15 @@ public class StepChangeTypeChecker {
 					TraceNodePair pair = pairList.findByAfterNode(thatDom);
 					if(pair != null && pair.getBeforeNode()!=null && thisDom!=null) {
 						if(pair.getBeforeNode().getOrder()!=thisDom.getOrder()){
-							return true;
+							return false;
 						}
 					}
 				}
 				else {
 					TraceNodePair pair = pairList.findByAfterNode(thisDom);
 					if(pair != null && pair.getBeforeNode()!=null && thatDom!=null) {
-						if(pair.getBeforeNode().getOrder()==thatDom.getOrder()){
-							return true;
+						if(pair.getBeforeNode().getOrder()!=thatDom.getOrder()){
+							return false;
 						}
 					}
 				}
