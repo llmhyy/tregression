@@ -41,12 +41,12 @@ public class StepChangeTypeChecker {
 		
 		TraceNode matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, step, pairList);
 		
-		if(matchedStep==null) {
-			TraceNode stepOverStep = findPreviousStepOverStepWithSameLine(step);
-			if(stepOverStep!=null) {
-				matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, stepOverStep, pairList);				
-			}
-		}
+//		if(matchedStep==null) {
+//			TraceNode stepOverStep = findPreviousStepOverStepWithSameLine(step);
+//			if(stepOverStep!=null) {
+//				matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, stepOverStep, pairList);				
+//			}
+//		}
 		
 		boolean isSourceDiff = matcher.checkSourceDiff(step.getBreakPoint(), isOnBeforeTrace);
 		if(isSourceDiff){
