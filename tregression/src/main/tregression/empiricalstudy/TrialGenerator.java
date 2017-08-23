@@ -223,6 +223,12 @@ public class TrialGenerator {
 			TraceNode node = buggyTrace.getExectionList().get(449);
 			simulator.getObservedFaults().add(node);
 		}
+		
+		if(config.projectName.equals("Math")&&config.bugID==1){
+			simulator.getObservedFaults().clear();
+			TraceNode node = buggyTrace.getExectionList().get(1478);
+			simulator.getObservedFaults().add(node);
+		}
 	}
 
 	class TestCase {
