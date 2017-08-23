@@ -206,6 +206,8 @@ public class TrialGenerator {
 
 	private void addAdditionalObservedFault(SimulatorWithCompilcatedModification simulator, Defects4jProjectConfig config,
 			Trace buggyTrace) {
+		simulator.getObservedFaults().clear();
+		
 		if(config.projectName.equals("Math")&&config.bugID==78){
 			TraceNode node = buggyTrace.getExectionList().get(640);
 			simulator.getObservedFaults().add(node);
@@ -213,6 +215,11 @@ public class TrialGenerator {
 		
 		if(config.projectName.equals("Math")&&config.bugID==40){
 			TraceNode node = buggyTrace.getExectionList().get(11268);
+			simulator.getObservedFaults().add(node);
+		}
+		
+		if(config.projectName.equals("Math")&&config.bugID==49){
+			TraceNode node = buggyTrace.getExectionList().get(449);
 			simulator.getObservedFaults().add(node);
 		}
 	}
