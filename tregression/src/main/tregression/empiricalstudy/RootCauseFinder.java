@@ -110,6 +110,10 @@ public class RootCauseFinder {
 			StepChangeType changeType = typeChecker.getType(step, stepW.isOnBefore, pairList, matcher);
 			Trace trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 			
+//			String isBefore = stepW.isOnBefore?"before":"after";
+//			System.out.println("On " + isBefore + " trace," + step);
+//			System.out.println("It's a " + changeType.getType() + " type");
+			
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
 				System.currentTimeMillis();
@@ -137,7 +141,14 @@ public class RootCauseFinder {
 			}
 			else if(changeType.getType()==StepChangeType.CTL){
 //				TraceNode controlDom = step.getControlDominator();
-				TraceNode controlDom = getInvocationMethodOrDominator(step);
+//				TraceNode controlDom = getInvocationMethodOrDominator(step);
+				TraceNode controlDom = step.getControlDominator();
+				if(controlDom==null){
+					TraceNode invocationParent = step.getInvocationParent();
+					if(!isMatchable(invocationParent, pairList, stepW.isOnBefore)){
+						controlDom = invocationParent;
+					}
+				}
 				addWorkNode(workList, controlDom, stepW.isOnBefore);
 				
 				trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
@@ -156,6 +167,26 @@ public class RootCauseFinder {
 		}
 	}
 	
+	private boolean isMatchable(TraceNode invocationParent, PairList pairList, boolean isOnBefore) {
+		if(isOnBefore){
+			TraceNodePair pair = pairList.findByBeforeNode(invocationParent);
+			if(pair!=null){
+				if(pair.getAfterNode()!=null){
+					return true;
+				}
+			}
+		}
+		else{
+			TraceNodePair pair = pairList.findByAfterNode(invocationParent);
+			if(pair!=null){
+				if(pair.getBeforeNode()!=null){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public void checkRootCause(List<TraceNode> observedFaults, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
 		for(TraceNode observedFaultNode:observedFaults){
 			checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
@@ -395,14 +426,14 @@ public class RootCauseFinder {
 				/**
 				 * method invocation will cause a return step with the same line number
 				 */
-				TraceNode previous = node.getStepOverPrevious();
-				if(previous!=null && previous.getLineNumber()==node.getLineNumber()) {
-					addWorkNode(workList, previous, isOnBeforeTrace);
-				}
-				TraceNode next = node.getStepOverNext();
-				if(next!=null && next.getLineNumber()==node.getLineNumber()) {
-					addWorkNode(workList, next, isOnBeforeTrace);
-				}
+//				TraceNode previous = node.getStepOverPrevious();
+//				if(previous!=null && previous.getLineNumber()==node.getLineNumber()) {
+//					addWorkNode(workList, previous, isOnBeforeTrace);
+//				}
+//				TraceNode next = node.getStepOverNext();
+//				if(next!=null && next.getLineNumber()==node.getLineNumber()) {
+//					addWorkNode(workList, next, isOnBeforeTrace);
+//				}
 			}
 		}
 		
