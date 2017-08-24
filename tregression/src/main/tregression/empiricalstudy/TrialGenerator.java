@@ -124,12 +124,14 @@ public class TrialGenerator {
 			pairList = cachedPairList;
 		} else {
 			Settings.compilationUnitMap.clear();
+			Settings.iCompilationUnitMap.clear();
 			buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config);
 			if (buggyRS.getRunningType() != NORMAL) {
 				return buggyRS.getRunningType();
 			}
 
 			Settings.compilationUnitMap.clear();
+			Settings.iCompilationUnitMap.clear();
 			correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config);
 			if (correctRs.getRunningType() != NORMAL) {
 				return correctRs.getRunningType();
