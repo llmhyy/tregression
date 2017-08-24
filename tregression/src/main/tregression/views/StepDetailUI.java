@@ -139,40 +139,41 @@ public class StepDetailUI {
 		@Override
 		public Object[] getChildren(Object parentElement) {
 			if (parentElement instanceof ReferenceValue) {
-				ReferenceValue parent = (ReferenceValue) parentElement;
-
-				List<VarValue> children = ((ReferenceValue) parentElement).getChildren();
-				if (children == null) {
-					String varID = parent.getVarID();
-					varID = Variable.truncateSimpleID(varID);
-					// varID = varID.substring(0, varID.indexOf(":"));
-
-					VarValue vv = null;
-					/** read */
-					if (rw) {
-						vv = currentNode.getProgramState().findVarValue(varID);
-					}
-					/** write */
-					else {
-						if (currentNode.getStepOverNext() != null) {
-							vv = currentNode.getStepOverNext().getProgramState().findVarValue(varID);
-						}
-
-						if (currentNode.getStepInNext() != null) {
-							vv = currentNode.getStepInNext().getProgramState().findVarValue(varID);
-						}
-					}
-
-					if (vv != null) {
-						List<VarValue> retrievedChildren = vv.getAllDescedentChildren();
-						MicroBatUtil.assignWrittenIdentifier(retrievedChildren, currentNode);
-
-						parent.setChildren(vv.getChildren());
-						return vv.getChildren().toArray(new VarValue[0]);
-					}
-				} else {
-					return parent.getChildren().toArray(new VarValue[0]);
-				}
+				return new ArrayList<>().toArray(new VarValue[0]);
+				
+//				ReferenceValue parent = (ReferenceValue) parentElement;
+//				List<VarValue> children = ((ReferenceValue) parentElement).getChildren();
+//				if (children == null) {
+//					String varID = parent.getVarID();
+//					varID = Variable.truncateSimpleID(varID);
+//					// varID = varID.substring(0, varID.indexOf(":"));
+//
+//					VarValue vv = null;
+//					/** read */
+//					if (rw) {
+//						vv = currentNode.getProgramState().findVarValue(varID);
+//					}
+//					/** write */
+//					else {
+//						if (currentNode.getStepOverNext() != null) {
+//							vv = currentNode.getStepOverNext().getProgramState().findVarValue(varID);
+//						}
+//
+//						if (currentNode.getStepInNext() != null) {
+//							vv = currentNode.getStepInNext().getProgramState().findVarValue(varID);
+//						}
+//					}
+//
+//					if (vv != null) {
+//						List<VarValue> retrievedChildren = vv.getAllDescedentChildren();
+//						MicroBatUtil.assignWrittenIdentifier(retrievedChildren, currentNode);
+//
+//						parent.setChildren(vv.getChildren());
+//						return vv.getChildren().toArray(new VarValue[0]);
+//					}
+//				} else {
+//					return parent.getChildren().toArray(new VarValue[0]);
+//				}
 			}
 
 			return null;
