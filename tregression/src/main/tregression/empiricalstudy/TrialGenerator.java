@@ -10,9 +10,11 @@ import java.util.List;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.util.Settings;
+import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
+import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.RunningResult;
 import tregression.separatesnapshots.TraceCollector;
@@ -59,10 +61,20 @@ public class TrialGenerator {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
 
+				MainMethodGenerator generator = new MainMethodGenerator();
+				AppJavaClassPath appCP = AppClassPathInitializer.initialize(buggyPath, tc.testClass, tc.testMethod, config);
+				String relativePath = tc.testClass.replace(".", File.separator) + ".java";
+				String sourcePath = appCP.getTestCodePath() + File.separator + relativePath;
+				
+				generator.generateMainMethod(sourcePath, tc);
+				
 				int res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization);
 				if (res == NORMAL) {
 					return trials;
-				} else {
+				} 
+				else if(res == INSUFFICIENT_TRACE) {
+				}
+				else {
 					String explanation = getProblemType(res);
 					System.out.println("[*NOTICE*] " + explanation);
 					EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
