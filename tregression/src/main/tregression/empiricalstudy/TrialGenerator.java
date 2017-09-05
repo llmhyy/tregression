@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -61,18 +62,29 @@ public class TrialGenerator {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
 
-				MainMethodGenerator generator = new MainMethodGenerator();
-				AppJavaClassPath appCP = AppClassPathInitializer.initialize(buggyPath, tc.testClass, tc.testMethod, config);
-				String relativePath = tc.testClass.replace(".", File.separator) + ".java";
-				String sourcePath = appCP.getTestCodePath() + File.separator + relativePath;
-				
-				generator.generateMainMethod(sourcePath, tc);
-				
-				int res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization);
+				int res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, true);
 				if (res == NORMAL) {
+					if(!trials.isEmpty()) {
+						EmpiricalTrial t = trials.get(0);
+						if(t.getRealcauseNode()==null) {
+							//TODO
+							//use main method to trace again
+							//trials = new ArrayList<>();
+						}
+					}
+					
 					return trials;
 				} 
-				else if(res == INSUFFICIENT_TRACE) {
+				else if(res == INSUFFICIENT_TRACE){
+					generateMainMethod(buggyPath, tc, config);
+					recompileD4J(buggyPath, config);
+					generateMainMethod(fixPath, tc, config);
+					recompileD4J(buggyPath, config);
+					
+					trials = new ArrayList<>();
+					res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, false);
+					
+					return trials;
 				}
 				else {
 					String explanation = getProblemType(res);
@@ -99,8 +111,44 @@ public class TrialGenerator {
 		return trials;
 	}
 
+	private void recompileD4J(String workingPath, Defects4jProjectConfig config) {
+		File pathToExecutable = new File(config.rootPath);
+		ProcessBuilder builder = new ProcessBuilder(pathToExecutable.getAbsolutePath(), "compile");
+		builder.directory(new File(workingPath).getAbsoluteFile() ); // this is where you set the root folder for the executable to run with
+		builder.redirectErrorStream(true);
+		Process process;
+		try {
+			process = builder.start();
+			Scanner s = new Scanner(process.getInputStream());
+			StringBuilder text = new StringBuilder();
+			while (s.hasNextLine()) {
+				text.append(s.nextLine());
+				text.append("\n");
+			}
+			s.close();
+			
+			int result = process.waitFor();
+			
+			System.out.printf( "Process exited with result %d and output %s%n", result, text );
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		
+	}
+
+	private void generateMainMethod(String workingPath, TestCase tc, Defects4jProjectConfig config) {
+		MainMethodGenerator generator = new MainMethodGenerator();
+		AppJavaClassPath appCP = AppClassPathInitializer.initialize(workingPath, tc.testClass, tc.testMethod, config);
+		String relativePath = tc.testClass.replace(".", File.separator) + ".java";
+		String sourcePath = appCP.getTestCodePath() + File.separator + relativePath;
+		
+		generator.generateMainMethod(sourcePath, tc);
+	}
+
 	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, List<EmpiricalTrial> trials,
-			TestCase tc, Defects4jProjectConfig config, boolean requireVisualization) throws SimulationFailException {
+			TestCase tc, Defects4jProjectConfig config, boolean requireVisualization, boolean isRunInTestCaseMode) 
+					throws SimulationFailException {
 		TraceCollector collector = new TraceCollector();
 		long time1 = 0;
 		long time2 = 0;
@@ -151,9 +199,9 @@ public class TrialGenerator {
 
 			if (buggyRS != null && correctRs != null) {
 				Settings.compilationUnitMap.clear();
-				buggyRS = collector.run(buggyRS);
+				buggyRS = collector.run(buggyRS, isRunInTestCaseMode);
 				Settings.compilationUnitMap.clear();
-				correctRs = collector.run(correctRs);
+				correctRs = collector.run(correctRs, isRunInTestCaseMode);
 
 				cachedBuggyRS = buggyRS;
 				cachedCorrectRS = correctRs;

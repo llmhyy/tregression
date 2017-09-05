@@ -1,7 +1,6 @@
 package tregression;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -11,8 +10,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdi.TimeoutException;
 
-import microbat.codeanalysis.ast.LocalVariableScope;
-import microbat.codeanalysis.ast.VariableScopeParser;
 import microbat.codeanalysis.bytecode.BPVariableRetriever;
 import microbat.codeanalysis.runtime.ProgramExecutor;
 import microbat.model.BreakPoint;
@@ -32,7 +29,7 @@ public class TraceModelConstructor {
 	}
 	
 	public Trace constructTraceModel(AppJavaClassPath appClassPath, List<BreakPoint> executingStatements, List<BreakPoint> executionOrderList,
-			int stepNum, boolean isForEvaluation) throws TimeoutException{
+			int stepNum, boolean isOptimizeByteCodeCompilation, boolean isRunInTestCaseMode) throws TimeoutException{
 		
 		setup();
 		
@@ -46,7 +43,7 @@ public class TraceModelConstructor {
 		BPVariableRetriever retriever = new BPVariableRetriever(executingStatements);
 		List<BreakPoint> runningStatements = null;
 		try {
-			runningStatements = retriever.parsingBreakPoints(appClassPath, isForEvaluation);
+			runningStatements = retriever.parsingBreakPoints(appClassPath, isOptimizeByteCodeCompilation);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -63,7 +60,7 @@ public class TraceModelConstructor {
 		tcExecutor.setConfig(appClassPath);
 		try {
 			tcExecutor.run(runningStatements, executionOrderList,
-					new SubProgressMonitor(new NullProgressMonitor(), 0), stepNum, true);
+					new SubProgressMonitor(new NullProgressMonitor(), 0), stepNum, isRunInTestCaseMode);
 		} catch (SavException e) {
 			e.printStackTrace();
 		}

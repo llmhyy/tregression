@@ -14,6 +14,8 @@ import tregression.junit.TestCaseRunner;
 
 public class TraceCollector {
 	
+	private boolean runInTestCaseMode = true;
+	
 	
 	public RunningResult preCheck(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config) {
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, testClass, testMethod, config);
@@ -24,7 +26,7 @@ public class TraceCollector {
 		TestCaseRunner checker = new TestCaseRunner();
 		
 		checker.addLibExcludeList(exlcudes);
-		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, true);
+		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, runInTestCaseMode);
 		
 		if(checker.isOverLong()) {
 			System.out.println("The trace is over long!");
@@ -62,20 +64,28 @@ public class TraceCollector {
 		return rs;
 	}
 
-	public RunningResult run(RunningResult result){
+	public RunningResult run(RunningResult result, boolean isRunInTestCaseMode){
 		
 		TraceModelConstructor constructor = new TraceModelConstructor();
 		TestCaseRunner checker = result.getChecker();
 		
 		long t1 = System.currentTimeMillis();
 		Trace trace = constructor.constructTraceModel(result.getAppClassPath(), result.getExecutedStatements(), 
-				checker.getExecutionOrderList(), checker.getStepNum(), false);
+				checker.getExecutionOrderList(), checker.getStepNum(), false, isRunInTestCaseMode);
 		long t2 = System.currentTimeMillis();
 		int time = (int) (t2-t1);
 		trace.setConstructTime(time);
 		
 		result.setRunningTrace(trace);
 		return result;
+	}
+
+	public boolean isRunInTestCaseMode() {
+		return runInTestCaseMode;
+	}
+
+	public void setRunInTestCaseMode(boolean runInTestCaseMode) {
+		this.runInTestCaseMode = runInTestCaseMode;
 	}
 
 	

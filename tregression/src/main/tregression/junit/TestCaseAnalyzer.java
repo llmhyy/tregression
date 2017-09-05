@@ -160,7 +160,7 @@ public class TestCaseAnalyzer {
 			
 			System.out.println("The correct consists of " + checker.getStepNum() + " steps");
 			correctTrace = new TraceModelConstructor().
-					constructTraceModel(testcaseConfig, executingStatements, executionOrderList, checker.getStepNum(), true);
+					constructTraceModel(testcaseConfig, executingStatements, executionOrderList, checker.getStepNum(), true, true);
 			
 			cachedCorrectTrace = correctTrace;
 			cachedMutatedTrace = killingMutatantTrace;
@@ -368,7 +368,7 @@ public class TestCaseAnalyzer {
 				if(null == correctTrace){
 					System.out.println("The correct trace of " + stepNum + " steps is to be generated for " + testCaseName);
 					correctTrace = new TraceModelConstructor().
-							constructTraceModel(testcaseConfig, executingStatements, executionOrderList, stepNum, true);
+							constructTraceModel(testcaseConfig, executingStatements, executionOrderList, stepNum, true, true);
 				}
 				
 				ClassLocation mutatedLocation = new ClassLocation(tobeMutatedClass, null, line);
@@ -485,7 +485,8 @@ public class TestCaseAnalyzer {
 							" steps is to be generated for " + testMethod + " (mutation: " + mutatedFile + ")");
 					killingMutantTrace = null;
 					long t1 = System.currentTimeMillis();
-					killingMutantTrace = constructor.constructTraceModel(testcaseConfig, executingStatements, executionOrderList, checker.getStepNum(), true);
+					killingMutantTrace = constructor.constructTraceModel(testcaseConfig, 
+							executingStatements, executionOrderList, checker.getStepNum(), true, true);
 					long t2 = System.currentTimeMillis();
 					int time = (int) ((t2-t1)/1000);
 					killingMutantTrace.setConstructTime(time);
