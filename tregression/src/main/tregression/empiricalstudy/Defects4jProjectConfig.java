@@ -11,6 +11,7 @@ public class Defects4jProjectConfig {
 	public int bugID;
 	
 	public String rootPath = "/home/linyun/doc/git_space/defects4j/framework/bin/defects4j";
+	public String javaHome = "/home/linyun/java/jdk1.7.0_76/jre";
 	
 
 	private Defects4jProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,

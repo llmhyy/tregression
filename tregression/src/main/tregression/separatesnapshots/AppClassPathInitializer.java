@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import sav.commons.TestConfiguration;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.junit.TestCaseAnalyzer;
@@ -87,7 +86,7 @@ public class AppClassPathInitializer {
 		appClassPath.addClasspath(hamcrestCorePath);
 		appClassPath.addClasspath(testRunnerPath);
 		
-		appClassPath.setJavaHome(TestConfiguration.getJavaHome());
+		appClassPath.setJavaHome(config.javaHome);
 		appClassPath.setWorkingDirectory(workingDir);
 		
 		appClassPath.setOptionalTestClass(testClass);

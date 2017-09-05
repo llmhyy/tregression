@@ -62,18 +62,15 @@ public class TrialGenerator {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
 
-				generateMainMethod(fixPath, tc, config);
-				recompileD4J(fixPath, config);
-				
 				int res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, true);
 				if (res == NORMAL) {
-					if(!trials.isEmpty()) {
-						EmpiricalTrial t = trials.get(0);
-						if(t.getRootcauseNode()==null) {
-							trials = runMainMethodVersion(buggyPath, fixPath, isReuse, 
-									requireVisualization, config, tc);
-						}
-					}
+//					if(!trials.isEmpty()) {
+//						EmpiricalTrial t = trials.get(0);
+//						if(t.getRootcauseNode()==null) {
+//							trials = runMainMethodVersion(buggyPath, fixPath, isReuse, 
+//									requireVisualization, config, tc);
+//						}
+//					}
 					
 					return trials;
 				} 
