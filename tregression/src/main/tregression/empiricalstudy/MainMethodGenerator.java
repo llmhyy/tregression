@@ -35,15 +35,17 @@ import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
 import microbat.util.JavaUtil;
+import microbat.util.Settings;
 import tregression.empiricalstudy.TrialGenerator.TestCase;
 
 public class MainMethodGenerator {
 	public void generateMainMethod(String fullJavaPath, TestCase tc) {
+		JavaUtil.sourceFile2CUMap.clear();
 		CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(fullJavaPath, tc.testClass);
 
 		TypeDeclaration typeDel = (TypeDeclaration) cu.types().get(0);
-		
 		boolean hasMainMethod = checkMethod(typeDel, "main");
+		
 		if(hasMainMethod) {
 			return;
 		}

@@ -46,7 +46,7 @@ public class TestCaseRunner extends ExecutionStatementCollector{
 	 * @param appClassPath
 	 */
 	public void checkValidity(AppJavaClassPath appClassPath){
-		VirtualMachine vm = new VMStarter(appClassPath).start();
+		VirtualMachine vm = new VMStarter(appClassPath, true).start();
 		
 		EventRequestManager erm = vm.eventRequestManager(); 
 		addClassWatch(erm);

@@ -3,6 +3,7 @@ package tregression.separatesnapshots;
 import java.io.File;
 import java.util.List;
 
+import microbat.codeanalysis.runtime.ExecutionStatementCollector;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.util.MicroBatUtil;
@@ -10,23 +11,23 @@ import sav.strategies.dto.AppJavaClassPath;
 import tregression.TraceModelConstructor;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TrialGenerator;
-import tregression.junit.TestCaseRunner;
 
 public class TraceCollector {
 	
-	private boolean runInTestCaseMode = true;
-	
-	
-	public RunningResult preCheck(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config) {
+	public RunningResult preCheck(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config, boolean isRunInTestCaseMode) {
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, testClass, testMethod, config);
+		if(!isRunInTestCaseMode) {
+			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
+			System.currentTimeMillis();
+		}
 		
 		List<String> libJars = appClassPath.getExternalLibPaths();
 		List<String> exlcudes = MicroBatUtil.extractExcludeFiles("", libJars);
 		
-		TestCaseRunner checker = new TestCaseRunner();
+		ExecutionStatementCollector checker = new ExecutionStatementCollector();
 		
 		checker.addLibExcludeList(exlcudes);
-		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, runInTestCaseMode);
+		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, isRunInTestCaseMode);
 		
 		if(checker.isOverLong()) {
 			System.out.println("The trace is over long!");
@@ -67,7 +68,7 @@ public class TraceCollector {
 	public RunningResult run(RunningResult result, boolean isRunInTestCaseMode){
 		
 		TraceModelConstructor constructor = new TraceModelConstructor();
-		TestCaseRunner checker = result.getChecker();
+		ExecutionStatementCollector checker = result.getChecker();
 		
 		long t1 = System.currentTimeMillis();
 		Trace trace = constructor.constructTraceModel(result.getAppClassPath(), result.getExecutedStatements(), 
@@ -78,14 +79,6 @@ public class TraceCollector {
 		
 		result.setRunningTrace(trace);
 		return result;
-	}
-
-	public boolean isRunInTestCaseMode() {
-		return runInTestCaseMode;
-	}
-
-	public void setRunInTestCaseMode(boolean runInTestCaseMode) {
-		this.runInTestCaseMode = runInTestCaseMode;
 	}
 
 	

@@ -62,28 +62,23 @@ public class TrialGenerator {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
 
+				generateMainMethod(fixPath, tc, config);
+				recompileD4J(fixPath, config);
+				
 				int res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, true);
 				if (res == NORMAL) {
 					if(!trials.isEmpty()) {
 						EmpiricalTrial t = trials.get(0);
-						if(t.getRealcauseNode()==null) {
-							//TODO
-							//use main method to trace again
-							//trials = new ArrayList<>();
+						if(t.getRootcauseNode()==null) {
+							trials = runMainMethodVersion(buggyPath, fixPath, isReuse, 
+									requireVisualization, config, tc);
 						}
 					}
 					
 					return trials;
 				} 
 				else if(res == INSUFFICIENT_TRACE){
-					generateMainMethod(buggyPath, tc, config);
-					recompileD4J(buggyPath, config);
-					generateMainMethod(fixPath, tc, config);
-					recompileD4J(buggyPath, config);
-					
-					trials = new ArrayList<>();
-					res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, false);
-					
+					trials = runMainMethodVersion(buggyPath, fixPath, isReuse, requireVisualization, config, tc);
 					return trials;
 				}
 				else {
@@ -108,6 +103,19 @@ public class TrialGenerator {
 			trials.add(trial);
 		}
 
+		return trials;
+	}
+
+	private List<EmpiricalTrial> runMainMethodVersion(String buggyPath, String fixPath, boolean isReuse,
+			boolean requireVisualization, Defects4jProjectConfig config, TestCase tc) throws SimulationFailException {
+		List<EmpiricalTrial> trials;
+		generateMainMethod(buggyPath, tc, config);
+		recompileD4J(buggyPath, config);
+		generateMainMethod(fixPath, tc, config);
+		recompileD4J(fixPath, config);
+		
+		trials = new ArrayList<>();
+		analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, false);
 		return trials;
 	}
 
@@ -144,6 +152,7 @@ public class TrialGenerator {
 		String sourcePath = appCP.getTestCodePath() + File.separator + relativePath;
 		
 		generator.generateMainMethod(sourcePath, tc);
+		System.currentTimeMillis();
 	}
 
 	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, List<EmpiricalTrial> trials,
@@ -185,14 +194,14 @@ public class TrialGenerator {
 		} else {
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config);
+			buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode);
 			if (buggyRS.getRunningType() != NORMAL) {
 				return buggyRS.getRunningType();
 			}
 
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config);
+			correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode);
 			if (correctRs.getRunningType() != NORMAL) {
 				return correctRs.getRunningType();
 			}
