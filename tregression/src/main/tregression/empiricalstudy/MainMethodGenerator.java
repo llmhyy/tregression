@@ -42,8 +42,14 @@ public class MainMethodGenerator {
 		CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(fullJavaPath, tc.testClass);
 
 		TypeDeclaration typeDel = (TypeDeclaration) cu.types().get(0);
-		boolean hasSetUpMethod = checkSetUpMethod(typeDel);
-		boolean hasTearDownMethod = checkTearDownMethod(typeDel);
+		
+		boolean hasMainMethod = checkMethod(typeDel, "main");
+		if(hasMainMethod) {
+			return;
+		}
+		
+		boolean hasSetUpMethod = checkMethod(typeDel, "setUp");
+		boolean hasTearDownMethod = checkMethod(typeDel, "tearDown");
 		try {
 			generateMainMethod(fullJavaPath, typeDel, hasSetUpMethod, hasTearDownMethod, tc.testClass, tc.testMethod);
 		} catch (MalformedTreeException e) {
@@ -213,10 +219,10 @@ public class MainMethodGenerator {
 		tryBody.statements().add(statement);
 	}
 
-	private boolean checkSetUpMethod(TypeDeclaration type) {
+	private boolean checkMethod(TypeDeclaration type, String method) {
 		for (MethodDeclaration md : type.getMethods()) {
 			String methodName = md.getName().getIdentifier();
-			if (methodName.equals("setUp")) {
+			if (methodName.equals(method)) {
 				return true;
 			}
 		}
@@ -224,14 +230,4 @@ public class MainMethodGenerator {
 		return false;
 	}
 
-	private boolean checkTearDownMethod(TypeDeclaration type) {
-		for (MethodDeclaration md : type.getMethods()) {
-			String methodName = md.getName().getIdentifier();
-			if (methodName.equals("tearDown")) {
-				return true;
-			}
-		}
-
-		return false;
-	}
 }
