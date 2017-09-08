@@ -220,7 +220,7 @@ public class RootCauseFinder {
 		return null;
 	}
 
-	private TraceNode findResponsibleControlDomOnOtherTrace(TraceNode problematicStep, PairList pairList,
+	public TraceNode findResponsibleControlDomOnOtherTrace(TraceNode problematicStep, PairList pairList,
 			Trace otherTrace, boolean isOtherTraceTheBeforeTrace, ClassLocation correspondingLocation) {
 		
 		int startOrder = findStartOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);

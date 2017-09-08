@@ -2,6 +2,11 @@ package tregression.views;
 
 import java.io.File;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
@@ -10,10 +15,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.model.BreakPoint;
+import microbat.model.ClassLocation;
+import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.views.TraceView;
 import tregression.editors.CompareEditor;
 import tregression.editors.CompareTextEditorInput;
+import tregression.empiricalstudy.RootCauseFinder;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
@@ -27,6 +35,55 @@ public class BuggyTraceView extends TraceView {
 	private DiffMatcher diffMatcher;
 
 	public BuggyTraceView() {
+	}
+	
+	
+	private Action createControlMendingAction() {
+		Action action = new Action() {
+			public void run() {
+				if (listViewer.getSelection().isEmpty()) {
+					return;
+				}
+
+				if (listViewer.getSelection() instanceof IStructuredSelection) {
+					IStructuredSelection selection = (IStructuredSelection) listViewer.getSelection();
+					TraceNode node = (TraceNode) selection.getFirstElement();
+					
+					CorrectTraceView correctTraceView = TregressionViews.getCorrectTraceView();
+					ClassLocation correspondingLocation = diffMatcher.findCorrespondingLocation(node.getBreakPoint(), false);
+					TraceNode otherControlDom = new RootCauseFinder().findResponsibleControlDomOnOtherTrace(node, pairList, 
+							correctTraceView.getTrace(), false, correspondingLocation);
+					
+					if (otherControlDom != null) {
+						correctTraceView.otherViewsBehavior(otherControlDom);
+					}
+					
+				}
+				
+			}
+			
+			public String getText() {
+				return "control mend";
+			}
+		};
+		
+		return action;
+	}
+	
+	@Override
+	protected void appendMenuForTraceStep() {
+		menuMgr.setRemoveAllWhenShown(true);
+		menuMgr.addMenuListener(new IMenuListener() {
+			@Override
+			public void menuAboutToShow(IMenuManager manager) {
+				Action forSearchAction = createForSearchAction();
+				Action controlMendingAction = createControlMendingAction();
+				menuMgr.add(forSearchAction);
+				menuMgr.add(controlMendingAction);
+			}
+		});
+		
+		listViewer.getTree().setMenu(menuMgr.createContextMenu(listViewer.getTree()));
 	}
 
 	private void openInCompare(CompareTextEditorInput input, TraceNode node) {
