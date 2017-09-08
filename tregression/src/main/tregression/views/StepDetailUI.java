@@ -43,9 +43,10 @@ import microbat.model.variable.VirtualVar;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
-import microbat.util.MicroBatUtil;
 import microbat.util.TempVariableInfo;
+import microbat.views.ImageUI;
 import microbat.views.TraceView;
+import tregression.StepChangeType;
 
 public class StepDetailUI {
 	
@@ -270,10 +271,6 @@ public class StepDetailUI {
 			}
 
 			if (currentNode != null) {
-				// BreakPoint point = node.getBreakPoint();
-				// InterestedVariable iVar = new
-				// InterestedVariable(point.getDeclaringCompilationUnitName(),
-				// point.getLineNo(), value);
 				String varID = value.getVarID();
 				if (interestedVariables.contains(varID)) {
 					return true;
@@ -333,6 +330,11 @@ public class StepDetailUI {
 	}
 
 	class VariableLabelProvider implements ITableLabelProvider {
+		private StepChangeType changeType;
+		
+		public VariableLabelProvider(StepChangeType changeType) {
+			this.changeType = changeType;
+		}
 
 		public void addListener(ILabelProviderListener listener) {
 		}
@@ -348,6 +350,17 @@ public class StepDetailUI {
 		}
 
 		public Image getColumnImage(Object element, int columnIndex) {
+			if (element instanceof VarValue && columnIndex==0) {
+				VarValue varValue = (VarValue) element;
+				if(changeType.getType()==StepChangeType.DAT) {
+					for(VarValue var: changeType.getWrongVariableList()) {
+						if(var.getVarName().equals(varValue.getVarName())) {
+							return new ImageUI().getImage(ImageUI.QUESTION_MARK);
+						}
+					}
+				}
+			}
+			
 			return null;
 		}
 
@@ -507,9 +520,9 @@ public class StepDetailUI {
 		submitButton.addMouseListener(fListener);
 	}
 	
-	private void createWrittenVariableContent(List<VarValue> writtenVariables) {
+	private void createWrittenVariableContent(List<VarValue> writtenVariables, StepChangeType changeType) {
 		this.writtenVariableTreeViewer.setContentProvider(new RWVariableContentProvider(false));
-		this.writtenVariableTreeViewer.setLabelProvider(new VariableLabelProvider());
+		this.writtenVariableTreeViewer.setLabelProvider(new VariableLabelProvider(changeType));
 		this.writtenVariableTreeViewer.setInput(writtenVariables);	
 		
 		setChecks(this.writtenVariableTreeViewer, RW);
@@ -518,9 +531,9 @@ public class StepDetailUI {
 		
 	}
 
-	private void createReadVariableContect(List<VarValue> readVariables) {
+	private void createReadVariableContect(List<VarValue> readVariables, StepChangeType changeType) {
 		this.readVariableTreeViewer.setContentProvider(new RWVariableContentProvider(true));
-		this.readVariableTreeViewer.setLabelProvider(new VariableLabelProvider());
+		this.readVariableTreeViewer.setLabelProvider(new VariableLabelProvider(changeType));
 		this.readVariableTreeViewer.setInput(readVariables);	
 		
 		setChecks(this.readVariableTreeViewer, RW);
@@ -582,19 +595,19 @@ public class StepDetailUI {
 	
 	private TraceNode currentNode;
 	
-	public void refresh(TraceNode node){
+	public void refresh(TraceNode node, StepChangeType changeType){
 		this.currentNode = node;
 		
 		if(node != null){
 			//BreakPointValue thisState = node.getProgramState();
 			//createStateContent(thisState);
-			createWrittenVariableContent(node.getWrittenVariables());
-			createReadVariableContect(node.getReadVariables());			
+			createWrittenVariableContent(node.getWrittenVariables(), changeType);
+			createReadVariableContect(node.getReadVariables(), changeType);			
 		}
 		else{
 			//createStateContent(null);
-			createWrittenVariableContent(null);
-			createReadVariableContect(null);	
+			createWrittenVariableContent(null, changeType);
+			createReadVariableContect(null, changeType);	
 		}
 		
 		dataButton.setSelection(false);

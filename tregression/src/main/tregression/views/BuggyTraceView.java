@@ -184,7 +184,7 @@ public class BuggyTraceView extends TraceView {
 				}
 			}
 			
-			stepPropertyView.refresh(correctNode, buggyNode);
+			stepPropertyView.refresh(correctNode, buggyNode, diffMatcher, pairList);
 		}
 
 		markJavaEditor(buggyNode);

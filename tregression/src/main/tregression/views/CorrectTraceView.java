@@ -180,7 +180,7 @@ public class CorrectTraceView extends TraceView {
 				}
 			}
 			
-			stepPropertyView.refresh(correctNode, buggyNode);
+			stepPropertyView.refresh(correctNode, buggyNode, diffMatcher, pairList);
 		}
 
 		markJavaEditor(correctNode);

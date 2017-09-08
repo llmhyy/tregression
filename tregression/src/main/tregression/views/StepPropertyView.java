@@ -11,8 +11,13 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 
+import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.views.TraceView;
+import tregression.StepChangeType;
+import tregression.StepChangeTypeChecker;
+import tregression.model.PairList;
+import tregression.separatesnapshots.DiffMatcher;
 
 public class StepPropertyView extends ViewPart {
 
@@ -88,14 +93,19 @@ public class StepPropertyView extends ViewPart {
 	private StepDetailUI buggyDetailUI;
 	private StepDetailUI correctDetailUI;
 	
-	public void refresh(TraceNode correctNode, TraceNode buggyNode){
+	public void refresh(TraceNode correctNode, TraceNode buggyNode, DiffMatcher diffMatcher, PairList pairList){
+		Trace buggyTrace = TregressionViews.getBuggyTraceView().getTrace();
+		Trace correctTrace = TregressionViews.getCorrectTraceView().getTrace();
+		StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 		
 		if(buggyDetailUI != null && buggyNode != null){
-			buggyDetailUI.refresh(buggyNode);
+			StepChangeType changeType = checker.getType(buggyNode, true, pairList, diffMatcher);
+			buggyDetailUI.refresh(buggyNode, changeType);
 		}
 		
 		if(correctDetailUI != null && correctNode != null){
-			correctDetailUI.refresh(correctNode);
+			StepChangeType changeType = checker.getType(correctNode, false, pairList, diffMatcher);
+			correctDetailUI.refresh(correctNode, changeType);
 		}
 	}
 	
