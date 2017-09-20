@@ -13,6 +13,23 @@ public class ControlNode {
 		this.appearOrder = appearOrder;
 	}
 	
+	@Override
+	public String toString() {
+		int order = itNode.getTraceNode().getOrder();
+		String file = itNode.getBreakPoint().getClassCanonicalName();
+		file = file.substring(file.lastIndexOf("."), file.length());
+		int lineNumber = itNode.getBreakPoint().getLineNumber();
+		
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("[");
+		buffer.append("file: " + file + ", ");
+		buffer.append("line: " + lineNumber + ", ");
+		buffer.append("time: " + appearOrder + ", ");
+		buffer.append("node order: " + order + "]");
+		
+		return buffer.toString();
+	}
+	
 	public boolean isMatchableWith(ControlNode thatNode, DiffMatcher diffMatcher){
 		BreakPoint thisPoint = itNode.getBreakPoint();
 		BreakPoint thatPoint = thatNode.getItNode().getBreakPoint();
