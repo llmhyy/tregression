@@ -3,8 +3,6 @@ package tregression.views;
 import java.io.File;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
@@ -16,7 +14,6 @@ import org.eclipse.ui.PlatformUI;
 import microbat.model.BreakPoint;
 import microbat.model.ClassLocation;
 import microbat.model.trace.TraceNode;
-import microbat.views.TraceView;
 import tregression.editors.CompareEditor;
 import tregression.editors.CompareTextEditorInput;
 import tregression.empiricalstudy.RootCauseFinder;
@@ -25,17 +22,15 @@ import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
 
-public class CorrectTraceView extends TraceView {
+public class CorrectTraceView extends TregressionTraceView {
 
 	public static final String ID = "tregression.evalView.correctTraceView";
-	
-	private PairList pairList;
-	private DiffMatcher diffMatcher;
 	
 	public CorrectTraceView() {
 	}
 	
-	private Action createControlMendingAction() {
+	@Override
+	protected Action createControlMendingAction() {
 		Action action = new Action() {
 			public void run() {
 				if (listViewer.getSelection().isEmpty()) {
@@ -65,22 +60,6 @@ public class CorrectTraceView extends TraceView {
 		};
 		
 		return action;
-	}
-	
-	@Override
-	protected void appendMenuForTraceStep() {
-		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			@Override
-			public void menuAboutToShow(IMenuManager manager) {
-				Action forSearchAction = createForSearchAction();
-				Action controlMendingAction = createControlMendingAction();
-				menuMgr.add(forSearchAction);
-				menuMgr.add(controlMendingAction);
-			}
-		});
-		
-		listViewer.getTree().setMenu(menuMgr.createContextMenu(listViewer.getTree()));
 	}
 	
 	private void openInCompare(CompareTextEditorInput input, TraceNode node) {

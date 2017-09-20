@@ -45,7 +45,6 @@ import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
 import microbat.util.TempVariableInfo;
 import microbat.views.ImageUI;
-import microbat.views.TraceView;
 import tregression.StepChangeType;
 
 public class StepDetailUI {
@@ -96,6 +95,7 @@ public class StepDetailUI {
 				}
 				
 				if(suspiciousNode != null){
+					traceView.recordVisitedNode(currentNode);
 					jumpToNode(trace, suspiciousNode);	
 				}
 			}
@@ -396,9 +396,9 @@ public class StepDetailUI {
 	private CheckboxTreeViewer readVariableTreeViewer;
 
 	private ITreeViewerListener treeListener;
-	private TraceView traceView;
+	private TregressionTraceView traceView;
 	
-	public StepDetailUI(TraceView view, TraceNode node){
+	public StepDetailUI(TregressionTraceView view, TraceNode node){
 		this.traceView = view;
 		this.currentNode = node;
 	}

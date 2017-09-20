@@ -46,7 +46,7 @@ public class StepPropertyView extends ViewPart {
 		panel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		panel.setExpandHorizontal(true);
 		panel.setExpandVertical(true);
-		TraceView view = null;
+		TregressionTraceView view = null;
 		
 		if(viewID.equals(BuggyTraceView.ID)){
 			try {
@@ -73,7 +73,7 @@ public class StepPropertyView extends ViewPart {
 		panel.setMinHeight(point.y);
 	}
 
-	private Composite createPanel(Composite panel, TraceView view) {
+	private Composite createPanel(Composite panel, TregressionTraceView view) {
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 1;
 		panel.setLayout(layout);
