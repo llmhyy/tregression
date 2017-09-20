@@ -30,12 +30,15 @@ public class ControlNode {
 		return buffer.toString();
 	}
 	
+	public int getOrder() {
+		return this.itNode.getOrder();
+	}
+	
 	public boolean isMatchableWith(ControlNode thatNode, DiffMatcher diffMatcher){
 		BreakPoint thisPoint = itNode.getBreakPoint();
 		BreakPoint thatPoint = thatNode.getItNode().getBreakPoint();
 		
-		if(diffMatcher.isMatch(thisPoint, thatPoint) && 
-				diffMatcher.isMatch(thatPoint, thisPoint)){
+		if(diffMatcher.isMatch(thisPoint, thatPoint)){
 			if(this.appearOrder==thatNode.getAppearOrder()){
 				return true;
 			}

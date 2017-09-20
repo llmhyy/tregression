@@ -150,7 +150,6 @@ public class IndexTreeMacher implements Matcher {
 				}
 			}
 		}
-		System.currentTimeMillis();
 		return pairList;
 		
 	}
@@ -240,21 +239,19 @@ public class IndexTreeMacher implements Matcher {
 				continue;
 			}
 			
-			//if(diffMatcher.isMatch(itNodeBefore.getBreakPoint(), itNodeAfter.getBreakPoint())){
-				if(isControlPathCompatible(itNodeBefore, itNodeAfter)){
-					if(mostSimilarNode==null){
+			if(isControlPathCompatible(itNodeBefore, itNodeAfter)){
+				if(mostSimilarNode==null){
+					mostSimilarNode = itNodeAfter;
+					sim = sim(itNodeBefore, itNodeAfter);
+				}
+				else{
+					double sim1 = sim(itNodeBefore, itNodeAfter);
+					if(sim1 > sim){
 						mostSimilarNode = itNodeAfter;
-						sim = sim(itNodeBefore, itNodeAfter);
-					}
-					else{
-						double sim1 = sim(itNodeBefore, itNodeAfter);
-						if(sim1 > sim){
-							mostSimilarNode = itNodeAfter;
-							sim = sim1;
-						}
+						sim = sim1;
 					}
 				}
-			//}
+			}
 		}
 		
 		if(sim==0){
@@ -385,7 +382,35 @@ public class IndexTreeMacher implements Matcher {
 		List<ControlNode> pathBefore = itNodeBefore.getControlPath();
 		List<ControlNode> pathAfter = itNodeAfter.getControlPath();
 		
+		/**
+		 * Here is an optimization:
+		 * If parent control node has been recorded in pair list, we do not need to compare their control
+		 * path any more. 
+		 */
+		MatchingGraphPair pair = null;
+		int size = pathAfter.size();
+		for(int i=size-1; i>=0; i--) {
+			ControlNode cNode = pathAfter.get(i);
+			MatchingGraphPair p = pairMap.get(cNode.getOrder());
+			if(p!=null) {
+				pair = p;
+				break;
+			}
+		}
+		
+		int cursorBefore = 0;
+		int cursorAfter = 0;
+		if(pair!=null) {
+			cursorBefore = ((IndexTreeNode)pair.getNodeBefore()).getOrder();
+			cursorAfter = ((IndexTreeNode)pair.getNodeAfter()).getOrder();
+		}
+		
+		
 		for(ControlNode nodeBefore: pathBefore){
+			if(nodeBefore.getOrder()<=cursorBefore) {
+				continue;
+			}
+			
 			if(nodeBefore.getAppearOrder() > 1){
 				boolean flag = canFindMatchingNode(nodeBefore, pathAfter);
 				if(!flag){
@@ -395,6 +420,10 @@ public class IndexTreeMacher implements Matcher {
 		}
 		
 		for(ControlNode nodeAfter: pathAfter){
+			if(nodeAfter.getOrder()<=cursorAfter) {
+				continue;
+			}
+			
 			if(nodeAfter.getAppearOrder() > 1){
 				boolean flag = canFindMatchingNode(nodeAfter, pathBefore);
 				if(!flag){

@@ -66,6 +66,10 @@ public class IndexTreeNode implements GraphNode {
 		}
 	}
 	
+	public int getOrder() {
+		return this.node.getOrder();
+	}
+	
 	public List<ControlNode> getControlPath(){
 		List<IndexTreeNode> path = new ArrayList<>();
 		IndexTreeNode parent = this.getIndexParent();
