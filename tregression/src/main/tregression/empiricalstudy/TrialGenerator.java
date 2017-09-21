@@ -74,10 +74,10 @@ public class TrialGenerator {
 					
 					return trials;
 				} 
-				else if(res == INSUFFICIENT_TRACE){
-					trials = runMainMethodVersion(buggyPath, fixPath, isReuse, requireVisualization, config, tc);
-					return trials;
-				}
+//				else if(res == INSUFFICIENT_TRACE){
+//					trials = runMainMethodVersion(buggyPath, fixPath, isReuse, requireVisualization, config, tc);
+//					return trials;
+//				}
 				else {
 					String explanation = getProblemType(res);
 					System.out.println("[*NOTICE*] " + explanation);
@@ -85,6 +85,8 @@ public class TrialGenerator {
 					trial.setTestcase(tc.testClass + "::" + tc.testMethod);
 					trial.setExceptionExplanation(explanation);
 					trials.add(trial);
+					
+//					return trials;
 				}
 			}
 
