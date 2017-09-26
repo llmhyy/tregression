@@ -204,6 +204,10 @@ public class TrialGenerator {
 			if (correctRs.getRunningType() != NORMAL) {
 				return correctRs.getRunningType();
 			}
+			
+			if(buggyRS.getChecker().getExecutionOrderList().size()==correctRs.getChecker().getExecutionOrderList().size()){
+				return SAME_LENGTH;
+			}
 
 			if (buggyRS != null && correctRs != null) {
 				Settings.compilationUnitMap.clear();
@@ -235,7 +239,7 @@ public class TrialGenerator {
 
 		Trace buggyTrace = buggyRS.getRunningTrace();
 		Trace correctTrace = correctRs.getRunningTrace();
-
+		
 		if (requireVisualization) {
 			Visualizer visualizer = new Visualizer();
 			visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
