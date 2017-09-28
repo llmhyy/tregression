@@ -35,8 +35,11 @@ public class Defects4jProjectConfig {
 			config = new Defects4jProjectConfig("test", "src", "build/test", "build/classes", "build", projectName, bugID);
 		}
 		else if (projectName.equals("Lang")) {
-			if(bugID<42){
-				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "target/tests", "target/classes", "target", projectName, bugID);				
+			if(bugID<21){
+				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "target/tests", "target/classes", "target", projectName, bugID);
+			}
+			else if(bugID<42){
+				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target", projectName, bugID);				
 			}
 			else{
 				config = new Defects4jProjectConfig("src/test", "src/java", "target/tests", "target/classes", "target", projectName, bugID);
