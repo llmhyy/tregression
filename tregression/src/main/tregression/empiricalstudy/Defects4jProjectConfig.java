@@ -44,6 +44,11 @@ public class Defects4jProjectConfig {
 			else{
 				config = new Defects4jProjectConfig("src/test", "src/java", "target/tests", "target/classes", "target", projectName, bugID);
 			}
+			
+			if(bugID>=36 && bugID<=41){
+				config.srcSourceFolder = "src/java";
+				config.srcTestFolder = "src/test";
+			}
 		}
 		else if (projectName.equals("Math")) {
 			if(bugID<85){
