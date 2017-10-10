@@ -173,23 +173,23 @@ public class TrialGenerator {
 			buggyRS = cachedBuggyRS;
 			correctRs = cachedCorrectRS;
 
-//			System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
-//					+ ", correct trace length: " + correctRs.getRunningTrace().size());
-//			time1 = System.currentTimeMillis();
-//			diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
-//			diffMatcher.matchCode();
-//
-//			ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-//			pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(),
-//					diffMatcher);
-//			time2 = System.currentTimeMillis();
-//			matchTime = (int) (time2 - time1);
-//			System.out.println("finish matching trace, taking " + matchTime / 1000 + "s");
-//			cachedDiffMatcher = diffMatcher;
-//			cachedPairList = pairList;
+			System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
+					+ ", correct trace length: " + correctRs.getRunningTrace().size());
+			time1 = System.currentTimeMillis();
+			diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
+			diffMatcher.matchCode();
 
-			diffMatcher = cachedDiffMatcher;
-			pairList = cachedPairList;
+			ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+			pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(),
+					diffMatcher);
+			time2 = System.currentTimeMillis();
+			matchTime = (int) (time2 - time1);
+			System.out.println("finish matching trace, taking " + matchTime + "ms");
+			cachedDiffMatcher = diffMatcher;
+			cachedPairList = pairList;
+
+//			diffMatcher = cachedDiffMatcher;
+//			pairList = cachedPairList;
 		} else {
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
@@ -229,7 +229,7 @@ public class TrialGenerator {
 						diffMatcher);
 				time2 = System.currentTimeMillis();
 				matchTime = (int) (time2 - time1);
-				System.out.println("finish matching trace, taking " + matchTime / 1000 + "s");
+				System.out.println("finish matching trace, taking " + matchTime + "ms");
 
 				cachedDiffMatcher = diffMatcher;
 				cachedPairList = pairList;
