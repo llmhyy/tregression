@@ -18,11 +18,13 @@ public class DiffParser {
 				fileDiff.setSourceFolderName(sourceFolderName);
 			}
 			else if(line.startsWith("---")){
-				String sourceFile = line.substring(line.indexOf("a"+File.separator)+1, line.length());
+				String sourceFile = line.substring(line.indexOf("a/")+1, line.length()-1);
+				sourceFile = sourceFile.replace("/", File.separator);
 				fileDiff.setSourceFile(sourceFile);
 			}
 			else if(line.startsWith("+++")){
-				String targetFile = line.substring(line.indexOf("b"+File.separator)+1, line.length());
+				String targetFile = line.substring(line.indexOf("b/")+1, line.length()-1);
+				targetFile = targetFile.replace("/", File.separator);
 				fileDiff.setTargetFile(targetFile);
 			}
 			else if(line.startsWith("@@")){

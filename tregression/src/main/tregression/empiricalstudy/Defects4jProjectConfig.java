@@ -1,5 +1,10 @@
 package tregression.empiricalstudy;
 
+import java.io.File;
+
+import microbat.Activator;
+import tregression.preference.TregressionPreference;
+
 public class Defects4jProjectConfig {
 	public String srcTestFolder;
 	public String srcSourceFolder;
@@ -10,8 +15,8 @@ public class Defects4jProjectConfig {
 	public String projectName;
 	public int bugID;
 	
-	public String rootPath = "/home/linyun/doc/git_space/defects4j/framework/bin/defects4j";
-	public String javaHome = "/home/linyun/java/jdk1.7.0_76/jre";
+	public String rootPath = ""+File.separator+"home"+File.separator+"linyun"+File.separator+"doc"+File.separator+"git_space"+File.separator+"defects4j"+File.separator+"framework"+File.separator+"bin"+File.separator+"defects4j";
+	public String javaHome = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.JAVA7HOME_PATH);
 	
 
 	private Defects4jProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
@@ -32,41 +37,41 @@ public class Defects4jProjectConfig {
 			config = new Defects4jProjectConfig("tests", "source", "build-tests", "build", "build", projectName, bugID);
 		}
 		else if (projectName.equals("Closure")) {
-			config = new Defects4jProjectConfig("test", "src", "build/test", "build/classes", "build", projectName, bugID);
+			config = new Defects4jProjectConfig("test", "src", "build"+File.separator+"test", "build"+File.separator+"classes", "build", projectName, bugID);
 		}
 		else if (projectName.equals("Lang")) {
 			if(bugID<21){
-				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "target/tests", "target/classes", "target", projectName, bugID);
+				config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"tests", "target"+File.separator+"classes", "target", projectName, bugID);
 			}
 			else if(bugID<42){
-				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target", projectName, bugID);				
+				config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, bugID);				
 			}
 			else{
-				config = new Defects4jProjectConfig("src/test", "src/java", "target/tests", "target/classes", "target", projectName, bugID);
+				config = new Defects4jProjectConfig("src"+File.separator+"test", "src"+File.separator+"java", "target"+File.separator+"tests", "target"+File.separator+"classes", "target", projectName, bugID);
 			}
 			
 			if(bugID>=36 && bugID<=41){
-				config.srcSourceFolder = "src/java";
-				config.srcTestFolder = "src/test";
+				config.srcSourceFolder = "src"+File.separator+"java";
+				config.srcTestFolder = "src"+File.separator+"test";
 			}
 		}
 		else if (projectName.equals("Math")) {
 			if(bugID<85){
-				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target", projectName, bugID);	
+				config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, bugID);	
 			}
 			else{
-				config = new Defects4jProjectConfig("src/test", "src/java", "target/test-classes", "target/classes", "target", projectName, bugID);
+				config = new Defects4jProjectConfig("src"+File.separator+"test", "src"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, bugID);
 			}
 		}
 		else if (projectName.equals("Mockito")) {
-			config = new Defects4jProjectConfig("test", "src", "build/classes/test", "build/classes/main", "build", projectName, bugID);
+			config = new Defects4jProjectConfig("test", "src", "build"+File.separator+"classes"+File.separator+"test", "build"+File.separator+"classes"+File.separator+"main", "build", projectName, bugID);
 		}
 		else if (projectName.equals("Time")) {
 			if(bugID<12){
-				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "target/test-classes", "target/classes", "target", projectName, bugID);				
+				config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, bugID);				
 			}
 			else{
-				config = new Defects4jProjectConfig("src/test/java", "src/main/java", "build/tests", "build/classes", "build", projectName, bugID);
+				config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "build"+File.separator+"tests", "build"+File.separator+"classes", "build", projectName, bugID);
 			}
 		}
 		

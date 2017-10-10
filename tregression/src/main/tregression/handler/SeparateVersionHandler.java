@@ -1,5 +1,6 @@
 package tregression.handler;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -28,11 +29,11 @@ public class SeparateVersionHandler extends AbstractHandler{
 				String buggyPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String fixPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CORRECT_PATH);
 				
-				int startIndex = buggyPath.indexOf("/", buggyPath.indexOf("bug_repo")+1);
-				String projectName = buggyPath.substring(startIndex+1, buggyPath.indexOf("/", startIndex+1));
+				int startIndex = buggyPath.indexOf(File.separator, buggyPath.indexOf("bug_repo")+1);
+				String projectName = buggyPath.substring(startIndex+1, buggyPath.indexOf(File.separator, startIndex+1));
 				
-				startIndex = buggyPath.indexOf("/", buggyPath.indexOf(projectName)+1);
-				String id = buggyPath.substring(startIndex+1, buggyPath.indexOf("/", startIndex+1));
+				startIndex = buggyPath.indexOf(File.separator, buggyPath.indexOf(projectName)+1);
+				String id = buggyPath.substring(startIndex+1, buggyPath.indexOf(File.separator, startIndex+1));
 				
 				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));

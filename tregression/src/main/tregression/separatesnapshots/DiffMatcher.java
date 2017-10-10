@@ -238,7 +238,8 @@ public class DiffMatcher {
 	private int countLineNumber(String fileName){
 		LineNumberReader lnr;
 		try {
-			lnr = new LineNumberReader(new FileReader(new File(fileName)));
+			File file = new File(fileName);
+			lnr = new LineNumberReader(new FileReader(file));
 			lnr.skip(Long.MAX_VALUE);
 			int count = lnr.getLineNumber() + 1; //Add 1 because line index starts at 0
 			// Finally, the LineNumberReader object should be closed to prevent resource leak
