@@ -66,7 +66,8 @@ public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 			List<MatchingGraphPair> pairList) {
 		List<MatchingGraphPair> pairs = new ArrayList<>();
 		for(IndexTreeNode nodeBefore: treeBefore){
-			IndexTreeNode matchedNodeAfter = findMostSimilarNode(nodeBefore, treeAfter, null);
+			List<IndexTreeNode> nodeAfterList = filterByMatchedLocation(nodeBefore, treeAfter);
+			IndexTreeNode matchedNodeAfter = findMostSimilarNode(nodeBefore, nodeAfterList, null);
 			if(null != matchedNodeAfter){
 				MatchingGraphPair pair = new MatchingGraphPair(nodeBefore, matchedNodeAfter);
 				pairs.add(pair);
@@ -81,6 +82,16 @@ public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 			
 			matchIndexTree(childrenBefore, childrenAfter, pairList);
 		}
+	}
+
+	private List<IndexTreeNode> filterByMatchedLocation(IndexTreeNode nodeBefore, List<IndexTreeNode> treeAfter) {
+		List<IndexTreeNode> list = new ArrayList<>();
+		for(IndexTreeNode node: treeAfter){
+			if(diffMatcher.isMatch(nodeBefore.getBreakPoint(), node.getBreakPoint())){
+				list.add(node);
+			}
+		}
+		return list;
 	}
 
 	private List<IndexTreeNode> getLoopChildren(GraphNode node) {
