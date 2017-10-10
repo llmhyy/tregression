@@ -21,7 +21,7 @@ import microbat.util.JavaUtil;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
 
-public class IndexTreeMacher implements Matcher {
+public class IndexTreeMatcher implements Matcher {
 
 	/**
 	 * DiffMatcher contains the information of how source code should match with each other.
@@ -30,7 +30,7 @@ public class IndexTreeMacher implements Matcher {
 	 */
 	private DiffMatcher diffMatcher;
 	
-	public IndexTreeMacher(DiffMatcher diffMatcher) {
+	public IndexTreeMatcher(DiffMatcher diffMatcher) {
 		this.diffMatcher = diffMatcher;
 	}
 	

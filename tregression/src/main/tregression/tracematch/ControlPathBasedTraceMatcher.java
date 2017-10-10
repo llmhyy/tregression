@@ -22,7 +22,7 @@ public class ControlPathBasedTraceMatcher{
 		IndexTreeNode afterRoot = initVirtualRootWrapper(correctTrace);
 
 		HierarchyGraphDiffer differ = new HierarchyGraphDiffer();
-		differ.diff(beforeRoot, afterRoot, false, new IndexTreeMacher(matcher), -1);
+		differ.diff(beforeRoot, afterRoot, false, new IndexTreeMatcher0(matcher), -1);
 
 		List<GraphDiff> diffList = differ.getDiffs();
 		List<TraceNodePair> pList = new ArrayList<>();
