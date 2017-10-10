@@ -186,12 +186,19 @@ public abstract class IndexTreeMatcher implements Matcher{
 		
 	}
 	
-	private ASTNode parseASTNodeInBreakpoint(IndexTreeNode itNodeBefore, BreakPoint pointBefore) {
-		String compilationUnitName = itNodeBefore.getTraceNode().getDeclaringCompilationUnitName();
+	private HashMap<BreakPoint, ASTNode> point2ASTNodeMap = new HashMap<>();
+	
+	private ASTNode parseASTNodeInBreakpoint(IndexTreeNode itNodeBefore, BreakPoint point) {
 		
-		CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(pointBefore.getFullJavaFilePath(), 
-				compilationUnitName);
-		ASTNode node = findSpecificNode(cu, pointBefore);
+		ASTNode node = point2ASTNodeMap.get(point);
+		if(node == null){
+			String compilationUnitName = itNodeBefore.getTraceNode().getDeclaringCompilationUnitName();
+			
+			CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(point.getFullJavaFilePath(), 
+					compilationUnitName);
+			node = findSpecificNode(cu, point);
+			point2ASTNodeMap.put(point, node);
+		}
 		
 		return node;
 	}
