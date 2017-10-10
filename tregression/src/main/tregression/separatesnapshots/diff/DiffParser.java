@@ -18,12 +18,26 @@ public class DiffParser {
 				fileDiff.setSourceFolderName(sourceFolderName);
 			}
 			else if(line.startsWith("---")){
-				String sourceFile = line.substring(line.indexOf("a/")+1, line.length()-1);
+				String osName = System.getProperty("os.name");
+				String sourceFile;
+				if(osName.contains("Win")){
+					sourceFile = line.substring(line.indexOf("a/")+1, line.length()-1);
+				}
+				else{
+					sourceFile = line.substring(line.indexOf("a/")+1, line.length());
+				}
 				sourceFile = sourceFile.replace("/", File.separator);
 				fileDiff.setSourceFile(sourceFile);
 			}
 			else if(line.startsWith("+++")){
-				String targetFile = line.substring(line.indexOf("b/")+1, line.length()-1);
+				String osName = System.getProperty("os.name");
+				String targetFile;
+				if(osName.contains("Win")){
+					targetFile = line.substring(line.indexOf("b/")+1, line.length()-1);
+				}
+				else{
+					targetFile = line.substring(line.indexOf("b/")+1, line.length());
+				}
 				targetFile = targetFile.replace("/", File.separator);
 				fileDiff.setTargetFile(targetFile);
 			}
