@@ -27,6 +27,7 @@ public class DiffParser {
 					sourceFile = line.substring(line.indexOf("a/")+1, line.length());
 				}
 				sourceFile = sourceFile.replace("/", File.separator);
+				sourceFile = sourceFile.replace("\\\\", File.separator);
 				fileDiff.setSourceFile(sourceFile);
 			}
 			else if(line.startsWith("+++")){
@@ -39,6 +40,7 @@ public class DiffParser {
 					targetFile = line.substring(line.indexOf("b/")+1, line.length());
 				}
 				targetFile = targetFile.replace("/", File.separator);
+				targetFile = targetFile.replace("\\\\", File.separator);
 				fileDiff.setTargetFile(targetFile);
 			}
 			else if(line.startsWith("@@")){
