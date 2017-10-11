@@ -51,7 +51,10 @@ public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 			IndexTreeNode itNode = (IndexTreeNode)n;
 			TraceNode invocationParent = itNode.getTraceNode().getInvocationParent();
 			TraceNode loopParent = itNode.getTraceNode().getLoopParent();
-			if(loopParent==null){
+			if(loopParent==null && invocationParent!=null){
+				topNodes.add(itNode);
+			}
+			else if(invocationParent==null){
 				topNodes.add(itNode);
 			}
 			else if(loopParent.getOrder()<invocationParent.getOrder()){
