@@ -158,7 +158,7 @@ public class DiffMatcher {
 			srcPoint = targetPoint;
 			targetPoint = tmp;
 		}
-		
+		System.currentTimeMillis();
 		FilePairWithDiff fileDiff = findDiffBySourceFile(srcPoint);
 		if(fileDiff==null){
 			boolean isSameFile = srcPoint.getDeclaringCompilationUnitName().equals(targetPoint.getDeclaringCompilationUnitName());
@@ -508,5 +508,9 @@ public class DiffMatcher {
 		
 //		return null;
 	}
-	
+
+	public List<FilePairWithDiff> getFileDiffList() {
+		return fileDiffList;
+	}
+
 }
