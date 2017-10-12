@@ -120,12 +120,15 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		stack.push(new DebuggingState(currentNode, new ArrayList<StepOperationTuple>(), null));
 		Set<DebuggingState> visitedStates = new HashSet<>();
 		
-		while (!stack.isEmpty()){
+		int count = 0;
+		
+		while (!stack.isEmpty() && count<10){
 			DebuggingState state = stack.pop();
 			
 			EmpiricalTrial trial = workSingleTrial(buggyTrace, correctTrace, pairList, matcher, 
 					rootCauseFinder, typeChecker, currentNode, stack, visitedStates, state);
 			trials.add(trial);
+			count++;
 		} 
 		
 		return trials;
