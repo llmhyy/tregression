@@ -240,8 +240,9 @@ public class RootCauseFinder {
 						}
 					}
 					else{
-						List<TraceNode> allControlDominatees = new ArrayList<>();
-						retrieveAllControlDominatees(node, allControlDominatees);
+//						List<TraceNode> allControlDominatees = new ArrayList<>();
+//						retrieveAllControlDominatees(node, allControlDominatees);
+						List<TraceNode> allControlDominatees = node.findAllControlDominatees();
 						for(TraceNode controlDominatee: allControlDominatees){
 							if(controlDominatee.isException()){
 								if(value==-1) {
