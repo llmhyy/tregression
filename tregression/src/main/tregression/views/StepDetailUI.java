@@ -140,7 +140,9 @@ public class StepDetailUI {
 		@Override
 		public Object[] getChildren(Object parentElement) {
 			if (parentElement instanceof ReferenceValue) {
-				return new ArrayList<>().toArray(new VarValue[0]);
+				ReferenceValue refValue = (ReferenceValue)parentElement;
+				return refValue.getChildren().toArray(new VarValue[0]);
+//				return new ArrayList<>().toArray();
 				
 //				ReferenceValue parent = (ReferenceValue) parentElement;
 //				List<VarValue> children = ((ReferenceValue) parentElement).getChildren();
