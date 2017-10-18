@@ -142,12 +142,13 @@ public class StepChangeTypeChecker {
 						return true;
 					}
 					
-					ReferenceValue thisRefVar = (ReferenceValue)thisVar;
-					ReferenceValue thatRefVar = (ReferenceValue)thatVar;
-					
-					String thisString = thisRefVar.getStringContainingAllChildren();
-					String thatString = thatRefVar.getStringContainingAllChildren();
-					return thisString.equals(thatString);
+//					ReferenceValue thisRefVar = (ReferenceValue)thisVar;
+//					ReferenceValue thatRefVar = (ReferenceValue)thatVar;
+//					
+//					String thisString = thisRefVar.getStringContainingAllChildren();
+//					String thatString = thatRefVar.getStringContainingAllChildren();
+//					return thisString.equals(thatString);
+					return true;
 				}
 				else {
 					String thisString = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
