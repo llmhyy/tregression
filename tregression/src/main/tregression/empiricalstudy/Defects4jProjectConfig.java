@@ -3,7 +3,7 @@ package tregression.empiricalstudy;
 import java.io.File;
 
 import microbat.Activator;
-import tregression.preference.TregressionPreference;
+import microbat.preference.MicrobatPreference;
 
 public class Defects4jProjectConfig {
 	public String srcTestFolder;
@@ -16,7 +16,7 @@ public class Defects4jProjectConfig {
 	public int bugID;
 	
 	public String rootPath = ""+File.separator+"home"+File.separator+"linyun"+File.separator+"doc"+File.separator+"git_space"+File.separator+"defects4j"+File.separator+"framework"+File.separator+"bin"+File.separator+"defects4j";
-	public String javaHome = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.JAVA7HOME_PATH);
+	public String javaHome = Activator.getDefault().getPreferenceStore().getString(MicrobatPreference.JAVA7HOME_PATH);
 	
 
 	private Defects4jProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
