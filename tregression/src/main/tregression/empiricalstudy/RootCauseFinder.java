@@ -437,7 +437,8 @@ public class RootCauseFinder {
 			
 			if(!isVisited) {
 				workList.add(new TraceNodeW(node, isOnBeforeTrace));
-				
+//				String str = isOnBeforeTrace?"before:":"after:";
+//				System.out.println(str+node);
 				/**
 				 * method invocation will cause a return step with the same line number
 				 */
