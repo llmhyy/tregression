@@ -33,6 +33,7 @@ import org.eclipse.ui.PlatformUI;
 import microbat.algorithm.graphdiff.GraphDiff;
 import microbat.model.BreakPointValue;
 import microbat.model.UserInterestedVariables;
+import microbat.model.trace.StepVariableRelationEntry;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.ReferenceValue;
@@ -87,7 +88,13 @@ public class StepDetailUI {
 				TraceNode suspiciousNode = null;
 				if(dataButton.getSelection()){
 					VarValue readVar = feedback.getOption().getReadVar();
-					suspiciousNode = currentNode.findDataDominator(readVar);
+//					suspiciousNode = currentNode.findDataDominator(readVar);
+					StepVariableRelationEntry entry = traceView.getTrace().getStepVariableTable().get(readVar.getVarID());
+					if(entry != null){
+						List<TraceNode> suspiciousNodes = entry.getProducers();
+						suspiciousNode = findLatestSuspiciousNode(currentNode, suspiciousNodes);
+					}
+					
 					feedback = new UserFeedback();
 				}
 				else if(controlButton.getSelection()){
@@ -101,6 +108,27 @@ public class StepDetailUI {
 			}
 		}
 		
+		private TraceNode findLatestSuspiciousNode(TraceNode currentNode, List<TraceNode> suspiciousNodes) {
+			int diff = -1;
+			TraceNode sus = null;
+			for(TraceNode susNode: suspiciousNodes){
+				if(susNode.getOrder()<currentNode.getOrder()){
+					if(sus==null){
+						sus = susNode;
+						diff = currentNode.getOrder() - susNode.getOrder();
+					}
+					else{
+						int newDiff = currentNode.getOrder() - susNode.getOrder();
+						if(newDiff < diff){
+							diff = newDiff;
+							sus = susNode;
+						}
+					}
+				}
+			}
+			
+			return sus;
+		}
 		private void jumpToNode(Trace trace, TraceNode suspiciousNode) {
 			traceView.jumpToNode(trace, suspiciousNode.getOrder(), true);
 		}
