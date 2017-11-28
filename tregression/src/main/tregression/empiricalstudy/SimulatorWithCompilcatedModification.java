@@ -175,7 +175,13 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		while (true) {
 			if(currentNode==null){
 				long endTime = System.currentTimeMillis();
-				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, 0, rootcauseNode, 
+				
+				int order = -1;
+				if(realcauseNode!=null){
+					order = realcauseNode.getRoot().getOrder();
+				}
+				
+				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, order, rootcauseNode, 
 						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder.getRegressionNodeList(), rootCauseFinder.getCorrectNodeList(), 
 						rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size());
