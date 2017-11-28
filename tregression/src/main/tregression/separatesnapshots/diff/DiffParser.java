@@ -21,7 +21,7 @@ public class DiffParser {
 				String osName = System.getProperty("os.name");
 				String sourceFile;
 				if(osName.contains("Win")){
-					sourceFile = line.substring(line.indexOf("a/")+1, line.length()-1);
+					sourceFile = line.substring(line.indexOf("a/")+2, line.length()-1);
 				}
 				else{
 					sourceFile = line.substring(line.indexOf("a/")+1, line.length());
@@ -34,7 +34,7 @@ public class DiffParser {
 				String osName = System.getProperty("os.name");
 				String targetFile;
 				if(osName.contains("Win")){
-					targetFile = line.substring(line.indexOf("b/")+1, line.length()-1);
+					targetFile = line.substring(line.indexOf("b/")+2, line.length()-1);
 				}
 				else{
 					targetFile = line.substring(line.indexOf("b/")+1, line.length());
