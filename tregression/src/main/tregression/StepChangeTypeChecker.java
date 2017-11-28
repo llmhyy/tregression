@@ -159,7 +159,10 @@ public class StepChangeTypeChecker {
 			}
 		}
 		
-		return false;
+		/**
+		 * if a variable does not have corresponding variable in the other trace, we do not record it.
+		 */
+		return true;
 	}
 
 	private boolean checkReturnVariable(TraceNode thisStep, TraceNode thatStep) {
