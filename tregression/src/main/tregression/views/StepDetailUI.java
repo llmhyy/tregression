@@ -33,7 +33,6 @@ import org.eclipse.ui.PlatformUI;
 import microbat.algorithm.graphdiff.GraphDiff;
 import microbat.model.BreakPointValue;
 import microbat.model.UserInterestedVariables;
-import microbat.model.trace.StepVariableRelationEntry;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.ReferenceValue;
@@ -89,11 +88,12 @@ public class StepDetailUI {
 				if(dataButton.getSelection()){
 					VarValue readVar = feedback.getOption().getReadVar();
 //					suspiciousNode = currentNode.findDataDominator(readVar);
-					StepVariableRelationEntry entry = traceView.getTrace().getStepVariableTable().get(readVar.getVarID());
-					if(entry != null){
-						List<TraceNode> suspiciousNodes = entry.getProducers();
-						suspiciousNode = findLatestSuspiciousNode(currentNode, suspiciousNodes);
-					}
+					suspiciousNode = trace.findDataDominator(currentNode, readVar);
+//					StepVariableRelationEntry entry = .getStepVariableTable().get(readVar.getVarID());
+//					if(entry != null){
+//						List<TraceNode> suspiciousNodes = entry.getProducers();
+//						suspiciousNode = findLatestSuspiciousNode(currentNode, suspiciousNodes);
+//					}
 					
 					feedback = new UserFeedback();
 				}
@@ -246,7 +246,7 @@ public class StepDetailUI {
 				String varID = value.getVarID();
 
 				if (!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)) {
-					String order = trace.findDefiningNodeOrder(RWType, currentNode, varID);
+					String order = trace.findDefiningNodeOrder(RWType, currentNode, varID, null);
 					varID = varID + ":" + order;
 					value.setVarID(varID);
 				}
@@ -412,7 +412,12 @@ public class StepDetailUI {
 					}
 					return name;
 				case 2:
-					return varValue.getManifestationValue();
+					String value = varValue.getManifestationValue();
+					String aliasVarID = varValue.getAliasVarID();
+					if(aliasVarID != null){
+						return value + (" aliasID:" + aliasVarID);
+					}
+					return value;
 				}
 			}
 
@@ -605,7 +610,7 @@ public class StepDetailUI {
 		String varID = ev.getVarID();
 		if(!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)){
 			Trace trace = traceView.getTrace();
-			String order = trace.findDefiningNodeOrder(Variable.READ, currentNode, varID);
+			String order = trace.findDefiningNodeOrder(Variable.READ, currentNode, varID, null);
 			varID = varID + ":" + order;
 		}
 		

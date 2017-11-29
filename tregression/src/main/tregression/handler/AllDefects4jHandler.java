@@ -1,5 +1,6 @@
 package tregression.handler;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -26,14 +27,17 @@ public class AllDefects4jHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-				int skippedNum = 383;
-				int endNum = 500;
+				int skippedNum = 0;
+				int endNum = 3;
 				
 //				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 //				int[] bugNum = {26, 133, 65, 106, 38, 27};
 				
-				String[] projects = {"Chart", "Lang", "Math", "Time"};
-				int[] bugNum = {26, 65, 106, 27};
+//				String[] projects = {"Chart", "Lang", "Math", "Time"};
+//				int[] bugNum = {26, 65, 106, 27};
+				
+				String[] projects = {"Chart"};
+				int[] bugNum = {26};
 				
 				String config = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String prefix = config.substring(0, config.indexOf(projects[0]));
@@ -52,8 +56,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						System.out.println("working on the " + j + "th bug of " + projects[i] + " project.");
 						
-						String buggyPath = prefix + projects[i] + "/" + j + "/bug";
-						String fixPath = prefix + projects[i] + "/" + j + "/fix";
+						String buggyPath = prefix + projects[i] + File.separator + j + File.separator + "bug";
+						String fixPath = prefix + projects[i] + File.separator + j + File.separator + "fix";
 						
 						System.out.println("analyzing the " + j + "th bug in " + projects[i] + " project.");
 						

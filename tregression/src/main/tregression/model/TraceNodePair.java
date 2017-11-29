@@ -233,7 +233,8 @@ public class TraceNodePair {
 									if(!mutatedSubVarValue.equals(mutatedVar)){
 										String varID = mutatedSubVarValue.getVarID();
 										if(!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)){
-											String order = mutatedTrace.findDefiningNodeOrder(Variable.READ, afterdNode, varID);
+											String order = mutatedTrace.findDefiningNodeOrder(Variable.READ, afterdNode, 
+													varID, mutatedSubVarValue.getAliasVarID());
 											varID = varID + ":" + order;
 										}
 										mutatedSubVarValue.setVarID(varID);
