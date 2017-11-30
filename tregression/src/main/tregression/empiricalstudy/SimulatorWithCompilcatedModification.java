@@ -173,7 +173,13 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		 * start debugging
 		 */
 		while (true) {
-			if(currentNode==null){
+			TraceNode previousNode = null;
+			if(!checkingList.isEmpty()){
+				StepOperationTuple lastTuple = checkingList.get(checkingList.size()-1);
+				previousNode = lastTuple.getNode();
+			}
+			
+			if(currentNode==null || (previousNode!=null && currentNode.getOrder()==previousNode.getOrder())){
 				long endTime = System.currentTimeMillis();
 				
 				int order = -1;
