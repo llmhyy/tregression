@@ -225,7 +225,7 @@ public class RootCauseFinder {
 		
 		int startOrder = findStartOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
 		int endOrder = findEndOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace, otherTrace);
-		
+		System.currentTimeMillis();
 		TraceNode bestNode = null;
 		int value = -1;
 		
@@ -257,6 +257,10 @@ public class RootCauseFinder {
 								}
 							}
 						}
+					}
+					
+					if(bestNode==null){
+						bestNode = node;
 					}
 				}				
 			}
