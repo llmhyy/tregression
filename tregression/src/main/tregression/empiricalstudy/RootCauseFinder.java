@@ -141,8 +141,8 @@ public class RootCauseFinder {
 			}
 			else if(changeType.getType()==StepChangeType.CTL){
 //				TraceNode controlDom = step.getControlDominator();
-//				TraceNode controlDom = getInvocationMethodOrDominator(step);
-				TraceNode controlDom = step.getControlDominator();
+				TraceNode controlDom = getInvocationMethodOrDominator(step);
+//				TraceNode controlDom = step.getControlDominator();
 				if(controlDom==null){
 					TraceNode invocationParent = step.getInvocationParent();
 					if(!isMatchable(invocationParent, pairList, stepW.isOnBefore)){
