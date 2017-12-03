@@ -109,7 +109,7 @@ public class TrialRecorder {
 	
 	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, int bugID) {
 		if (trial==null) {
-			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
+			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null);
 		}
 		
 		row.createCell(0).setCellValue(project);

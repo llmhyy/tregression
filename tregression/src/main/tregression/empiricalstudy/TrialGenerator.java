@@ -81,7 +81,7 @@ public class TrialGenerator {
 				else {
 					String explanation = getProblemType(res);
 					System.out.println("[*NOTICE*] " + explanation);
-					EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, null, 0);
+					EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null);
 					trial.setTestcase(tc.testClass + "::" + tc.testMethod);
 					trial.setExceptionExplanation(explanation);
 					trials.add(trial);
@@ -96,7 +96,7 @@ public class TrialGenerator {
 
 		if (trials.isEmpty()) {
 			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
-					-1, -1, null, null, 0);
+					-1, -1, null);
 			trial.setExceptionExplanation("runtime exception occurs");
 			trial.setTestcase(workingTC.testClass + "::" + workingTC.testMethod);
 			trials.add(trial);

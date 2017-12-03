@@ -33,11 +33,13 @@ public class EmpiricalTrial {
 	private List<StepOperationTuple> checkList = new ArrayList<>();
 	
 	private String exceptionExplanation;
+	
+	private RootCauseFinder rootCauseFinder;
 
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
 			RootCauseNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
 			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength,
-			List<TraceNode> visitedRegressionNodes, List<TraceNode> visitedCorrectNodes, int totalVisitedNodesNum) {
+			RootCauseFinder rootCauseFinder) {
 		super();
 		this.bugType = bugType;
 		this.overskipLength = overskipLength;
@@ -49,9 +51,12 @@ public class EmpiricalTrial {
 		this.setSimulationTime(simulationTime);
 		this.buggyTraceLength = buggyTraceLength;
 		this.correctTranceLength = correctTraceLength;
-		this.visitedRegressionNodes = visitedRegressionNodes;
-		this.visitedCorrectNodes = visitedCorrectNodes;
-		this.totalVisitedNodesNum = totalVisitedNodesNum;
+		this.setRootCauseFinder(rootCauseFinder);
+		if(rootCauseFinder != null){
+			this.visitedRegressionNodes = rootCauseFinder.getRegressionNodeList();
+			this.visitedCorrectNodes = rootCauseFinder.getCorrectNodeList();
+			this.totalVisitedNodesNum = rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size();			
+		}
 	}
 	
 	public static String getTypeStringName(int t) {
@@ -79,6 +84,22 @@ public class EmpiricalTrial {
 		if(checkList!=null) {
 			for(StepOperationTuple tuple: checkList) {
 				buffer.append(tuple.toString() + "\n");
+			}
+		}
+		if(this.rootCauseFinder!=null){
+			for(MendingRecord record: this.rootCauseFinder.getMendingRecordList()){
+				buffer.append("mending type: ");
+				String mendingType = (record.getType()==MendingRecord.CONTROL)? "control" : "data";
+				buffer.append(mendingType + "\n");
+				
+				buffer.append("mending start at: ");
+				buffer.append(record.getStartOrder() + "\n");
+				
+				buffer.append("mending corresponding point at: ");
+				buffer.append(record.getCorrespondingStepOnReference() + "\n");
+				
+				buffer.append("mending returning point at: ");
+				buffer.append(record.getReturningPoint() + "\n");
 			}
 		}
 		return buffer.toString();
@@ -198,6 +219,14 @@ public class EmpiricalTrial {
 
 	public void setExceptionExplanation(String exceptionExplanation) {
 		this.exceptionExplanation = exceptionExplanation;
+	}
+
+	public RootCauseFinder getRootCauseFinder() {
+		return rootCauseFinder;
+	}
+
+	public void setRootCauseFinder(RootCauseFinder rootCauseFinder) {
+		this.rootCauseFinder = rootCauseFinder;
 	}
 
 }

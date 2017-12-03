@@ -98,10 +98,7 @@ public class StepDetailUI {
 					feedback = new UserFeedback();
 				}
 				else if(controlButton.getSelection()){
-					suspiciousNode = currentNode.getControlDominator();
-					if(suspiciousNode==null){
-						suspiciousNode = currentNode.getInvocationParent();
-					}
+					suspiciousNode = currentNode.getInvocationMethodOrDominator();
 				}
 				
 				if(suspiciousNode != null){

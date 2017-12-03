@@ -189,8 +189,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 				
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, order, rootcauseNode, 
 						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
-						rootCauseFinder.getRegressionNodeList(), rootCauseFinder.getCorrectNodeList(), 
-						rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size());
+						rootCauseFinder);
 				return trial;
 			}
 			
@@ -204,8 +203,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 				long endTime = System.currentTimeMillis();
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.FIND_BUG, 0, rootcauseNode, 
 						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
-						rootCauseFinder.getRegressionNodeList(), rootCauseFinder.getCorrectNodeList(), 
-						rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size());
+						rootCauseFinder);
 				return trial;
 			} else if (changeType.getType() == StepChangeType.DAT) {
 				if(wrongReadVar == null) {
@@ -263,8 +261,7 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 				long endTime = System.currentTimeMillis();
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, 
 						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
-						rootCauseFinder.getRegressionNodeList(), rootCauseFinder.getCorrectNodeList(), 
-						rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size());
+						rootCauseFinder);
 				return trial;
 			}
 

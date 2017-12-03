@@ -41,6 +41,8 @@ public class RootCauseFinder {
 	
 	private TraceNode rootCause;
 	
+	private List<MendingRecord> mendingRecordList = new ArrayList<>();
+	
 	public TraceNode retrieveRootCause(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
 		Collections.sort(regressionNodeList, new TraceNodeOrderComparator());
 		Collections.sort(correctNodeList, new TraceNodeOrderComparator());
@@ -137,11 +139,15 @@ public class RootCauseFinder {
 						TraceNode otherDataDom = trace.findDataDominator(matchedStep, matchedVar);
 						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);						
 					}
+					
+					appendMendingRecord(MendingRecord.DATA, stepW, step, matchedStep, 
+							typeChecker, dataDom, pairList, matcher);
 				}
+				
 			}
 			else if(changeType.getType()==StepChangeType.CTL){
 //				TraceNode controlDom = step.getControlDominator();
-				TraceNode controlDom = getInvocationMethodOrDominator(step);
+				TraceNode controlDom = step.getInvocationMethodOrDominator();
 //				TraceNode controlDom = step.getControlDominator();
 				if(controlDom==null){
 					TraceNode invocationParent = step.getInvocationParent();
@@ -153,20 +159,78 @@ public class RootCauseFinder {
 				
 				trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
 				
-				if(controlDom!=null && controlDom.getOrder()==322) {
-					System.currentTimeMillis();
-					System.currentTimeMillis();
-				}
-				
 				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(step.getBreakPoint(), !stepW.isOnBefore);
 				
 				TraceNode otherControlDom = findResponsibleControlDomOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
 				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);
 				
+				appendMendingRecord(MendingRecord.CONTROL, stepW, step, otherControlDom, 
+						typeChecker, controlDom, pairList, matcher);
+				
 			}
 		}
 	}
 	
+	private void appendMendingRecord(int mendingType, TraceNodeW stepW, TraceNode step, TraceNode matchingStep, 
+			StepChangeTypeChecker typeChecker, TraceNode dominator, PairList pairList, DiffMatcher matcher) {
+		if(!stepW.isOnBefore){
+			return;
+		}
+		
+		StepChangeType domType = typeChecker.getType(dominator, true, pairList, matcher);
+		while(dominator!=null && domType.getType()==StepChangeType.CTL){
+			dominator = dominator.getInvocationMethodOrDominator();
+			domType = typeChecker.getType(dominator, true, pairList, matcher);
+		}
+		if(dominator==null){
+			return;
+		}
+		
+		if(domType.getType()==StepChangeType.IDT){
+			TraceNode returningPoint = null;
+			if(matchingStep != null){
+				TraceNode domOnRef = null;
+				if(mendingType==MendingRecord.DATA){
+					StepChangeType matchingStepType = typeChecker.getType(matchingStep, false, pairList, matcher);
+					VarValue wrongVar = matchingStepType.getWrongVariableList().get(0);
+//					domOnRef = matchingStep.getDataDominator(wrongVar);
+					domOnRef = matchingStep.findDataDominator(wrongVar);
+				}
+				else if(mendingType==MendingRecord.CONTROL){
+					domOnRef = matchingStep.getInvocationMethodOrDominator();
+				}
+				
+				while(domOnRef != null){
+					TraceNodePair conPair = pairList.findByAfterNode(domOnRef);
+					if(conPair != null && conPair.getBeforeNode() != null){
+						returningPoint = conPair.getBeforeNode();
+						break;
+					}
+					else{
+						domOnRef = domOnRef.getInvocationMethodOrDominator();
+					}
+				}
+				
+			}
+			
+//			int returningPointOrder = -1;
+//			if(returningPoint!=null){
+//				returningPointOrder = returningPoint.getOrder();
+//			}
+//			
+//			int correspondingOrder = -1;
+//			if(matchingStep!=null){
+//				correspondingOrder = matchingStep.getOrder();
+//			}
+			
+			if(matchingStep!=null && returningPoint!=null){
+				MendingRecord record = new MendingRecord(mendingType, step.getOrder(), 
+						matchingStep.getOrder(), returningPoint.getOrder());
+				getMendingRecordList().add(record);
+			}
+		}
+	}
+
 	private boolean isMatchable(TraceNode invocationParent, PairList pairList, boolean isOnBefore) {
 		if(isOnBefore){
 			TraceNodePair pair = pairList.findByBeforeNode(invocationParent);
@@ -196,28 +260,6 @@ public class RootCauseFinder {
 				break;
 			}
 		}
-	}
-
-	private TraceNode getInvocationMethodOrDominator(TraceNode step) {
-		TraceNode controlDom = step.getControlDominator();
-		TraceNode invocationParent = step.getInvocationParent();
-		
-		if(controlDom!=null && invocationParent!=null) {
-			if(controlDom.getOrder()<invocationParent.getOrder()) {
-				return invocationParent;
-			}
-			else {
-				return controlDom;
-			}
-		}
-		else if(controlDom!=null && invocationParent==null) {
-			return controlDom;
-		}
-		else if(controlDom==null && invocationParent!=null) {
-			return invocationParent;
-		}
-		
-		return null;
 	}
 
 	public TraceNode findResponsibleControlDomOnOtherTrace(TraceNode problematicStep, PairList pairList,
@@ -485,6 +527,14 @@ public class RootCauseFinder {
 
 	public void setRootCause(TraceNode rootCause) {
 		this.rootCause = rootCause;
+	}
+
+	public List<MendingRecord> getMendingRecordList() {
+		return mendingRecordList;
+	}
+
+	public void setMendingRecordList(List<MendingRecord> mendingRecordList) {
+		this.mendingRecordList = mendingRecordList;
 	}
 	
 	
