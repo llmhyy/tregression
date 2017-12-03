@@ -99,6 +99,9 @@ public class StepDetailUI {
 				}
 				else if(controlButton.getSelection()){
 					suspiciousNode = currentNode.getControlDominator();
+					if(suspiciousNode==null){
+						suspiciousNode = currentNode.getInvocationParent();
+					}
 				}
 				
 				if(suspiciousNode != null){
