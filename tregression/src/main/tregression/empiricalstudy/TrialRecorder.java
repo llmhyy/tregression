@@ -167,12 +167,14 @@ public class TrialRecorder {
 		
 		int count = 16;
 		RootCauseFinder finder = trial.getRootCauseFinder();
-		List<MendingRecord> mendings = finder.getMendingRecordList();
-		for(MendingRecord r: mendings){
-			row.createCell(count++).setCellValue(r.getTypeString());
-			row.createCell(count++).setCellValue(r.getStartOrder());
-			row.createCell(count++).setCellValue(r.getCorrespondingStepOnReference());
-			row.createCell(count++).setCellValue(r.getReturningPoint());
+		if(finder != null){
+			List<MendingRecord> mendings = finder.getMendingRecordList();
+			for(MendingRecord r: mendings){
+				row.createCell(count++).setCellValue(r.getTypeString());
+				row.createCell(count++).setCellValue(r.getStartOrder());
+				row.createCell(count++).setCellValue(r.getCorrespondingStepOnReference());
+				row.createCell(count++).setCellValue(r.getReturningPoint());
+			}			
 		}
 		
 	}
