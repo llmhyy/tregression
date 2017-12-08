@@ -177,6 +177,10 @@ public class RootCauseFinder {
 			return;
 		}
 		
+		if(dominator==null){
+			return;
+		}
+		
 		StepChangeType domType = typeChecker.getType(dominator, true, pairList, matcher);
 		while(dominator!=null && domType.getType()==StepChangeType.CTL){
 			dominator = dominator.getInvocationMethodOrDominator();
