@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Tree;
@@ -637,7 +638,7 @@ public class StepDetailUI {
 			//BreakPointValue thisState = node.getProgramState();
 			//createStateContent(thisState);
 			createWrittenVariableContent(node.getWrittenVariables(), changeType);
-			createReadVariableContect(node.getReadVariables(), changeType);			
+			createReadVariableContect(node.getReadVariables(), changeType);	
 		}
 		else{
 			//createStateContent(null);
@@ -645,8 +646,15 @@ public class StepDetailUI {
 			createReadVariableContect(null, changeType);	
 		}
 		
-		dataButton.setSelection(false);
-		controlButton.setSelection(false);
+		this.controlButton.setSelection(false);
+		this.dataButton.setSelection(false);
+		if(changeType.getType()==StepChangeType.CTL){
+			this.controlButton.setSelection(true);
+		}
+		else if(changeType.getType()==StepChangeType.DAT){
+			this.dataButton.setSelection(true);
+		}
 		
 	}
+
 }
