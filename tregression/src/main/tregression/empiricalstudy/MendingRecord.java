@@ -17,6 +17,16 @@ public class MendingRecord {
 		this.correspondingStepOnReference = correspondingStepOnReference;
 		this.returningPoint = returningPoint;
 	}
+	
+	public String getTypeString(){
+		if(getType()==MendingRecord.DATA){
+			return "data";
+		}
+		else if(getType()==MendingRecord.CONTROL){
+			return "control";
+		}
+		return "null";
+	}
 
 	public int getType() {
 		return type;

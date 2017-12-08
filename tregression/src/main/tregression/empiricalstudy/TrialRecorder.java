@@ -63,6 +63,7 @@ public class TrialRecorder {
 		titles.add("test case");
 		titles.add("found cause");
 		titles.add("general cause");
+		
 		titles.add("buggy trace length");
 		titles.add("correct trace length");
 		titles.add("trace collection time");
@@ -75,6 +76,11 @@ public class TrialRecorder {
 		titles.add("type");
 		titles.add("overskip steps");
 		titles.add("checklist");
+		
+		titles.add("mending type");
+		titles.add("mending start");
+		titles.add("mending correspondence");
+		titles.add("mending return");
 		
 		Row row = sheet.createRow(0);
 		for(int i = 0; i < titles.size(); i++){
@@ -158,6 +164,17 @@ public class TrialRecorder {
 		if (trial.getExceptionExplanation()!=null) {
 			row.createCell(16).setCellValue(trial.getExceptionExplanation());
 		}
+		
+		int count = 16;
+		RootCauseFinder finder = trial.getRootCauseFinder();
+		List<MendingRecord> mendings = finder.getMendingRecordList();
+		for(MendingRecord r: mendings){
+			row.createCell(count++).setCellValue(r.getTypeString());
+			row.createCell(count++).setCellValue(r.getStartOrder());
+			row.createCell(count++).setCellValue(r.getCorrespondingStepOnReference());
+			row.createCell(count++).setCellValue(r.getReturningPoint());
+		}
+		
 	}
 	
 	private void writeToExcel(Workbook book, String fileName){
