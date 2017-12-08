@@ -38,7 +38,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 				
-				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, true, true, config);
+				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, false, true, config);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {
@@ -46,10 +46,11 @@ public class SeparateVersionHandler extends AbstractHandler{
 					System.out.println(trials.get(i));
 				}
 				
+				
 //				TrialRecorder recorder;
 //				try {
 //					recorder = new TrialRecorder();
-//					recorder.export(trials, "Chart", 2);
+//					recorder.export(trials, "Chart", 21);
 //				} catch (IOException e) {
 //					e.printStackTrace();
 //				}
