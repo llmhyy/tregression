@@ -87,6 +87,10 @@ public class StepDetailUI {
 				
 				TraceNode suspiciousNode = null;
 				if(dataButton.getSelection()){
+					if(feedback.getOption()==null) {
+						return;
+					}
+					
 					VarValue readVar = feedback.getOption().getReadVar();
 //					suspiciousNode = currentNode.findDataDominator(readVar);
 					suspiciousNode = trace.findDataDominator(currentNode, readVar);
