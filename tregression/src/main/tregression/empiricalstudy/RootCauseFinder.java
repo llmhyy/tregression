@@ -60,7 +60,7 @@ public class RootCauseFinder {
 			StepChangeType type = typeChecker.getType(node, false, pairList, matcher);
 			if(type.getType()==StepChangeType.SRC) {
 				int startOrder  = findStartOrderInOtherTrace(node, pairList, false);
-				return buggyTrace.getExectionList().get(startOrder-1);
+				return buggyTrace.getExecutionList().get(startOrder-1);
 			}
 		}
 		
@@ -81,14 +81,14 @@ public class RootCauseFinder {
 	
 	public RootCauseNode getRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
 		for(int i=buggyTrace.size()-1; i>=0; i--) {
-			TraceNode buggyNode = buggyTrace.getExectionList().get(i);
+			TraceNode buggyNode = buggyTrace.getExecutionList().get(i);
 			if(matcher.checkSourceDiff(buggyNode.getBreakPoint(), true)) {
 				return new RootCauseNode(buggyNode, true);
 			}
 		}
 		
 		for(int i=correctTrace.size()-1; i>=0; i--) {
-			TraceNode correctTraceNode = correctTrace.getExectionList().get(i);
+			TraceNode correctTraceNode = correctTrace.getExecutionList().get(i);
 			if(matcher.checkSourceDiff(correctTraceNode.getBreakPoint(), false)) {
 				return new RootCauseNode(correctTraceNode, false);
 			}
@@ -278,7 +278,7 @@ public class RootCauseFinder {
 		//TODO this implementation is problematic, I need to use soot to analyze the static control dependence relation.
 		for(int i=endOrder; i>=startOrder; i--){
 			if(i<=otherTrace.size()) {
-				TraceNode node = otherTrace.getExectionList().get(i-1);
+				TraceNode node = otherTrace.getExecutionList().get(i-1);
 				if(node.isConditional()){
 					if(node.getControlScope().containLocation(correspondingLocation)) {
 						if(bestNode==null) {
@@ -383,7 +383,7 @@ public class RootCauseFinder {
 		 */
 		int order0 = findStartOrderInOtherTrace(problematicStep, pairList, isOnBeforeTrace);
 		if(order0+1<=otherTrace.size()){
-			TraceNode n = otherTrace.getExectionList().get(order0);
+			TraceNode n = otherTrace.getExecutionList().get(order0);
 			while(n!=null){
 				if(n.isConditional()){
 					if(n.getStepOverNext()!=null){
@@ -428,7 +428,7 @@ public class RootCauseFinder {
 
 	private List<BreakPoint> findAllExecutedStatement(Trace trace) {
 		List<BreakPoint> pointList = new ArrayList<>();
-		for(TraceNode node: trace.getExectionList()){
+		for(TraceNode node: trace.getExecutionList()){
 			BreakPoint p = node.getBreakPoint();
 			if(!pointList.contains(p)){
 				pointList.add(p);

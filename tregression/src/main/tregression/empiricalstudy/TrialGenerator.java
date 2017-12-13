@@ -282,25 +282,25 @@ public class TrialGenerator {
 		
 		if(config.projectName.equals("Math")&&config.bugID==78){
 			simulator.getObservedFaults().clear();
-			TraceNode node = buggyTrace.getExectionList().get(640);
+			TraceNode node = buggyTrace.getExecutionList().get(640);
 			simulator.getObservedFaults().add(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==40){
 			simulator.getObservedFaults().clear();
-			TraceNode node = buggyTrace.getExectionList().get(11268);
+			TraceNode node = buggyTrace.getExecutionList().get(11268);
 			simulator.getObservedFaults().add(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==49){
 			simulator.getObservedFaults().clear();
-			TraceNode node = buggyTrace.getExectionList().get(449);
+			TraceNode node = buggyTrace.getExecutionList().get(449);
 			simulator.getObservedFaults().add(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==1){
 			simulator.getObservedFaults().clear();
-			TraceNode node = buggyTrace.getExectionList().get(1478);
+			TraceNode node = buggyTrace.getExecutionList().get(1478);
 			simulator.getObservedFaults().add(node);
 		}
 	}

@@ -28,7 +28,7 @@ public abstract class Simulator {
 	
 	protected Map<Integer, TraceNode> findAllWrongNodes(PairList pairList, Trace buggyTrace){
 		Map<Integer, TraceNode> actualWrongNodes = new HashMap<>();
-		for(TraceNode buggyTraceNode: buggyTrace.getExectionList()){
+		for(TraceNode buggyTraceNode: buggyTrace.getExecutionList()){
 			TraceNodePair foundPair = pairList.findByBeforeNode(buggyTraceNode);
 			if(foundPair != null){
 				if(!foundPair.isExactSame()){

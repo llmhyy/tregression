@@ -157,7 +157,7 @@ public class SimulatorWithSingleLineModification extends Simulator{
 		recommender = new StepRecommender(enableLoopInference);
 		user = new SimulatedUser();
 		
-		int traceLength = mutatedTrace.getExectionList().size();
+		int traceLength = mutatedTrace.getExecutionList().size();
 		int maxUnclearFeedbackNum = (int)(traceLength*unclearRate);
 		if(unclearRate == -1){
 			maxUnclearFeedbackNum = traceLength;
@@ -238,7 +238,7 @@ public class SimulatorWithSingleLineModification extends Simulator{
 						int checkTime = state.getTraceCheckTime();
 						
 						mutatedTrace.setCheckTime(state.getTraceCheckTime());
-						suspiciousNode = mutatedTrace.getExectionList().get(state.getCurrentNodeOrder()-1);
+						suspiciousNode = mutatedTrace.getExecutionList().get(state.getCurrentNodeOrder()-1);
 						suspiciousNode.setSuspicousScoreMap(state.getCurrentNodeSuspicousScoreMap());
 						suspiciousNode.setCheckTime(state.getCurrentNodeCheckTime());
 						
@@ -550,7 +550,7 @@ public class SimulatorWithSingleLineModification extends Simulator{
 	protected List<TraceNode> findAllDominatees(Trace mutationTrace, ClassLocation mutatedLocation){
 		Map<Integer, TraceNode> allDominatees = new HashMap<>();
 		
-		for(TraceNode mutatedNode: mutationTrace.getExectionList()){
+		for(TraceNode mutatedNode: mutationTrace.getExecutionList()){
 			if(mutatedNode.getClassCanonicalName().equals(mutatedLocation.getClassCanonicalName()) 
 					&& mutatedNode.getLineNumber() == mutatedLocation.getLineNo()){
 				
@@ -567,7 +567,7 @@ public class SimulatorWithSingleLineModification extends Simulator{
 	}
 	
 	private TraceNode findRootCause(String className, int lineNo, Trace mutatedTrace, PairList pairList) {
-		for(TraceNode node: mutatedTrace.getExectionList()){
+		for(TraceNode node: mutatedTrace.getExecutionList()){
 			if(node.getDeclaringCompilationUnitName().equals(className) && node.getLineNumber()==lineNo){
 				TraceNodePair pair = pairList.findByAfterNode(node);
 				

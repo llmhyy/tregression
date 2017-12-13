@@ -71,7 +71,7 @@ public class StepDetailUI {
 		public void mouseDown(MouseEvent e) {
 			
 			//for(int i=66644; i<=67830; i++){
-				TraceNode n = traceView.getTrace().getExectionList().get(1);
+				TraceNode n = traceView.getTrace().getExecutionList().get(1);
 				for(VarValue var: n.getReadVariables()){
 					if(var.getVarName().contains("code")){
 						//System.out.println(n.getOrder()+":" + var.getVarName());
