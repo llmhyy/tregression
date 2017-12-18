@@ -14,6 +14,7 @@ import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Image;
@@ -249,12 +250,6 @@ public class StepDetailUI {
 
 				value = (VarValue) obj;
 				String varID = value.getVarID();
-
-				if (!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)) {
-					String order = trace.findDefiningNodeOrder(RWType, currentNode, varID, null);
-					varID = varID + ":" + order;
-					value.setVarID(varID);
-				}
 
 				if (!interestedVariables.contains(varID)) {
 					interestedVariables.add(varID, trace.getCheckTime());
@@ -521,9 +516,17 @@ public class StepDetailUI {
 		
 		createSlicingGroup(comp);
 		
-		this.readVariableTreeViewer = createVarGroup(comp, "Read Variables: ");
-		this.writtenVariableTreeViewer = createVarGroup(comp, "Written Variables: ");
+		SashForm sashForm = new SashForm(comp, SWT.VERTICAL);
+		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		sashForm.setLayoutData(data);
+		
+		this.readVariableTreeViewer = createVarGroup(sashForm, "Read Variables: ");
+		this.writtenVariableTreeViewer = createVarGroup(sashForm, "Written Variables: ");
 		//this.stateTreeViewer = createVarGroup(comp, "States: ");
+		
+		sashForm.setWeights(new int[]{50, 50});
+		
+		
 		
 		addListener();
 		
@@ -604,22 +607,8 @@ public class StepDetailUI {
 			return;
 		}
 		
-		VarValue ev = null;
-		if(element instanceof VarValue){
-			ev = (VarValue)element;
-		}
-		else if(element instanceof GraphDiff){
-			ev = (VarValue) ((GraphDiff)element).getChangedNode();
-		}
-		
+		VarValue ev = (VarValue)element;
 		String varID = ev.getVarID();
-		if(!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)){
-			Trace trace = traceView.getTrace();
-			String order = trace.findDefiningNodeOrder(Variable.READ, currentNode, varID, null);
-			varID = varID + ":" + order;
-		}
-		
-		System.currentTimeMillis();
 		
 		if(interestedVariables.contains(varID)){
 			item.setChecked(true);
