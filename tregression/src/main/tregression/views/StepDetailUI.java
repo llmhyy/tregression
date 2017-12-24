@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Tree;
@@ -41,7 +40,6 @@ import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import microbat.model.value.VirtualValue;
 import microbat.model.variable.Variable;
-import microbat.model.variable.VirtualVar;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
@@ -88,20 +86,26 @@ public class StepDetailUI {
 				
 				TraceNode suspiciousNode = null;
 				if(dataButton.getSelection()){
-					if(feedback.getOption()==null) {
-						return;
+					//TODO
+					Object[] objList = readVariableTreeViewer.getCheckedElements();
+					if(objList.length!=0) {
+						Object obj = objList[0];
+						if(obj instanceof VarValue) {
+							VarValue readVar = (VarValue)obj;
+							suspiciousNode = trace.findDataDominator(currentNode, readVar);
+						}
 					}
 					
-					VarValue readVar = feedback.getOption().getReadVar();
+//					VarValue readVar = feedback.getOption().getReadVar();
 //					suspiciousNode = currentNode.findDataDominator(readVar);
-					suspiciousNode = trace.findDataDominator(currentNode, readVar);
+//					suspiciousNode = trace.findDataDominator(currentNode, readVar);
 //					StepVariableRelationEntry entry = .getStepVariableTable().get(readVar.getVarID());
 //					if(entry != null){
 //						List<TraceNode> suspiciousNodes = entry.getProducers();
 //						suspiciousNode = findLatestSuspiciousNode(currentNode, suspiciousNodes);
 //					}
 					
-					feedback = new UserFeedback();
+//					feedback = new UserFeedback();
 				}
 				else if(controlButton.getSelection()){
 					suspiciousNode = currentNode.getInvocationMethodOrDominator();
@@ -114,27 +118,6 @@ public class StepDetailUI {
 			}
 		}
 		
-		private TraceNode findLatestSuspiciousNode(TraceNode currentNode, List<TraceNode> suspiciousNodes) {
-			int diff = -1;
-			TraceNode sus = null;
-			for(TraceNode susNode: suspiciousNodes){
-				if(susNode.getOrder()<currentNode.getOrder()){
-					if(sus==null){
-						sus = susNode;
-						diff = currentNode.getOrder() - susNode.getOrder();
-					}
-					else{
-						int newDiff = currentNode.getOrder() - susNode.getOrder();
-						if(newDiff < diff){
-							diff = newDiff;
-							sus = susNode;
-						}
-					}
-				}
-			}
-			
-			return sus;
-		}
 		private void jumpToNode(Trace trace, TraceNode suspiciousNode) {
 			traceView.jumpToNode(trace, suspiciousNode.getOrder(), true);
 		}
@@ -176,41 +159,6 @@ public class StepDetailUI {
 			if (parentElement instanceof ReferenceValue) {
 				ReferenceValue refValue = (ReferenceValue)parentElement;
 				return refValue.getChildren().toArray(new VarValue[0]);
-//				return new ArrayList<>().toArray();
-				
-//				ReferenceValue parent = (ReferenceValue) parentElement;
-//				List<VarValue> children = ((ReferenceValue) parentElement).getChildren();
-//				if (children == null) {
-//					String varID = parent.getVarID();
-//					varID = Variable.truncateSimpleID(varID);
-//					// varID = varID.substring(0, varID.indexOf(":"));
-//
-//					VarValue vv = null;
-//					/** read */
-//					if (rw) {
-//						vv = currentNode.getProgramState().findVarValue(varID);
-//					}
-//					/** write */
-//					else {
-//						if (currentNode.getStepOverNext() != null) {
-//							vv = currentNode.getStepOverNext().getProgramState().findVarValue(varID);
-//						}
-//
-//						if (currentNode.getStepInNext() != null) {
-//							vv = currentNode.getStepInNext().getProgramState().findVarValue(varID);
-//						}
-//					}
-//
-//					if (vv != null) {
-//						List<VarValue> retrievedChildren = vv.getAllDescedentChildren();
-//						MicroBatUtil.assignWrittenIdentifier(retrievedChildren, currentNode);
-//
-//						parent.setChildren(vv.getChildren());
-//						return vv.getChildren().toArray(new VarValue[0]);
-//					}
-//				} else {
-//					return parent.getChildren().toArray(new VarValue[0]);
-//				}
 			}
 
 			return null;
