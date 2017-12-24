@@ -20,6 +20,8 @@ import org.eclipse.swt.custom.ST;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GlyphMetrics;
 import org.eclipse.swt.layout.FillLayout;
@@ -28,18 +30,24 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.EditorPart;
 
+import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.views.TraceView;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
 import tregression.separatesnapshots.diff.LineChange;
+import tregression.views.BuggyTraceView;
+import tregression.views.TregressionViews;
 
 public class CompareEditor extends EditorPart {
 
@@ -155,7 +163,7 @@ public class CompareEditor extends EditorPart {
 		ranges.add(selectedRange);
 	}
 	
-	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, boolean isSource){
+	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, final boolean isSource){
 //		ScrolledComposite scrolledComp = new ScrolledComposite(sashForm, SWT.H_SCROLL | SWT.V_SCROLL);
 //		scrolledComp.setExpandHorizontal(true);
 //		scrolledComp.setExpandVertical(true);
@@ -182,6 +190,54 @@ public class CompareEditor extends EditorPart {
 		text.setText(content);
 		
 		highlightStyles(isSource, null, text, matcher, path);
+		
+		Menu popupMenu = new Menu(text);
+	    MenuItem forwardItem = new MenuItem(popupMenu, SWT.CASCADE);
+	    forwardItem.setText("Search Forward");
+		forwardItem.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String className = input.getSelectedNode().getClassCanonicalName();
+				int lineNumber = input.getSelectedNode().getLineNumber();
+				
+				String expression = Trace.combineTraceNodeExpression(className, lineNumber);
+				
+				TraceView traceView = isSource? 
+						TregressionViews.getBuggyTraceView() : TregressionViews.getCorrectTraceView();
+				traceView.setSearchText(expression);
+				traceView.jumpToNode(expression, false);
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				
+			}
+		});
+		
+		MenuItem backwardItem = new MenuItem(popupMenu, SWT.CASCADE);
+	    backwardItem.setText("Search Backward");
+		backwardItem.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String className = input.getSelectedNode().getClassCanonicalName();
+				int lineNumber = input.getSelectedNode().getLineNumber();
+				
+				String expression = Trace.combineTraceNodeExpression(className, lineNumber);
+				
+				TraceView traceView = isSource? 
+						TregressionViews.getBuggyTraceView() : TregressionViews.getCorrectTraceView();
+				traceView.setSearchText(expression);
+				traceView.jumpToNode(expression, true);
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				
+			}
+		});
+		text.setMenu(popupMenu);
 		
 //		scrolledComp.setContent(composite);
 //		scrolledComp.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
