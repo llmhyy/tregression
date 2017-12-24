@@ -310,10 +310,12 @@ public class RootCauseFinder {
 		int value = -1;
 		
 		//TODO this implementation is problematic, I need to use soot to analyze the static control dependence relation.
+		TraceNode temp = null;
 		for(int i=endOrder; i>=startOrder; i--){
 			if(i<=otherTrace.size()) {
 				TraceNode node = otherTrace.getExecutionList().get(i-1);
 				if(node.isConditional()){
+					temp = node;
 					if(node.getControlScope().containLocation(correspondingLocation)) {
 						if(bestNode==null) {
 							bestNode = node;
@@ -339,11 +341,12 @@ public class RootCauseFinder {
 						}
 					}
 					
-					if(bestNode==null){
-						bestNode = node;
-					}
 				}				
 			}
+		}
+		
+		if(bestNode==null){
+			bestNode = temp;
 		}
 		
 		return bestNode;
