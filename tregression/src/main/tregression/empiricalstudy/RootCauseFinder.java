@@ -201,7 +201,7 @@ public class RootCauseFinder {
 					domOnRef = matchingStep.findDataDominator(wrongVar);
 				}
 				else if(mendingType==MendingRecord.CONTROL){
-					domOnRef = matchingStep.getInvocationMethodOrDominator();
+					domOnRef = matchingStep;
 				}
 				
 				while(domOnRef != null){
