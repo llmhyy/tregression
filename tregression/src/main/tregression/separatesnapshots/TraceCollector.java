@@ -14,7 +14,8 @@ import tregression.empiricalstudy.TrialGenerator;
 
 public class TraceCollector {
 	
-	public RunningResult preCheck(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config, boolean isRunInTestCaseMode) {
+	public RunningResult preCheck(String workingDir, String testClass, String testMethod, 
+			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread) {
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, testClass, testMethod, config);
 		if(!isRunInTestCaseMode) {
 			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
@@ -36,7 +37,7 @@ public class TraceCollector {
 			return rs;
 		}
 		
-		if(checker.isMultiThread()) {
+		if(checker.isMultiThread() && !allowMultiThread) {
 			System.out.println("It is multi-thread program!");
 			RunningResult rs = new RunningResult();
 			rs.setFailureType(TrialGenerator.MULTI_THREAD);

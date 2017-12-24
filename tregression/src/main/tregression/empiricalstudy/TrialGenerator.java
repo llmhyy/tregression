@@ -52,7 +52,7 @@ public class TrialGenerator {
 	}
 
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse,
-			boolean requireVisualization, Defects4jProjectConfig config) {
+			boolean requireVisualization, boolean allowMultiThread, Defects4jProjectConfig config) {
 		List<TestCase> list;
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TestCase workingTC = null;
@@ -62,7 +62,8 @@ public class TrialGenerator {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
 
-				int res = analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, true);
+				int res = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
+						trials, tc, config, requireVisualization, true);
 				if (res == NORMAL) {
 //					if(!trials.isEmpty()) {
 //						EmpiricalTrial t = trials.get(0);
@@ -105,7 +106,7 @@ public class TrialGenerator {
 		return trials;
 	}
 
-	private List<EmpiricalTrial> runMainMethodVersion(String buggyPath, String fixPath, boolean isReuse,
+	private List<EmpiricalTrial> runMainMethodVersion(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread,
 			boolean requireVisualization, Defects4jProjectConfig config, TestCase tc) throws SimulationFailException {
 		List<EmpiricalTrial> trials;
 		generateMainMethod(buggyPath, tc, config);
@@ -114,7 +115,7 @@ public class TrialGenerator {
 		recompileD4J(fixPath, config);
 		
 		trials = new ArrayList<>();
-		analyzeTestCase(buggyPath, fixPath, isReuse, trials, tc, config, requireVisualization, false);
+		analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread, trials, tc, config, requireVisualization, false);
 		return trials;
 	}
 
@@ -154,9 +155,9 @@ public class TrialGenerator {
 		System.currentTimeMillis();
 	}
 
-	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, List<EmpiricalTrial> trials,
-			TestCase tc, Defects4jProjectConfig config, boolean requireVisualization, boolean isRunInTestCaseMode) 
-					throws SimulationFailException {
+	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
+			List<EmpiricalTrial> trials, TestCase tc, Defects4jProjectConfig config, 
+			boolean requireVisualization, boolean isRunInTestCaseMode) throws SimulationFailException {
 		TraceCollector collector = new TraceCollector();
 		long time1 = 0;
 		long time2 = 0;
@@ -173,34 +174,34 @@ public class TrialGenerator {
 			buggyRS = cachedBuggyRS;
 			correctRs = cachedCorrectRS;
 
-			System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
-					+ ", correct trace length: " + correctRs.getRunningTrace().size());
-			time1 = System.currentTimeMillis();
-			diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
-			diffMatcher.matchCode();
+//			System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
+//					+ ", correct trace length: " + correctRs.getRunningTrace().size());
+//			time1 = System.currentTimeMillis();
+//			diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
+//			diffMatcher.matchCode();
+//
+//			ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+//			pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(),
+//					diffMatcher);
+//			time2 = System.currentTimeMillis();
+//			matchTime = (int) (time2 - time1);
+//			System.out.println("finish matching trace, taking " + matchTime + "ms");
+//			cachedDiffMatcher = diffMatcher;
+//			cachedPairList = pairList;
 
-			ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-			pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(),
-					diffMatcher);
-			time2 = System.currentTimeMillis();
-			matchTime = (int) (time2 - time1);
-			System.out.println("finish matching trace, taking " + matchTime + "ms");
-			cachedDiffMatcher = diffMatcher;
-			cachedPairList = pairList;
-
-//			diffMatcher = cachedDiffMatcher;
-//			pairList = cachedPairList;
+			diffMatcher = cachedDiffMatcher;
+			pairList = cachedPairList;
 		} else {
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode);
+			buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode, allowMultiThread);
 			if (buggyRS.getRunningType() != NORMAL) {
 				return buggyRS.getRunningType();
 			}
 
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode);
+			correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode, allowMultiThread);
 			if (correctRs.getRunningType() != NORMAL) {
 				return correctRs.getRunningType();
 			}
