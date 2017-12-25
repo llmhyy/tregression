@@ -43,6 +43,7 @@ import microbat.model.variable.Variable;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
+import microbat.util.Settings;
 import microbat.util.TempVariableInfo;
 import microbat.views.ImageUI;
 import tregression.StepChangeType;
@@ -333,7 +334,7 @@ public class StepDetailUI {
 				if(changeType.getType()==StepChangeType.DAT) {
 					for(VarValue var: changeType.getWrongVariableList()) {
 						if(var.getVarName().equals(varValue.getVarName())) {
-							return new ImageUI().getImage(ImageUI.QUESTION_MARK);
+							return Settings.imageUI.getImage(ImageUI.QUESTION_MARK);
 						}
 					}
 				}
