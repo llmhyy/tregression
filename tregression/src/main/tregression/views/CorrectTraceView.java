@@ -48,7 +48,7 @@ public class CorrectTraceView extends TregressionTraceView {
 					
 					if (otherControlDom != null) {
 						buggyTraceView.otherViewsBehavior(otherControlDom);
-						buggyTraceView.jumpToNode(getTrace(), otherControlDom.getOrder(), refreshProgramState);
+						buggyTraceView.jumpToNode(buggyTraceView.getTrace(), otherControlDom.getOrder(), refreshProgramState);
 					}
 					
 				}
