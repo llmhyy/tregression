@@ -321,7 +321,18 @@ public class RootCauseFinder {
 					temp = node;
 					if(node.getControlScope().containLocation(correspondingLocation)) {
 						if(bestNode==null) {
-							bestNode = node;
+							TraceNode programaticInvocationParent = problematicStep.getInvocationParent();
+							TraceNode invocationParent = node.getInvocationParent();
+							
+							if(programaticInvocationParent==null && invocationParent==null) {
+								bestNode = node;								
+							}
+							else if(programaticInvocationParent!=null && invocationParent!=null){
+								if(pairList.isPair(programaticInvocationParent, 
+										invocationParent, !isOtherTraceTheBeforeTrace)) {
+									bestNode = node;
+								}
+							}
 						}
 					}
 					else{

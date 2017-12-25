@@ -70,4 +70,29 @@ public class PairList {
 	public int size(){
 		return pairList.size();
 	}
+	
+	public boolean isPair(TraceNode node1, TraceNode node2, boolean isNode1Before) {
+		if(isNode1Before) {
+			return isPair(node1, node2);
+		}
+		else {
+			return isPair(node2, node1);
+		}
+	}
+	
+	public boolean isPair(TraceNode beforeNode, TraceNode afterNode) {
+		if(beforeNode==null || afterNode==null) {
+			return false;
+		}
+		
+		TraceNodePair pair = findByBeforeNode(beforeNode);
+		if(pair!=null) {
+			TraceNode n = pair.getBeforeNode();
+			if(n != null) {
+				return n.getOrder()==afterNode.getOrder();
+			}
+		}
+		
+		return false;
+	}
 }
