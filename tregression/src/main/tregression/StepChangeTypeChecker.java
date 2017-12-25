@@ -115,46 +115,52 @@ public class StepChangeTypeChecker {
 		
 		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
 		
-		for(VarValue thatVar: thatStep.getReadVariables()){
-			if (thatVar.getVarName().equals(thisVar.getVarName())) {
-				TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
-				TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
-				
-				if(isOnBeforeTrace) {
-					TraceNodePair pair = pairList.findByAfterNode(thatDom);
-					if(pair != null && pair.getBeforeNode()!=null && thisDom!=null) {
-						if(pair.getBeforeNode().getOrder()!=thisDom.getOrder()){
-							return false;
-						}
+		List<VarValue> synonymVarList = findSynonymousVarList(thatStep.getReadVariables(), thisVar);
+		
+		for(VarValue thatVar: synonymVarList){
+			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
+			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
+			
+			if(isOnBeforeTrace) {
+				TraceNodePair pair = pairList.findByAfterNode(thatDom);
+				if(pair != null && pair.getBeforeNode()!=null && thisDom!=null) {
+					if(pair.getBeforeNode().getOrder()!=thisDom.getOrder()){
+						continue;
 					}
 				}
-				else {
-					TraceNodePair pair = pairList.findByAfterNode(thisDom);
-					if(pair != null && pair.getBeforeNode()!=null && thatDom!=null) {
-						if(pair.getBeforeNode().getOrder()!=thatDom.getOrder()){
-							return false;
-						}
+			}
+			else {
+				TraceNodePair pair = pairList.findByAfterNode(thisDom);
+				if(pair != null && pair.getBeforeNode()!=null && thatDom!=null) {
+					if(pair.getBeforeNode().getOrder()!=thatDom.getOrder()){
+						continue;
 					}
 				}
-				
-				if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
-					if(containsVirtual){
-						return true;
-					}
-					
-//					ReferenceValue thisRefVar = (ReferenceValue)thisVar;
-//					ReferenceValue thatRefVar = (ReferenceValue)thatVar;
-//					
-//					String thisString = thisRefVar.getStringContainingAllChildren();
-//					String thatString = thatRefVar.getStringContainingAllChildren();
-//					return thisString.equals(thatString);
+			}
+			
+			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
+				if(containsVirtual){
 					return true;
 				}
+				
+//				ReferenceValue thisRefVar = (ReferenceValue)thisVar;
+//				ReferenceValue thatRefVar = (ReferenceValue)thatVar;
+//				
+//				String thisString = thisRefVar.getStringContainingAllChildren();
+//				String thatString = thatRefVar.getStringContainingAllChildren();
+//				return thisString.equals(thatString);
+				return true;
+			}
+			else {
+				String thisString = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
+				String thatString = (thatVar.getStringValue()==null)?"null":thatVar.getStringValue();
+				
+				boolean equal = thisString.equals(thatString);
+				if(!equal) {
+					continue;
+				}
 				else {
-					String thisString = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
-					String thatString = (thatVar.getStringValue()==null)?"null":thatVar.getStringValue();
-					
-					return thisString.equals(thatString);
+					return equal;					
 				}
 			}
 		}
@@ -162,7 +168,17 @@ public class StepChangeTypeChecker {
 		/**
 		 * if a variable does not have corresponding variable in the other trace, we do not record it.
 		 */
-		return true;
+		return false;
+	}
+
+	private List<VarValue> findSynonymousVarList(List<VarValue> readVariables, VarValue var) {
+		List<VarValue> synonymousList = new ArrayList<>();
+		for(VarValue readVar: readVariables) {
+			if(readVar.getVarName().equals(var.getVarName())) {
+				synonymousList.add(readVar);
+			}
+		}
+		return synonymousList;
 	}
 
 	private boolean checkReturnVariable(TraceNode thisStep, TraceNode thatStep) {
