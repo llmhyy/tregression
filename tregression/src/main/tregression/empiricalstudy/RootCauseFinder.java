@@ -197,6 +197,9 @@ public class RootCauseFinder {
 				TraceNode domOnRef = null;
 				if(mendingType==MendingRecord.DATA){
 					StepChangeType matchingStepType = typeChecker.getType(matchingStep, false, pairList, matcher);
+					if(matchingStepType.getWrongVariableList()==null) {
+						return;
+					}
 					VarValue wrongVar = matchingStepType.getWrongVariableList().get(0);
 					domOnRef = matchingStep.findDataDominator(wrongVar);
 				}
