@@ -87,7 +87,7 @@ public class PairList {
 		
 		TraceNodePair pair = findByBeforeNode(beforeNode);
 		if(pair!=null) {
-			TraceNode n = pair.getBeforeNode();
+			TraceNode n = pair.getAfterNode();
 			if(n != null) {
 				return n.getOrder()==afterNode.getOrder();
 			}
