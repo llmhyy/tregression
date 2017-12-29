@@ -161,7 +161,7 @@ public class RootCauseFinder {
 				
 				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(step.getBreakPoint(), !stepW.isOnBefore);
 				
-				TraceNode otherControlDom = findResponsibleControlDomOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
+				TraceNode otherControlDom = findControlMendingNodeOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
 				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);
 				
 				appendMendingRecord(MendingRecord.CONTROL, stepW, step, otherControlDom, 
@@ -303,7 +303,7 @@ public class RootCauseFinder {
 		}
 	}
 
-	public TraceNode findResponsibleControlDomOnOtherTrace(TraceNode problematicStep, PairList pairList,
+	public TraceNode findControlMendingNodeOnOtherTrace(TraceNode problematicStep, PairList pairList,
 			Trace otherTrace, boolean isOtherTraceTheBeforeTrace, ClassLocation correspondingLocation) {
 		
 		int startOrder = findStartOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
