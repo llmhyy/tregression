@@ -183,13 +183,13 @@ public class RootCauseFinder {
 		}
 		
 		StepChangeType domType = typeChecker.getType(dominator, true, pairList, matcher);
-		while(dominator!=null && domType.getType()==StepChangeType.CTL){
-			dominator = dominator.getInvocationMethodOrDominator();
-			if(dominator==null) {
-				return;
-			}
-			domType = typeChecker.getType(dominator, true, pairList, matcher);
-		}
+//		while(dominator!=null && domType.getType()==StepChangeType.CTL){
+//			dominator = dominator.getInvocationMethodOrDominator();
+//			if(dominator==null) {
+//				return;
+//			}
+//			domType = typeChecker.getType(dominator, true, pairList, matcher);
+//		}
 		
 		if(domType.getType()==StepChangeType.IDT){
 			List<TraceNode> returningPoints = new ArrayList<>();
@@ -250,24 +250,33 @@ public class RootCauseFinder {
 		
 		int startOrder = findStartOrderInOtherTrace(domOnRef, pairList, false);
 		TraceNode startNode = buggyTrace.getTraceNode(startOrder);
+		list.add(startNode);
 		while(startNode.getStepOverPrevious()!=null && 
 				startNode.getStepOverPrevious().getLineNumber()==startNode.getLineNumber()){
 			startNode = startNode.getStepOverPrevious();
 			list.add(startNode);
 		}
 		
-		int endOrder = findEndOrderInOtherTrace(domOnRef, pairList, false, buggyTrace);
-		TraceNode endNode = buggyTrace.getTraceNode(endOrder);
-		while(endNode.getStepOverNext()!=null &&
-				endNode.getStepOverNext().getLineNumber()==endNode.getLineNumber()){
-			endNode = endNode.getStepOverNext();
-			list.add(endNode);
+		TraceNode start = buggyTrace.getTraceNode(startOrder);
+		TraceNode n = start.getStepOverNext();
+		while((n.getLineNumber()==start.getLineNumber())){
+			list.add(n);
+			n = n.getStepOverNext();
 		}
+		list.add(n);
 		
-		for(int i=startOrder; i<=endOrder; i++){
-			TraceNode node = buggyTrace.getTraceNode(i);
-			list.add(node);
-		}
+//		int endOrder = findEndOrderInOtherTrace(domOnRef, pairList, false, buggyTrace);
+//		TraceNode endNode = buggyTrace.getTraceNode(endOrder);
+//		while(endNode.getStepOverNext()!=null &&
+//				endNode.getStepOverNext().getLineNumber()==endNode.getLineNumber()){
+//			endNode = endNode.getStepOverNext();
+//			list.add(endNode);
+//		}
+//		
+//		for(int i=startOrder; i<=endOrder; i++){
+//			TraceNode node = buggyTrace.getTraceNode(i);
+//			list.add(node);
+//		}
 		
 		return list;
 	}
