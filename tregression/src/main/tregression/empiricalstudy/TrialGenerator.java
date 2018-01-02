@@ -13,6 +13,7 @@ import microbat.model.trace.TraceNode;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
+import tregression.io.MySqlRecorder;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.AppClassPathInitializer;
@@ -52,7 +53,7 @@ public class TrialGenerator {
 	}
 
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse,
-			boolean requireVisualization, boolean allowMultiThread, Defects4jProjectConfig config) {
+			boolean requireVisualization, boolean allowMultiThread, boolean isRecordDB, Defects4jProjectConfig config) {
 		List<TestCase> list;
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TestCase workingTC = null;
@@ -63,7 +64,7 @@ public class TrialGenerator {
 				workingTC = tc;
 
 				int res = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
-						trials, tc, config, requireVisualization, true);
+						trials, tc, config, requireVisualization, true, isRecordDB);
 				if (res == NORMAL) {
 //					if(!trials.isEmpty()) {
 //						EmpiricalTrial t = trials.get(0);
@@ -115,7 +116,7 @@ public class TrialGenerator {
 		recompileD4J(fixPath, config);
 		
 		trials = new ArrayList<>();
-		analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread, trials, tc, config, requireVisualization, false);
+		analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread, trials, tc, config, requireVisualization, false, false);
 		return trials;
 	}
 
@@ -157,7 +158,7 @@ public class TrialGenerator {
 
 	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
 			List<EmpiricalTrial> trials, TestCase tc, Defects4jProjectConfig config, 
-			boolean requireVisualization, boolean isRunInTestCaseMode) throws SimulationFailException {
+			boolean requireVisualization, boolean isRunInTestCaseMode, boolean isRecordDB) throws SimulationFailException {
 		TraceCollector collector = new TraceCollector();
 		long time1 = 0;
 		long time2 = 0;
@@ -271,7 +272,13 @@ public class TrialGenerator {
 				trial.setTraceMatchTime(matchTime);
 			}
 
-			trials.add(trials0.get(0));
+			EmpiricalTrial trial = trials0.get(0);
+			trials.add(trial);
+			
+			//TODO we may start a new thread to store regression into db.
+			new MySqlRecorder().record(trial, buggyTrace, correctTrace, 
+					diffMatcher, pairList);
+			
 			return NORMAL;
 		}
 		

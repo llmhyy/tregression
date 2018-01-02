@@ -15,6 +15,7 @@ import microbat.Activator;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.io.MySqlRecorder;
 import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
@@ -39,13 +40,14 @@ public class SeparateVersionHandler extends AbstractHandler{
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 				
 				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, 
-						false, true, true, config);
+						true, true, true, false, config);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {
 					System.out.println("Trial " + (i+1));
 					System.out.println(trials.get(i));
 				}
+				
 				
 				
 //				TrialRecorder recorder;
