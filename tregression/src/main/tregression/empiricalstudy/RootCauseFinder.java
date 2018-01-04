@@ -138,10 +138,10 @@ public class RootCauseFinder {
 					if(matchedVar != null) {
 						TraceNode otherDataDom = trace.findDataDominator(matchedStep, matchedVar);
 						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);						
+						appendMendingRecord(MendingRecord.DATA, stepW, step, matchedStep, 
+								typeChecker, dataDom, pairList, matcher, buggyTrace);
 					}
 					
-					appendMendingRecord(MendingRecord.DATA, stepW, step, matchedStep, 
-							typeChecker, dataDom, pairList, matcher, buggyTrace);
 				}
 				
 			}
