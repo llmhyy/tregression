@@ -22,6 +22,37 @@ public class MendingRecord {
 		this.returningPoint = returningPoint;
 	}
 	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + correspondingStepOnReference;
+		result = prime * result + returningPoint;
+		result = prime * result + startOrder;
+		result = prime * result + type;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MendingRecord other = (MendingRecord) obj;
+		if (correspondingStepOnReference != other.correspondingStepOnReference)
+			return false;
+		if (returningPoint != other.returningPoint)
+			return false;
+		if (startOrder != other.startOrder)
+			return false;
+		if (type != other.type)
+			return false;
+		return true;
+	}
+
 	public String getTypeString(){
 		if(getType()==MendingRecord.DATA){
 			return "data";

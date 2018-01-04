@@ -232,7 +232,9 @@ public class RootCauseFinder {
 					MendingRecord record = new MendingRecord(mendingType, step.getOrder(), 
 							matchingStep.getOrder(), returningPoint.getOrder());
 					record.setVarValue(wrongVar);
-					getMendingRecordList().add(record);
+					if(!this.mendingRecordList.contains(record)) {
+						this.mendingRecordList.add(record);						
+					}
 				}
 			}
 		}
