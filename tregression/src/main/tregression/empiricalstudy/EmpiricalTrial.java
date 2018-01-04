@@ -93,7 +93,12 @@ public class EmpiricalTrial {
 				buffer.append(mendingType + "\n");
 				
 				buffer.append("mending start at: ");
-				buffer.append(record.getStartOrder() + "\n");
+				buffer.append(record.getStartOrder());
+				if(record.getType()==MendingRecord.DATA) {
+					buffer.append(" mending var is ");
+					buffer.append(record.getVarValue().getVarName());
+				}
+				buffer.append("\n");
 				
 				buffer.append("mending corresponding point at: ");
 				buffer.append(record.getCorrespondingStepOnReference() + "\n");

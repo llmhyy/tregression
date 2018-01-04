@@ -15,7 +15,6 @@ import microbat.Activator;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
-import tregression.io.MySqlRecorder;
 import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
