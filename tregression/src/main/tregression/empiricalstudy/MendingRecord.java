@@ -1,5 +1,7 @@
 package tregression.empiricalstudy;
 
+import microbat.model.value.VarValue;
+
 public class MendingRecord {
 	public static int CONTROL = 0;
 	public static int DATA = 1;
@@ -9,6 +11,8 @@ public class MendingRecord {
 
 	private int correspondingStepOnReference;
 	private int returningPoint;
+	
+	private VarValue varValue;
 
 	public MendingRecord(int type, int startOrder, int correspondingStepOnReference, int returningPoint) {
 		super();
@@ -58,6 +62,14 @@ public class MendingRecord {
 
 	public void setReturningPoint(int returningPoint) {
 		this.returningPoint = returningPoint;
+	}
+
+	public VarValue getVarValue() {
+		return varValue;
+	}
+
+	public void setVarValue(VarValue varValue) {
+		this.varValue = varValue;
 	}
 
 }

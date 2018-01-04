@@ -191,6 +191,7 @@ public class RootCauseFinder {
 //			domType = typeChecker.getType(dominator, true, pairList, matcher);
 //		}
 		
+		VarValue wrongVar = null;
 		if(domType.getType()==StepChangeType.IDT){
 			List<TraceNode> returningPoints = new ArrayList<>();
 			if(matchingStep != null){
@@ -200,7 +201,7 @@ public class RootCauseFinder {
 					if(matchingStepType.getWrongVariableList()==null) {
 						return;
 					}
-					VarValue wrongVar = matchingStepType.getWrongVariableList().get(0);
+					wrongVar = matchingStepType.getWrongVariableList().get(0);
 					domOnRef = matchingStep.findDataDominator(wrongVar);
 				}
 				else if(mendingType==MendingRecord.CONTROL){
@@ -230,6 +231,7 @@ public class RootCauseFinder {
 				for(TraceNode returningPoint: returningPoints){
 					MendingRecord record = new MendingRecord(mendingType, step.getOrder(), 
 							matchingStep.getOrder(), returningPoint.getOrder());
+					record.setVarValue(wrongVar);
 					getMendingRecordList().add(record);
 				}
 			}
