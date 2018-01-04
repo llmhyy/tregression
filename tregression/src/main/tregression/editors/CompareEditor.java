@@ -14,6 +14,8 @@ import java.util.List;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.Bullet;
+import org.eclipse.swt.custom.CaretEvent;
+import org.eclipse.swt.custom.CaretListener;
 import org.eclipse.swt.custom.LineStyleEvent;
 import org.eclipse.swt.custom.LineStyleListener;
 import org.eclipse.swt.custom.ST;
@@ -46,7 +48,6 @@ import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
 import tregression.separatesnapshots.diff.LineChange;
-import tregression.views.BuggyTraceView;
 import tregression.views.TregressionViews;
 
 public class CompareEditor extends EditorPart {
@@ -57,6 +58,8 @@ public class CompareEditor extends EditorPart {
 	
 	private StyledText sourceText;
 	private StyledText targetText;
+	
+	private int selectedLine = -1;
 	
 	public CompareEditor() {
 	}
@@ -191,15 +194,34 @@ public class CompareEditor extends EditorPart {
 		
 		highlightStyles(isSource, null, text, matcher, path);
 		
+		Menu popupMenu = generatePopMenu(isSource, text);
+		text.setMenu(popupMenu);
+		text.addCaretListener(new CaretListener() {
+			
+			@Override
+			public void caretMoved(CaretEvent event) {
+				int offset = event.caretOffset;
+				int lineNumber = text.getLineAtOffset(offset);
+				selectedLine = lineNumber + 1;
+			}
+		});
+		
+//		scrolledComp.setContent(composite);
+//		scrolledComp.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+		
+		return text;
+	}
+
+	private Menu generatePopMenu(final boolean isSource, final StyledText text) {
 		Menu popupMenu = new Menu(text);
 	    MenuItem forwardItem = new MenuItem(popupMenu, SWT.CASCADE);
-	    forwardItem.setText("Search Forward");
+	    forwardItem.setText("Search Step Forward");
 		forwardItem.addSelectionListener(new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String className = input.getSelectedNode().getClassCanonicalName();
-				int lineNumber = input.getSelectedNode().getLineNumber();
+				int lineNumber = selectedLine;
 				
 				String expression = Trace.combineTraceNodeExpression(className, lineNumber);
 				
@@ -216,13 +238,13 @@ public class CompareEditor extends EditorPart {
 		});
 		
 		MenuItem backwardItem = new MenuItem(popupMenu, SWT.CASCADE);
-	    backwardItem.setText("Search Backward");
+	    backwardItem.setText("Search Step Backward");
 		backwardItem.addSelectionListener(new SelectionListener() {
 			
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String className = input.getSelectedNode().getClassCanonicalName();
-				int lineNumber = input.getSelectedNode().getLineNumber();
+				int lineNumber = selectedLine;
 				
 				String expression = Trace.combineTraceNodeExpression(className, lineNumber);
 				
@@ -237,12 +259,10 @@ public class CompareEditor extends EditorPart {
 				
 			}
 		});
-		text.setMenu(popupMenu);
 		
-//		scrolledComp.setContent(composite);
-//		scrolledComp.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 		
-		return text;
+		
+		return popupMenu;
 	}
 	
 	/**
