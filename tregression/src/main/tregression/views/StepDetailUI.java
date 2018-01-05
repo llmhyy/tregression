@@ -3,11 +3,17 @@ package tregression.views;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITableLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.ITreeViewerListener;
@@ -25,10 +31,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.algorithm.graphdiff.GraphDiff;
@@ -454,7 +462,64 @@ public class StepDetailUI {
 		valueColumn.setText("Variable Value");
 		valueColumn.setWidth(300);
 
-		return new CheckboxTreeViewer(tree);
+		CheckboxTreeViewer viewer = new CheckboxTreeViewer(tree);
+		createContextMenu(viewer);
+		return viewer;
+	}
+	
+	/**
+	 * Creates the context menu
+	 *
+	 * @param viewer
+	 */
+	protected void createContextMenu(final Viewer viewer) {
+	    MenuManager contextMenu = new MenuManager("#ViewerMenu"); //$NON-NLS-1$
+	    contextMenu.setRemoveAllWhenShown(true);
+	    contextMenu.addMenuListener(new IMenuListener() {
+	        @Override
+	        public void menuAboutToShow(IMenuManager mgr) {
+	            fillContextMenu(mgr, viewer);
+	        }
+	    });
+
+	    Menu menu = contextMenu.createContextMenu(viewer.getControl());
+	    viewer.getControl().setMenu(menu);
+	}
+
+	/**
+	 * Fill dynamic context menu
+	 *
+	 * @param contextMenu
+	 */
+	protected void fillContextMenu(IMenuManager contextMenu, final Viewer viewer) {
+	    contextMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+	    contextMenu.add(new Action("Search forward step reading this variable") {
+	        @Override
+	        public void run() {
+	        	IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+	        	Object obj = selection.getFirstElement();
+	        	if(obj instanceof VarValue){
+	        		VarValue value = (VarValue)obj;
+	        		String expression = "id=" + value.getVarID();
+	        		traceView.jumpToNode(expression, true);
+	        	}
+	        }
+	    });
+	    
+	    contextMenu.add(new Action("Search backward step reading this variable") {
+	        @Override
+	        public void run() {
+	        	IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+	        	Object obj = selection.getFirstElement();
+	        	if(obj instanceof VarValue){
+	        		VarValue value = (VarValue)obj;
+	        		String expression = "id=" + value.getVarID();
+	        		traceView.jumpToNode(expression, false);
+	        	}
+	        }
+	    });
+	    
 	}
 
 	public Composite createDetails(Composite panel) {
