@@ -47,8 +47,6 @@ public class SeparateVersionHandler extends AbstractHandler{
 					System.out.println(trials.get(i));
 				}
 				
-				
-				
 //				TrialRecorder recorder;
 //				try {
 //					recorder = new TrialRecorder();
