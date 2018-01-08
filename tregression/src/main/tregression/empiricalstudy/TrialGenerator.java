@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -276,8 +277,13 @@ public class TrialGenerator {
 			trials.add(trial);
 			
 			//TODO we may start a new thread to store regression into db.
-			new MySqlRecorder().record(trial, buggyTrace, correctTrace, 
-					diffMatcher, pairList);
+			try {
+				new MySqlRecorder().record(trial, buggyTrace, correctTrace, 
+						diffMatcher, pairList, config);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			return NORMAL;
 		}
