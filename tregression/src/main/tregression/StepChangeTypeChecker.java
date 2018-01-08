@@ -8,6 +8,7 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import microbat.model.value.VirtualValue;
+import microbat.model.variable.Variable;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
@@ -59,6 +60,7 @@ public class StepChangeTypeChecker {
 			return new StepChangeType(StepChangeType.CTL, matchedStep);
 		}
 		else{
+//			System.currentTimeMillis();
 			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList);
 			if(wrongVariableList.isEmpty()){
 				return new StepChangeType(StepChangeType.IDT, matchedStep);
@@ -112,7 +114,7 @@ public class StepChangeTypeChecker {
 			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList) {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
-		
+		System.currentTimeMillis();
 		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
 		
 		List<VarValue> synonymVarList = findSynonymousVarList(thatStep.getReadVariables(), thisVar);
@@ -121,35 +123,20 @@ public class StepChangeTypeChecker {
 			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
 			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
 			
-			if(isOnBeforeTrace) {
-				TraceNodePair pair = pairList.findByAfterNode(thatDom);
-				if(pair != null && pair.getBeforeNode()!=null && thisDom!=null) {
-					if(pair.getBeforeNode().getOrder()!=thisDom.getOrder()){
-						continue;
-					}
-				}
-			}
-			else {
-				TraceNodePair pair = pairList.findByAfterNode(thisDom);
-				if(pair != null && pair.getBeforeNode()!=null && thatDom!=null) {
-					if(pair.getBeforeNode().getOrder()!=thatDom.getOrder()){
-						continue;
-					}
-				}
+			List<TraceNode> thisAssignChain = new ArrayList<>();
+			getAssignChain(thisDom, thisVar, thisAssignChain);
+			List<TraceNode> thatAssignChain = new ArrayList<>(); 
+			getAssignChain(thatDom, thatVar, thatAssignChain);
+			
+			boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList);
+			if(isAssignChainMatch){
+				return true;
 			}
 			
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
 				if(containsVirtual){
 					return true;
 				}
-				
-//				ReferenceValue thisRefVar = (ReferenceValue)thisVar;
-//				ReferenceValue thatRefVar = (ReferenceValue)thatVar;
-//				
-//				String thisString = thisRefVar.getStringContainingAllChildren();
-//				String thatString = thatRefVar.getStringContainingAllChildren();
-//				return thisString.equals(thatString);
-				return true;
 			}
 			else {
 				String thisString = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
@@ -169,6 +156,59 @@ public class StepChangeTypeChecker {
 		 * if a variable does not have corresponding variable in the other trace, we do not record it.
 		 */
 		return false;
+	}
+
+	private boolean isAssignChainMatch(List<TraceNode> thisAssignChain, List<TraceNode> thatAssignChain,
+			boolean isOnBeforeTrace, PairList pairList) {
+		if(thisAssignChain.size() != thatAssignChain.size()){
+			return false;
+		}
+		
+		if(!isOnBeforeTrace){
+			List<TraceNode> tmp = null;
+			tmp = thisAssignChain;
+			thisAssignChain = thatAssignChain;
+			thatAssignChain = tmp;
+		}
+		
+		for(int i=0; i<thisAssignChain.size(); i++){
+			TraceNode thisDom = thisAssignChain.get(i);
+			TraceNode thatDom = thisAssignChain.get(i);
+			
+			TraceNodePair pair = pairList.findByAfterNode(thatDom);
+			if(pair==null){
+				return false;
+			}
+			
+			if(pair.getBeforeNode()==null){
+				return false;
+			}
+			
+			if(thisDom.getOrder()!=pair.getBeforeNode().getOrder()){
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private void getAssignChain(TraceNode dom, VarValue var, List<TraceNode> chain) {
+		if(dom==null){
+			return;
+		}
+		
+		chain.add(dom);
+		
+		String varID = Variable.truncateSimpleID(var.getVarID());
+		for(VarValue readVar: dom.getReadVariables()){
+			String readVarID = readVar.getVarID();
+			String simpleReadVarID = Variable.truncateSimpleID(readVarID);
+			if(varID.equals(simpleReadVarID)){
+				TraceNode newDom = dom.findDataDominator(readVar);
+				getAssignChain(newDom, readVar, chain);
+				break;
+			}
+		}
 	}
 
 	private List<VarValue> findSynonymousVarList(List<VarValue> readVariables, VarValue var) {
