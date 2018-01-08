@@ -276,11 +276,13 @@ public class TrialGenerator {
 			EmpiricalTrial trial = trials0.get(0);
 			trials.add(trial);
 			
-			try {
-				new RegressionRecorder().record(trial, buggyTrace, correctTrace, 
-						diffMatcher, pairList, config);
-			} catch (SQLException e) {
-				e.printStackTrace();
+			if(isRecordDB){
+				try {
+					new RegressionRecorder().record(trial, buggyTrace, correctTrace, 
+							diffMatcher, pairList, config);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}				
 			}
 			
 			return NORMAL;
