@@ -17,7 +17,7 @@ import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 
-public class MySqlRecorder extends TraceRecorder {
+public class RegressionRecorder extends TraceRecorder {
 	
 	/**
 	 * The mending information can be retrieved through trial.

@@ -27,17 +27,17 @@ public class AllDefects4jHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-				int skippedNum = 0;
+				int skippedNum = 22;
 				int endNum = 500;
 				
 //				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 //				int[] bugNum = {26, 133, 65, 106, 38, 27};
 				
-				String[] projects = {"Chart", "Lang", "Math", "Time"};
-				int[] bugNum = {26, 65, 106, 27};
+//				String[] projects = {"Chart", "Lang", "Math", "Time"};
+//				int[] bugNum = {26, 65, 106, 27};
 				
-//				String[] projects = {"Chart"};
-//				int[] bugNum = {26};
+				String[] projects = {"Chart"};
+				int[] bugNum = {26};
 				
 				String config = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
 				String prefix = config.substring(0, config.indexOf(projects[0]));

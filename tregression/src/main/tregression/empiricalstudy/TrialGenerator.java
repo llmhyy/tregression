@@ -14,7 +14,7 @@ import microbat.model.trace.TraceNode;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
-import tregression.io.MySqlRecorder;
+import tregression.io.RegressionRecorder;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.AppClassPathInitializer;
@@ -276,12 +276,10 @@ public class TrialGenerator {
 			EmpiricalTrial trial = trials0.get(0);
 			trials.add(trial);
 			
-			//TODO we may start a new thread to store regression into db.
 			try {
-				new MySqlRecorder().record(trial, buggyTrace, correctTrace, 
+				new RegressionRecorder().record(trial, buggyTrace, correctTrace, 
 						diffMatcher, pairList, config);
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			

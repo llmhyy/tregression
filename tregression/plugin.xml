@@ -28,6 +28,11 @@
              id="tregression.command.runAllDefects4jProjects"
              name="Run All Defects4j Projects">
        </command>
+       <command
+             defaultHandler="tregression.handler.RegressionRetrieveHandler"
+             id="tregression.command.retrieveRegression"
+             name="Retrieve the Bug from DB">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -101,6 +106,11 @@
             <command
                   commandId="tregression.command.runAllDefects4jProjects"
                   label="Run All Defects4j Projects"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.command.retrieveRegression"
+                  label="Retrieve the Bug from DB"
                   style="push">
             </command>
          </menu>
