@@ -341,7 +341,7 @@ public class StepDetailUI {
 				VarValue varValue = (VarValue) element;
 				if(changeType.getType()==StepChangeType.DAT) {
 					for(VarValue var: changeType.getWrongVariableList()) {
-						if(var.getVarName().equals(varValue.getVarName())) {
+						if(var.getVarID().equals(varValue.getVarID())) {
 							return Settings.imageUI.getImage(ImageUI.QUESTION_MARK);
 						}
 					}
