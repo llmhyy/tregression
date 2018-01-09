@@ -115,7 +115,7 @@ public class StepChangeTypeChecker {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		System.currentTimeMillis();
-		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
+//		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
 		
 		List<VarValue> synonymVarList = findSynonymousVarList(thatStep.getReadVariables(), thisVar);
 		
@@ -123,18 +123,18 @@ public class StepChangeTypeChecker {
 			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
 			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
 			
-			List<TraceNode> thisAssignChain = new ArrayList<>();
-			getAssignChain(thisDom, thisVar, thisAssignChain);
-			List<TraceNode> thatAssignChain = new ArrayList<>(); 
-			getAssignChain(thatDom, thatVar, thatAssignChain);
-			
-			boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList);
-			if(isAssignChainMatch){
-				return true;
-			}
-			
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
-				if(containsVirtual){
+//				if(containsVirtual){
+//					return true;
+//				}
+				
+				List<TraceNode> thisAssignChain = new ArrayList<>();
+				getAssignChain(thisDom, thisVar, thisAssignChain);
+				List<TraceNode> thatAssignChain = new ArrayList<>(); 
+				getAssignChain(thatDom, thatVar, thatAssignChain);
+				
+				boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList);
+				if(isAssignChainMatch){
 					return true;
 				}
 			}
