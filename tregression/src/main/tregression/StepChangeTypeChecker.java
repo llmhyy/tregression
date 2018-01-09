@@ -205,7 +205,9 @@ public class StepChangeTypeChecker {
 			String simpleReadVarID = Variable.truncateSimpleID(readVarID);
 			if(varID.equals(simpleReadVarID)){
 				TraceNode newDom = dom.findDataDominator(readVar);
-				getAssignChain(newDom, readVar, chain);
+				if(!chain.contains(newDom)){
+					getAssignChain(newDom, readVar, chain);					
+				}
 				break;
 			}
 		}
