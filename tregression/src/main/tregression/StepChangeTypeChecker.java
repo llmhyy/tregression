@@ -60,7 +60,7 @@ public class StepChangeTypeChecker {
 			return new StepChangeType(StepChangeType.CTL, matchedStep);
 		}
 		else{
-//			System.currentTimeMillis();
+			System.currentTimeMillis();
 			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList);
 			if(wrongVariableList.isEmpty()){
 				return new StepChangeType(StepChangeType.IDT, matchedStep);
@@ -173,7 +173,7 @@ public class StepChangeTypeChecker {
 		
 		for(int i=0; i<thisAssignChain.size(); i++){
 			TraceNode thisDom = thisAssignChain.get(i);
-			TraceNode thatDom = thisAssignChain.get(i);
+			TraceNode thatDom = thatAssignChain.get(i);
 			
 			TraceNodePair pair = pairList.findByAfterNode(thatDom);
 			if(pair==null){

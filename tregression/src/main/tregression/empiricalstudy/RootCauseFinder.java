@@ -112,7 +112,7 @@ public class RootCauseFinder {
 			StepChangeType changeType = typeChecker.getType(step, stepW.isOnBefore, pairList, matcher);
 			Trace trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 			
-//			System.currentTimeMillis();
+			System.currentTimeMillis();
 			
 //			String isBefore = stepW.isOnBefore?"before":"after";
 //			System.out.println("On " + isBefore + " trace," + step);
