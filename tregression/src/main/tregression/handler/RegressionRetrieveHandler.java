@@ -1,6 +1,7 @@
 package tregression.handler;
 
 import java.io.File;
+import java.sql.SQLException;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -33,16 +34,19 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		
 		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
 		diffMatcher.matchCode();
-		
-		Regression regression = new RegressionRetriever().retriveRegression(projectName, id);
-		
-		Trace buggyTrace = regression.getBuggyTrace();
-		Trace correctTrace = regression.getCorrectTrace();
-		PairList pairList = regression.getPairList();
-		
-		Visualizer visualizer = new Visualizer();
-		visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);	
-		
+		Regression regression;
+		try {
+			regression = new RegressionRetriever().retriveRegression(projectName, id);
+			Trace buggyTrace = regression.getBuggyTrace();
+			Trace correctTrace = regression.getCorrectTrace();
+			PairList pairList = regression.getPairList();
+
+			Visualizer visualizer = new Visualizer();
+			visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
 		return null;
 	}
 

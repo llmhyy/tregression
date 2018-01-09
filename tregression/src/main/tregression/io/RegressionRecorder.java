@@ -39,11 +39,9 @@ public class RegressionRecorder extends TraceRecorder {
 			conn = getConnection();
 			conn.setAutoCommit(false);
 			String[] tc = trial.getTestcase().split("#");
-			int buggyTraceId = insertTrace(buggyTrace, config.projectName, null, String.valueOf(config.bugID), tc[0],
-					tc[1], conn, stmts);
-			int correctTraceId = insertTrace(correctTrace, config.projectName, null, String.valueOf(config.bugID),
-					tc[0], tc[1], conn, stmts);
-			int regressionId = insertRegression(trial, buggyTraceId, correctTraceId, conn, stmts);
+			int buggyTraceId = insertTrace(buggyTrace, config.projectName, null, tc[0], tc[1], conn, stmts);
+			int correctTraceId = insertTrace(correctTrace, config.projectName, null, tc[0], tc[1], conn, stmts);
+			int regressionId = insertRegression(config, trial, buggyTraceId, correctTraceId, conn, stmts);
 			insertMendingRecord(regressionId, mendingRecords, conn, stmts);
 			insertRegressionMatch(regressionId, pairList, conn, stmts);
 			conn.commit();
@@ -96,13 +94,17 @@ public class RegressionRecorder extends TraceRecorder {
 		stmts.add(ps);
 	}
 
-	private int insertRegression(EmpiricalTrial trial, int buggyTraceId, int correctTraceId, Connection conn, List<Statement> stmts)
-			throws SQLException {
+	private int insertRegression(Defects4jProjectConfig config, EmpiricalTrial trial, int buggyTraceId,
+			int correctTraceId, Connection conn, List<Statement> stmts) throws SQLException {
 		PreparedStatement ps;
-		String sql = "INSERT INTO regression (buggy_trace, correct_trace, root_cause_step, is_overskip, over_skip_number) " 
-						+ "VALUES (?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO regression (project_name, project_version, bug_id, buggy_trace, "
+				+ "correct_trace, root_cause_step, is_overskip, over_skip_number) "
+				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		int idx = 1;
+		ps.setString(idx++, config.projectName);
+		ps.setString(idx++, null);
+		ps.setString(idx++, String.valueOf(config.bugID));
 		ps.setInt(idx++, buggyTraceId);
 		ps.setInt(idx++, correctTraceId);
 		ps.setInt(idx++, trial.getRootcauseNode().getOrder());
