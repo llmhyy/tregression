@@ -253,7 +253,6 @@ public class RootCauseFinder {
 				return list;
 			}
 		}
-		
 		int startOrder = findStartOrderInOtherTrace(domOnRef, pairList, false);
 		TraceNode startNode = buggyTrace.getTraceNode(startOrder);
 		list.add(startNode);
@@ -265,11 +264,10 @@ public class RootCauseFinder {
 		
 		TraceNode start = buggyTrace.getTraceNode(startOrder);
 		TraceNode n = start.getStepOverNext();
-		while((n.getLineNumber()==start.getLineNumber())){
+		while(n!=null && (n.getLineNumber()==start.getLineNumber())){
 			list.add(n);
 			n = n.getStepOverNext();
 		}
-		list.add(n);
 		
 //		int endOrder = findEndOrderInOtherTrace(domOnRef, pairList, false, buggyTrace);
 //		TraceNode endNode = buggyTrace.getTraceNode(endOrder);
@@ -392,7 +390,7 @@ public class RootCauseFinder {
 	}
 
 	public int findStartOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
-		TraceNode node = problematicStep.getStepInPrevious();
+		TraceNode node = problematicStep.getStepOverPrevious();
 		while(node != null) {
 			TraceNode matchedNode = null;
 			if(isOnBeforeTrace) {
@@ -413,7 +411,7 @@ public class RootCauseFinder {
 				return matchedNode.getOrder();
 			}
 			
-			node = node.getStepInPrevious();
+			node = node.getStepOverPrevious();
 		}
 		
 		return 1;
