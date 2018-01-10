@@ -32,10 +32,14 @@ public class RegressionRetriever extends DbService {
 			Object[] rs = loadRegression(projectName, bugID, conn);
 			int idx = 0;
 			int regressionId = (int) rs[idx++];
-			Trace buggyTrace = loadTrace((int) rs[idx++], conn);
+			int buggyTraceId = (int) rs[idx++];
+			Trace buggyTrace = loadTrace(buggyTraceId, conn);
 			Trace correctTrace = loadTrace((int) rs[idx++], conn);
 			List<TraceNodePair> pairList = loadRegressionMatch(buggyTrace, correctTrace, regressionId, conn);
 			Regression regression = new Regression(buggyTrace, correctTrace, new PairList(pairList));
+			Object[] tc = loadTraceInfo(buggyTraceId, conn);
+			regression.setTestCase((String)tc[0], (String)tc[1]);
+			System.out.println("Retrieve done!");
 			return regression;
 		} finally {
 			closeDb(conn, null, null);
@@ -45,7 +49,7 @@ public class RegressionRetriever extends DbService {
 	private List<TraceNodePair> loadRegressionMatch(Trace buggyTrace, Trace correctTrace, int regressionId,
 			Connection conn) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
-				"SELECT rm.buggy_step, rm.correct_step FROM regressionMatch rm WHERE rm.regression_id=?)");
+				"SELECT rm.buggy_step, rm.correct_step FROM regressionMatch rm WHERE rm.regression_id=?");
 		ps.setInt(1, regressionId);
 		ResultSet rs = ps.executeQuery();
 		List<TraceNodePair> result = new ArrayList<>(countNumberOfRows(rs));
@@ -90,6 +94,21 @@ public class RegressionRetriever extends DbService {
 		return result;
 	}
 	
+	private Object[] loadTraceInfo(int traceId, Connection conn) throws SQLException {
+		PreparedStatement ps = conn.prepareStatement(
+				"SELECT t.launch_class, t.launch_method FROM trace t WHERE t.trace_id=?");
+		ps.setInt(1, traceId);
+		ResultSet rs = ps.executeQuery();
+		Object[] result = new Object[2];
+		if (rs.next()) {
+			result[0] = rs.getString(1);
+			result[1] = rs.getString(2);
+		} else {
+			throw new SQLException("Cannot load trace with traceId = " + traceId);
+		}
+		return result;
+	}
+	
 	private Trace loadTrace(int traceId, Connection conn) throws SQLException {
 		Trace trace = new Trace(null); 
 		// load step
@@ -108,9 +127,9 @@ public class RegressionRetriever extends DbService {
 				stepVariableTable.put(varId, entry);
 			}
 			if (rw == TraceRecorder.WRITE) {
-				entry.addProducer(steps.get(stepOrder));
+				entry.addProducer(steps.get(stepOrder - 1));
 			} else if (rw == TraceRecorder.READ) {
-				entry.addConsumer(steps.get(stepOrder));
+				entry.addConsumer(steps.get(stepOrder - 1));
 			} else {
 				throw new SQLException("Tabel StepVariableRelationEntry: Invalid RW value!");
 			}
@@ -141,7 +160,6 @@ public class RegressionRetriever extends DbService {
 	}
 
 	private List<TraceNode> loadSteps(int traceId, Connection conn) throws SQLException {
-		List<TraceNode> steps = new ArrayList<>();
 		PreparedStatement ps = conn.prepareStatement("SELECT s.* FROM step s WHERE s.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
@@ -154,20 +172,41 @@ public class RegressionRetriever extends DbService {
 		while (rs.next()) {
 			// step order
 			int order = rs.getInt("step_order");
-			if (order >= total) {
+			if (order > total) {
 				throw new SQLException("Detect invalid step order in result set!");
 			}
-			TraceNode step = allSteps.get(order);
+			TraceNode step = allSteps.get(order - 1);
+			step.setOrder(order);
 			// control_dominator
-			step.setControlDominator(getRelNode(allSteps, rs, "control_dominator"));
+			TraceNode controlDominator = getRelNode(allSteps, rs, "control_dominator");
+			step.setControlDominator(controlDominator);
+			if (controlDominator != null) {
+				controlDominator.addControlDominatee(step);
+			}
 			// step_in
-			step.setStepInNext(getRelNode(allSteps, rs, "step_in"));
+			TraceNode stepIn = getRelNode(allSteps, rs, "step_in");
+			step.setStepInNext(stepIn);
+			if (stepIn != null) {
+				stepIn.setStepInPrevious(step);
+			}
 			// step_over
-			step.setStepOverNext(getRelNode(allSteps, rs, "step_over"));
+			TraceNode stepOver = getRelNode(allSteps, rs, "step_over");
+			step.setStepOverNext(stepOver);
+			if (stepOver != null) {
+				stepOver.setStepOverPrevious(step);
+			}
 			// invocation_parent
-			step.setInvocationParent(getRelNode(allSteps, rs, "invocation_parent"));
+			TraceNode invocationParent = getRelNode(allSteps, rs, "invocation_parent");
+			step.setInvocationParent(invocationParent);
+			if (invocationParent != null) {
+				invocationParent.addInvocationChild(step);
+			}
 			// loop_parent
-			step.setLoopParent(getRelNode(allSteps, rs, "loop_parent"));
+			TraceNode loopParent = getRelNode(allSteps, rs, "loop_parent");
+			step.setLoopParent(loopParent);
+			if (loopParent != null) {
+				loopParent.addLoopChild(step);
+			}
 			// location_id
 			locationIdMap.put(rs.getInt("location_id"), step);
 			// read_vars
@@ -178,13 +217,13 @@ public class RegressionRetriever extends DbService {
 		rs.close();
 		ps.close();
 		loadLocations(locationIdMap, conn);
-		return steps;
+		return allSteps;
 	}
 	
 	private void loadLocations(Map<Integer, TraceNode> locationIdMap, Connection conn) throws SQLException {
 		String matchList = StringUtils.join(locationIdMap.keySet(), ",");
 		PreparedStatement ps = conn.prepareStatement(
-						String.format("SELECT loc.*,  FROM location loc WHERE loc.location_id in (%s)", matchList));
+						String.format("SELECT loc.* FROM location loc WHERE loc.location_id in (%s)", matchList));
 		ResultSet rs = ps.executeQuery();
 		while(rs.next()) {
 			int locId = rs.getInt("location_id");
@@ -207,7 +246,11 @@ public class RegressionRetriever extends DbService {
 	private TraceNode getRelNode(List<TraceNode> allSteps, ResultSet rs, String colName) throws SQLException {
 		int relNodeOrder = rs.getInt(colName);
 		if (!rs.wasNull()) {
-			return allSteps.get(relNodeOrder);
+			if (relNodeOrder > allSteps.size()) {
+				System.err.println(String.format("index out of bound: size=%d, idx=%d", allSteps.size(), relNodeOrder));
+				return null;
+			}
+			return allSteps.get(relNodeOrder - 1);
 		}
 		return null;
 	}

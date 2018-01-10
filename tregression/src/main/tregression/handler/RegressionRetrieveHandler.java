@@ -40,7 +40,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 			Trace buggyTrace = regression.getBuggyTrace();
 			Trace correctTrace = regression.getCorrectTrace();
 			PairList pairList = regression.getPairList();
-
+			regression.fillMissingInfor(config, buggyPath, fixPath);
 			Visualizer visualizer = new Visualizer();
 			visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
 		} catch (SQLException e) {
