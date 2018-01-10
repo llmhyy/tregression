@@ -121,7 +121,7 @@ public class RootCauseFinder {
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
 				System.currentTimeMillis();
-				System.currentTimeMillis();
+				break;
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
 				for(VarValue readVar: changeType.getWrongVariableList()){
@@ -411,7 +411,14 @@ public class RootCauseFinder {
 				return matchedNode.getOrder();
 			}
 			
-			node = node.getStepOverPrevious();
+			TraceNode n = node.getStepOverPrevious();
+			if(n!=null){
+				node = n;
+			}
+			else{
+				node = node.getStepInPrevious();
+			}
+			
 		}
 		
 		return 1;
