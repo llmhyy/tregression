@@ -178,15 +178,35 @@ public class RegressionRetriever extends DbService {
 			TraceNode step = allSteps.get(order - 1);
 			step.setOrder(order);
 			// control_dominator
-			step.setControlDominator(getRelNode(allSteps, rs, "control_dominator"));
+			TraceNode controlDominator = getRelNode(allSteps, rs, "control_dominator");
+			step.setControlDominator(controlDominator);
+			if (controlDominator != null) {
+				controlDominator.addControlDominatee(step);
+			}
 			// step_in
-			step.setStepInNext(getRelNode(allSteps, rs, "step_in"));
+			TraceNode stepIn = getRelNode(allSteps, rs, "step_in");
+			step.setStepInNext(stepIn);
+			if (stepIn != null) {
+				stepIn.setStepInPrevious(step);
+			}
 			// step_over
-			step.setStepOverNext(getRelNode(allSteps, rs, "step_over"));
+			TraceNode stepOver = getRelNode(allSteps, rs, "step_over");
+			step.setStepOverNext(stepOver);
+			if (stepOver != null) {
+				stepOver.setStepOverPrevious(step);
+			}
 			// invocation_parent
-			step.setInvocationParent(getRelNode(allSteps, rs, "invocation_parent"));
+			TraceNode invocationParent = getRelNode(allSteps, rs, "invocation_parent");
+			step.setInvocationParent(invocationParent);
+			if (invocationParent != null) {
+				invocationParent.addInvocationChild(step);
+			}
 			// loop_parent
-			step.setLoopParent(getRelNode(allSteps, rs, "loop_parent"));
+			TraceNode loopParent = getRelNode(allSteps, rs, "loop_parent");
+			step.setLoopParent(loopParent);
+			if (loopParent != null) {
+				loopParent.addLoopChild(step);
+			}
 			// location_id
 			locationIdMap.put(rs.getInt("location_id"), step);
 			// read_vars
