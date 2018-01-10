@@ -1,9 +1,17 @@
 package tregression.empiricalstudy;
 
+import java.io.File;
+
+import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
+import sav.strategies.dto.AppJavaClassPath;
 import tregression.model.PairList;
+import tregression.separatesnapshots.AppClassPathInitializer;
 
 public class Regression {
+	private String testClass;
+	private String testMethod;
 	private Trace buggyTrace;
 	private Trace correctTrace;
 	private PairList pairList;
@@ -37,6 +45,33 @@ public class Regression {
 
 	public void setPairList(PairList pairList) {
 		this.pairList = pairList;
+	}
+
+	public void fillMissingInfor(Defects4jProjectConfig config, String buggyPath, String fixPath) {
+		fillMissingInfor(buggyTrace, AppClassPathInitializer.initialize(buggyPath, testClass, testMethod, config));
+		fillMissingInfor(correctTrace, AppClassPathInitializer.initialize(fixPath, testClass, testMethod, config));
+	}
+
+	public void fillMissingInfor(Trace trace, AppJavaClassPath appClassPath) {
+		for (TraceNode node : trace.getExecutionList()) {
+			BreakPoint point = node.getBreakPoint();
+			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
+			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
+			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
+
+			if (new File(sourcePath).exists()) {
+				point.setFullJavaFilePath(sourcePath);
+			} else if (new File(testPath).exists()) {
+				point.setFullJavaFilePath(testPath);
+			} else {
+				System.err.println("cannot find the source code file for " + point);
+			}
+		}
+	}
+
+	public void setTestCase(String testClass, String testMethod) {
+		this.testClass = testClass;
+		this.testMethod = testMethod;
 	}
 
 }
