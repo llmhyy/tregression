@@ -27,7 +27,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-				int skippedNum = 22;
+				int skippedNum = 0;
 				int endNum = 500;
 				
 //				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
