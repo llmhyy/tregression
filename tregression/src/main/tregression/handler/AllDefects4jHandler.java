@@ -27,7 +27,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-				int skippedNum = 22;
+				int skippedNum = 0;
 				int endNum = 500;
 				
 //				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
@@ -64,7 +64,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 						TrialGenerator generator = new TrialGenerator();
 						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, 
-								false, false, false, true, d4jConfig);
+								false, false, false, false, d4jConfig);
 						
 						TrialRecorder recorder;
 						try {
