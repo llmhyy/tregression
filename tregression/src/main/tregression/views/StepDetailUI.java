@@ -104,17 +104,6 @@ public class StepDetailUI {
 							suspiciousNode = trace.findDataDominator(currentNode, readVar);
 						}
 					}
-					
-//					VarValue readVar = feedback.getOption().getReadVar();
-//					suspiciousNode = currentNode.findDataDominator(readVar);
-//					suspiciousNode = trace.findDataDominator(currentNode, readVar);
-//					StepVariableRelationEntry entry = .getStepVariableTable().get(readVar.getVarID());
-//					if(entry != null){
-//						List<TraceNode> suspiciousNodes = entry.getProducers();
-//						suspiciousNode = findLatestSuspiciousNode(currentNode, suspiciousNodes);
-//					}
-					
-//					feedback = new UserFeedback();
 				}
 				else if(controlButton.getSelection()){
 					suspiciousNode = currentNode.getInvocationMethodOrDominator();
