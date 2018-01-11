@@ -140,7 +140,7 @@ public class RootCauseFinder {
 					if(matchedVar != null) {
 						TraceNode otherDataDom = trace.findDataDominator(matchedStep, matchedVar);
 						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);						
-						appendMendingRecord(MendingRecord.DATA, stepW, step, matchedStep, 
+						appendDataMendingRecord(stepW, step, matchedStep, 
 								typeChecker, dataDom, pairList, matcher, buggyTrace);
 					}
 					
@@ -166,14 +166,68 @@ public class RootCauseFinder {
 				TraceNode otherControlDom = findControlMendingNodeOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
 				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);
 				
-				appendMendingRecord(MendingRecord.CONTROL, stepW, step, otherControlDom, 
-						typeChecker, controlDom, pairList, matcher, buggyTrace);
+				appendControlRecord(stepW, otherControlDom, controlDom,
+						typeChecker, pairList, matcher, buggyTrace);
 				
 			}
 		}
 	}
 	
-	private void appendMendingRecord(int mendingType, TraceNodeW stepW, TraceNode step, 
+	private void appendControlRecord(TraceNodeW stepW, TraceNode matchingStep, TraceNode dominator, 
+			StepChangeTypeChecker typeChecker, PairList pairList, DiffMatcher matcher, Trace buggyTrace) {
+		if(!stepW.isOnBefore){
+			return;
+		}
+		
+		if(dominator==null){
+			return;
+		}
+		
+		StepChangeType domType = typeChecker.getType(dominator, true, pairList, matcher);
+		
+		if(domType.getType()==StepChangeType.IDT){
+			TraceNode step = stepW.node;
+			TraceNode prev = step.getStepInPrevious();
+			StepChangeType changeType = typeChecker.getType(prev, true, pairList, matcher);
+			while(changeType.getType()==StepChangeType.CTL){
+				step = prev;
+				prev = prev.getStepInPrevious();
+				
+				if(prev==null){
+					break;
+				}
+				
+				changeType = typeChecker.getType(prev, true, pairList, matcher);
+			}
+			
+			List<TraceNode> returningPoints = new ArrayList<>();
+			
+			int order = step.getOrder();
+			returningPoints.add(step);
+			while(step.getStepOverPrevious()!=null && 
+					step.getStepOverPrevious().getLineNumber()==step.getLineNumber()){
+				step = step.getStepOverPrevious();
+				returningPoints.add(step);
+			}
+			
+			TraceNode start = buggyTrace.getTraceNode(order);
+			TraceNode n = start.getStepOverNext();
+			while(n!=null && (n.getLineNumber()==start.getLineNumber())){
+				returningPoints.add(n);
+				n = n.getStepOverNext();
+			}
+			
+			for(TraceNode returningPoint: returningPoints){
+				MendingRecord record = new MendingRecord(MendingRecord.CONTROL, step.getOrder(), 
+						matchingStep.getOrder(), returningPoint.getOrder());
+				if(!this.mendingRecordList.contains(record)) {
+					this.mendingRecordList.add(record);						
+				}
+			}
+		}
+	}
+
+	private void appendDataMendingRecord(TraceNodeW stepW, TraceNode step, 
 			TraceNode matchingStep, StepChangeTypeChecker typeChecker, TraceNode dominator, 
 			PairList pairList, DiffMatcher matcher, Trace buggyTrace) {
 		if(!stepW.isOnBefore){
@@ -185,36 +239,22 @@ public class RootCauseFinder {
 		}
 		
 		StepChangeType domType = typeChecker.getType(dominator, true, pairList, matcher);
-//		while(dominator!=null && domType.getType()==StepChangeType.CTL){
-//			dominator = dominator.getInvocationMethodOrDominator();
-//			if(dominator==null) {
-//				return;
-//			}
-//			domType = typeChecker.getType(dominator, true, pairList, matcher);
-//		}
 		
-		VarValue wrongVar = null;
 		if(domType.getType()==StepChangeType.IDT){
 			List<TraceNode> returningPoints = new ArrayList<>();
 			if(matchingStep != null){
 				TraceNode domOnRef = null;
-				if(mendingType==MendingRecord.DATA){
-					StepChangeType matchingStepType = typeChecker.getType(matchingStep, false, pairList, matcher);
-					if(matchingStepType.getWrongVariableList()==null) {
-						return;
-					}
-					wrongVar = matchingStepType.getWrongVariableList().get(0);
-					domOnRef = matchingStep.findDataDominator(wrongVar);
+				StepChangeType matchingStepType = typeChecker.getType(matchingStep, false, pairList, matcher);
+				if(matchingStepType.getWrongVariableList()==null) {
+					return;
 				}
-				else if(mendingType==MendingRecord.CONTROL){
-					domOnRef = matchingStep;
-				}
+				VarValue wrongVar = matchingStepType.getWrongVariableList().get(0);
+				domOnRef = matchingStep.findDataDominator(wrongVar);
 				
 				while(domOnRef != null){
 					StepChangeType changeType = typeChecker.getType(domOnRef, false, pairList, matcher);
 					if(changeType.getType()==StepChangeType.SRC){
 						returningPoints = findTheNearestCorrespondence(domOnRef, pairList, buggyTrace);
-						
 						break;
 					}
 					else{
@@ -231,7 +271,7 @@ public class RootCauseFinder {
 				}
 				
 				for(TraceNode returningPoint: returningPoints){
-					MendingRecord record = new MendingRecord(mendingType, step.getOrder(), 
+					MendingRecord record = new MendingRecord(MendingRecord.DATA, step.getOrder(), 
 							matchingStep.getOrder(), returningPoint.getOrder());
 					record.setVarValue(wrongVar);
 					if(!this.mendingRecordList.contains(record)) {
