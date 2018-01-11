@@ -6,10 +6,11 @@ import java.util.List;
 
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.Defects4jProjectConfig;
+import tregression.empiricalstudy.TestCase;
 import tregression.junit.TestCaseAnalyzer;
 
 public class AppClassPathInitializer {
-	public static AppJavaClassPath initialize(String workingDir, String testClass, String testMethod, Defects4jProjectConfig config){
+	public static AppJavaClassPath initialize(String workingDir, TestCase testCase, Defects4jProjectConfig config){
 		AppJavaClassPath appClassPath = new AppJavaClassPath();
 		
 		String testTargetPath = workingDir + File.separator + config.bytecodeTestFolder;
@@ -89,8 +90,8 @@ public class AppClassPathInitializer {
 		appClassPath.setJavaHome(config.javaHome);
 		appClassPath.setWorkingDirectory(workingDir);
 		
-		appClassPath.setOptionalTestClass(testClass);
-		appClassPath.setOptionalTestMethod(testMethod);
+		appClassPath.setOptionalTestClass(testCase.testClass);
+		appClassPath.setOptionalTestMethod(testCase.testMethod);
 		
 		appClassPath.setLaunchClass(TestCaseAnalyzer.TEST_RUNNER);
 		

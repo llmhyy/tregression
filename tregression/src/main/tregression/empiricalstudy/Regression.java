@@ -48,8 +48,8 @@ public class Regression {
 	}
 
 	public void fillMissingInfor(Defects4jProjectConfig config, String buggyPath, String fixPath) {
-		fillMissingInfor(buggyTrace, AppClassPathInitializer.initialize(buggyPath, testClass, testMethod, config));
-		fillMissingInfor(correctTrace, AppClassPathInitializer.initialize(fixPath, testClass, testMethod, config));
+		fillMissingInfor(buggyTrace, AppClassPathInitializer.initialize(buggyPath, new TestCase(testClass, testMethod), config));
+		fillMissingInfor(correctTrace, AppClassPathInitializer.initialize(fixPath, new TestCase(testClass, testMethod), config));
 	}
 
 	public void fillMissingInfor(Trace trace, AppJavaClassPath appClassPath) {

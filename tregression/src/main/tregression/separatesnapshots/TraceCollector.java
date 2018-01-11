@@ -10,16 +10,16 @@ import microbat.util.MicroBatUtil;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.TraceModelConstructor;
 import tregression.empiricalstudy.Defects4jProjectConfig;
+import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
 
 public class TraceCollector {
 	
-	public RunningResult preCheck(String workingDir, String testClass, String testMethod, 
+	public RunningResult preCheck(String workingDir, TestCase tc, 
 			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread) {
-		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, testClass, testMethod, config);
+		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);
 		if(!isRunInTestCaseMode) {
 			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
-			System.currentTimeMillis();
 		}
 		
 		List<String> libJars = appClassPath.getExternalLibPaths();

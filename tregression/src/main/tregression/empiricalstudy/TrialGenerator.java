@@ -149,7 +149,7 @@ public class TrialGenerator {
 
 	private void generateMainMethod(String workingPath, TestCase tc, Defects4jProjectConfig config) {
 		MainMethodGenerator generator = new MainMethodGenerator();
-		AppJavaClassPath appCP = AppClassPathInitializer.initialize(workingPath, tc.testClass, tc.testMethod, config);
+		AppJavaClassPath appCP = AppClassPathInitializer.initialize(workingPath, tc, config);
 		String relativePath = tc.testClass.replace(".", File.separator) + ".java";
 		String sourcePath = appCP.getTestCodePath() + File.separator + relativePath;
 		
@@ -196,14 +196,14 @@ public class TrialGenerator {
 		} else {
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			buggyRS = collector.preCheck(buggyPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode, allowMultiThread);
+			buggyRS = collector.preCheck(buggyPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (buggyRS.getRunningType() != NORMAL) {
 				return buggyRS.getRunningType();
 			}
 
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			correctRs = collector.preCheck(fixPath, tc.testClass, tc.testMethod, config, isRunInTestCaseMode, allowMultiThread);
+			correctRs = collector.preCheck(fixPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (correctRs.getRunningType() != NORMAL) {
 				return correctRs.getRunningType();
 			}
@@ -322,17 +322,6 @@ public class TrialGenerator {
 			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExecutionList().get(1478);
 			simulator.getObservedFaults().add(node);
-		}
-	}
-
-	class TestCase {
-		public String testClass;
-		public String testMethod;
-
-		public TestCase(String testClass, String testMethod) {
-			super();
-			this.testClass = testClass;
-			this.testMethod = testMethod;
 		}
 	}
 
