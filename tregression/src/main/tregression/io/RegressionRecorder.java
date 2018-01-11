@@ -34,31 +34,32 @@ public class RegressionRecorder extends TraceRecorder {
 			DiffMatcher diffMatcher, PairList pairList, Defects4jProjectConfig config) throws SQLException {
 		List<MendingRecord> mendingRecords = trial.getRootCauseFinder().getMendingRecordList();
 		Connection conn = null;
-		List<Statement> stmts = new ArrayList<Statement>();
+		List<AutoCloseable> closables = new ArrayList<AutoCloseable>();
 		try {
 			conn = getConnection();
 			conn.setAutoCommit(false);
 			String[] tc = trial.getTestcase().split("#");
-			int buggyTraceId = insertTrace(buggyTrace, config.projectName, null, tc[0], tc[1], conn, stmts);
-			int correctTraceId = insertTrace(correctTrace, config.projectName, null, tc[0], tc[1], conn, stmts);
-			int regressionId = insertRegression(config, trial, buggyTraceId, correctTraceId, conn, stmts);
-			insertMendingRecord(regressionId, mendingRecords, conn, stmts);
-			insertRegressionMatch(regressionId, pairList, conn, stmts);
+			int buggyTraceId = insertTrace(buggyTrace, config.projectName, null, tc[0], tc[1], conn, closables);
+			int correctTraceId = insertTrace(correctTrace, config.projectName, null, tc[0], tc[1], conn, closables);
+			int regressionId = insertRegression(config, trial, buggyTraceId, correctTraceId, conn, closables);
+			insertMendingRecord(regressionId, mendingRecords, conn, closables);
+			insertRegressionMatch(regressionId, pairList, conn, closables);
 			conn.commit();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			rollback(conn);
 			throw e;
 		} finally {
-			closeDb(conn, stmts, null);
+			closeDb(conn, closables);
 		}
 		System.currentTimeMillis();
 	}
 
-	private void insertRegressionMatch(int regressionId, PairList pairList, Connection conn, List<Statement> stmts)
+	private void insertRegressionMatch(int regressionId, PairList pairList, Connection conn, List<AutoCloseable> closables)
 			throws SQLException {
 		String sql = "INSERT INTO regressionMatch (regression_id, buggy_step, correct_step) VALUES (?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
+		closables.add(ps);
 		for (TraceNodePair nodePair : pairList.getPairList()) {
 			int idx = 1;
 			ps.setInt(idx++, regressionId);
@@ -67,15 +68,15 @@ public class RegressionRecorder extends TraceRecorder {
 			ps.addBatch();
 		}
 		ps.executeBatch();
-		stmts.add(ps);
 	}
 
 	private void insertMendingRecord(int regressionId, List<MendingRecord> mendingRecords, Connection conn,
-			List<Statement> stmts) throws SQLException {
+			List<AutoCloseable> closables) throws SQLException {
 		String sql = "INSERT INTO mendingRecord (regression_id, mending_type, mending_start,"
 				+ " mending_correspondence, mending_return, variable)"
 				+ " VALUES (?,?,?,?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
+		closables.add(ps);
 		for (MendingRecord mendingRecord : mendingRecords) {
 			int idx = 1;
 			ps.setInt(idx++, regressionId);
@@ -91,16 +92,16 @@ public class RegressionRecorder extends TraceRecorder {
 			ps.addBatch();
 		}
 		ps.executeBatch();
-		stmts.add(ps);
 	}
 
 	private int insertRegression(Defects4jProjectConfig config, EmpiricalTrial trial, int buggyTraceId,
-			int correctTraceId, Connection conn, List<Statement> stmts) throws SQLException {
+			int correctTraceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps;
 		String sql = "INSERT INTO regression (project_name, project_version, bug_id, buggy_trace, "
 				+ "correct_trace, root_cause_step, is_overskip, over_skip_number) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+		closables.add(ps);
 		int idx = 1;
 		ps.setString(idx++, config.projectName);
 		ps.setString(idx++, null);
@@ -110,7 +111,6 @@ public class RegressionRecorder extends TraceRecorder {
 		ps.setInt(idx++, trial.getRootcauseNode().getOrder());
 		ps.setInt(idx++, trial.getOverskipLength() == 0 ? 0 : 1);
 		ps.setInt(idx++, trial.getOverskipLength());
-		stmts.add(ps);
 		ps.execute();
 		int regressionId = getFirstGeneratedIntCol(ps);
 		return regressionId;

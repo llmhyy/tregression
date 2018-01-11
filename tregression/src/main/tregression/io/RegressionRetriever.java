@@ -8,9 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import microbat.handler.xml.VarValueXmlReader;
 import microbat.model.BreakPoint;
+import microbat.model.ClassLocation;
+import microbat.model.ControlScope;
+import microbat.model.SourceScope;
 import microbat.model.trace.StepVariableRelationEntry;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -27,31 +31,34 @@ public class RegressionRetriever extends DbService {
 	
 	public Regression retriveRegression(String projectName, String bugID) throws SQLException{
 		Connection conn = null;
+		List<AutoCloseable> closables = new ArrayList<>();
 		try {
 			conn = getConnection();
-			Object[] rs = loadRegression(projectName, bugID, conn);
+			Object[] rs = loadRegression(projectName, bugID, conn, closables);
 			int idx = 0;
 			int regressionId = (int) rs[idx++];
 			int buggyTraceId = (int) rs[idx++];
-			Trace buggyTrace = loadTrace(buggyTraceId, conn);
-			Trace correctTrace = loadTrace((int) rs[idx++], conn);
-			List<TraceNodePair> pairList = loadRegressionMatch(buggyTrace, correctTrace, regressionId, conn);
+			Trace buggyTrace = loadTrace(buggyTraceId, conn, closables);
+			Trace correctTrace = loadTrace((int) rs[idx++], conn, closables);
+			List<TraceNodePair> pairList = loadRegressionMatch(buggyTrace, correctTrace, regressionId, conn, closables);
 			Regression regression = new Regression(buggyTrace, correctTrace, new PairList(pairList));
-			Object[] tc = loadTraceInfo(buggyTraceId, conn);
+			Object[] tc = loadTraceInfo(buggyTraceId, conn, closables);
 			regression.setTestCase((String)tc[0], (String)tc[1]);
 			System.out.println("Retrieve done!");
 			return regression;
 		} finally {
-			closeDb(conn, null, null);
+			closeDb(conn, closables);
 		}
 	}
 	
 	private List<TraceNodePair> loadRegressionMatch(Trace buggyTrace, Trace correctTrace, int regressionId,
-			Connection conn) throws SQLException {
+			Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
 				"SELECT rm.buggy_step, rm.correct_step FROM regressionMatch rm WHERE rm.regression_id=?");
 		ps.setInt(1, regressionId);
 		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
 		List<TraceNodePair> result = new ArrayList<>(countNumberOfRows(rs));
 		while (rs.next()) {
 			int idx = 1;;
@@ -68,13 +75,15 @@ public class RegressionRetriever extends DbService {
 	/**
 	 * return Object[]: regression_id, buggy_trace id, correct_trace id
 	 */
-	private Object[] loadRegression(String projectName, String bugId, Connection conn) throws SQLException {
+	private Object[] loadRegression(String projectName, String bugId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
 				"SELECT * FROM regression WHERE project_name=? AND bug_id=?");
 		int idx = 1;
 		ps.setString(idx++, projectName);
 		ps.setString(idx++, bugId);
 		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
 		Object[] result = new Object[3];
 		if (countNumberOfRows(rs) == 0) {
 			throw new SQLException(
@@ -89,16 +98,16 @@ public class RegressionRetriever extends DbService {
 			throw new SQLException(
 					String.format("No regression record is found for project % with bugId %s", projectName, bugId));
 		}
-		rs.close();
-		ps.close();
 		return result;
 	}
 	
-	private Object[] loadTraceInfo(int traceId, Connection conn) throws SQLException {
+	private Object[] loadTraceInfo(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
 				"SELECT t.launch_class, t.launch_method FROM trace t WHERE t.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
 		Object[] result = new Object[2];
 		if (rs.next()) {
 			result[0] = rs.getString(1);
@@ -109,13 +118,13 @@ public class RegressionRetriever extends DbService {
 		return result;
 	}
 	
-	private Trace loadTrace(int traceId, Connection conn) throws SQLException {
+	private Trace loadTrace(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		Trace trace = new Trace(null); 
 		// load step
-		List<TraceNode> steps = loadSteps(traceId, conn);
+		List<TraceNode> steps = loadSteps(traceId, conn, closables);
 		trace.setExectionList(steps);
 		// load stepVar
-		List<Object[]> rows = loadStepVariableRelation(traceId, conn);
+		List<Object[]> rows = loadStepVariableRelation(traceId, conn, closables);
 		Map<String, StepVariableRelationEntry> stepVariableTable = trace.getStepVariableTable();
 		for (Object[] row : rows) {
 			int stepOrder = (int) row[0];
@@ -140,10 +149,12 @@ public class RegressionRetriever extends DbService {
 	/**
 	 * return list of relation info [step_order, var_id, RW]
 	 */
-	private List<Object[]> loadStepVariableRelation(int traceId, Connection conn) throws SQLException {
+	private List<Object[]> loadStepVariableRelation(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement("SELECT r.step_order, r.var_id, r.RW FROM stepVariableRelation r WHERE r.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
 		List<Object[]> result = new ArrayList<>();
 		while (rs.next()) {
 			int idx = 1;
@@ -159,10 +170,12 @@ public class RegressionRetriever extends DbService {
 		return result;
 	}
 
-	private List<TraceNode> loadSteps(int traceId, Connection conn) throws SQLException {
+	private List<TraceNode> loadSteps(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement("SELECT s.* FROM step s WHERE s.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
 		int total = countNumberOfRows(rs);
 		List<TraceNode> allSteps = new ArrayList<>(total);
 		for (int i = 0; i < total; i++) {
@@ -216,27 +229,79 @@ public class RegressionRetriever extends DbService {
 		}
 		rs.close();
 		ps.close();
-		loadLocations(locationIdMap, conn);
+		loadLocations(locationIdMap, conn, closables);
 		return allSteps;
 	}
 	
-	private void loadLocations(Map<Integer, TraceNode> locationIdMap, Connection conn) throws SQLException {
-		String matchList = StringUtils.join(locationIdMap.keySet(), ",");
-		PreparedStatement ps = conn.prepareStatement(
-						String.format("SELECT loc.* FROM location loc WHERE loc.location_id in (%s)", matchList));
+	private void loadLocations(Map<Integer, TraceNode> locIdStepMap, Connection conn, List<AutoCloseable> closables) throws SQLException {
+		Set<Integer> locationSet = locIdStepMap.keySet();
+		String matchList = StringUtils.join(locationSet, ",");
+		/* control scope */
+		Map<Integer, ControlScope> controlScopeMap = loadControlScopes(locationSet, matchList, conn, closables);
+		/* loop scope */
+		Map<Integer, SourceScope> loopScopeMap = loadLoopScope(locationSet, matchList, conn, closables);
+		/* location */
+		PreparedStatement ps = conn.prepareStatement(String.format(
+				"SELECT location_id,class_name,line_number,is_conditional,is_return FROM location WHERE location_id IN (%s)", 
+					matchList));
 		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
 		while(rs.next()) {
 			int locId = rs.getInt("location_id");
-			TraceNode node = locationIdMap.get(locId);
+			TraceNode node = locIdStepMap.get(locId);
 			String className = rs.getString("class_name");
 			int lineNo = rs.getInt("line_number");
 			BreakPoint bkp = new BreakPoint(className, className, lineNo);
 			bkp.setConditional(rs.getBoolean("is_conditional"));
 			bkp.setReturnStatement(rs.getBoolean("is_return"));
+			bkp.setControlScope(controlScopeMap.get(locId));
+			bkp.setLoopScope(loopScopeMap.get(locId));
 			node.setBreakPoint(bkp);
 		}
 		ps.close();
 		rs.close();
+	}
+
+	private Map<Integer, ControlScope> loadControlScopes(Set<Integer> locationSet, String matchList, Connection conn,
+			List<AutoCloseable> closables) throws SQLException {
+		PreparedStatement ps = conn.prepareStatement(String.format(
+				"SELECT location_id, class_name, line_number, is_loop FROM controlScope WHERE location_id IN (%s)",
+					matchList));
+		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
+		Map<Integer, ControlScope> map = new HashMap<>();
+		for (int locId : locationSet) {
+			map.put(locId, new ControlScope());
+		}
+		while(rs.next()) {
+			ControlScope scope = map.get(rs.getInt("location_id"));
+			String className = rs.getString("class_name");
+			int lineNo = rs.getInt("line_number");
+			scope.addLocation(new ClassLocation(className, null, lineNo));
+			scope.setLoop(rs.getBoolean("is_loop"));
+		}
+		return map;
+	}
+	
+	private Map<Integer, SourceScope> loadLoopScope(Set<Integer> locationSet, String matchList, Connection conn,
+			List<AutoCloseable> closables) throws SQLException {
+		PreparedStatement ps = conn.prepareStatement(String.format(
+				"SELECT location_id, class_name, start_line, end_line FROM loopScope WHERE location_id IN (%s)",
+					matchList));
+		ResultSet rs = ps.executeQuery();
+		closables.add(ps);
+		closables.add(rs);
+		Map<Integer, SourceScope> map = new HashMap<>();
+		while(rs.next()) {
+			SourceScope scope = new SourceScope();
+			scope.setClassName(rs.getString("class_name"));
+			scope.setStartLine(rs.getInt("start_line"));
+			scope.setEndLine(rs.getInt("end_line"));
+			map.put(rs.getInt("location_id"), scope);
+		}
+		return map;
 	}
 
 	protected List<VarValue> toVarValue(String xmlContent) {
