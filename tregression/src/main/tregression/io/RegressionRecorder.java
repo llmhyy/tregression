@@ -108,7 +108,13 @@ public class RegressionRecorder extends TraceRecorder {
 		ps.setString(idx++, String.valueOf(config.bugID));
 		ps.setInt(idx++, buggyTraceId);
 		ps.setInt(idx++, correctTraceId);
-		ps.setInt(idx++, trial.getRootcauseNode().getOrder());
+		
+		int order = -1;
+		if(trial.getRootcauseNode()!=null) {
+			order = trial.getRootcauseNode().getOrder();
+		}
+		
+		ps.setInt(idx++, order);
 		ps.setInt(idx++, trial.getOverskipLength() == 0 ? 0 : 1);
 		ps.setInt(idx++, trial.getOverskipLength());
 		ps.execute();
