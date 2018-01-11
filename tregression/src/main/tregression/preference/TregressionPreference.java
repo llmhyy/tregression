@@ -63,19 +63,19 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		compo.setLayout(new GridLayout(2, false));
 		
 		Label projectPathLabel = new Label(compo, SWT.NONE);
-		projectPathLabel.setText("Buggy Path: ");
+		projectPathLabel.setText("Repository Path: ");
 		projectPathText = new Text(compo, SWT.NONE);
 		projectPathText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
 		projectPathText.setText(this.defaultProjectPath);
 		
 		Label projectNameLabel = new Label(compo, SWT.NONE);
-		projectNameLabel.setText("Correct Path: ");
+		projectNameLabel.setText("Project Name: ");
 		projectNameText = new Text(compo, SWT.NONE);
 		projectNameText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
 		projectNameText.setText(this.defaultProjectName);
 		
 		Label bugIDLabel = new Label(compo, SWT.NONE);
-		bugIDLabel.setText("Correct Path: ");
+		bugIDLabel.setText("Bug ID: ");
 		bugIDText = new Text(compo, SWT.NONE);
 		bugIDText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
 		bugIDText.setText(this.defaultBugID);
