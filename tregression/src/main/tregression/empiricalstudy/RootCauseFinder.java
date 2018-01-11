@@ -390,7 +390,7 @@ public class RootCauseFinder {
 	}
 
 	public int findStartOrderInOtherTrace(TraceNode problematicStep, PairList pairList, boolean isOnBeforeTrace) {
-		TraceNode node = problematicStep.getStepOverPrevious();
+		TraceNode node = problematicStep.getStepInPrevious();
 		while(node != null) {
 			TraceNode matchedNode = null;
 			if(isOnBeforeTrace) {
@@ -411,13 +411,7 @@ public class RootCauseFinder {
 				return matchedNode.getOrder();
 			}
 			
-			TraceNode n = node.getStepOverPrevious();
-			if(n!=null){
-				node = n;
-			}
-			else{
-				node = node.getStepInPrevious();
-			}
+			node = node.getStepInPrevious();
 			
 		}
 		
