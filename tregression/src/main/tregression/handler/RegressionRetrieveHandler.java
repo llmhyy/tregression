@@ -1,6 +1,5 @@
 package tregression.handler;
 
-import java.io.File;
 import java.sql.SQLException;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -21,14 +20,11 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		String buggyPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
-		String fixPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CORRECT_PATH);
+		String buggyPath = PathConfiguration.getBuggyPath();
+		String fixPath = PathConfiguration.getCorrectPath();
 		
-		int startIndex = buggyPath.indexOf(File.separator, buggyPath.indexOf("bug_repo")+1);
-		String projectName = buggyPath.substring(startIndex+1, buggyPath.indexOf(File.separator, startIndex+1));
-		
-		startIndex = buggyPath.indexOf(File.separator, buggyPath.indexOf(projectName)+1);
-		String id = buggyPath.substring(startIndex+1, buggyPath.indexOf(File.separator, startIndex+1));
+		String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
+		String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 		
 		Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 		

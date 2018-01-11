@@ -39,8 +39,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 				String[] projects = {"Chart"};
 				int[] bugNum = {26};
 				
-				String config = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUGGY_PATH);
-				String prefix = config.substring(0, config.indexOf(projects[0]));
+				String prefix = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH) + File.separator;
 				
 				int count = 0;
 				for(int i=0; i<projects.length; i++) {

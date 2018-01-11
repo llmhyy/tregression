@@ -18,14 +18,26 @@ import microbat.Activator;
 
 public class TregressionPreference extends PreferencePage implements IWorkbenchPreferencePage {
 
-	private Text buggyProjectPathText;
-	private Text correctProjectPathText;
+//	private Text buggyProjectPathText;
+//	private Text correctProjectPathText;
 	
-	private String defaultBuggyProjectPath;
-	private String defaultCorrectProjectPath;
+	private Text projectPathText;
+	private Text projectNameText;
+	private Text bugIDText;
 	
-	public static final String BUGGY_PATH = "buggy_path";
-	public static final String CORRECT_PATH = "correct_path";
+//	private String defaultBuggyProjectPath;
+//	private String defaultCorrectProjectPath;
+	
+	private String defaultProjectPath;
+	private String defaultProjectName;
+	private String defaultBugID;
+	
+//	public static final String BUGGY_PATH = "buggy_path";
+//	public static final String CORRECT_PATH = "correct_path";
+	
+	public static final String REPO_PATH = "project_path";
+	public static final String PROJECT_NAME = "project_name";
+	public static final String BUG_ID = "bug_id";
 	
 	public TregressionPreference() {
 	}
@@ -40,8 +52,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 
 	@Override
 	public void init(IWorkbench workbench) {
-		this.defaultBuggyProjectPath = Activator.getDefault().getPreferenceStore().getString(BUGGY_PATH);
-		this.defaultCorrectProjectPath = Activator.getDefault().getPreferenceStore().getString(CORRECT_PATH);
+		this.defaultProjectPath = Activator.getDefault().getPreferenceStore().getString(REPO_PATH);
+		this.defaultProjectName = Activator.getDefault().getPreferenceStore().getString(PROJECT_NAME);
+		this.defaultBugID = Activator.getDefault().getPreferenceStore().getString(BUG_ID);
 	}
 
 	@Override
@@ -49,17 +62,23 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		Composite compo = new Composite(parent, SWT.NONE);
 		compo.setLayout(new GridLayout(2, false));
 		
-		Label buggyLabel = new Label(compo, SWT.NONE);
-		buggyLabel.setText("Buggy Path: ");
-		buggyProjectPathText = new Text(compo, SWT.NONE);
-		buggyProjectPathText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-		buggyProjectPathText.setText(this.defaultBuggyProjectPath);
+		Label projectPathLabel = new Label(compo, SWT.NONE);
+		projectPathLabel.setText("Buggy Path: ");
+		projectPathText = new Text(compo, SWT.NONE);
+		projectPathText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		projectPathText.setText(this.defaultProjectPath);
 		
-		Label correctLabel = new Label(compo, SWT.NONE);
-		correctLabel.setText("Correct Path: ");
-		correctProjectPathText = new Text(compo, SWT.NONE);
-		correctProjectPathText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-		correctProjectPathText.setText(this.defaultCorrectProjectPath);
+		Label projectNameLabel = new Label(compo, SWT.NONE);
+		projectNameLabel.setText("Correct Path: ");
+		projectNameText = new Text(compo, SWT.NONE);
+		projectNameText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		projectNameText.setText(this.defaultProjectName);
+		
+		Label bugIDLabel = new Label(compo, SWT.NONE);
+		bugIDLabel.setText("Correct Path: ");
+		bugIDText = new Text(compo, SWT.NONE);
+		bugIDText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		bugIDText.setText(this.defaultBugID);
 		
 		return compo;
 	}
@@ -67,11 +86,13 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	@Override
 	public boolean performOk(){
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode("tregression.preference");
-		preferences.put(BUGGY_PATH, this.buggyProjectPathText.getText());
-		preferences.put(CORRECT_PATH, this.correctProjectPathText.getText());
+		preferences.put(REPO_PATH, this.projectPathText.getText());
+		preferences.put(PROJECT_NAME, this.projectNameText.getText());
+		preferences.put(BUG_ID, this.bugIDText.getText());
 		
-		Activator.getDefault().getPreferenceStore().putValue(BUGGY_PATH, this.buggyProjectPathText.getText());
-		Activator.getDefault().getPreferenceStore().putValue(CORRECT_PATH, this.correctProjectPathText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(BUG_ID, this.bugIDText.getText());
 		
 		return true;
 	}
