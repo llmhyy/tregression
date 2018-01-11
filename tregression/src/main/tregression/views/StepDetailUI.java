@@ -54,6 +54,7 @@ import microbat.util.JavaUtil;
 import microbat.util.Settings;
 import microbat.util.TempVariableInfo;
 import microbat.views.ImageUI;
+import sav.strategies.dto.AppJavaClassPath;
 import tregression.StepChangeType;
 
 public class StepDetailUI {
@@ -216,7 +217,7 @@ public class StepDetailUI {
 					TempVariableInfo.variableOption = option;
 					TempVariableInfo.line = currentNode.getLineNumber();
 					String cuName = currentNode.getBreakPoint().getDeclaringCompilationUnitName();
-					TempVariableInfo.cu = JavaUtil.findCompilationUnitInProject(cuName, null);
+					TempVariableInfo.cu = JavaUtil.findCompilationUnitInProject(cuName, traceView.getTrace().getAppJavaClassPath());
 				} else {
 					interestedVariables.remove(varID);
 				}
