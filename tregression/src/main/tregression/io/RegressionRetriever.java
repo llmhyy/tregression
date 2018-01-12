@@ -54,7 +54,7 @@ public class RegressionRetriever extends DbService {
 	private List<TraceNodePair> loadRegressionMatch(Trace buggyTrace, Trace correctTrace, int regressionId,
 			Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
-				"SELECT rm.buggy_step, rm.correct_step FROM regressionMatch rm WHERE rm.regression_id=?");
+				"SELECT rm.buggy_step, rm.correct_step FROM RegressionMatch rm WHERE rm.regression_id=?");
 		ps.setInt(1, regressionId);
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);
@@ -77,7 +77,7 @@ public class RegressionRetriever extends DbService {
 	 */
 	private Object[] loadRegression(String projectName, String bugId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
-				"SELECT * FROM regression WHERE project_name=? AND bug_id=?");
+				"SELECT * FROM Regression WHERE project_name=? AND bug_id=?");
 		int idx = 1;
 		ps.setString(idx++, projectName);
 		ps.setString(idx++, bugId);
@@ -103,7 +103,7 @@ public class RegressionRetriever extends DbService {
 	
 	private Object[] loadTraceInfo(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
-				"SELECT t.launch_class, t.launch_method FROM trace t WHERE t.trace_id=?");
+				"SELECT t.launch_class, t.launch_method FROM Trace t WHERE t.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);
@@ -150,7 +150,7 @@ public class RegressionRetriever extends DbService {
 	 * return list of relation info [step_order, var_id, RW]
 	 */
 	private List<Object[]> loadStepVariableRelation(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
-		PreparedStatement ps = conn.prepareStatement("SELECT r.step_order, r.var_id, r.RW FROM stepVariableRelation r WHERE r.trace_id=?");
+		PreparedStatement ps = conn.prepareStatement("SELECT r.step_order, r.var_id, r.RW FROM StepVariableRelation r WHERE r.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);
@@ -171,7 +171,7 @@ public class RegressionRetriever extends DbService {
 	}
 
 	private List<TraceNode> loadSteps(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
-		PreparedStatement ps = conn.prepareStatement("SELECT s.* FROM step s WHERE s.trace_id=?");
+		PreparedStatement ps = conn.prepareStatement("SELECT s.* FROM Step s WHERE s.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);
@@ -242,7 +242,7 @@ public class RegressionRetriever extends DbService {
 		Map<Integer, SourceScope> loopScopeMap = loadLoopScope(locationSet, matchList, conn, closables);
 		/* location */
 		PreparedStatement ps = conn.prepareStatement(String.format(
-				"SELECT location_id,class_name,line_number,is_conditional,is_return FROM location WHERE location_id IN (%s)", 
+				"SELECT location_id,class_name,line_number,is_conditional,is_return FROM Location WHERE location_id IN (%s)", 
 					matchList));
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);
@@ -266,7 +266,7 @@ public class RegressionRetriever extends DbService {
 	private Map<Integer, ControlScope> loadControlScopes(Set<Integer> locationSet, String matchList, Connection conn,
 			List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(String.format(
-				"SELECT location_id, class_name, line_number, is_loop FROM controlScope WHERE location_id IN (%s)",
+				"SELECT location_id, class_name, line_number, is_loop FROM ControlScope WHERE location_id IN (%s)",
 					matchList));
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);
@@ -288,7 +288,7 @@ public class RegressionRetriever extends DbService {
 	private Map<Integer, SourceScope> loadLoopScope(Set<Integer> locationSet, String matchList, Connection conn,
 			List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(String.format(
-				"SELECT location_id, class_name, start_line, end_line FROM loopScope WHERE location_id IN (%s)",
+				"SELECT location_id, class_name, start_line, end_line FROM LoopScope WHERE location_id IN (%s)",
 					matchList));
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);

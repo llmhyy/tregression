@@ -57,7 +57,7 @@ public class RegressionRecorder extends TraceRecorder {
 
 	private void insertRegressionMatch(int regressionId, PairList pairList, Connection conn, List<AutoCloseable> closables)
 			throws SQLException {
-		String sql = "INSERT INTO regressionMatch (regression_id, buggy_step, correct_step) VALUES (?,?,?)";
+		String sql = "INSERT INTO RegressionMatch (regression_id, buggy_step, correct_step) VALUES (?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
 		closables.add(ps);
 		for (TraceNodePair nodePair : pairList.getPairList()) {
@@ -72,7 +72,7 @@ public class RegressionRecorder extends TraceRecorder {
 
 	private void insertMendingRecord(int regressionId, List<MendingRecord> mendingRecords, Connection conn,
 			List<AutoCloseable> closables) throws SQLException {
-		String sql = "INSERT INTO mendingRecord (regression_id, mending_type, mending_start,"
+		String sql = "INSERT INTO MendingRecord (regression_id, mending_type, mending_start,"
 				+ " mending_correspondence, mending_return, variable)"
 				+ " VALUES (?,?,?,?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
@@ -97,7 +97,7 @@ public class RegressionRecorder extends TraceRecorder {
 	private int insertRegression(Defects4jProjectConfig config, EmpiricalTrial trial, int buggyTraceId,
 			int correctTraceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps;
-		String sql = "INSERT INTO regression (project_name, project_version, bug_id, buggy_trace, "
+		String sql = "INSERT INTO Regression (project_name, project_version, bug_id, buggy_trace, "
 				+ "correct_trace, root_cause_step, is_overskip, over_skip_number) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
