@@ -77,6 +77,7 @@ public class TrialRecorder {
 		titles.add("overskip steps");
 		titles.add("checklist");
 		
+		titles.add("exception");
 		titles.add("multi thread");
 		
 		titles.add("mending type");
@@ -169,7 +170,7 @@ public class TrialRecorder {
 		
 		row.createCell(17).setCellValue(trial.isMultiThread());
 		
-		int count = 17;
+		int count = 18;
 		RootCauseFinder finder = trial.getRootCauseFinder();
 		if(finder != null){
 			List<MendingRecord> mendings = finder.getMendingRecordList();
