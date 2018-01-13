@@ -77,6 +77,7 @@ public class TraceCollector {
 		long t2 = System.currentTimeMillis();
 		int time = (int) (t2-t1);
 		trace.setConstructTime(time);
+		trace.setMultiThread(result.getChecker().isMultiThread());
 		
 		result.setRunningTrace(trace);
 		return result;
