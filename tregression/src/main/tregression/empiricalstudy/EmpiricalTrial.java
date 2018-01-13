@@ -35,11 +35,13 @@ public class EmpiricalTrial {
 	private String exceptionExplanation;
 	
 	private RootCauseFinder rootCauseFinder;
+	
+	private boolean isMultiThread;
 
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
 			RootCauseNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
 			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength,
-			RootCauseFinder rootCauseFinder) {
+			RootCauseFinder rootCauseFinder, boolean isMultiThread) {
 		super();
 		this.bugType = bugType;
 		this.overskipLength = overskipLength;
@@ -51,6 +53,7 @@ public class EmpiricalTrial {
 		this.setSimulationTime(simulationTime);
 		this.buggyTraceLength = buggyTraceLength;
 		this.correctTranceLength = correctTraceLength;
+		this.isMultiThread = isMultiThread;
 		this.setRootCauseFinder(rootCauseFinder);
 		if(rootCauseFinder != null){
 			this.visitedRegressionNodes = rootCauseFinder.getRegressionNodeList();
@@ -232,6 +235,14 @@ public class EmpiricalTrial {
 
 	public void setRootCauseFinder(RootCauseFinder rootCauseFinder) {
 		this.rootCauseFinder = rootCauseFinder;
+	}
+
+	public boolean isMultiThread() {
+		return isMultiThread;
+	}
+
+	public void setMultiThread(boolean isMultiThread) {
+		this.isMultiThread = isMultiThread;
 	}
 
 }

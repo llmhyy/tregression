@@ -77,6 +77,8 @@ public class TrialRecorder {
 		titles.add("overskip steps");
 		titles.add("checklist");
 		
+		titles.add("multi thread");
+		
 		titles.add("mending type");
 		titles.add("mending start");
 		titles.add("mending correspondence");
@@ -115,7 +117,7 @@ public class TrialRecorder {
 	
 	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, int bugID) {
 		if (trial==null) {
-			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null);
+			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, false);
 		}
 		
 		row.createCell(0).setCellValue(project);
@@ -165,7 +167,9 @@ public class TrialRecorder {
 			row.createCell(16).setCellValue(trial.getExceptionExplanation());
 		}
 		
-		int count = 16;
+		row.createCell(17).setCellValue(trial.isMultiThread());
+		
+		int count = 17;
 		RootCauseFinder finder = trial.getRootCauseFinder();
 		if(finder != null){
 			List<MendingRecord> mendings = finder.getMendingRecordList();
