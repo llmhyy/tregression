@@ -71,12 +71,8 @@ public class TraceCollector {
 		TraceModelConstructor constructor = new TraceModelConstructor();
 		ExecutionStatementCollector checker = result.getChecker();
 		
-		long t1 = System.currentTimeMillis();
 		Trace trace = constructor.constructTraceModel(result.getAppClassPath(), result.getExecutedStatements(), 
 				checker.getExecutionOrderList(), checker.getStepNum(), false, isRunInTestCaseMode);
-		long t2 = System.currentTimeMillis();
-		int time = (int) (t2-t1);
-		trace.setConstructTime(time);
 		trace.setMultiThread(result.getChecker().isMultiThread());
 		
 		result.setRunningTrace(trace);
