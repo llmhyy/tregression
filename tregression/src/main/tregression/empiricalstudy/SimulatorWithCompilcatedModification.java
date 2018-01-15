@@ -242,6 +242,9 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 				TraceNode controlDom = currentNode.getControlDominator();
 				if(controlDom==null) {
 					controlDom = currentNode.getInvocationParent();
+					if(controlDom==null){
+						controlDom = currentNode.getStepInPrevious();
+					}
 				}
 
 				StepOperationTuple operation = new StepOperationTuple(currentNode,
