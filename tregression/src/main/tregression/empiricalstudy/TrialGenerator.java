@@ -258,10 +258,6 @@ public class TrialGenerator {
 
 		RootCauseNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace,
 				correctTrace);
-		if (realcauseNode == null) {
-			return INSUFFICIENT_TRACE;
-		}
-
 		List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 
 		time2 = System.currentTimeMillis();
@@ -287,7 +283,12 @@ public class TrialGenerator {
 				}				
 			}
 			
-			return NORMAL;
+			if (realcauseNode == null) {
+				return INSUFFICIENT_TRACE;
+			}
+			else{
+				return NORMAL;				
+			}
 		}
 		
 		return INSUFFICIENT_TRACE;
