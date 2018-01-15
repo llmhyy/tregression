@@ -227,10 +227,15 @@ public class RegressionRetriever extends DbService {
 			}
 			// location_id
 			locationIdMap.put(rs.getInt("location_id"), step);
-			// read_vars
-			step.setReadVariables(toVarValue(rs.getString("read_vars")));
-			// written_vars
-			step.setWrittenVariables(toVarValue(rs.getString("written_vars")));
+			try {
+				// read_vars
+				step.setReadVariables(toVarValue(rs.getString("read_vars")));
+				// written_vars
+				step.setWrittenVariables(toVarValue(rs.getString("written_vars")));
+			} catch (Exception e) {
+				System.out.println(String.format("Xml error at step: [trace_id, order] = [%d, %d]", traceId, order));
+				throw e;
+			}
 		}
 		rs.close();
 		ps.close();
