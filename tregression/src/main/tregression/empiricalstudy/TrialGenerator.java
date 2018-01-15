@@ -91,6 +91,8 @@ public class TrialGenerator {
 					
 //					return trials;
 				}
+				
+				break;
 			}
 
 		} catch (Exception e) {
