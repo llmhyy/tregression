@@ -275,13 +275,10 @@ public class TrialGenerator {
 			trials.add(trial);
 			
 			if(isRecordDB){
-				try {
-					new RegressionRecorder().record(trial, buggyTrace, correctTrace, 
-							diffMatcher, pairList, config);
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}				
+				DBRecording dbRecording = new DBRecording(trial, buggyTrace, correctTrace, diffMatcher, pairList, config);
+				new Thread(dbRecording).start();
 			}
+			
 			
 			if (realcauseNode == null) {
 				return INSUFFICIENT_TRACE;
@@ -292,6 +289,41 @@ public class TrialGenerator {
 		}
 		
 		return INSUFFICIENT_TRACE;
+	}
+	
+	public class DBRecording implements Runnable{
+
+		EmpiricalTrial trial;
+		Trace buggyTrace;
+		Trace correctTrace;
+		DiffMatcher diffMatcher;
+		PairList pairList;
+		Defects4jProjectConfig config;
+		
+		public DBRecording(EmpiricalTrial trial, Trace buggyTrace, Trace correctTrace, DiffMatcher diffMatcher,
+				PairList pairList, Defects4jProjectConfig config) {
+			super();
+			this.trial = trial;
+			this.buggyTrace = buggyTrace;
+			this.correctTrace = correctTrace;
+			this.diffMatcher = diffMatcher;
+			this.pairList = pairList;
+			this.config = config;
+		}
+
+
+
+		@Override
+		public void run() {
+			try {
+				new RegressionRecorder().record(trial, buggyTrace, correctTrace, 
+						diffMatcher, pairList, config);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}	
+			
+		}
+		
 	}
 
 	private void addAdditionalObservedFault(SimulatorWithCompilcatedModification simulator, Defects4jProjectConfig config,
