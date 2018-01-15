@@ -42,8 +42,10 @@ public class RegressionRetriever extends DbService {
 			Trace correctTrace = loadTrace((int) rs[idx++], conn, closables);
 			List<TraceNodePair> pairList = loadRegressionMatch(buggyTrace, correctTrace, regressionId, conn, closables);
 			Regression regression = new Regression(buggyTrace, correctTrace, new PairList(pairList));
-			Object[] tc = loadTraceInfo(buggyTraceId, conn, closables);
-			regression.setTestCase((String)tc[0], (String)tc[1]);
+			Object[] traceInfo = loadTraceInfo(buggyTraceId, conn, closables);
+			regression.setTestCase((String)traceInfo[0], (String)traceInfo[1]);
+			buggyTrace.setMultiThread((boolean) traceInfo[2]);
+			correctTrace.setMultiThread((boolean) traceInfo[2]);
 			System.out.println("Retrieve done!");
 			return regression;
 		} finally {
@@ -77,7 +79,8 @@ public class RegressionRetriever extends DbService {
 	 */
 	private Object[] loadRegression(String projectName, String bugId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
-				"SELECT * FROM Regression WHERE project_name=? AND bug_id=?");
+				"SELECT * FROM Regression WHERE regression_id="
+							+ "(SELECT MAX(regression_id) FROM Regression WHERE project_name=? AND bug_id=?)");
 		int idx = 1;
 		ps.setString(idx++, projectName);
 		ps.setString(idx++, bugId);
@@ -103,15 +106,17 @@ public class RegressionRetriever extends DbService {
 	
 	private Object[] loadTraceInfo(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
-				"SELECT t.launch_class, t.launch_method FROM Trace t WHERE t.trace_id=?");
+				"SELECT t.launch_class, t.launch_method, t.is_multithread FROM Trace t WHERE t.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
 		closables.add(ps);
 		closables.add(rs);
-		Object[] result = new Object[2];
+		Object[] result = new Object[3];
 		if (rs.next()) {
-			result[0] = rs.getString(1);
-			result[1] = rs.getString(2);
+			int idx = 0;
+			result[idx++] = rs.getString(idx);
+			result[idx++] = rs.getString(idx);
+			result[idx++] = rs.getBoolean(idx);
 		} else {
 			throw new SQLException("Cannot load trace with traceId = " + traceId);
 		}
