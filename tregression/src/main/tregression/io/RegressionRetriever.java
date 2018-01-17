@@ -28,7 +28,6 @@ import tregression.model.TraceNodePair;
 
 public class RegressionRetriever extends DbService {
 	
-	
 	public Regression retriveRegression(String projectName, String bugID) throws SQLException{
 		Connection conn = null;
 		List<AutoCloseable> closables = new ArrayList<>();
@@ -38,19 +37,25 @@ public class RegressionRetriever extends DbService {
 			int idx = 0;
 			int regressionId = (int) rs[idx++];
 			int buggyTraceId = (int) rs[idx++];
-			Trace buggyTrace = loadTrace(buggyTraceId, conn, closables);
-			Trace correctTrace = loadTrace((int) rs[idx++], conn, closables);
-			List<TraceNodePair> pairList = loadRegressionMatch(buggyTrace, correctTrace, regressionId, conn, closables);
-			Regression regression = new Regression(buggyTrace, correctTrace, new PairList(pairList));
-			Object[] traceInfo = loadTraceInfo(buggyTraceId, conn, closables);
-			regression.setTestCase((String)traceInfo[0], (String)traceInfo[1]);
-			buggyTrace.setMultiThread((boolean) traceInfo[2]);
-			correctTrace.setMultiThread((boolean) traceInfo[2]);
+			Regression regression = retrieveRegressionInfo(conn, closables, rs, idx, regressionId, buggyTraceId);
 			System.out.println("Retrieve done!");
 			return regression;
 		} finally {
 			closeDb(conn, closables);
 		}
+	}
+
+	protected Regression retrieveRegressionInfo(Connection conn, List<AutoCloseable> closables, Object[] rs, int idx,
+			int regressionId, int buggyTraceId) throws SQLException {
+		Trace buggyTrace = loadTrace(buggyTraceId, conn, closables);
+		Trace correctTrace = loadTrace((int) rs[idx++], conn, closables);
+		List<TraceNodePair> pairList = loadRegressionMatch(buggyTrace, correctTrace, regressionId, conn, closables);
+		Regression regression = new Regression(buggyTrace, correctTrace, new PairList(pairList));
+		Object[] traceInfo = loadTraceInfo(buggyTraceId, conn, closables);
+		regression.setTestCase((String)traceInfo[0], (String)traceInfo[1]);
+		buggyTrace.setMultiThread((boolean) traceInfo[2]);
+		correctTrace.setMultiThread((boolean) traceInfo[2]);
+		return regression;
 	}
 	
 	private List<TraceNodePair> loadRegressionMatch(Trace buggyTrace, Trace correctTrace, int regressionId,
@@ -77,7 +82,7 @@ public class RegressionRetriever extends DbService {
 	/**
 	 * return Object[]: regression_id, buggy_trace id, correct_trace id
 	 */
-	private Object[] loadRegression(String projectName, String bugId, Connection conn, List<AutoCloseable> closables) throws SQLException {
+	protected Object[] loadRegression(String projectName, String bugId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(
 				"SELECT * FROM Regression WHERE regression_id="
 							+ "(SELECT MAX(regression_id) FROM Regression WHERE project_name=? AND bug_id=?)");

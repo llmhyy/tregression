@@ -20,7 +20,7 @@ public class LoopStatementChecker extends ASTVisitor {
 	CompilationUnit cu;
 	ASTNode node;
 
-	boolean isValid = false;
+	public boolean isValid = false;
 
 	public LoopStatementChecker(ASTNode node, CompilationUnit cu) {
 		this.node = node;

@@ -10,28 +10,18 @@ import java.util.List;
 
 import microbat.model.trace.Trace;
 import microbat.sql.TraceRecorder;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.MendingRecord;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
 
 public class RegressionRecorder extends TraceRecorder {
 	
 	/**
 	 * The mending information can be retrieved through trial.
-	 * 
-	 * @param trial
-	 * @param buggyTrace
-	 * @param correctTrace
-	 * @param diffMatcher
-	 * @param pairList
-	 * @param config 
-	 * @param realcauseNode
 	 */
-	public void record(EmpiricalTrial trial, Trace buggyTrace, Trace correctTrace, 
-			DiffMatcher diffMatcher, PairList pairList, Defects4jProjectConfig config) throws SQLException {
+	public void record(EmpiricalTrial trial, Trace buggyTrace, Trace correctTrace, PairList pairList,
+			String projectName, String bugId) throws SQLException {
 		List<MendingRecord> mendingRecords = trial.getRootCauseFinder().getMendingRecordList();
 		Connection conn = null;
 		List<AutoCloseable> closables = new ArrayList<AutoCloseable>();
@@ -39,9 +29,9 @@ public class RegressionRecorder extends TraceRecorder {
 			conn = getConnection();
 			conn.setAutoCommit(false);
 			String[] tc = trial.getTestcase().split("#");
-			int buggyTraceId = insertTrace(buggyTrace, config.projectName, null, tc[0], tc[1], conn, closables);
-			int correctTraceId = insertTrace(correctTrace, config.projectName, null, tc[0], tc[1], conn, closables);
-			int regressionId = insertRegression(config, trial, buggyTraceId, correctTraceId, conn, closables);
+			int buggyTraceId = insertTrace(buggyTrace, projectName, null, tc[0], tc[1], conn, closables);
+			int correctTraceId = insertTrace(correctTrace, projectName, null, tc[0], tc[1], conn, closables);
+			int regressionId = insertRegression(projectName, bugId, trial, buggyTraceId, correctTraceId, conn, closables);
 			insertMendingRecord(regressionId, mendingRecords, conn, closables);
 			insertRegressionMatch(regressionId, pairList, conn, closables);
 			conn.commit();
@@ -52,10 +42,10 @@ public class RegressionRecorder extends TraceRecorder {
 		} finally {
 			closeDb(conn, closables);
 		}
-		System.currentTimeMillis();
+		System.out.println("RecordDB finished!");
 	}
 
-	private void insertRegressionMatch(int regressionId, PairList pairList, Connection conn, List<AutoCloseable> closables)
+	protected void insertRegressionMatch(int regressionId, PairList pairList, Connection conn, List<AutoCloseable> closables)
 			throws SQLException {
 		String sql = "INSERT INTO RegressionMatch (regression_id, buggy_step, correct_step) VALUES (?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
@@ -70,7 +60,7 @@ public class RegressionRecorder extends TraceRecorder {
 		ps.executeBatch();
 	}
 
-	private void insertMendingRecord(int regressionId, List<MendingRecord> mendingRecords, Connection conn,
+	protected void insertMendingRecord(int regressionId, List<MendingRecord> mendingRecords, Connection conn,
 			List<AutoCloseable> closables) throws SQLException {
 		String sql = "INSERT INTO MendingRecord (regression_id, mending_type, mending_start,"
 				+ " mending_correspondence, mending_return, variable)"
@@ -94,7 +84,7 @@ public class RegressionRecorder extends TraceRecorder {
 		ps.executeBatch();
 	}
 
-	private int insertRegression(Defects4jProjectConfig config, EmpiricalTrial trial, int buggyTraceId,
+	protected int insertRegression(String projectName, String bugId, EmpiricalTrial trial, int buggyTraceId,
 			int correctTraceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		PreparedStatement ps;
 		String sql = "INSERT INTO Regression (project_name, project_version, bug_id, buggy_trace, "
@@ -103,9 +93,9 @@ public class RegressionRecorder extends TraceRecorder {
 		ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		closables.add(ps);
 		int idx = 1;
-		ps.setString(idx++, config.projectName);
+		ps.setString(idx++, projectName);
 		ps.setString(idx++, null);
-		ps.setString(idx++, String.valueOf(config.bugID));
+		ps.setString(idx++, bugId);
 		ps.setInt(idx++, buggyTraceId);
 		ps.setInt(idx++, correctTraceId);
 		

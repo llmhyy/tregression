@@ -316,8 +316,8 @@ public class TrialGenerator {
 		@Override
 		public void run() {
 			try {
-				new RegressionRecorder().record(trial, buggyTrace, correctTrace, 
-						diffMatcher, pairList, config);
+				new RegressionRecorder().record(trial, buggyTrace, correctTrace, pairList, config.projectName, 
+						String.valueOf(config.bugID));
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}	

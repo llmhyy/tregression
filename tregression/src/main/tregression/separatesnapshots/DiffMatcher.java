@@ -119,16 +119,14 @@ public class DiffMatcher {
 		return -2;
 	}
 	
-	private List<String> getRawDiffContent(){
+	protected static List<String> getRawDiffContent(String buggySourcePath, String fixSourcePath){
 		List<String> cmdList = new ArrayList<>();
 		
 		cmdList.add("git");
 		cmdList.add("diff");
 		cmdList.add("--no-index");
 		
-		String buggySourcePath = buggyPath + File.separator + sourceFolderName;
 		cmdList.add(buggySourcePath);
-		String fixSourcePath = fixPath + File.separator + sourceFolderName;
 		cmdList.add(fixSourcePath);
 		
 		String[] cmds = cmdList.toArray(new String[0]);
@@ -215,7 +213,6 @@ public class DiffMatcher {
 	}
 
 	public void matchCode(){
-		
 		List<String> diffContent = getRawDiffContent();
 		diffContent.add("diff end");
 		List<FilePairWithDiff> fileDiffs = new DiffParser().parseDiff(diffContent, sourceFolderName);
@@ -233,6 +230,12 @@ public class DiffMatcher {
 		
 		this.fileDiffList = fileDiffs;
 		
+	}
+
+	protected List<String> getRawDiffContent() {
+		String buggySourcePath = buggyPath + File.separator + sourceFolderName;
+		String fixSourcePath = fixPath + File.separator + sourceFolderName;
+		return getRawDiffContent(buggySourcePath, fixSourcePath);
 	}
 
 	private int countLineNumber(String fileName){

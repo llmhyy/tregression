@@ -31,3 +31,12 @@ Bundle-ClassPath: lib/poi-3.11-20141221.jar,
  lib/poi-ooxml-schemas-3.11-20141221.jar,
  lib/xmlbeans-2.6.0.jar,
  .
+Export-Package: tregression,
+ tregression.empiricalstudy,
+ tregression.io,
+ tregression.junit,
+ tregression.model,
+ tregression.separatesnapshots,
+ tregression.separatesnapshots.diff,
+ tregression.tracematch,
+ tregression.views
