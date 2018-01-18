@@ -74,4 +74,7 @@ public class Regression {
 		this.testMethod = testMethod;
 	}
 
+	public String getTestClass() {
+		return testClass;
+	}
 }

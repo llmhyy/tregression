@@ -37,7 +37,8 @@ public class RegressionRetriever extends DbService {
 			int idx = 0;
 			int regressionId = (int) rs[idx++];
 			int buggyTraceId = (int) rs[idx++];
-			Regression regression = retrieveRegressionInfo(conn, closables, rs, idx, regressionId, buggyTraceId);
+			int correctTraceId = (int) rs[idx++];
+			Regression regression = retrieveRegressionInfo(regressionId, buggyTraceId, correctTraceId, conn, closables);
 			System.out.println("Retrieve done!");
 			return regression;
 		} finally {
@@ -45,10 +46,10 @@ public class RegressionRetriever extends DbService {
 		}
 	}
 
-	protected Regression retrieveRegressionInfo(Connection conn, List<AutoCloseable> closables, Object[] rs, int idx,
-			int regressionId, int buggyTraceId) throws SQLException {
+	protected Regression retrieveRegressionInfo(int regressionId, int buggyTraceId, int correctTraceId, Connection conn,
+			List<AutoCloseable> closables) throws SQLException {
 		Trace buggyTrace = loadTrace(buggyTraceId, conn, closables);
-		Trace correctTrace = loadTrace((int) rs[idx++], conn, closables);
+		Trace correctTrace = loadTrace(correctTraceId, conn, closables);
 		List<TraceNodePair> pairList = loadRegressionMatch(buggyTrace, correctTrace, regressionId, conn, closables);
 		Regression regression = new Regression(buggyTrace, correctTrace, new PairList(pairList));
 		Object[] traceInfo = loadTraceInfo(buggyTraceId, conn, closables);
@@ -232,13 +233,15 @@ public class RegressionRetriever extends DbService {
 			}
 			// location_id
 			locationIdMap.put(rs.getInt("location_id"), step);
+			String loadVarStep = "read_vars";
 			try {
 				// read_vars
 				step.setReadVariables(toVarValue(rs.getString("read_vars")));
 				// written_vars
+				loadVarStep = "written_vars";
 				step.setWrittenVariables(toVarValue(rs.getString("written_vars")));
 			} catch (Exception e) {
-				System.out.println(String.format("Xml error at step: [trace_id, order] = [%d, %d]", traceId, order));
+				System.out.println(String.format("%s: Xml error at step: [trace_id, order] = [%d, %d]", loadVarStep, traceId, order));
 				throw e;
 			}
 		}
@@ -320,6 +323,7 @@ public class RegressionRetriever extends DbService {
 	}
 
 	protected List<VarValue> toVarValue(String xmlContent) {
+//		xmlContent = xmlContent.replace("&#", "#");
 		return VarValueXmlReader.read(xmlContent);
 	}
 	
