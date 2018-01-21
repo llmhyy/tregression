@@ -249,7 +249,7 @@ public class RootCauseFinder {
 					return;
 				}
 				VarValue wrongVar = matchingStepType.getWrongVariableList().get(0);
-				domOnRef = matchingStep.findDataDominator(wrongVar);
+				domOnRef = matchingStep.getDataDominator(wrongVar);
 				
 				while(domOnRef != null){
 					StepChangeType changeType = typeChecker.getType(domOnRef, false, pairList, matcher);

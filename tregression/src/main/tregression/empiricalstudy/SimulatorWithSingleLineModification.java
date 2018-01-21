@@ -341,7 +341,7 @@ public class SimulatorWithSingleLineModification extends Simulator{
 			
 			VarValue readVarInOrigin = findMatchOriginalVar(readVarInMutation, originalNode);
 			
-			TraceNode dataDominator = originalNode.findDataDominator(readVarInOrigin);
+			TraceNode dataDominator = originalNode.getDataDominator(readVarInOrigin);
 			
 			/**
 			 * for now, the dataDominator must not find a corresponding mutated node.
