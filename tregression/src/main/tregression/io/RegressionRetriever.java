@@ -132,7 +132,7 @@ public class RegressionRetriever extends DbService {
 	private Trace loadTrace(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
 		Trace trace = new Trace(null); 
 		// load step
-		List<TraceNode> steps = loadSteps(traceId, conn, closables);
+		List<TraceNode> steps = loadSteps(traceId, conn, closables, trace);
 		trace.setExectionList(steps);
 		// load stepVar
 		List<Object[]> rows = loadStepVariableRelation(traceId, conn, closables);
@@ -181,7 +181,8 @@ public class RegressionRetriever extends DbService {
 		return result;
 	}
 
-	private List<TraceNode> loadSteps(int traceId, Connection conn, List<AutoCloseable> closables) throws SQLException {
+	private List<TraceNode> loadSteps(int traceId, Connection conn, List<AutoCloseable> closables, Trace trace) 
+			throws SQLException {
 		PreparedStatement ps = conn.prepareStatement("SELECT s.* FROM Step s WHERE s.trace_id=?");
 		ps.setInt(1, traceId);
 		ResultSet rs = ps.executeQuery();
@@ -190,7 +191,7 @@ public class RegressionRetriever extends DbService {
 		int total = countNumberOfRows(rs);
 		List<TraceNode> allSteps = new ArrayList<>(total);
 		for (int i = 0; i < total; i++) {
-			allSteps.add(new TraceNode(null, null, i));
+			allSteps.add(new TraceNode(null, null, i, trace));
 		}
 		Map<Integer, TraceNode> locationIdMap = new HashMap<>();
 		while (rs.next()) {

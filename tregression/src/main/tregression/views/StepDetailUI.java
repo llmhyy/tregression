@@ -96,7 +96,6 @@ public class StepDetailUI {
 				
 				TraceNode suspiciousNode = null;
 				if(dataButton.getSelection()){
-					//TODO
 					Object[] objList = readVariableTreeViewer.getCheckedElements();
 					if(objList.length!=0) {
 						Object obj = objList[0];
