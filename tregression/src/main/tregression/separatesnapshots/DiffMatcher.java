@@ -119,13 +119,19 @@ public class DiffMatcher {
 		return -2;
 	}
 	
-	protected static List<String> getRawDiffContent(String buggySourcePath, String fixSourcePath){
+	protected static List<String> getRawDiffContent(String buggySourcePath, String fixSourcePath) {
+		return getRawDiffContent(buggySourcePath, fixSourcePath, false);
+	}
+
+	protected static List<String> getRawDiffContent(String buggySourcePath, String fixSourcePath, boolean ignoreSpace) {
 		List<String> cmdList = new ArrayList<>();
-		
+
 		cmdList.add("git");
 		cmdList.add("diff");
 		cmdList.add("--no-index");
-		
+		if (ignoreSpace) {
+			cmdList.add("--ignore-space-change");
+		}
 		cmdList.add(buggySourcePath);
 		cmdList.add(fixSourcePath);
 		
