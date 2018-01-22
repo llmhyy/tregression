@@ -10,6 +10,7 @@ import java.util.List;
 
 import microbat.model.trace.Trace;
 import microbat.sql.TraceRecorder;
+import sav.common.core.SavRtException;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.MendingRecord;
 import tregression.model.PairList;
@@ -29,6 +30,12 @@ public class RegressionRecorder extends TraceRecorder {
 			conn = getConnection();
 			conn.setAutoCommit(false);
 			String[] tc = trial.getTestcase().split("#");
+			if (tc.length != 2) {
+				tc = trial.getTestcase().split("::");
+			} 
+			if (tc.length != 2) {
+				throw new SavRtException(String.format("Testcase-Unknown format: %s", trial.getTestcase()));
+			}
 			int buggyTraceId = insertTrace(buggyTrace, projectName, null, tc[0], tc[1], conn, closables);
 			int correctTraceId = insertTrace(correctTrace, projectName, null, tc[0], tc[1], conn, closables);
 			int regressionId = insertRegression(projectName, bugId, trial, buggyTraceId, correctTraceId, conn, closables);
