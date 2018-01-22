@@ -44,7 +44,7 @@ public class TraceCollector {
 			return rs;
 		}
 		
-		System.out.println("There are " + checker.getExecutionOrderList().size() + " steps for this trace.");
+//		System.out.println("There are " + checker.getExecutionOrderList().size() + " steps for this trace.");
 		
 		for(BreakPoint point: executingStatements){
 			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
