@@ -64,34 +64,8 @@ public class TrialGenerator {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
 
-				int res = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
+				analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
 						trials, tc, config, requireVisualization, true, isRecordDB);
-				if (res == NORMAL) {
-//					if(!trials.isEmpty()) {
-//						EmpiricalTrial t = trials.get(0);
-//						if(t.getRootcauseNode()==null) {
-//							trials = runMainMethodVersion(buggyPath, fixPath, isReuse, 
-//									requireVisualization, config, tc);
-//						}
-//					}
-					
-					return trials;
-				} 
-//				else if(res == INSUFFICIENT_TRACE){
-//					trials = runMainMethodVersion(buggyPath, fixPath, isReuse, requireVisualization, config, tc);
-//					return trials;
-//				}
-				else {
-					String explanation = getProblemType(res);
-					System.out.println("[*NOTICE*] " + explanation);
-					EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, false);
-					trial.setTestcase(tc.testClass + "::" + tc.testMethod);
-					trial.setExceptionExplanation(explanation);
-					trials.add(trial);
-					
-//					return trials;
-				}
-				
 				break;
 			}
 
@@ -100,9 +74,7 @@ public class TrialGenerator {
 		}
 
 		if (trials.isEmpty()) {
-			EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
-					-1, -1, null, false);
-			trial.setExceptionExplanation("runtime exception occurs");
+			EmpiricalTrial trial = createDumpTrial("runtime exception occurs");
 			trial.setTestcase(workingTC.testClass + "::" + workingTC.testMethod);
 			trials.add(trial);
 		}
@@ -158,8 +130,15 @@ public class TrialGenerator {
 		generator.generateMainMethod(sourcePath, tc);
 		System.currentTimeMillis();
 	}
+	
+	private EmpiricalTrial createDumpTrial(String reason){
+		EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
+				-1, -1, null, false);
+		trial.setExceptionExplanation("runtime exception occurs");
+		return trial;
+	}
 
-	private int analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
+	private void analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
 			List<EmpiricalTrial> trials, TestCase tc, Defects4jProjectConfig config, 
 			boolean requireVisualization, boolean isRunInTestCaseMode, boolean isRecordDB) throws SimulationFailException {
 		TraceCollector collector = new TraceCollector();
@@ -200,14 +179,18 @@ public class TrialGenerator {
 			Settings.iCompilationUnitMap.clear();
 			buggyRS = collector.preCheck(buggyPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (buggyRS.getRunningType() != NORMAL) {
-				return buggyRS.getRunningType();
+				EmpiricalTrial trial = createDumpTrial(getProblemType(buggyRS.getRunningType()));
+				trials.add(trial);
+				return;
 			}
 
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
 			correctRs = collector.preCheck(fixPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (correctRs.getRunningType() != NORMAL) {
-				return correctRs.getRunningType();
+				EmpiricalTrial trial = createDumpTrial(getProblemType(correctRs.getRunningType()));
+				trials.add(trial);
+				return;
 			}
 			
 //			if(buggyRS.getChecker().getExecutionOrderList().size()==correctRs.getChecker().getExecutionOrderList().size()){
@@ -272,23 +255,19 @@ public class TrialGenerator {
 			}
 
 			EmpiricalTrial trial = trials0.get(0);
+			if (realcauseNode == null) {
+				String explanation = getProblemType(INSUFFICIENT_TRACE);
+				System.out.println("[*NOTICE*] " + explanation);
+				trial.setTestcase(tc.testClass + "::" + tc.testMethod);
+				trial.setExceptionExplanation(explanation);
+			}
 			trials.add(trial);
 			
 			if(isRecordDB){
 				DBRecording dbRecording = new DBRecording(trial, buggyTrace, correctTrace, diffMatcher, pairList, config);
 				new Thread(dbRecording).start();
 			}
-			
-			
-			if (realcauseNode == null) {
-				return INSUFFICIENT_TRACE;
-			}
-			else{
-				return NORMAL;				
-			}
 		}
-		
-		return INSUFFICIENT_TRACE;
 	}
 	
 	public class DBRecording implements Runnable{
