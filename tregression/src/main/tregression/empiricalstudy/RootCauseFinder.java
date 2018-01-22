@@ -97,7 +97,8 @@ public class RootCauseFinder {
 		return null;
 	}
 	
-	private void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
+	public void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, 
+			PairList pairList, DiffMatcher matcher){
 		getRegressionNodeList().add(observedFaultNode);
 		
 		List<TraceNodeW> workList = new ArrayList<>();

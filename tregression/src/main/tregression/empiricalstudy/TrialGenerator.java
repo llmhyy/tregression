@@ -235,7 +235,7 @@ public class TrialGenerator {
 
 		time1 = System.currentTimeMillis();
 		System.out.println("start simulating debugging...");
-		SimulatorWithCompilcatedModification simulator = new SimulatorWithCompilcatedModification();
+		Simulator simulator = new Simulator();
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		addAdditionalObservedFault(simulator, config, buggyTrace);
 
@@ -305,37 +305,31 @@ public class TrialGenerator {
 		
 	}
 
-	private void addAdditionalObservedFault(SimulatorWithCompilcatedModification simulator, Defects4jProjectConfig config,
+	private void addAdditionalObservedFault(Simulator simulator, Defects4jProjectConfig config,
 			Trace buggyTrace) {
 		if(config.projectName.equals("Chart")&&config.bugID==6){
-			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExecutionList().get(297);
-			simulator.getObservedFaults().add(node);
+			simulator.setObservedFault(node);
 		}
 		
-		
 		if(config.projectName.equals("Math")&&config.bugID==78){
-			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExecutionList().get(640);
-			simulator.getObservedFaults().add(node);
+			simulator.setObservedFault(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==40){
-			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExecutionList().get(11268);
-			simulator.getObservedFaults().add(node);
+			simulator.setObservedFault(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==49){
-			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExecutionList().get(449);
-			simulator.getObservedFaults().add(node);
+			simulator.setObservedFault(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==1){
-			simulator.getObservedFaults().clear();
 			TraceNode node = buggyTrace.getExecutionList().get(1478);
-			simulator.getObservedFaults().add(node);
+			simulator.setObservedFault(node);
 		}
 	}
 

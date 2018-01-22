@@ -40,7 +40,6 @@ import sav.strategies.dto.AppJavaClassPath;
 import sav.strategies.dto.ClassLocation;
 import sav.strategies.mutanbug.MutationResult;
 import tregression.TraceModelConstructor;
-import tregression.empiricalstudy.SimulatorWithSingleLineModification;
 import tregression.io.ExcelReporter;
 import tregression.io.IgnoredTestCaseFiles;
 import tregression.model.PairList;
@@ -170,30 +169,30 @@ public class TestCaseAnalyzer {
 			killingMutatantTrace = cachedMutatedTrace;
 		}
 		
-		SimulatorWithSingleLineModification microbat = new SimulatorWithSingleLineModification();
-		
-		ClassLocation mutatedLocation = new ClassLocation(mutatedClassName, null, mutatedLine);
-		LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
-		PairList pairList = traceMatcher.matchTraceNodePair(killingMutatantTrace, correctTrace, null); 
-		
-		microbat.prepare(killingMutatantTrace, correctTrace, pairList, mutatedLocation);
-		Visualizer visualizer = new Visualizer();
-		visualizer.visualize(killingMutatantTrace, correctTrace, microbat.getPairList(), null);
-		
-		Trial trial;
-		try {
-			trial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, mutatedLocation, 
-					testcaseName, mutatedFile.toString(), unclearRate, enableLoopInference, optionSearchLimit);	
-			if(trial != null){
-				System.out.println("Jump " + trial.getJumpSteps().size() + " steps in total");
-				if(!trial.isBugFound()){
-					System.err.println("Cannot find bug in Mutated File: " + mutatedFile);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.err.println("Mutated File: " + mutatedFile);
-		}
+//		SimulatorWithSingleLineModification microbat = null;
+//		
+//		ClassLocation mutatedLocation = new ClassLocation(mutatedClassName, null, mutatedLine);
+//		LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
+//		PairList pairList = traceMatcher.matchTraceNodePair(killingMutatantTrace, correctTrace, null); 
+//		
+//		microbat.prepare(killingMutatantTrace, correctTrace, pairList, mutatedLocation);
+//		Visualizer visualizer = new Visualizer();
+//		visualizer.visualize(killingMutatantTrace, correctTrace, microbat.getPairList(), null);
+//		
+//		Trial trial;
+//		try {
+//			trial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, mutatedLocation, 
+//					testcaseName, mutatedFile.toString(), unclearRate, enableLoopInference, optionSearchLimit);	
+//			if(trial != null){
+//				System.out.println("Jump " + trial.getJumpSteps().size() + " steps in total");
+//				if(!trial.isBugFound()){
+//					System.err.println("Cannot find bug in Mutated File: " + mutatedFile);
+//				}
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			System.err.println("Mutated File: " + mutatedFile);
+//		}
 		
 	}
 
@@ -376,29 +375,29 @@ public class TestCaseAnalyzer {
 				LCSBasedTraceMatcher traceMatcher = new LCSBasedTraceMatcher();
 				PairList pairList = traceMatcher.matchTraceNodePair(killingMutatantTrace, correctTrace, null); 
 				
-				SimulatorWithSingleLineModification microbat = new SimulatorWithSingleLineModification();
-				microbat.prepare(killingMutatantTrace, correctTrace, pairList, mutatedLocation);
-				
-				boolean isValid = true;
-				List<Trial> trialList = new ArrayList<>();
-				for(int i=0; i<unclearRates.length; i++){
-					Trial trial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, 
-							mutatedLocation, testCaseName, mutationFile.toString(), unclearRates[i], false, optionSearchLimit);
-					
-					if(trial==null){
-						isValid = false;
-						break;
-					}
-					
-					trial.setTime(killingMutatantTrace.getConstructTime());
-					trialList.add(trial);
-					
-				}
-				
-				if(isValid){
-					reporter.export(trialList);
-					return new EvaluationInfo(true, correctTrace, isLoopEffective);
-				}
+//				SimulatorWithSingleLineModification microbat = new SimulatorWithSingleLineModification();
+//				microbat.prepare(killingMutatantTrace, correctTrace, pairList, mutatedLocation);
+//				
+//				boolean isValid = true;
+//				List<Trial> trialList = new ArrayList<>();
+//				for(int i=0; i<unclearRates.length; i++){
+//					Trial trial = microbat.detectMutatedBug(killingMutatantTrace, correctTrace, 
+//							mutatedLocation, testCaseName, mutationFile.toString(), unclearRates[i], false, optionSearchLimit);
+//					
+//					if(trial==null){
+//						isValid = false;
+//						break;
+//					}
+//					
+//					trial.setTime(killingMutatantTrace.getConstructTime());
+//					trialList.add(trial);
+//					
+//				}
+//				
+//				if(isValid){
+//					reporter.export(trialList);
+//					return new EvaluationInfo(true, correctTrace, isLoopEffective);
+//				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

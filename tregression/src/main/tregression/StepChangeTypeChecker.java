@@ -43,13 +43,6 @@ public class StepChangeTypeChecker {
 		
 		TraceNode matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, step, pairList);
 		
-//		if(matchedStep==null) {
-//			TraceNode stepOverStep = findPreviousStepOverStepWithSameLine(step);
-//			if(stepOverStep!=null) {
-//				matchedStep = MatchStepFinder.findMatchedStep(isOnBeforeTrace, stepOverStep, pairList);				
-//			}
-//		}
-		
 		boolean isSourceDiff = matcher.checkSourceDiff(step.getBreakPoint(), isOnBeforeTrace);
 		if(isSourceDiff){
 			return new StepChangeType(StepChangeType.SRC, matchedStep);
@@ -60,7 +53,6 @@ public class StepChangeTypeChecker {
 			return new StepChangeType(StepChangeType.CTL, matchedStep);
 		}
 		else{
-			System.currentTimeMillis();
 			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList);
 			if(wrongVariableList.isEmpty()){
 				return new StepChangeType(StepChangeType.IDT, matchedStep);
@@ -124,10 +116,6 @@ public class StepChangeTypeChecker {
 			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
 			
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
-//				if(containsVirtual){
-//					return true;
-//				}
-				
 				List<TraceNode> thisAssignChain = new ArrayList<>();
 				getAssignChain(thisDom, thisVar, thisAssignChain);
 				List<TraceNode> thatAssignChain = new ArrayList<>(); 

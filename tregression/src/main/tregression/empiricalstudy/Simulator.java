@@ -1,25 +1,22 @@
 package tregression.empiricalstudy;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import microbat.model.trace.TraceNodeReverseOrderComparator;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import tregression.SimulationFailException;
-import tregression.Simulator;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
+import tregression.model.TraceNodePair;
 import tregression.separatesnapshots.DiffMatcher;
 
 /**
@@ -29,40 +26,101 @@ import tregression.separatesnapshots.DiffMatcher;
  * @author linyun
  *
  */
-public class SimulatorWithCompilcatedModification extends Simulator {
+public class Simulator  {
 
-	List<TraceNode> rootCauseNodes;
-
-	public void prepare(Trace buggyTrace, Trace correctTrace, PairList pairList, Object sourceDiffInfo) {
-		this.pairList = pairList;
-		setObservedFaultNode(buggyTrace);
-
-		// System.currentTimeMillis();
+	protected PairList pairList;
+	protected DiffMatcher matcher;
+	private TraceNode observedFault;
+	
+	public PairList getPairList() {
+		return pairList;
 	}
 
-	private void setObservedFaultNode(Trace buggyTrace) {
-		Map<Integer, TraceNode> allWrongNodeMap = findAllWrongNodes(getPairList(), buggyTrace);
-
-		if (!allWrongNodeMap.isEmpty()) {
-			List<TraceNode> wrongNodeList = new ArrayList<>(allWrongNodeMap.values());
-			Collections.sort(wrongNodeList, new TraceNodeReverseOrderComparator());
-//			observedFaultNode = wrongNodeList.get(0);
-			setObservedFaults(findObservedFault(wrongNodeList, getPairList()));
-			System.currentTimeMillis();
-		}
+	public void setPairList(PairList pairList, DiffMatcher matcher) {
+		this.pairList = pairList;
 	}
 	
+	protected TraceNode findObservedFault(TraceNode node, Trace buggyTrace, Trace correctTrace){
+		StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+		
+		while(node != null) {
+			StepChangeType changeType = checker.getType(node, true, pairList, matcher);
+			if (isInvokedByTearDownMethod(node)) {
+				
+			}
+			else if(changeType.getType()==StepChangeType.CTL && node.getControlDominator()==null) {
+				if(node.isException()) {
+					return node;
+				}
+			}
+			else if(changeType.getType()!=StepChangeType.IDT){
+				return node;
+			}
+			
+			node = node.getStepInPrevious();
+		}
+		
+		return null;
+	}
+	
+	private boolean isInvokedByTearDownMethod(TraceNode node) {
+		TraceNode n = node;
+		while(n!=null) {
+			if(n.getMethodSign()!=null && n.getMethodSign().contains(".tearDown()V")) {
+				return true;
+			}
+			else {
+				n = n.getInvocationParent();
+			}
+		}
+		
+		return false;
+	}
+
+
+	private TraceNode findExceptionNode(List<TraceNode> wrongNodeList) {
+		for(TraceNode node: wrongNodeList) {
+			if(node.isException()) {
+				return node;
+			}
+		}
+		return null;
+	}
+
+
+	protected boolean isObservedFaultWrongPath(TraceNode observableNode, PairList pairList){
+		TraceNodePair pair = pairList.findByBeforeNode(observableNode);
+		if(pair == null){
+			return true;
+		}
+		
+		if(pair.getBeforeNode() == null){
+			return true;
+		}
+		
+		return false;
+	}
+	
+	List<TraceNode> rootCauseNodes;
+
+	public void prepare(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher) {
+		this.pairList = pairList;
+		this.matcher = matcher;
+		TraceNode initialStep = buggyTrace.getLatestNode();
+		this.setObservedFault(findObservedFault(initialStep, buggyTrace, correctTrace));
+	}
+
 	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
 			int optionSearchLimit) throws SimulationFailException {
-		if (!getObservedFaults().isEmpty()) {
+		if (getObservedFault() != null) {
 			RootCauseFinder finder = new RootCauseFinder();
 			
 			long start = System.currentTimeMillis();
-			finder.checkRootCause(getObservedFaults(), buggyTrace, correctTrace, pairList, matcher);
+			finder.checkRootCause(getObservedFault(), buggyTrace, correctTrace, pairList, matcher);
 			long end = System.currentTimeMillis();
 			int checkTime = (int) (end-start);
 
-			List<EmpiricalTrial> trials = startSimulation(getObservedFaults().get(0), buggyTrace, correctTrace, getPairList(), matcher, finder);
+			List<EmpiricalTrial> trials = startSimulation(getObservedFault(), buggyTrace, correctTrace, getPairList(), matcher, finder);
 			if(trials!=null) {
 				for(EmpiricalTrial trial: trials) {
 					trial.setSimulationTime(checkTime);
@@ -310,6 +368,14 @@ public class SimulatorWithCompilcatedModification extends Simulator {
 		}
 
 		return 0;
+	}
+
+	public TraceNode getObservedFault() {
+		return observedFault;
+	}
+
+	public void setObservedFault(TraceNode observedFault) {
+		this.observedFault = observedFault;
 	}
 
 }
