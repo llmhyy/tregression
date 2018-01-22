@@ -53,12 +53,15 @@ public class Regression {
 	}
 
 	public void fillMissingInfor(Trace trace, AppJavaClassPath appClassPath) {
+		trace.setAppJavaClassPath(appClassPath);
 		for (TraceNode node : trace.getExecutionList()) {
 			BreakPoint point = node.getBreakPoint();
+			if (point.getFullJavaFilePath() != null) {
+				continue;
+			}
 			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
 			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
 			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
-
 			if (new File(sourcePath).exists()) {
 				point.setFullJavaFilePath(sourcePath);
 			} else if (new File(testPath).exists()) {

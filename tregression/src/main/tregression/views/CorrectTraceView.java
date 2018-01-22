@@ -110,6 +110,9 @@ public class CorrectTraceView extends TregressionTraceView {
 
 			buggyFileName = buggyPath + baseFileName;
 			fixFileName = fixPath + baseFileName;
+			if (!new File(buggyFileName).exists()) {
+				buggyFileName = fixFileName;
+			}
 		} else {
 			String sourceBase = fileDiff.getSourceDeclaringCompilationUnit();
 			sourceBase = sourceBase.replace(".", File.separator) + ".java";

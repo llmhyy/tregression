@@ -107,9 +107,11 @@ public class BuggyTraceView extends TregressionTraceView {
 		if (diffMatcher == null || fileDiff == null) {
 			String baseFileName = breakPoint.getDeclaringCompilationUnitName();
 			baseFileName = baseFileName.replace(".", File.separator) + ".java";
-
 			buggyFileName = buggyPath + baseFileName;
 			fixFileName = fixPath + baseFileName;
+			if (!new File(buggyFileName).exists()) {
+				buggyFileName = fixFileName;
+			}
 		} else {
 			String sourceBase = fileDiff.getSourceDeclaringCompilationUnit();
 			sourceBase = sourceBase.replace(".", File.separator) + ".java";
