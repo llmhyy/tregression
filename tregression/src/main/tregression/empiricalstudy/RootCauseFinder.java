@@ -219,8 +219,12 @@ public class RootCauseFinder {
 			}
 			
 			for(TraceNode returningPoint: returningPoints){
+				int matchingOrder = -1;
+				if(matchingStep!=null){
+					matchingOrder = matchingStep.getOrder();
+				}
 				MendingRecord record = new MendingRecord(MendingRecord.CONTROL, step.getOrder(), 
-						matchingStep.getOrder(), returningPoint.getOrder());
+						matchingOrder, returningPoint.getOrder());
 				if(!this.mendingRecordList.contains(record)) {
 					this.mendingRecordList.add(record);						
 				}
