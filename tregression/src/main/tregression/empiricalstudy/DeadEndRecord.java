@@ -25,6 +25,30 @@ public class DeadEndRecord {
 	}
 	
 	@Override
+	public String toString(){
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("dead end type: ");
+		String mendingType = (getType()==DeadEndRecord.CONTROL)? "control" : "data";
+		buffer.append(mendingType + "\n");
+		
+		buffer.append("occur: ");
+		buffer.append(getOccurOrder());
+		if(getType()==DeadEndRecord.DATA) {
+			buffer.append("occur var:");
+			buffer.append(getVarValue().getVarName());
+		}
+		buffer.append("\n");
+		
+		buffer.append("dead end: ");
+		buffer.append(getDeadEndOrder() + "\n");
+		
+		buffer.append("break step: ");
+		buffer.append(getBreakStepOrder() + "\n");
+		
+		return buffer.toString();
+	}
+	
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

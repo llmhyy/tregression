@@ -103,26 +103,8 @@ public class EmpiricalTrial {
 				buffer.append(tuple.toString() + "\n");
 			}
 		}
-		if(this.rootCauseFinder!=null){
-			for(DeadEndRecord record: this.deadEndRecordList){
-				buffer.append("dead end type: ");
-				String mendingType = (record.getType()==DeadEndRecord.CONTROL)? "control" : "data";
-				buffer.append(mendingType + "\n");
-				
-				buffer.append("occur: ");
-				buffer.append(record.getOccurOrder());
-				if(record.getType()==DeadEndRecord.DATA) {
-					buffer.append("occur var is ");
-					buffer.append(record.getVarValue().getVarName());
-				}
-				buffer.append("\n");
-				
-				buffer.append("corresponds: ");
-				buffer.append(record.getCorrespondingStepOnReference() + "\n");
-				
-				buffer.append("break step: ");
-				buffer.append(record.getBreakStepOrder() + "\n");
-			}
+		for(DeadEndRecord record: this.deadEndRecordList){
+			buffer.append(record.toString() + "\n");
 		}
 		return buffer.toString();
 	}
