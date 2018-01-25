@@ -355,7 +355,7 @@ public class Simulator  {
 			TraceNode node = trace.getTraceNode(i);
 			StepChangeType changeType = typeChecker.getType(node, true, pairList, matcher);
 			if(changeType.getType()==StepChangeType.CTL){
-				DeadEndRecord record = new DeadEndRecord(DeadEndRecord.DATA, 
+				DeadEndRecord record = new DeadEndRecord(DeadEndRecord.CONTROL, 
 						latestBugNode.getOrder(), currentNode.getOrder(), -1, node.getOrder());
 				deadEndRecords.add(record);
 				
@@ -366,6 +366,8 @@ public class Simulator  {
 					deadEndRecords.add(addRecord);
 					equivalentNode = equivalentNode.getStepOverNext();
 				}
+				
+				break;
 			}
 		}
 		
