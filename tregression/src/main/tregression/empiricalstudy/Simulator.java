@@ -361,7 +361,7 @@ public class Simulator  {
 				
 				TraceNode equivalentNode = node.getStepOverNext();
 				while(equivalentNode!=null && equivalentNode.getBreakPoint().equals(node.getBreakPoint())){
-					DeadEndRecord addRecord = new DeadEndRecord(DeadEndRecord.DATA, 
+					DeadEndRecord addRecord = new DeadEndRecord(DeadEndRecord.CONTROL, 
 							latestBugNode.getOrder(), currentNode.getOrder(), -1, equivalentNode.getOrder());
 					deadEndRecords.add(addRecord);
 					equivalentNode = equivalentNode.getStepOverNext();
