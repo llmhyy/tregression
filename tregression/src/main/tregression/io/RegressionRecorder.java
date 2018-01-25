@@ -12,7 +12,7 @@ import microbat.model.trace.Trace;
 import microbat.sql.TraceRecorder;
 import sav.common.core.SavRtException;
 import tregression.empiricalstudy.EmpiricalTrial;
-import tregression.empiricalstudy.MendingRecord;
+import tregression.empiricalstudy.DeadEndRecord;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 
@@ -23,7 +23,7 @@ public class RegressionRecorder extends TraceRecorder {
 	 */
 	public void record(EmpiricalTrial trial, Trace buggyTrace, Trace correctTrace, PairList pairList,
 			String projectName, String bugId) throws SQLException {
-		List<MendingRecord> mendingRecords = trial.getRootCauseFinder().getMendingRecordList();
+		List<DeadEndRecord> mendingRecords = trial.getRootCauseFinder().getMendingRecordList();
 		Connection conn = null;
 		List<AutoCloseable> closables = new ArrayList<AutoCloseable>();
 		try {
@@ -67,21 +67,21 @@ public class RegressionRecorder extends TraceRecorder {
 		ps.executeBatch();
 	}
 
-	protected void insertMendingRecord(int regressionId, List<MendingRecord> mendingRecords, Connection conn,
+	protected void insertMendingRecord(int regressionId, List<DeadEndRecord> mendingRecords, Connection conn,
 			List<AutoCloseable> closables) throws SQLException {
 		String sql = "INSERT INTO MendingRecord (regression_id, mending_type, mending_start,"
 				+ " mending_correspondence, mending_return, variable)"
 				+ " VALUES (?,?,?,?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
 		closables.add(ps);
-		for (MendingRecord mendingRecord : mendingRecords) {
+		for (DeadEndRecord mendingRecord : mendingRecords) {
 			int idx = 1;
 			ps.setInt(idx++, regressionId);
 			ps.setInt(idx++, mendingRecord.getType());
-			ps.setInt(idx++, mendingRecord.getStartOrder());
+			ps.setInt(idx++, mendingRecord.getOccurOrder());
 			ps.setInt(idx++, mendingRecord.getCorrespondingStepOnReference());
-			ps.setInt(idx++, mendingRecord.getReturningPoint());
-			if (mendingRecord.getType() == MendingRecord.CONTROL) {
+			ps.setInt(idx++, mendingRecord.getBreakStepOrder());
+			if (mendingRecord.getType() == DeadEndRecord.CONTROL) {
 				ps.setString(idx, null);
 			} else {
 				ps.setString(idx++, generateXmlContent(Arrays.asList(mendingRecord.getVarValue())));

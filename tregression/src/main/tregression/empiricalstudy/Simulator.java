@@ -14,6 +14,7 @@ import microbat.recommendation.UserFeedback;
 import tregression.SimulationFailException;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
+import tregression.empiricalstudy.RootCauseFinder.TraceNodeW;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.model.TraceNodePair;
@@ -325,13 +326,132 @@ public class Simulator  {
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, 
 						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
+				
+				if(previousNode!=null){
+					StepChangeType prevChangeType = typeChecker.getType(previousNode, true, pairList, matcher);
+					if(prevChangeType.getType()==StepChangeType.CTL){
+						List<DeadEndRecord> list = createControlRecord(currentNode, previousNode, typeChecker, pairList, matcher);
+						trial.setDeadEndRecordList(list);
+					}
+					else if(prevChangeType.getType()==StepChangeType.DAT){
+						List<DeadEndRecord> list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher);
+						trial.setDeadEndRecordList(list);
+					}
+				}
+				
 				return trial;
 			}
 
 		}
 		
 	}
+	
+	private List<DeadEndRecord> createControlRecord(TraceNode currentNode, TraceNode latestBugNode, StepChangeTypeChecker typeChecker,
+			PairList pairList, DiffMatcher matcher) {
+		List<DeadEndRecord> deadEndRecords = new ArrayList<>();
+		
+		Trace trace = currentNode.getTrace();
+		for(int i=currentNode.getOrder()+1; i<latestBugNode.getOrder(); i++){
+			TraceNode node = trace.getTraceNode(i);
+			StepChangeType changeType = typeChecker.getType(node, true, pairList, matcher);
+			if(changeType.getType()==StepChangeType.CTL){
+				DeadEndRecord record = new DeadEndRecord(DeadEndRecord.DATA, 
+						latestBugNode.getOrder(), currentNode.getOrder(), -1, node.getOrder());
+				deadEndRecords.add(record);
+				
+				TraceNode equivalentNode = node.getStepOverNext();
+				while(equivalentNode!=null && equivalentNode.getBreakPoint().equals(node.getBreakPoint())){
+					DeadEndRecord addRecord = new DeadEndRecord(DeadEndRecord.DATA, 
+							latestBugNode.getOrder(), currentNode.getOrder(), -1, equivalentNode.getOrder());
+					deadEndRecords.add(addRecord);
+					equivalentNode = equivalentNode.getStepOverNext();
+				}
+			}
+		}
+		
+		return deadEndRecords;
+	}
 
+	private List<TraceNode> findTheNearestCorrespondence(TraceNode domOnRef, PairList pairList, Trace buggyTrace) {
+		List<TraceNode> list = new ArrayList<>();
+		
+		TraceNodePair pair = pairList.findByAfterNode(domOnRef);
+		if(pair!=null){
+			TraceNode beforeNode = pair.getBeforeNode();
+			if(beforeNode!=null){
+				list.add(beforeNode);
+				return list;
+			}
+		}
+		
+		int startOrder = new RootCauseFinder().findStartOrderInOtherTrace(domOnRef, pairList, false);
+		TraceNode startNode = buggyTrace.getTraceNode(startOrder);
+		list.add(startNode);
+		while(startNode.getStepOverPrevious()!=null && 
+				startNode.getStepOverPrevious().getLineNumber()==startNode.getLineNumber()){
+			startNode = startNode.getStepOverPrevious();
+			list.add(startNode);
+		}
+		
+		TraceNode start = buggyTrace.getTraceNode(startOrder);
+		TraceNode n = start.getStepOverNext();
+		while(n!=null && (n.getLineNumber()==start.getLineNumber())){
+			list.add(n);
+			n = n.getStepOverNext();
+		}
+		
+		return list;
+	}
+	
+	private List<DeadEndRecord> createDataRecord(TraceNode currentNode, TraceNode buggyNode,
+			StepChangeTypeChecker typeChecker, PairList pairList, DiffMatcher matcher) {
+		
+		List<DeadEndRecord> deadEndlist = new ArrayList<>();
+		TraceNodePair pair = pairList.findByBeforeNode(buggyNode);
+		TraceNode matchingStep = pair.getAfterNode();
+		
+		TraceNode domOnRef = null;
+		StepChangeType matchingStepType = typeChecker.getType(matchingStep, false, pairList, matcher);
+		if(matchingStepType.getWrongVariableList()==null) {
+			return deadEndlist;
+		}
+		
+		VarValue wrongVar = matchingStepType.getWrongVariableList().get(0);
+		domOnRef = matchingStep.getDataDominator(wrongVar);
+		
+		List<TraceNode> breakSteps = new ArrayList<>();
+		while(domOnRef != null){
+			StepChangeType changeType = typeChecker.getType(domOnRef, false, pairList, matcher);
+			if(changeType.getType()==StepChangeType.SRC){
+				breakSteps = findTheNearestCorrespondence(domOnRef, pairList, matchingStep.getTrace());
+				break;
+			}
+			else{
+				TraceNodePair conPair = pairList.findByAfterNode(domOnRef);
+				if(conPair != null && conPair.getBeforeNode() != null){
+					TraceNode returningPoint = conPair.getBeforeNode();
+					breakSteps.add(returningPoint);
+					break;
+				}
+				else{
+					domOnRef = domOnRef.getInvocationMethodOrDominator();
+				}
+			}
+		}
+		
+		for(TraceNode breakStep: breakSteps){
+			DeadEndRecord record = new DeadEndRecord(DeadEndRecord.DATA, buggyNode.getOrder(), 
+					currentNode.getOrder(), -1, breakStep.getOrder());
+			record.setVarValue(wrongVar);
+			if(!deadEndlist.contains(record)) {
+				deadEndlist.add(record);						
+			}
+		}
+		
+		return deadEndlist;
+	}
+	
+	
 	private void backupDebuggingState(TraceNode currentNode, Stack<DebuggingState> stack,
 			Set<DebuggingState> visitedStates, List<StepOperationTuple> checkingList, VarValue readVar) {
 		List<StepOperationTuple> clonedCheckingList = cloneList(checkingList);

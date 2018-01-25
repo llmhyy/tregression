@@ -173,12 +173,12 @@ public class TrialRecorder {
 		int count = 18;
 		RootCauseFinder finder = trial.getRootCauseFinder();
 		if(finder != null){
-			List<MendingRecord> mendings = finder.getMendingRecordList();
-			for(MendingRecord r: mendings){
+			List<DeadEndRecord> mendings = finder.getMendingRecordList();
+			for(DeadEndRecord r: mendings){
 				row.createCell(count++).setCellValue(r.getTypeString());
-				row.createCell(count++).setCellValue(r.getStartOrder());
+				row.createCell(count++).setCellValue(r.getOccurOrder());
 				row.createCell(count++).setCellValue(r.getCorrespondingStepOnReference());
-				row.createCell(count++).setCellValue(r.getReturningPoint());
+				row.createCell(count++).setCellValue(r.getBreakStepOrder());
 			}			
 		}
 		

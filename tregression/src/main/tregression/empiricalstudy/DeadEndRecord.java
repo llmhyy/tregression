@@ -2,24 +2,26 @@ package tregression.empiricalstudy;
 
 import microbat.model.value.VarValue;
 
-public class MendingRecord {
+public class DeadEndRecord {
 	public static int CONTROL = 0;
 	public static int DATA = 1;
 
 	private int type;
-	private int startOrder;
+	private int occurOrder;
+	private int deadEndOrder;
 
 	private int correspondingStepOnReference;
-	private int returningPoint;
+	private int breakStepOrder;
 	
 	private VarValue varValue;
 
-	public MendingRecord(int type, int startOrder, int correspondingStepOnReference, int returningPoint) {
+	public DeadEndRecord(int type, int occurOrder, int deadEndOrder, int correspondingStepOnReference, int breakStepOrder) {
 		super();
 		this.type = type;
-		this.startOrder = startOrder;
+		this.occurOrder = occurOrder;
+		this.deadEndOrder = deadEndOrder;
 		this.correspondingStepOnReference = correspondingStepOnReference;
-		this.returningPoint = returningPoint;
+		this.breakStepOrder = breakStepOrder;
 	}
 	
 	@Override
@@ -27,8 +29,8 @@ public class MendingRecord {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + correspondingStepOnReference;
-		result = prime * result + returningPoint;
-		result = prime * result + startOrder;
+		result = prime * result + breakStepOrder;
+		result = prime * result + occurOrder;
 		result = prime * result + type;
 		return result;
 	}
@@ -41,12 +43,12 @@ public class MendingRecord {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MendingRecord other = (MendingRecord) obj;
+		DeadEndRecord other = (DeadEndRecord) obj;
 		if (correspondingStepOnReference != other.correspondingStepOnReference)
 			return false;
-		if (returningPoint != other.returningPoint)
+		if (breakStepOrder != other.breakStepOrder)
 			return false;
-		if (startOrder != other.startOrder)
+		if (occurOrder != other.occurOrder)
 			return false;
 		if (type != other.type)
 			return false;
@@ -54,10 +56,10 @@ public class MendingRecord {
 	}
 
 	public String getTypeString(){
-		if(getType()==MendingRecord.DATA){
+		if(getType()==DeadEndRecord.DATA){
 			return "data";
 		}
-		else if(getType()==MendingRecord.CONTROL){
+		else if(getType()==DeadEndRecord.CONTROL){
 			return "control";
 		}
 		return "null";
@@ -71,12 +73,12 @@ public class MendingRecord {
 		this.type = type;
 	}
 
-	public int getStartOrder() {
-		return startOrder;
+	public int getOccurOrder() {
+		return occurOrder;
 	}
 
-	public void setStartOrder(int startOrder) {
-		this.startOrder = startOrder;
+	public void setOccurOrder(int startOrder) {
+		this.occurOrder = startOrder;
 	}
 
 	public int getCorrespondingStepOnReference() {
@@ -87,12 +89,12 @@ public class MendingRecord {
 		this.correspondingStepOnReference = correspondingStepOnReference;
 	}
 
-	public int getReturningPoint() {
-		return returningPoint;
+	public int getBreakStepOrder() {
+		return breakStepOrder;
 	}
 
-	public void setReturningPoint(int returningPoint) {
-		this.returningPoint = returningPoint;
+	public void setBreakStepOrder(int breakStepOrder) {
+		this.breakStepOrder = breakStepOrder;
 	}
 
 	public VarValue getVarValue() {
@@ -101,6 +103,14 @@ public class MendingRecord {
 
 	public void setVarValue(VarValue varValue) {
 		this.varValue = varValue;
+	}
+
+	public int getDeadEndOrder() {
+		return deadEndOrder;
+	}
+
+	public void setDeadEndOrder(int deadEndOrder) {
+		this.deadEndOrder = deadEndOrder;
 	}
 
 }

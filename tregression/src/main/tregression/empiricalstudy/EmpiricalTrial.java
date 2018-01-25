@@ -36,6 +36,8 @@ public class EmpiricalTrial {
 	
 	private RootCauseFinder rootCauseFinder;
 	
+	private List<DeadEndRecord> deadEndRecordList;
+	
 	private boolean isMultiThread;
 
 	
@@ -102,14 +104,14 @@ public class EmpiricalTrial {
 			}
 		}
 		if(this.rootCauseFinder!=null){
-			for(MendingRecord record: this.rootCauseFinder.getMendingRecordList()){
+			for(DeadEndRecord record: this.rootCauseFinder.getMendingRecordList()){
 				buffer.append("mending type: ");
-				String mendingType = (record.getType()==MendingRecord.CONTROL)? "control" : "data";
+				String mendingType = (record.getType()==DeadEndRecord.CONTROL)? "control" : "data";
 				buffer.append(mendingType + "\n");
 				
 				buffer.append("mending start at: ");
-				buffer.append(record.getStartOrder());
-				if(record.getType()==MendingRecord.DATA) {
+				buffer.append(record.getOccurOrder());
+				if(record.getType()==DeadEndRecord.DATA) {
 					buffer.append(" mending var is ");
 					buffer.append(record.getVarValue().getVarName());
 				}
@@ -119,7 +121,7 @@ public class EmpiricalTrial {
 				buffer.append(record.getCorrespondingStepOnReference() + "\n");
 				
 				buffer.append("mending returning point at: ");
-				buffer.append(record.getReturningPoint() + "\n");
+				buffer.append(record.getBreakStepOrder() + "\n");
 			}
 		}
 		return buffer.toString();
@@ -255,6 +257,14 @@ public class EmpiricalTrial {
 
 	public void setMultiThread(boolean isMultiThread) {
 		this.isMultiThread = isMultiThread;
+	}
+
+	public List<DeadEndRecord> getDeadEndRecordList() {
+		return deadEndRecordList;
+	}
+
+	public void setDeadEndRecordList(List<DeadEndRecord> deadEndRecordList) {
+		this.deadEndRecordList = deadEndRecordList;
 	}
 
 }
