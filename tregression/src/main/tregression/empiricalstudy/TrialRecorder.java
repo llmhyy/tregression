@@ -171,16 +171,13 @@ public class TrialRecorder {
 		row.createCell(17).setCellValue(trial.isMultiThread());
 		
 		int count = 18;
-		RootCauseFinder finder = trial.getRootCauseFinder();
-		if(finder != null){
-			List<DeadEndRecord> mendings = finder.getMendingRecordList();
-			for(DeadEndRecord r: mendings){
-				row.createCell(count++).setCellValue(r.getTypeString());
-				row.createCell(count++).setCellValue(r.getOccurOrder());
-				row.createCell(count++).setCellValue(r.getCorrespondingStepOnReference());
-				row.createCell(count++).setCellValue(r.getBreakStepOrder());
-			}			
-		}
+		List<DeadEndRecord> mendings = trial.getDeadEndRecordList();
+		for(DeadEndRecord r: mendings){
+			row.createCell(count++).setCellValue(r.getTypeString());
+			row.createCell(count++).setCellValue(r.getOccurOrder());
+			row.createCell(count++).setCellValue(r.getCorrespondingStepOnReference());
+			row.createCell(count++).setCellValue(r.getBreakStepOrder());
+		}	
 		
 	}
 	

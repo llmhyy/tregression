@@ -36,7 +36,7 @@ public class EmpiricalTrial {
 	
 	private RootCauseFinder rootCauseFinder;
 	
-	private List<DeadEndRecord> deadEndRecordList;
+	private List<DeadEndRecord> deadEndRecordList = new ArrayList<>();
 	
 	private boolean isMultiThread;
 
@@ -104,23 +104,23 @@ public class EmpiricalTrial {
 			}
 		}
 		if(this.rootCauseFinder!=null){
-			for(DeadEndRecord record: this.rootCauseFinder.getMendingRecordList()){
-				buffer.append("mending type: ");
+			for(DeadEndRecord record: this.deadEndRecordList){
+				buffer.append("dead end type: ");
 				String mendingType = (record.getType()==DeadEndRecord.CONTROL)? "control" : "data";
 				buffer.append(mendingType + "\n");
 				
-				buffer.append("mending start at: ");
+				buffer.append("occur: ");
 				buffer.append(record.getOccurOrder());
 				if(record.getType()==DeadEndRecord.DATA) {
-					buffer.append(" mending var is ");
+					buffer.append("occur var is ");
 					buffer.append(record.getVarValue().getVarName());
 				}
 				buffer.append("\n");
 				
-				buffer.append("mending corresponding point at: ");
+				buffer.append("corresponds: ");
 				buffer.append(record.getCorrespondingStepOnReference() + "\n");
 				
-				buffer.append("mending returning point at: ");
+				buffer.append("break step: ");
 				buffer.append(record.getBreakStepOrder() + "\n");
 			}
 		}

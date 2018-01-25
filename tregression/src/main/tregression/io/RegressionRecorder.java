@@ -23,7 +23,7 @@ public class RegressionRecorder extends TraceRecorder {
 	 */
 	public void record(EmpiricalTrial trial, Trace buggyTrace, Trace correctTrace, PairList pairList,
 			String projectName, String bugId) throws SQLException {
-		List<DeadEndRecord> mendingRecords = trial.getRootCauseFinder().getMendingRecordList();
+		List<DeadEndRecord> deadEndRecords = trial.getDeadEndRecordList();
 		Connection conn = null;
 		List<AutoCloseable> closables = new ArrayList<AutoCloseable>();
 		try {
@@ -39,7 +39,7 @@ public class RegressionRecorder extends TraceRecorder {
 			int buggyTraceId = insertTrace(buggyTrace, projectName, null, tc[0], tc[1], conn, closables);
 			int correctTraceId = insertTrace(correctTrace, projectName, null, tc[0], tc[1], conn, closables);
 			int regressionId = insertRegression(projectName, bugId, trial, buggyTraceId, correctTraceId, conn, closables);
-			insertMendingRecord(regressionId, mendingRecords, conn, closables);
+			insertMendingRecord(regressionId, deadEndRecords, conn, closables);
 			insertRegressionMatch(regressionId, pairList, conn, closables);
 			conn.commit();
 		} catch (SQLException e) {

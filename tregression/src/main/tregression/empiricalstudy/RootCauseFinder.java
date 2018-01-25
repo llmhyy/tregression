@@ -41,7 +41,7 @@ public class RootCauseFinder {
 	
 	private TraceNode rootCause;
 	
-	private List<DeadEndRecord> mendingRecordList = new ArrayList<>();
+//	private List<DeadEndRecord> mendingRecordList = new ArrayList<>();
 	
 	public TraceNode retrieveRootCause(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
 		Collections.sort(regressionNodeList, new TraceNodeOrderComparator());
@@ -485,14 +485,6 @@ public class RootCauseFinder {
 
 	public void setRootCause(TraceNode rootCause) {
 		this.rootCause = rootCause;
-	}
-
-	public List<DeadEndRecord> getMendingRecordList() {
-		return mendingRecordList;
-	}
-
-	public void setMendingRecordList(List<DeadEndRecord> mendingRecordList) {
-		this.mendingRecordList = mendingRecordList;
 	}
 	
 	
