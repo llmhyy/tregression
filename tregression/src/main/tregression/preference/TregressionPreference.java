@@ -24,6 +24,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private Text projectPathText;
 	private Text projectNameText;
 	private Text bugIDText;
+	private Text testCaseText;
 	
 //	private String defaultBuggyProjectPath;
 //	private String defaultCorrectProjectPath;
@@ -31,6 +32,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private String defaultProjectPath;
 	private String defaultProjectName;
 	private String defaultBugID;
+	private String defaultTestCase;
 	
 //	public static final String BUGGY_PATH = "buggy_path";
 //	public static final String CORRECT_PATH = "correct_path";
@@ -38,6 +40,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	public static final String REPO_PATH = "project_path";
 	public static final String PROJECT_NAME = "project_name";
 	public static final String BUG_ID = "bug_id";
+	public static final String TEST_CASE = "test_case";
+	
 	
 	public TregressionPreference() {
 	}
@@ -55,6 +59,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.defaultProjectPath = Activator.getDefault().getPreferenceStore().getString(REPO_PATH);
 		this.defaultProjectName = Activator.getDefault().getPreferenceStore().getString(PROJECT_NAME);
 		this.defaultBugID = Activator.getDefault().getPreferenceStore().getString(BUG_ID);
+		this.defaultTestCase = Activator.getDefault().getPreferenceStore().getString(TEST_CASE);
 	}
 
 	@Override
@@ -80,6 +85,12 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		bugIDText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
 		bugIDText.setText(this.defaultBugID);
 		
+		Label testcaseLabel = new Label(compo, SWT.NONE);
+		testcaseLabel.setText("Test Case: ");
+		testCaseText = new Text(compo, SWT.NONE);
+		testCaseText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		testCaseText.setText(this.defaultTestCase);
+		
 		return compo;
 	}
 
@@ -89,10 +100,12 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		preferences.put(REPO_PATH, this.projectPathText.getText());
 		preferences.put(PROJECT_NAME, this.projectNameText.getText());
 		preferences.put(BUG_ID, this.bugIDText.getText());
+		preferences.put(TEST_CASE, this.testCaseText.getText());
 		
 		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(BUG_ID, this.bugIDText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(TEST_CASE, this.testCaseText.getText());
 		
 		return true;
 	}
