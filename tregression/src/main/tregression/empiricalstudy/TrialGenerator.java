@@ -16,7 +16,6 @@ import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
 import tregression.io.RegressionRecorder;
 import tregression.model.PairList;
-import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.RunningResult;
@@ -55,31 +54,34 @@ public class TrialGenerator {
 
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse,
 			boolean requireVisualization, boolean allowMultiThread, boolean isRecordDB, Defects4jProjectConfig config) {
-		List<TestCase> list;
-		List<EmpiricalTrial> trials = new ArrayList<>();
+		List<TestCase> tcList;
+		EmpiricalTrial trial = null;
 		TestCase workingTC = null;
 		try {
-			list = retrieveD4jFailingTestCase(buggyPath);
-			for (TestCase tc : list) {
+			tcList = retrieveD4jFailingTestCase(buggyPath);
+			for (TestCase tc : tcList) {
 				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
 				workingTC = tc;
 
-				analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
-						trials, tc, config, requireVisualization, true, isRecordDB);
-				break;
+				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
+						tc, config, requireVisualization, true, isRecordDB);
+				if(trial.getRealcauseNode()!=null){
+					break;					
+				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		if (trials.isEmpty()) {
-			EmpiricalTrial trial = createDumpTrial("runtime exception occurs");
+		if (trial == null) {
+			trial = EmpiricalTrial.createDumpTrial("runtime exception occurs");
 			trial.setTestcase(workingTC.testClass + "::" + workingTC.testMethod);
-			trials.add(trial);
 		}
 
-		return trials;
+		List<EmpiricalTrial> list = new ArrayList<>();
+		list.add(trial);
+		return list;
 	}
 
 	private List<EmpiricalTrial> runMainMethodVersion(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread,
@@ -91,7 +93,8 @@ public class TrialGenerator {
 		recompileD4J(fixPath, config);
 		
 		trials = new ArrayList<>();
-		analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread, trials, tc, config, requireVisualization, false, false);
+		EmpiricalTrial trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread, tc, config, requireVisualization, false, false);
+		trials.add(trial);
 		return trials;
 	}
 
@@ -131,15 +134,8 @@ public class TrialGenerator {
 		System.currentTimeMillis();
 	}
 	
-	private EmpiricalTrial createDumpTrial(String reason){
-		EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
-				-1, -1, null, false);
-		trial.setExceptionExplanation(reason);
-		return trial;
-	}
-
-	private void analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
-			List<EmpiricalTrial> trials, TestCase tc, Defects4jProjectConfig config, 
+	private EmpiricalTrial analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
+			TestCase tc, Defects4jProjectConfig config, 
 			boolean requireVisualization, boolean isRunInTestCaseMode, boolean isRecordDB) throws SimulationFailException {
 		TraceCollector collector = new TraceCollector();
 		long time1 = 0;
@@ -179,18 +175,16 @@ public class TrialGenerator {
 			Settings.iCompilationUnitMap.clear();
 			buggyRS = collector.preCheck(buggyPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (buggyRS.getRunningType() != NORMAL) {
-				EmpiricalTrial trial = createDumpTrial(getProblemType(buggyRS.getRunningType()));
-				trials.add(trial);
-				return;
+				EmpiricalTrial trial = EmpiricalTrial.createDumpTrial(getProblemType(buggyRS.getRunningType()));
+				return trial;
 			}
 
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
 			correctRs = collector.preCheck(fixPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (correctRs.getRunningType() != NORMAL) {
-				EmpiricalTrial trial = createDumpTrial(getProblemType(correctRs.getRunningType()));
-				trials.add(trial);
-				return;
+				EmpiricalTrial trial = EmpiricalTrial.createDumpTrial(getProblemType(correctRs.getRunningType()));
+				return trial;
 			}
 			
 //			if(buggyRS.getChecker().getExecutionOrderList().size()==correctRs.getChecker().getExecutionOrderList().size()){
@@ -241,33 +235,31 @@ public class TrialGenerator {
 
 		RootCauseNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace,
 				correctTrace);
+		if(realcauseNode==null){
+			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
+			return trial;
+		}
+		
+		
 		List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 
 		time2 = System.currentTimeMillis();
 		int simulationTime = (int) (time2 - time1);
 		System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
-
-		if (trials0 != null) {
-			for (EmpiricalTrial trial : trials0) {
-				trial.setTestcase(tc.testClass + "#" + tc.testMethod);
-				trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
-				trial.setTraceMatchTime(matchTime);
-			}
-
-			EmpiricalTrial trial = trials0.get(0);
-			if (realcauseNode == null) {
-				String explanation = getProblemType(INSUFFICIENT_TRACE);
-				System.out.println("[*NOTICE*] " + explanation);
-				trial.setTestcase(tc.testClass + "::" + tc.testMethod);
-				trial.setExceptionExplanation(explanation);
-			}
-			trials.add(trial);
-			
-			if(isRecordDB){
-				DBRecording dbRecording = new DBRecording(trial, buggyTrace, correctTrace, diffMatcher, pairList, config);
-				new Thread(dbRecording).start();
-			}
+		
+		for (EmpiricalTrial trial : trials0) {
+			trial.setTestcase(tc.testClass + "#" + tc.testMethod);
+			trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
+			trial.setTraceMatchTime(matchTime);
 		}
+
+		EmpiricalTrial trial = trials0.get(0);
+		if(isRecordDB){
+			DBRecording dbRecording = new DBRecording(trial, buggyTrace, correctTrace, diffMatcher, pairList, config);
+			new Thread(dbRecording).start();
+		}
+		
+		return trial;
 	}
 	
 	public class DBRecording implements Runnable{

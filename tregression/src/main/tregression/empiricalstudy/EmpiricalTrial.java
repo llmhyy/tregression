@@ -38,6 +38,18 @@ public class EmpiricalTrial {
 	
 	private boolean isMultiThread;
 
+	
+	public static EmpiricalTrial createDumpTrial(String reason){
+		EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
+				-1, -1, null, false);
+		trial.setExceptionExplanation(reason);
+		return trial;
+	}
+	
+	public boolean isDump(){
+		return testcase==null;
+	}
+	
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
 			RootCauseNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
 			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength,
