@@ -69,7 +69,7 @@ public class RegressionRecorder extends TraceRecorder {
 
 	protected void insertMendingRecord(int regressionId, List<DeadEndRecord> deadEndRecords, Connection conn,
 			List<AutoCloseable> closables) throws SQLException {
-		String sql = "INSERT INTO MendingRecord (regression_id, record_type, occur_order,"
+		String sql = "INSERT INTO DeadEndRecord (regression_id, record_type, occur_order,"
 				+ " dead_end_order, break_step_order, variable)"
 				+ " VALUES (?,?,?,?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
