@@ -67,24 +67,24 @@ public class RegressionRecorder extends TraceRecorder {
 		ps.executeBatch();
 	}
 
-	protected void insertMendingRecord(int regressionId, List<DeadEndRecord> mendingRecords, Connection conn,
+	protected void insertMendingRecord(int regressionId, List<DeadEndRecord> deadEndRecords, Connection conn,
 			List<AutoCloseable> closables) throws SQLException {
-		String sql = "INSERT INTO MendingRecord (regression_id, mending_type, mending_start,"
-				+ " mending_correspondence, mending_return, variable)"
+		String sql = "INSERT INTO MendingRecord (regression_id, recording_type, occur_order,"
+				+ " dead_end_order, break_step_order, variable)"
 				+ " VALUES (?,?,?,?,?,?)";
 		PreparedStatement ps = conn.prepareStatement(sql);
 		closables.add(ps);
-		for (DeadEndRecord mendingRecord : mendingRecords) {
+		for (DeadEndRecord deadEndRecord : deadEndRecords) {
 			int idx = 1;
 			ps.setInt(idx++, regressionId);
-			ps.setInt(idx++, mendingRecord.getType());
-			ps.setInt(idx++, mendingRecord.getOccurOrder());
-			ps.setInt(idx++, mendingRecord.getCorrespondingStepOnReference());
-			ps.setInt(idx++, mendingRecord.getBreakStepOrder());
-			if (mendingRecord.getType() == DeadEndRecord.CONTROL) {
+			ps.setInt(idx++, deadEndRecord.getType());
+			ps.setInt(idx++, deadEndRecord.getOccurOrder());
+			ps.setInt(idx++, deadEndRecord.getDeadEndOrder());
+			ps.setInt(idx++, deadEndRecord.getBreakStepOrder());
+			if (deadEndRecord.getType() == DeadEndRecord.CONTROL) {
 				ps.setString(idx, null);
 			} else {
-				ps.setString(idx++, generateXmlContent(Arrays.asList(mendingRecord.getVarValue())));
+				ps.setString(idx++, generateXmlContent(Arrays.asList(deadEndRecord.getVarValue())));
 			}
 			ps.addBatch();
 		}
