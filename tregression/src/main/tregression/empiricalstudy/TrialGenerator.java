@@ -134,7 +134,7 @@ public class TrialGenerator {
 	private EmpiricalTrial createDumpTrial(String reason){
 		EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
 				-1, -1, null, false);
-		trial.setExceptionExplanation("runtime exception occurs");
+		trial.setExceptionExplanation(reason);
 		return trial;
 	}
 
