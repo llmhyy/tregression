@@ -11,11 +11,14 @@ import java.util.Scanner;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.recommendation.DebugState;
+import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
 import tregression.io.RegressionRecorder;
 import tregression.model.PairList;
+import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.RunningResult;
@@ -65,7 +68,6 @@ public class TrialGenerator {
 
 				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
 						tc, config, requireVisualization, true, isRecordDB);
-//				break;
 				if(!trial.isDump()){
 					break;					
 				}
@@ -138,7 +140,8 @@ public class TrialGenerator {
 	private EmpiricalTrial analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
 			TestCase tc, Defects4jProjectConfig config, 
 			boolean requireVisualization, boolean isRunInTestCaseMode, boolean isRecordDB) throws SimulationFailException {
-		TraceCollector collector = new TraceCollector();
+		TraceCollector buggyCollector = new TraceCollector();
+		TraceCollector correctCollector = new TraceCollector();
 		long time1 = 0;
 		long time2 = 0;
 
@@ -149,7 +152,6 @@ public class TrialGenerator {
 		PairList pairList = null;
 
 		int matchTime = -1;
-
 		if (cachedBuggyRS != null && cachedCorrectRS != null && isReuse) {
 			buggyRS = cachedBuggyRS;
 			correctRs = cachedCorrectRS;
@@ -174,7 +176,7 @@ public class TrialGenerator {
 		} else {
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			buggyRS = collector.preCheck(buggyPath, tc, config, isRunInTestCaseMode, allowMultiThread);
+			buggyRS = buggyCollector.preCheck(buggyPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (buggyRS.getRunningType() != NORMAL) {
 				EmpiricalTrial trial = EmpiricalTrial.createDumpTrial(getProblemType(buggyRS.getRunningType()));
 				return trial;
@@ -182,7 +184,7 @@ public class TrialGenerator {
 
 			Settings.compilationUnitMap.clear();
 			Settings.iCompilationUnitMap.clear();
-			correctRs = collector.preCheck(fixPath, tc, config, isRunInTestCaseMode, allowMultiThread);
+			correctRs = correctCollector.preCheck(fixPath, tc, config, isRunInTestCaseMode, allowMultiThread);
 			if (correctRs.getRunningType() != NORMAL) {
 				EmpiricalTrial trial = EmpiricalTrial.createDumpTrial(getProblemType(correctRs.getRunningType()));
 				return trial;
@@ -194,9 +196,9 @@ public class TrialGenerator {
 
 			if (buggyRS != null && correctRs != null) {
 				Settings.compilationUnitMap.clear();
-				buggyRS = collector.run(buggyRS, isRunInTestCaseMode);
+				buggyRS = buggyCollector.run(buggyRS, isRunInTestCaseMode);
 				Settings.compilationUnitMap.clear();
-				correctRs = collector.run(correctRs, isRunInTestCaseMode);
+				correctRs = correctCollector.run(correctRs, isRunInTestCaseMode);
 
 				cachedBuggyRS = buggyRS;
 				cachedCorrectRS = correctRs;
@@ -238,6 +240,13 @@ public class TrialGenerator {
 				correctTrace);
 		if(realcauseNode==null){
 			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
+			if(buggyTrace.isMultiThread() || correctTrace.isMultiThread()){
+				trial.setMultiThread(true);
+				StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(), 
+						new UserFeedback(UserFeedback.UNCLEAR), simulator.getObservedFault(), DebugState.UNCLEAR);
+				trial.getCheckList().add(tuple);
+			}
+			
 			return trial;
 		}
 		
