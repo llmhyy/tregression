@@ -65,7 +65,8 @@ public class TrialGenerator {
 
 				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
 						tc, config, requireVisualization, true, isRecordDB);
-				if(trial.getRealcauseNode()!=null){
+//				break;
+				if(!trial.isDump()){
 					break;					
 				}
 			}
