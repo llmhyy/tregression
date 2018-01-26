@@ -49,7 +49,7 @@ public class EmpiricalTrial {
 	}
 	
 	public boolean isDump(){
-		return testcase==null;
+		return bugType==-1;
 	}
 	
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
