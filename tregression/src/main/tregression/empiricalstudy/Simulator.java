@@ -52,7 +52,7 @@ public class Simulator  {
 			else if(changeType.getType()==StepChangeType.CTL && node.getControlDominator()==null) {
 				if(node.isException()) {
 					return node;
-				}
+				}	
 			}
 			else if(changeType.getType()!=StepChangeType.IDT){
 				return node;
@@ -108,12 +108,12 @@ public class Simulator  {
 		this.pairList = pairList;
 		this.matcher = matcher;
 		TraceNode initialStep = buggyTrace.getLatestNode();
-		this.setObservedFault(findObservedFault(initialStep, buggyTrace, correctTrace));
+		observedFault = findObservedFault(initialStep, buggyTrace, correctTrace);
 	}
 
 	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
 			int optionSearchLimit) throws SimulationFailException {
-		if (getObservedFault() != null) {
+		if (observedFault != null) {
 			RootCauseFinder finder = new RootCauseFinder();
 			
 			long start = System.currentTimeMillis();
@@ -329,13 +329,22 @@ public class Simulator  {
 				
 				if(previousNode!=null){
 					StepChangeType prevChangeType = typeChecker.getType(previousNode, true, pairList, matcher);
+					List<DeadEndRecord> list = null;
 					if(prevChangeType.getType()==StepChangeType.CTL){
-						List<DeadEndRecord> list = createControlRecord(currentNode, previousNode, typeChecker, pairList, matcher);
+						list = createControlRecord(currentNode, previousNode, typeChecker, pairList, matcher);
 						trial.setDeadEndRecordList(list);
 					}
 					else if(prevChangeType.getType()==StepChangeType.DAT){
-						List<DeadEndRecord> list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher);
+						list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher);
 						trial.setDeadEndRecordList(list);
+					}
+					
+					if(trial.getBugType()==EmpiricalTrial.OVER_SKIP && trial.getOverskipLength()==0){
+						if(list != null && !list.isEmpty()){
+							DeadEndRecord record = list.get(0);
+							int len = currentNode.getOrder() - record.getBreakStepOrder();
+							trial.setOverskipLength(len);
+						}
 					}
 				}
 				
@@ -482,7 +491,7 @@ public class Simulator  {
 	}
 
 	private int checkOverskipLength(PairList pairList, DiffMatcher matcher, Trace buggyTrace, TraceNode rootcauseNode,
-			List<StepOperationTuple> checkingList) {
+			 List<StepOperationTuple> checkingList) {
 		TraceNode latestNode = checkingList.get(checkingList.size() - 1).getNode();
 
 		if (rootcauseNode != null) {
