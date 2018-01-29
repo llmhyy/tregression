@@ -32,7 +32,7 @@ public class DeadEndRecord {
 		buffer.append(mendingType + "\n");
 		
 		buffer.append("occur: ");
-		buffer.append(getOccurOrder());
+		buffer.append(getOccurOrder() + "\n");
 		if(getType()==DeadEndRecord.DATA) {
 			buffer.append("occur var:");
 			buffer.append(getVarValue().getVarName());
