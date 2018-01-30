@@ -31,11 +31,13 @@ public class SeparateVersionHandler extends AbstractHandler{
 				String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
 				String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				
+				String testcase = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE);
+				
 				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 				
 				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, 
-						false, true, true, false, config);
+						false, true, true, false, config, testcase);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {
