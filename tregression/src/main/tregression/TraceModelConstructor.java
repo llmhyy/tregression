@@ -3,6 +3,7 @@ package tregression;
 import java.io.File;
 import java.util.List;
 
+import org.apache.bcel.Repository;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -36,10 +37,10 @@ public class TraceModelConstructor {
 		setup();
 		
 		ProgramExecutor tcExecutor = new ProgramExecutor();
+		Repository.clearCache();
 		
 		/** 1. clear some static common variables **/
 		clearOldData();
-		
 		
 		/** 2. parse read/written variables**/
 		BPVariableRetriever retriever = new BPVariableRetriever(executingStatements);
