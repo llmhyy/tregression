@@ -250,12 +250,17 @@ public class TrialGenerator {
 			return trial;
 		}
 		
+		if(simulator.getObservedFault()==null){
+			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find observable fault");
+			return trial;
+		}
 		
 		List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 
 		time2 = System.currentTimeMillis();
 		int simulationTime = (int) (time2 - time1);
 		System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
+		
 		
 		for (EmpiricalTrial trial : trials0) {
 			trial.setTestcase(tc.testClass + "#" + tc.testMethod);
