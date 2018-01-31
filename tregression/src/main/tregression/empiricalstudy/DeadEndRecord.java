@@ -36,8 +36,8 @@ public class DeadEndRecord {
 		if(getType()==DeadEndRecord.DATA) {
 			buffer.append("occur var:");
 			buffer.append(getVarValue().getVarName());
+			buffer.append("\n");
 		}
-		buffer.append("\n");
 		
 		buffer.append("dead end: ");
 		buffer.append(getDeadEndOrder() + "\n");
