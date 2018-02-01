@@ -80,10 +80,11 @@ public class TrialRecorder {
 		titles.add("exception");
 		titles.add("multi thread");
 		
-		titles.add("mending type");
-		titles.add("mending start");
-		titles.add("mending correspondence");
-		titles.add("mending return");
+		titles.add("deadend type");
+		titles.add("deadend occur");
+		titles.add("deadend ");
+		titles.add("deadend break");
+		titles.add("deadend solution");
 		
 		Row row = sheet.createRow(0);
 		for(int i = 0; i < titles.size(); i++){
@@ -175,8 +176,9 @@ public class TrialRecorder {
 		for(DeadEndRecord r: mendings){
 			row.createCell(count++).setCellValue(r.getTypeString());
 			row.createCell(count++).setCellValue(r.getOccurOrder());
-			row.createCell(count++).setCellValue(r.getCorrespondingStepOnReference());
+			row.createCell(count++).setCellValue(r.getDeadEndOrder());
 			row.createCell(count++).setCellValue(r.getBreakStepOrder());
+			row.createCell(count++).setCellValue(r.getSolutionPattern().getTypeName());
 		}	
 		
 	}
