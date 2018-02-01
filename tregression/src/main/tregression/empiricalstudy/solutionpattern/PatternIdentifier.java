@@ -13,6 +13,7 @@ public class PatternIdentifier {
 	public PatternIdentifier(){
 		//TODO initialize the pattern detectors
 		patternDetectors.add(new MissingIfThrow());
+		patternDetectors.add(new MissingIfReturn());
 	}
 	
 	public void identifyPattern(EmpiricalTrial trial){
