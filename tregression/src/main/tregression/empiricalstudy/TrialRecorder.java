@@ -178,7 +178,11 @@ public class TrialRecorder {
 			row.createCell(count++).setCellValue(r.getOccurOrder());
 			row.createCell(count++).setCellValue(r.getDeadEndOrder());
 			row.createCell(count++).setCellValue(r.getBreakStepOrder());
-			row.createCell(count++).setCellValue(r.getSolutionPattern().getTypeName());
+			String type = "*unexpected*";
+			if(r.getSolutionPattern()!=null){
+				type = r.getSolutionPattern().getTypeName();
+			}
+			row.createCell(count++).setCellValue(type);
 		}	
 		
 	}
