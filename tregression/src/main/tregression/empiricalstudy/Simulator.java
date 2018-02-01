@@ -360,7 +360,7 @@ public class Simulator  {
 		List<DeadEndRecord> deadEndRecords = new ArrayList<>();
 		
 		Trace trace = currentNode.getTrace();
-		for(int i=currentNode.getOrder()+1; i<latestBugNode.getOrder(); i++){
+		for(int i=currentNode.getOrder()+1; i<=latestBugNode.getOrder(); i++){
 			TraceNode node = trace.getTraceNode(i);
 			StepChangeType changeType = typeChecker.getType(node, true, pairList, matcher);
 			if(changeType.getType()==StepChangeType.CTL){
