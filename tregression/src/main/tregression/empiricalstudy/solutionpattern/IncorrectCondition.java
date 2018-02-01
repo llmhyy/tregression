@@ -54,12 +54,12 @@ public class IncorrectCondition extends PatternDetector{
 				String content = lineChange.getLineContent();
 				buffer.append(content.substring(1, content.length())+"\n");
 				if(content.contains("if")){
-					int line = chunk.getLineNumberInSource(lineChange);
+					int line = chunk.getLineNumberInTarget(lineChange);
 					addedIfs.add(line);
 				}
 			}
 		}
-		
+		System.currentTimeMillis();
 		if(!removedIfs.isEmpty() && !addedIfs.isEmpty()){
 			for(Integer removedLine: removedIfs){
 				for(Integer addedLine: addedIfs){

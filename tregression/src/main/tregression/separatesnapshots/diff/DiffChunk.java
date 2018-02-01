@@ -68,10 +68,10 @@ public class DiffChunk {
 				return count;
 			}
 			
-			if(line.getType()==LineChange.UNCHANGE){
+			if(lineChange.getType()==LineChange.UNCHANGE){
 				count++;
 			}
-			else if(line.getType()==LineChange.REMOVE){
+			else if(lineChange.getType()==LineChange.REMOVE){
 				count++;
 			}
 		}
@@ -87,10 +87,10 @@ public class DiffChunk {
 				return count;
 			}
 			
-			if(line.getType()==LineChange.UNCHANGE){
+			if(lineChange.getType()==LineChange.UNCHANGE){
 				count++;
 			}
-			else if(line.getType()==LineChange.ADD){
+			else if(lineChange.getType()==LineChange.ADD){
 				count++;
 			}
 		}
