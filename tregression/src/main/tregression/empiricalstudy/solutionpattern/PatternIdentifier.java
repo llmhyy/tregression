@@ -15,6 +15,7 @@ public class PatternIdentifier {
 		patternDetectors.add(new MissingIfThrow());
 		patternDetectors.add(new MissingIfReturn());
 		patternDetectors.add(new MissingIfBlockBody());
+		patternDetectors.add(new IncorrectCondition());
 	}
 	
 	public void identifyPattern(EmpiricalTrial trial){
