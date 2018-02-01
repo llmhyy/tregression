@@ -2,11 +2,11 @@ package tregression.empiricalstudy.solutionpattern;
 
 public class SolutionPattern {
 	public final static int MISSING_ASSIGNMENT = 0;
-	public final static int INCORRECT_CONDITION = 0;
-	public final static int EXTRA_NESTED_IF_BLOCK = 0;
-	public final static int MISSING_IF_BLOCK = 0;
-	public final static int MISSING_IF_RETURN = 0;
-	public final static int MISSING_IF_THROW = 0;
+	public final static int INCORRECT_CONDITION = 1;
+	public final static int EXTRA_NESTED_IF_BLOCK = 2;
+	public final static int MISSING_IF_BLOCK = 3;
+	public final static int MISSING_IF_RETURN = 4;
+	public final static int MISSING_IF_THROW = 5;
 	
 	private int type;
 	
