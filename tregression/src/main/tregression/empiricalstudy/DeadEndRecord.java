@@ -48,6 +48,9 @@ public class DeadEndRecord {
 		buffer.append("break step: ");
 		buffer.append(getBreakStepOrder() + "\n");
 		
+		buffer.append("solution type: ");
+		buffer.append(solutionPattern + "\n");
+		
 		return buffer.toString();
 	}
 	
