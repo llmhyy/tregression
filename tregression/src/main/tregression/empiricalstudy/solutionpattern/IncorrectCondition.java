@@ -1,5 +1,8 @@
 package tregression.empiricalstudy.solutionpattern;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseNode;
@@ -21,7 +24,7 @@ public class IncorrectCondition extends PatternDetector{
 			DiffMatcher matcher = trial.getDiffMatcher();
 			for(FilePairWithDiff filePair: matcher.getFileDiffList()){
 				for(DiffChunk chunk: filePair.getChunks()){
-					boolean ifChanged = isIfChanged(chunk, rootCause.getRoot().getLineNumber());
+					boolean ifChanged = isIfChanged(chunk, filePair);
 					if(ifChanged){
 						return true;
 					}
@@ -32,24 +35,40 @@ public class IncorrectCondition extends PatternDetector{
 		return false;
 	}
 
-	private boolean isIfChanged(DiffChunk chunk, int lineNumber) {
+	private boolean isIfChanged(DiffChunk chunk, FilePairWithDiff filePair) {
 		StringBuffer buffer = new StringBuffer();
-		boolean isHit = false;
+		List<Integer> removedIfs = new ArrayList<>();
+		List<Integer> addedIfs = new ArrayList<>();
 		for(LineChange lineChange: chunk.getChangeList()){
 			if(lineChange.getType()==LineChange.REMOVE){
 				String content = lineChange.getLineContent();
 				buffer.append(content.substring(1, content.length())+"\n");
 				
-				int line = chunk.getLineNumberInSource(lineChange);
-				if(line==lineNumber){
-					isHit = true;
+				if(content.contains("if")){
+					int line = chunk.getLineNumberInSource(lineChange);
+					removedIfs.add(line);
+				}
+			}
+			
+			if(lineChange.getType()==LineChange.ADD){
+				String content = lineChange.getLineContent();
+				buffer.append(content.substring(1, content.length())+"\n");
+				if(content.contains("if")){
+					int line = chunk.getLineNumberInSource(lineChange);
+					addedIfs.add(line);
 				}
 			}
 		}
 		
-		if(isHit){
-			String code = buffer.toString();
-			return code.contains("if");
+		if(!removedIfs.isEmpty() && !addedIfs.isEmpty()){
+			for(Integer removedLine: removedIfs){
+				for(Integer addedLine: addedIfs){
+					List<Integer> targetLines = filePair.getSourceToTargetMap().get(removedLine);
+					if(targetLines.contains(addedLine)){
+						return true;
+					}
+				}
+			}
 		}
 		
 		return false;
