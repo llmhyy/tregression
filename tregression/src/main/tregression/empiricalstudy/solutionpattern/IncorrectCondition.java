@@ -1,7 +1,5 @@
 package tregression.empiricalstudy.solutionpattern;
 
-import org.eclipse.swt.dnd.RTFTransfer;
-
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseNode;
