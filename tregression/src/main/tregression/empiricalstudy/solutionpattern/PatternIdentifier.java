@@ -1,29 +1,33 @@
 package tregression.empiricalstudy.solutionpattern;
 
-import microbat.model.trace.Trace;
+import java.util.ArrayList;
+import java.util.List;
+
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 
 public class PatternIdentifier {
 	
+	List<PatternDetector> patternDetectors = new ArrayList<>();
 	
-	public SolutionPattern identifyPattern(EmpiricalTrial trial, Trace buggyTrace){
-		
+	public PatternIdentifier(){
+		//TODO initialize the pattern detectors
+		patternDetectors.add(new MissingIfThrow());
+	}
+	
+	public void identifyPattern(EmpiricalTrial trial){
 		for(DeadEndRecord record: trial.getDeadEndRecordList()){
-			SolutionPattern solutionPattern = identifyPattern(record);
+			identifyPattern(record, trial);
 		}
-		
-		return null;
 	}
 
-	private SolutionPattern identifyPattern(DeadEndRecord record) {
-		if(record.getType()==DeadEndRecord.DATA){
-			
+	private void identifyPattern(DeadEndRecord record, EmpiricalTrial trial) {
+		for(PatternDetector detector: patternDetectors){
+			boolean detected = detector.detect(record, trial);
+			if(detected){
+				record.setSolutionPattern(detector.getSolutionPattern());
+				break;
+			}
 		}
-		else if(record.getType()==DeadEndRecord.CONTROL){
-			
-		}
-		
-		return null;
 	}
 }

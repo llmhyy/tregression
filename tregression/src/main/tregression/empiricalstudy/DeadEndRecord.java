@@ -1,6 +1,7 @@
 package tregression.empiricalstudy;
 
 import microbat.model.value.VarValue;
+import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 
 public class DeadEndRecord {
 	public static int CONTROL = 0;
@@ -14,6 +15,8 @@ public class DeadEndRecord {
 	private int breakStepOrder;
 	
 	private VarValue varValue;
+	
+	private SolutionPattern solutionPattern;
 
 	public DeadEndRecord(int type, int occurOrder, int deadEndOrder, int correspondingStepOnReference, int breakStepOrder) {
 		super();
@@ -135,6 +138,14 @@ public class DeadEndRecord {
 
 	public void setDeadEndOrder(int deadEndOrder) {
 		this.deadEndOrder = deadEndOrder;
+	}
+
+	public SolutionPattern getSolutionPattern() {
+		return solutionPattern;
+	}
+
+	public void setSolutionPattern(SolutionPattern solutionPattern) {
+		this.solutionPattern = solutionPattern;
 	}
 
 }

@@ -59,6 +59,44 @@ public class DiffChunk {
 	public void setChangeList(List<LineChange> changeList) {
 		this.changeList = changeList;
 	}
+
+	public int getLineNumberInSource(LineChange line) {
+		int count = this.getStartLineInSource();
+		for(int i=0; i<changeList.size(); i++){
+			LineChange lineChange = changeList.get(i);
+			if(lineChange.getIndex()==line.getIndex()){
+				return count;
+			}
+			
+			if(line.getType()==LineChange.UNCHANGE){
+				count++;
+			}
+			else if(line.getType()==LineChange.REMOVE){
+				count++;
+			}
+		}
+		
+		return -1;
+	}
+	
+	public int getLineNumberInTarget(LineChange line) {
+		int count = this.getStartLineInTarget();
+		for(int i=0; i<changeList.size(); i++){
+			LineChange lineChange = changeList.get(i);
+			if(lineChange.getIndex()==line.getIndex()){
+				return count;
+			}
+			
+			if(line.getType()==LineChange.UNCHANGE){
+				count++;
+			}
+			else if(line.getType()==LineChange.ADD){
+				count++;
+			}
+		}
+		
+		return -1;
+	}
 	
 	
 }

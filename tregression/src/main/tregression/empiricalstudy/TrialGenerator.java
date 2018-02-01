@@ -16,6 +16,7 @@ import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
+import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.io.RegressionRecorder;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
@@ -288,6 +289,13 @@ public class TrialGenerator {
 			trial.setTestcase(tc.testClass + "#" + tc.testMethod);
 			trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
 			trial.setTraceMatchTime(matchTime);
+			trial.setBuggyTrace(buggyTrace);
+			trial.setFixedTrace(correctTrace);
+			trial.setPairList(pairList);
+			trial.setDiffMatcher(diffMatcher);
+			
+			PatternIdentifier identifier = new PatternIdentifier();
+			identifier.identifyPattern(trial);
 		}
 
 		EmpiricalTrial trial = trials0.get(0);

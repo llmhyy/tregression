@@ -3,13 +3,53 @@ package tregression.empiricalstudy;
 import java.util.ArrayList;
 import java.util.List;
 
+import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
+import tregression.separatesnapshots.DiffMatcher;
 
 public class EmpiricalTrial {
 	public static final int FIND_BUG = 0;
 	public static final int OVER_SKIP = 1;
 
+	private Trace buggyTrace;
+	private Trace fixedTrace;
+	private PairList pairList;
+	public Trace getBuggyTrace() {
+		return buggyTrace;
+	}
+
+	public void setBuggyTrace(Trace buggyTrace) {
+		this.buggyTrace = buggyTrace;
+	}
+
+	public Trace getFixedTrace() {
+		return fixedTrace;
+	}
+
+	public void setFixedTrace(Trace fixedTrace) {
+		this.fixedTrace = fixedTrace;
+	}
+
+	public PairList getPairList() {
+		return pairList;
+	}
+
+	public void setPairList(PairList pairList) {
+		this.pairList = pairList;
+	}
+
+	public DiffMatcher getDiffMatcher() {
+		return diffMatcher;
+	}
+
+	public void setDiffMatcher(DiffMatcher diffMatcher) {
+		this.diffMatcher = diffMatcher;
+	}
+
+	private DiffMatcher diffMatcher;
+	
 	private int bugType;
 	private int overskipLength = 0;
 	
