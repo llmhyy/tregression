@@ -25,11 +25,9 @@ public class MissingIfBlockBody extends PatternDetector{
 		if(!rootCause.isOnBefore()){
 			DiffMatcher matcher = trial.getDiffMatcher();
 			for(FilePairWithDiff fileDiff: matcher.getFileDiffList()){
-				for(DiffChunk chunk: fileDiff.getChunks()){
-					boolean ifBlockFound = isIfBlockFound(chunk, rootCause.getRoot().getLineNumber());
-					if(ifBlockFound){
-						return true;
-					}
+				boolean ifBlockFound = isIfBlockFound(fileDiff, rootCause.getRoot().getLineNumber());
+				if(ifBlockFound){
+					return true;
 				}
 			}
 		}
@@ -49,23 +47,26 @@ public class MissingIfBlockBody extends PatternDetector{
 		}
 	}
 	
-	private boolean isIfBlockFound(DiffChunk chunk, int lineNumber) {
+	private boolean isIfBlockFound(FilePairWithDiff fileDiff, int lineNumber) {
 		StringBuffer buffer = new StringBuffer();
 		boolean isHit = false;
-		for(LineChange lineChange: chunk.getChangeList()){
-			if(lineChange.getType()==LineChange.ADD){
-				String content = lineChange.getLineContent();
-				if(content.length()>1){
-					buffer.append(content.substring(1, content.length())+"\n");
-					
-					int line = chunk.getLineNumberInTarget(lineChange);
-					if(line==lineNumber){
-						isHit = true;
+		for(DiffChunk chunk: fileDiff.getChunks()){
+			for(LineChange lineChange: chunk.getChangeList()){
+				if(lineChange.getType()==LineChange.ADD){
+					String content = lineChange.getLineContent();
+					if(content.length()>1){
+						buffer.append(content.substring(1, content.length())+"\n");
+						
+						int line = chunk.getLineNumberInTarget(lineChange);
+						if(line==lineNumber){
+							isHit = true;
+						}
 					}
 				}
+				
 			}
-			
 		}
+		
 		
 		if(isHit){
 			String code = buffer.toString();
@@ -84,6 +85,6 @@ public class MissingIfBlockBody extends PatternDetector{
 
 	@Override
 	public SolutionPattern getSolutionPattern() {
-		return new SolutionPattern(SolutionPattern.MISSING_IF_RETURN);
+		return new SolutionPattern(SolutionPattern.MISSING_IF_BLOCK);
 	}
 }
