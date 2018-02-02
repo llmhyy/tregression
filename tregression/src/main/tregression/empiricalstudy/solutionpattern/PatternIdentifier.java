@@ -14,10 +14,10 @@ public class PatternIdentifier {
 		//TODO initialize the pattern detectors
 		patternDetectors.add(new MissingIfThrow());
 		patternDetectors.add(new MissingIfReturn());
-		patternDetectors.add(new MissingIfBlockBody());
 		patternDetectors.add(new IncorrectCondition());
 		patternDetectors.add(new MissingAssignment());
 		patternDetectors.add(new ExtraNestedIfBlock());
+		patternDetectors.add(new MissingIfBlockBody());
 	}
 	
 	public void identifyPattern(EmpiricalTrial trial){

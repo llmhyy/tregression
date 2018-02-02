@@ -71,14 +71,7 @@ public class MissingIfBlockBody extends PatternDetector{
 		
 		if(isHit){
 			String code = buffer.toString();
-			ASTParser parser = ASTParser.newParser(AST.JLS8); 
-			parser.setKind(ASTParser.K_STATEMENTS);
-			parser.setSource(code.toCharArray()); // set source
-			ASTNode node = parser.createAST(null);
-			IfBlockFinder finder = new IfBlockFinder();
-			node.accept(finder);
-			boolean isFound = finder.isFound;
-			return isFound;
+			return code.contains("if");
 		}
 		
 		return false;
