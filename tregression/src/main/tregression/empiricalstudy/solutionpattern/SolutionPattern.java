@@ -7,6 +7,7 @@ public class SolutionPattern {
 	public final static int MISSING_IF_BLOCK = 3;
 	public final static int MISSING_IF_RETURN = 4;
 	public final static int MISSING_IF_THROW = 5;
+	public final static int INCORRECT_ASSIGNMENT = 6;
 	
 	private int type;
 	
@@ -37,6 +38,9 @@ public class SolutionPattern {
 		}
 		else if(getType()==MISSING_IF_THROW){
 			return "missing if throw";
+		}
+		else if(getType()==INCORRECT_ASSIGNMENT){
+			return "incorrect assignment";
 		}
 		
 		return "unknown";
