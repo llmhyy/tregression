@@ -224,7 +224,7 @@ public class Simulator  {
 		currentNode = state.currentNode;
 		
 		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
-		RootCauseNode realcauseNode = rootCauseFinder.getRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
+		rootCauseFinder.getRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
 		
 		boolean isMultiThread = buggyTrace.isMultiThread() || correctTrace.isMultiThread();
 		
@@ -243,13 +243,8 @@ public class Simulator  {
 			if(currentNode==null || (previousNode!=null && currentNode.getOrder()==previousNode.getOrder())){
 				long endTime = System.currentTimeMillis();
 				
-				int order = -1;
-				if(realcauseNode!=null){
-					order = realcauseNode.getRoot().getOrder();
-				}
-				
-				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, order, rootcauseNode, 
-						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
+				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, -1, rootcauseNode, 
+						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
 				return trial;
 			}
@@ -263,7 +258,7 @@ public class Simulator  {
 				
 				long endTime = System.currentTimeMillis();
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.FIND_BUG, 0, rootcauseNode, 
-						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
+						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
 				return trial;
 			} else if (changeType.getType() == StepChangeType.DAT) {
@@ -324,7 +319,7 @@ public class Simulator  {
 
 				long endTime = System.currentTimeMillis();
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, 
-						realcauseNode, checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
+						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
 				
 				if(previousNode!=null){

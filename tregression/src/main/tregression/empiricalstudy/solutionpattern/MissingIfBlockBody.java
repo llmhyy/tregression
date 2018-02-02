@@ -21,17 +21,19 @@ public class MissingIfBlockBody extends PatternDetector{
 			return false;
 		}
 		
-		RootCauseNode rootCause = trial.getRealcauseNode();
-		if(!rootCause.isOnBefore()){
-			DiffMatcher matcher = trial.getDiffMatcher();
-			for(FilePairWithDiff fileDiff: matcher.getFileDiffList()){
-				boolean ifBlockFound = isIfBlockFound(fileDiff, rootCause.getRoot().getLineNumber());
-				if(ifBlockFound){
-					return true;
+		for(RootCauseNode rootCause: trial.getRootCauseFinder().getRealRootCaseList()){
+			if(!rootCause.isOnBefore()){
+				DiffMatcher matcher = trial.getDiffMatcher();
+				for(FilePairWithDiff fileDiff: matcher.getFileDiffList()){
+					for(DiffChunk chunk: fileDiff.getChunks()){
+						boolean ifBlockFound = isIfBlockFound(chunk, rootCause.getRoot().getLineNumber());
+						if(ifBlockFound){
+							return true;
+						}
+					}
 				}
 			}
 		}
-		
 		
 		return false;
 	}
@@ -47,40 +49,35 @@ public class MissingIfBlockBody extends PatternDetector{
 		}
 	}
 	
-	private boolean isIfBlockFound(FilePairWithDiff fileDiff, int lineNumber) {
+	private boolean isIfBlockFound(DiffChunk chunk, int lineNumber) {
 		StringBuffer buffer = new StringBuffer();
-		boolean isHit = false;
-		for(DiffChunk chunk: fileDiff.getChunks()){
-			for(LineChange lineChange: chunk.getChangeList()){
-				if(lineChange.getType()==LineChange.ADD){
-					String content = lineChange.getLineContent();
-					if(content.length()>1){
-						buffer.append(content.substring(1, content.length())+"\n");
-						
-						int line = chunk.getLineNumberInTarget(lineChange);
-						if(line==lineNumber){
-							isHit = true;
-						}
-					}
+//		boolean isHit = false;
+		
+		
+		for(LineChange lineChange: chunk.getChangeList()){
+			if(lineChange.getType()==LineChange.ADD){
+				String content = lineChange.getLineContent();
+				if(content.length()>1){
+					buffer.append(content.substring(1, content.length())+"\n");
+					
+//					int line = chunk.getLineNumberInTarget(lineChange);
+//					if(line==lineNumber){
+//						isHit = true;
+//					}
 				}
-				
 			}
+			
 		}
 		
-		
-		if(isHit){
-			String code = buffer.toString();
-			ASTParser parser = ASTParser.newParser(AST.JLS8); 
-			parser.setKind(ASTParser.K_STATEMENTS);
-			parser.setSource(code.toCharArray()); // set source
-			ASTNode node = parser.createAST(null);
-			IfBlockFinder finder = new IfBlockFinder();
-			node.accept(finder);
-			boolean isFound = finder.isFound;
-			return isFound;
-		}
-		
-		return false;
+		String code = buffer.toString();
+		ASTParser parser = ASTParser.newParser(AST.JLS8); 
+		parser.setKind(ASTParser.K_STATEMENTS);
+		parser.setSource(code.toCharArray()); // set source
+		ASTNode node = parser.createAST(null);
+		IfBlockFinder finder = new IfBlockFinder();
+		node.accept(finder);
+		boolean isFound = finder.isFound;
+		return isFound;
 	}
 
 	@Override

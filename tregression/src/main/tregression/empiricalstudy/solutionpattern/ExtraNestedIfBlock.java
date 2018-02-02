@@ -21,14 +21,16 @@ public class ExtraNestedIfBlock extends PatternDetector{
 			return false;
 		}
 		
-		RootCauseNode rootCause = trial.getRealcauseNode();
-		if(rootCause.isOnBefore()){
-			DiffMatcher matcher = trial.getDiffMatcher();
-			for(FilePairWithDiff filePair: matcher.getFileDiffList()){
-				for(DiffChunk chunk: filePair.getChunks()){
-					boolean ifRemoved = isIfRemoved(chunk, rootCause.getRoot().getLineNumber());
-					if(ifRemoved){
-						return true;
+//		RootCauseNode rootCause = trial.getRealcauseNode();
+		for(RootCauseNode rootCause: trial.getRootCauseFinder().getRealRootCaseList()){
+			if(rootCause.isOnBefore()){
+				DiffMatcher matcher = trial.getDiffMatcher();
+				for(FilePairWithDiff filePair: matcher.getFileDiffList()){
+					for(DiffChunk chunk: filePair.getChunks()){
+						boolean ifRemoved = isIfRemoved(chunk, rootCause.getRoot().getLineNumber());
+						if(ifRemoved){
+							return true;
+						}
 					}
 				}
 			}

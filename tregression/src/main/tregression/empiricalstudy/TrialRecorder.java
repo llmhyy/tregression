@@ -119,7 +119,7 @@ public class TrialRecorder {
 	
 	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, int bugID) {
 		if (trial==null) {
-			trial = new EmpiricalTrial(-1, -1, null, null, null, 0, 0, 0, -1, -1, null, false);
+			trial = new EmpiricalTrial(-1, -1, null, null, 0, 0, 0, -1, -1, null, false);
 		}
 		
 		row.createCell(0).setCellValue(project);
@@ -133,8 +133,10 @@ public class TrialRecorder {
 		row.createCell(3).setCellValue(order);
 		
 		order = -1;
-		if(trial.getRealcauseNode()!=null) {
-			order = trial.getRealcauseNode().getRoot().getOrder();
+		if(trial.getRootCauseFinder()!=null) {
+			if(!trial.getRootCauseFinder().getRealRootCaseList().isEmpty()){
+				order = trial.getRootCauseFinder().getRealRootCaseList().get(0).getRoot().getOrder();				
+			}
 		}
 		row.createCell(4).setCellValue(order);
 		

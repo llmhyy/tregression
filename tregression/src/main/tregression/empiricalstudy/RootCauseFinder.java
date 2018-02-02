@@ -39,6 +39,8 @@ public class RootCauseFinder {
 	private List<TraceNode> regressionNodeList = new ArrayList<>();
 	private List<TraceNode> correctNodeList = new ArrayList<>();
 	
+	private List<RootCauseNode> realRootCaseList = new ArrayList<>();
+	
 	private TraceNode rootCause;
 	
 //	private List<DeadEndRecord> mendingRecordList = new ArrayList<>();
@@ -79,22 +81,23 @@ public class RootCauseFinder {
 		return null;
 	}
 	
-	public RootCauseNode getRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
+	public void getRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
+		List<RootCauseNode> list = new ArrayList<>();
 		for(int i=buggyTrace.size()-1; i>=0; i--) {
 			TraceNode buggyNode = buggyTrace.getExecutionList().get(i);
 			if(matcher.checkSourceDiff(buggyNode.getBreakPoint(), true)) {
-				return new RootCauseNode(buggyNode, true);
+				list.add(new RootCauseNode(buggyNode, true));
 			}
 		}
 		
 		for(int i=correctTrace.size()-1; i>=0; i--) {
 			TraceNode correctTraceNode = correctTrace.getExecutionList().get(i);
 			if(matcher.checkSourceDiff(correctTraceNode.getBreakPoint(), false)) {
-				return new RootCauseNode(correctTraceNode, false);
+				list.add(new RootCauseNode(correctTraceNode, false));
 			}
 		}
 		
-		return null;
+		this.setRealRootCaseList(list);
 	}
 	
 	public void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, 
@@ -485,6 +488,14 @@ public class RootCauseFinder {
 
 	public void setRootCause(TraceNode rootCause) {
 		this.rootCause = rootCause;
+	}
+
+	public List<RootCauseNode> getRealRootCaseList() {
+		return realRootCaseList;
+	}
+
+	public void setRealRootCaseList(List<RootCauseNode> realRootCaseList) {
+		this.realRootCaseList = realRootCaseList;
 	}
 	
 	

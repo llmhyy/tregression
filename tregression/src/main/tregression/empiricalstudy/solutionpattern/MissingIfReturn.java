@@ -21,14 +21,16 @@ public class MissingIfReturn extends PatternDetector{
 			return false;
 		}
 		
-		RootCauseNode rootCause = trial.getRealcauseNode();
-		if(!rootCause.isOnBefore()){
-			DiffMatcher matcher = trial.getDiffMatcher();
-			for(FilePairWithDiff fileDiff: matcher.getFileDiffList()){
-				for(DiffChunk chunk: fileDiff.getChunks()){
-					boolean ifReturnFound = isIfReturnFound(chunk, rootCause.getRoot().getLineNumber());
-					if(ifReturnFound){
-						return true;
+		for(RootCauseNode rootCause: trial.getRootCauseFinder().getRealRootCaseList()){
+			
+			if(!rootCause.isOnBefore()){
+				DiffMatcher matcher = trial.getDiffMatcher();
+				for(FilePairWithDiff fileDiff: matcher.getFileDiffList()){
+					for(DiffChunk chunk: fileDiff.getChunks()){
+						boolean ifReturnFound = isIfReturnFound(chunk, rootCause.getRoot().getLineNumber());
+						if(ifReturnFound){
+							return true;
+						}
 					}
 				}
 			}

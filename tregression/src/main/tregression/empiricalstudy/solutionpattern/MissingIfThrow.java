@@ -14,60 +14,60 @@ import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
 import tregression.separatesnapshots.diff.LineChange;
 
-public class MissingIfThrow extends PatternDetector{
+public class MissingIfThrow extends PatternDetector {
 
 	@Override
 	public boolean detect(DeadEndRecord deadEndRecord, EmpiricalTrial trial) {
-		if(deadEndRecord.getType()==DeadEndRecord.DATA){
+		if (deadEndRecord.getType() == DeadEndRecord.DATA) {
 			return false;
 		}
-		
-		RootCauseNode rootCause = trial.getRealcauseNode();
-		if(!rootCause.isOnBefore()){
-			DiffMatcher matcher = trial.getDiffMatcher();
-			for(FilePairWithDiff fileDiff: matcher.getFileDiffList()){
-				for(DiffChunk chunk: fileDiff.getChunks()){
-					boolean ifThrowFound = isIfThrowFound(chunk, rootCause.getRoot().getLineNumber());
-					if(ifThrowFound){
-						return true;
+
+		for (RootCauseNode rootCause : trial.getRootCauseFinder().getRealRootCaseList()) {
+			if (!rootCause.isOnBefore()) {
+				DiffMatcher matcher = trial.getDiffMatcher();
+				for (FilePairWithDiff fileDiff : matcher.getFileDiffList()) {
+					for (DiffChunk chunk : fileDiff.getChunks()) {
+						boolean ifThrowFound = isIfThrowFound(chunk, rootCause.getRoot().getLineNumber());
+						if (ifThrowFound) {
+							return true;
+						}
 					}
 				}
 			}
 		}
-		
-		
+
 		return false;
 	}
 
-	public class ThrowFinder extends ASTVisitor{
-		
+	public class ThrowFinder extends ASTVisitor {
+
 		boolean isFound = false;
-		
+
 		@Override
-		public boolean visit(ThrowStatement state){
+		public boolean visit(ThrowStatement state) {
 			isFound = true;
 			return false;
 		}
 	}
-	
+
 	private boolean isIfThrowFound(DiffChunk chunk, int lineNumber) {
 		StringBuffer buffer = new StringBuffer();
 		boolean isHit = false;
-		for(LineChange lineChange: chunk.getChangeList()){
-			if(lineChange.getType()==LineChange.ADD){
+		for (LineChange lineChange : chunk.getChangeList()) {
+			if (lineChange.getType() == LineChange.ADD) {
 				String content = lineChange.getLineContent();
-				buffer.append(content.substring(1, content.length())+"\n");
-				
+				buffer.append(content.substring(1, content.length()) + "\n");
+
 				int line = chunk.getLineNumberInTarget(lineChange);
-				if(line==lineNumber){
+				if (line == lineNumber) {
 					isHit = true;
 				}
 			}
 		}
-		
-		if(isHit){
+
+		if (isHit) {
 			String code = buffer.toString();
-			ASTParser parser = ASTParser.newParser(AST.JLS8); 
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			parser.setKind(ASTParser.K_STATEMENTS);
 			parser.setSource(code.toCharArray()); // set source
 			ASTNode node = parser.createAST(null);
@@ -76,7 +76,7 @@ public class MissingIfThrow extends PatternDetector{
 			boolean isFound = finder.isFound;
 			return isFound;
 		}
-		
+
 		return false;
 	}
 

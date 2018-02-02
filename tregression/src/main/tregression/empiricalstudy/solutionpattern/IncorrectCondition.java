@@ -19,18 +19,20 @@ public class IncorrectCondition extends PatternDetector{
 			return false;
 		}
 		
-		RootCauseNode rootCause = trial.getRealcauseNode();
-		if(rootCause.isOnBefore()){
-			DiffMatcher matcher = trial.getDiffMatcher();
-			for(FilePairWithDiff filePair: matcher.getFileDiffList()){
-				for(DiffChunk chunk: filePair.getChunks()){
-					boolean ifChanged = isIfChanged(chunk, filePair);
-					if(ifChanged){
-						return true;
+		for(RootCauseNode rootCause: trial.getRootCauseFinder().getRealRootCaseList()){
+			if(rootCause.isOnBefore()){
+				DiffMatcher matcher = trial.getDiffMatcher();
+				for(FilePairWithDiff filePair: matcher.getFileDiffList()){
+					for(DiffChunk chunk: filePair.getChunks()){
+						boolean ifChanged = isIfChanged(chunk, filePair);
+						if(ifChanged){
+							return true;
+						}
 					}
 				}
 			}
 		}
+		
 		
 		return false;
 	}

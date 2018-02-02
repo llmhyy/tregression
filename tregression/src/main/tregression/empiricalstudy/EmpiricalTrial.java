@@ -16,37 +16,6 @@ public class EmpiricalTrial {
 	private Trace buggyTrace;
 	private Trace fixedTrace;
 	private PairList pairList;
-	public Trace getBuggyTrace() {
-		return buggyTrace;
-	}
-
-	public void setBuggyTrace(Trace buggyTrace) {
-		this.buggyTrace = buggyTrace;
-	}
-
-	public Trace getFixedTrace() {
-		return fixedTrace;
-	}
-
-	public void setFixedTrace(Trace fixedTrace) {
-		this.fixedTrace = fixedTrace;
-	}
-
-	public PairList getPairList() {
-		return pairList;
-	}
-
-	public void setPairList(PairList pairList) {
-		this.pairList = pairList;
-	}
-
-	public DiffMatcher getDiffMatcher() {
-		return diffMatcher;
-	}
-
-	public void setDiffMatcher(DiffMatcher diffMatcher) {
-		this.diffMatcher = diffMatcher;
-	}
 
 	private DiffMatcher diffMatcher;
 	
@@ -56,7 +25,6 @@ public class EmpiricalTrial {
 	private String testcase;
 	
 	private TraceNode rootcauseNode;
-	private RootCauseNode realcauseNode;
 	
 	private int traceCollectionTime;
 	private int traceMatchTime;
@@ -80,20 +48,8 @@ public class EmpiricalTrial {
 	
 	private boolean isMultiThread;
 
-	
-	public static EmpiricalTrial createDumpTrial(String reason){
-		EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
-				-1, -1, null, false);
-		trial.setExceptionExplanation(reason);
-		return trial;
-	}
-	
-	public boolean isDump(){
-		return bugType==-1 && checkList.isEmpty();
-	}
-	
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
-			RootCauseNode realcauseNode, List<StepOperationTuple> checkList, int traceCollectionTime,
+			List<StepOperationTuple> checkList, int traceCollectionTime,
 			int traceMatchTime, int simulationTime, int buggyTraceLength, int correctTraceLength,
 			RootCauseFinder rootCauseFinder, boolean isMultiThread) {
 		super();
@@ -101,7 +57,6 @@ public class EmpiricalTrial {
 		this.overskipLength = overskipLength;
 		this.rootcauseNode = rootcauseNode;
 		this.checkList = checkList;
-		this.realcauseNode = realcauseNode;
 		this.setTraceCollectionTime(traceCollectionTime);
 		this.setTraceMatchTime(traceMatchTime);
 		this.setSimulationTime(simulationTime);
@@ -114,6 +69,17 @@ public class EmpiricalTrial {
 			this.visitedCorrectNodes = rootCauseFinder.getCorrectNodeList();
 			this.totalVisitedNodesNum = rootCauseFinder.getRegressionNodeList().size()+rootCauseFinder.getCorrectNodeList().size();			
 		}
+	}
+	
+	public static EmpiricalTrial createDumpTrial(String reason){
+		EmpiricalTrial trial = new EmpiricalTrial(-1, -1, null, new ArrayList<StepOperationTuple>(), 0, 0, 0,
+				-1, -1, null, false);
+		trial.setExceptionExplanation(reason);
+		return trial;
+	}
+	
+	public boolean isDump(){
+		return bugType==-1 && checkList.isEmpty();
 	}
 	
 	public static String getTypeStringName(int t) {
@@ -133,8 +99,18 @@ public class EmpiricalTrial {
 		buffer.append("trial type: " + type + "\n");
 		int rootcauseOrder = (this.rootcauseNode==null)? -1 : this.rootcauseNode.getOrder();
 		buffer.append("found root cause: " + rootcauseOrder + "\n");
-		String realcauseOrder = (this.realcauseNode==null)? "-1" : this.realcauseNode.toString();
-		buffer.append("real root cause: " + realcauseOrder + "\n");
+		
+		String realcauseOrders = "";
+		if(this.rootCauseFinder==null){
+			realcauseOrders = "-1";
+		}
+		else{
+			for(RootCauseNode node: this.rootCauseFinder.getRealRootCaseList()){
+				realcauseOrders += node.toString() + ", ";
+			}			
+		}
+		
+		buffer.append("real root cause: " + realcauseOrders + "\n");
 		buffer.append("over skip length: " + this.overskipLength + "\n");
 		buffer.append("explanation size: " + this.totalVisitedNodesNum + "\n");
 		buffer.append("debugging trace: \n");
@@ -175,14 +151,6 @@ public class EmpiricalTrial {
 	
 	public TraceNode getRootcauseNode() {
 		return this.rootcauseNode;
-	}
-
-	public RootCauseNode getRealcauseNode() {
-		return realcauseNode;
-	}
-
-	public void setRealcauseNode(RootCauseNode realcauseNode) {
-		this.realcauseNode = realcauseNode;
 	}
 
 	public int getTraceCollectionTime() {
@@ -287,6 +255,38 @@ public class EmpiricalTrial {
 
 	public void setDeadEndRecordList(List<DeadEndRecord> deadEndRecordList) {
 		this.deadEndRecordList = deadEndRecordList;
+	}
+	
+	public Trace getBuggyTrace() {
+		return buggyTrace;
+	}
+
+	public void setBuggyTrace(Trace buggyTrace) {
+		this.buggyTrace = buggyTrace;
+	}
+
+	public Trace getFixedTrace() {
+		return fixedTrace;
+	}
+
+	public void setFixedTrace(Trace fixedTrace) {
+		this.fixedTrace = fixedTrace;
+	}
+
+	public PairList getPairList() {
+		return pairList;
+	}
+
+	public void setPairList(PairList pairList) {
+		this.pairList = pairList;
+	}
+
+	public DiffMatcher getDiffMatcher() {
+		return diffMatcher;
+	}
+
+	public void setDiffMatcher(DiffMatcher diffMatcher) {
+		this.diffMatcher = diffMatcher;
 	}
 
 }

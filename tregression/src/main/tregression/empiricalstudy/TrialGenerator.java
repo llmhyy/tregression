@@ -259,9 +259,10 @@ public class TrialGenerator {
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		addAdditionalObservedFault(simulator, config, buggyTrace);
 
-		RootCauseNode realcauseNode = new RootCauseFinder().getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace,
-				correctTrace);
-		if(realcauseNode==null){
+		RootCauseFinder rootcauseFinder = new RootCauseFinder();
+		rootcauseFinder.getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
+		
+		if(rootcauseFinder.getRealRootCaseList().isEmpty()){
 			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
 			if(buggyTrace.isMultiThread() || correctTrace.isMultiThread()){
 				trial.setMultiThread(true);

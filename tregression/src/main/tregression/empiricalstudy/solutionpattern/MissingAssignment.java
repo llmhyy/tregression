@@ -14,35 +14,36 @@ import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
 import tregression.separatesnapshots.diff.LineChange;
 
-public class MissingAssignment extends PatternDetector{
+public class MissingAssignment extends PatternDetector {
 	@Override
 	public boolean detect(DeadEndRecord deadEndRecord, EmpiricalTrial trial) {
-		if(deadEndRecord.getType()==DeadEndRecord.CONTROL){
+		if (deadEndRecord.getType() == DeadEndRecord.CONTROL) {
 			return false;
 		}
-		
-		RootCauseNode rootCause = trial.getRealcauseNode();
-		if(!rootCause.isOnBefore()){
-			DiffMatcher matcher = trial.getDiffMatcher();
-			for(FilePairWithDiff filePair: matcher.getFileDiffList()){
-				for(DiffChunk chunk: filePair.getChunks()){
-					boolean ifChanged = isIfChanged(chunk, rootCause.getRoot().getLineNumber());
-					if(ifChanged){
-						return true;
+
+		for (RootCauseNode rootCause : trial.getRootCauseFinder().getRealRootCaseList()) {
+			if (!rootCause.isOnBefore()) {
+				DiffMatcher matcher = trial.getDiffMatcher();
+				for (FilePairWithDiff filePair : matcher.getFileDiffList()) {
+					for (DiffChunk chunk : filePair.getChunks()) {
+						boolean ifChanged = isIfChanged(chunk, rootCause.getRoot().getLineNumber());
+						if (ifChanged) {
+							return true;
+						}
 					}
 				}
 			}
 		}
-		
+
 		return false;
 	}
-	
-	public class AssignmentFinder extends ASTVisitor{
-		
+
+	public class AssignmentFinder extends ASTVisitor {
+
 		boolean isFound = false;
-		
+
 		@Override
-		public boolean visit(Assignment assignment){
+		public boolean visit(Assignment assignment) {
 			isFound = true;
 			return false;
 		}
@@ -51,21 +52,21 @@ public class MissingAssignment extends PatternDetector{
 	private boolean isIfChanged(DiffChunk chunk, int lineNumber) {
 		StringBuffer buffer = new StringBuffer();
 		boolean isHit = false;
-		for(LineChange lineChange: chunk.getChangeList()){
-			if(lineChange.getType()==LineChange.ADD){
+		for (LineChange lineChange : chunk.getChangeList()) {
+			if (lineChange.getType() == LineChange.ADD) {
 				String content = lineChange.getLineContent();
-				buffer.append(content.substring(1, content.length())+"\n");
-				
+				buffer.append(content.substring(1, content.length()) + "\n");
+
 				int line = chunk.getLineNumberInTarget(lineChange);
-				if(line==lineNumber){
+				if (line == lineNumber) {
 					isHit = true;
 				}
 			}
 		}
-		
-		if(isHit){
+
+		if (isHit) {
 			String code = buffer.toString();
-			ASTParser parser = ASTParser.newParser(AST.JLS8); 
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			parser.setKind(ASTParser.K_STATEMENTS);
 			parser.setSource(code.toCharArray()); // set source
 			ASTNode node = parser.createAST(null);
@@ -74,7 +75,7 @@ public class MissingAssignment extends PatternDetector{
 			boolean isFound = finder.isFound;
 			return isFound;
 		}
-		
+
 		return false;
 	}
 
