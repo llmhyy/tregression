@@ -68,6 +68,10 @@ public class Simulator  {
 	
 	private boolean previousNodeInvokedByTearDown(TraceNode node) {
 		TraceNode prev = node.getStepInPrevious();
+		if(prev==null) {
+			return false;
+		}
+		
 		boolean isInvoked = isInvokedByTearDownMethod(prev);
 		if(isInvoked){
 			return true;
