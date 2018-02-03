@@ -14,7 +14,6 @@ import microbat.recommendation.UserFeedback;
 import tregression.SimulationFailException;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
-import tregression.empiricalstudy.RootCauseFinder.TraceNodeW;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.model.TraceNodePair;
@@ -49,6 +48,9 @@ public class Simulator  {
 			if (isInvokedByTearDownMethod(node)) {
 				
 			}
+			else if(previousNodeInvokedByTearDown(node)){
+				
+			}
 			else if(changeType.getType()==StepChangeType.CTL && node.getControlDominator()==null) {
 				if(node.isException()) {
 					return node;
@@ -64,6 +66,29 @@ public class Simulator  {
 		return null;
 	}
 	
+	private boolean previousNodeInvokedByTearDown(TraceNode node) {
+		TraceNode prev = node.getStepInPrevious();
+		boolean isInvoked = isInvokedByTearDownMethod(prev);
+		if(isInvoked){
+			return true;
+		}
+		
+		while(!isInvoked){
+			prev = prev.getStepInPrevious();
+			if(prev==null){
+				return false;
+			}
+			
+			isInvoked = isInvokedByTearDownMethod(prev);
+			if(isInvoked){
+				return true;
+			}
+		}
+		
+		
+		return false;
+	}
+
 	private boolean isInvokedByTearDownMethod(TraceNode node) {
 		TraceNode n = node;
 		while(n!=null) {
