@@ -19,6 +19,7 @@ public class PatternIdentifier {
 		patternDetectors.add(new ExtraNestedIfBlock());
 		patternDetectors.add(new MissingIfBlockBody());
 		patternDetectors.add(new IncorrectAssignment());
+		patternDetectors.add(new InvokeDifferentMethod());
 	}
 	
 	public void identifyPattern(EmpiricalTrial trial){

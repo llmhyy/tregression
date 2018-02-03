@@ -8,6 +8,7 @@ public class SolutionPattern {
 	public final static int MISSING_IF_RETURN = 4;
 	public final static int MISSING_IF_THROW = 5;
 	public final static int INCORRECT_ASSIGNMENT = 6;
+	public final static int INVOKE_DIFFERENT_METHOD = 7;
 	
 	private int type;
 	
@@ -41,6 +42,9 @@ public class SolutionPattern {
 		}
 		else if(getType()==INCORRECT_ASSIGNMENT){
 			return "incorrect assignment";
+		}
+		else if(getType()==INVOKE_DIFFERENT_METHOD){
+			return "invoke different method";
 		}
 		
 		return "unknown";
