@@ -5,6 +5,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -44,6 +45,12 @@ public class MissingAssignment extends PatternDetector {
 
 		@Override
 		public boolean visit(Assignment assignment) {
+			isFound = true;
+			return false;
+		}
+		
+		@Override
+		public boolean visit(VariableDeclarationFragment frag) {
 			isFound = true;
 			return false;
 		}
