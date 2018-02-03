@@ -67,7 +67,7 @@ public class Simulator  {
 	private boolean isInvokedByTearDownMethod(TraceNode node) {
 		TraceNode n = node;
 		while(n!=null) {
-			if(n.getMethodSign()!=null && n.getMethodSign().contains(".tearDown()V")) {
+			if(n.getMethodSign()!=null && n.getMethodSign().contains("tearDown()V")) {
 				return true;
 			}
 			else {
