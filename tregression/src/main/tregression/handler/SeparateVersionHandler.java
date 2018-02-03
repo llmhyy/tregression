@@ -45,10 +45,9 @@ public class SeparateVersionHandler extends AbstractHandler{
 					System.out.println(trials.get(i));
 				}
 				
-//				TrialRecorder recorder;
 //				try {
-//					recorder = new TrialRecorder();
-//					recorder.export(trials, "Chart", 21);
+//					TrialRecorder recorder = new TrialRecorder();
+//					recorder.export(trials, projectName, Integer.valueOf(id));
 //				} catch (IOException e) {
 //					e.printStackTrace();
 //				}
