@@ -70,7 +70,7 @@ public class TrialGenerator {
 			}
 			
 			for (TestCase tc : tcList) {
-				System.out.println("working on test case " + tc.testClass + "::" + tc.testMethod);
+				System.out.println("working on test case " + tc.testClass + "#" + tc.testMethod);
 				workingTC = tc;
 
 				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
@@ -97,7 +97,7 @@ public class TrialGenerator {
 	private List<TestCase> filterSpecificTestCase(String testcase, List<TestCase> tcList) {
 		List<TestCase> filteredList = new ArrayList<>();
 		for(TestCase tc: tcList){
-			String tcName = tc.testClass + "::" + tc.testMethod;
+			String tcName = tc.testClass + "#" + tc.testMethod;
 			if(tcName.equals(testcase)){
 				filteredList.add(tc);
 			}
