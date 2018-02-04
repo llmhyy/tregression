@@ -15,9 +15,9 @@ public class IncorrectCondition extends PatternDetector{
 
 	@Override
 	public boolean detect(DeadEndRecord deadEndRecord, EmpiricalTrial trial) {
-		if(deadEndRecord.getType()==DeadEndRecord.CONTROL){
-			return false;
-		}
+//		if(deadEndRecord.getType()==DeadEndRecord.CONTROL){
+//			return false;
+//		}
 		
 		for(RootCauseNode rootCause: trial.getRootCauseFinder().getRealRootCaseList()){
 			if(rootCause.isOnBefore()){
