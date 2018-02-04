@@ -123,7 +123,6 @@ public class IndexTreeNode implements GraphNode {
 
 	@Override
 	public boolean match(GraphNode node) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
