@@ -100,6 +100,7 @@
             </command>
             <command
                   commandId="tregression.command.runSeparateVersions"
+                  icon="icons/trace_comparison.png"
                   label="Run for Separate Versions"
                   style="push">
             </command>
@@ -114,6 +115,19 @@
                   style="push">
             </command>
          </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:org.eclipse.ui.main.toolbar">
+         <toolbar
+               id="tregression.toolbar">
+            <command
+                  commandId="tregression.command.runSeparateVersions"
+                  icon="icons/trace_comparison.png"
+                  label="Run for Separate Versions"
+                  style="push">
+            </command>
+         </toolbar>
       </menuContribution>
    </extension>
    <extension
