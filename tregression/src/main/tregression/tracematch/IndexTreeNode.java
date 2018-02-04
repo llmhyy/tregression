@@ -6,7 +6,6 @@ import java.util.List;
 import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
-import tregression.util.TraceNodeVariableSimilarityComparator;
 
 public class IndexTreeNode implements GraphNode {
 
@@ -130,15 +129,16 @@ public class IndexTreeNode implements GraphNode {
 
 	@Override
 	public boolean isTheSameWith(GraphNode node) {
-		if(node instanceof IndexTreeNode){
-			IndexTreeNode thatNode = (IndexTreeNode)node;
-			TraceNodeVariableSimilarityComparator comparator = new TraceNodeVariableSimilarityComparator();
-			
-			double sim = comparator.compute(this.node, thatNode.getTraceNode());
-			
-			return sim==1;
-		}
-		return false;
+//		if(node instanceof IndexTreeNode){
+//			IndexTreeNode thatNode = (IndexTreeNode)node;
+//			TraceNodeVariableSimilarityComparator comparator = new TraceNodeVariableSimilarityComparator();
+//			
+//			double sim = comparator.compute(this.node, thatNode.getTraceNode());
+//			
+//			return sim==1;
+//		}
+//		return false;
+		return true;
 	}
 	
 	public BreakPoint getBreakPoint(){
