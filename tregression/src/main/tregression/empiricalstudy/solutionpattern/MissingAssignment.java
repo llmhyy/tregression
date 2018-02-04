@@ -1,8 +1,6 @@
 package tregression.empiricalstudy.solutionpattern;
 
-import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
@@ -73,10 +71,7 @@ public class MissingAssignment extends PatternDetector {
 
 		if (isHit) {
 			String code = buffer.toString();
-			ASTParser parser = ASTParser.newParser(AST.JLS8);
-			parser.setKind(ASTParser.K_STATEMENTS);
-			parser.setSource(code.toCharArray()); // set source
-			ASTNode node = parser.createAST(null);
+			ASTNode node = parseAST(code);
 			AssignmentFinder finder = new AssignmentFinder();
 			node.accept(finder);
 			boolean isFound = finder.isFound;

@@ -68,10 +68,7 @@ public class MissingIfReturn extends PatternDetector{
 		
 		if(isHit){
 			String code = buffer.toString();
-			ASTParser parser = ASTParser.newParser(AST.JLS8); 
-			parser.setKind(ASTParser.K_STATEMENTS);
-			parser.setSource(code.toCharArray()); // set source
-			ASTNode node = parser.createAST(null);
+			ASTNode node = parseAST(code);
 			ReturnFinder finder = new ReturnFinder();
 			node.accept(finder);
 			boolean isFound = finder.isFound;

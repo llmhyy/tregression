@@ -1,7 +1,13 @@
 package tregression.empiricalstudy.solutionpattern;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -36,37 +42,59 @@ public class InvokeDifferentMethod extends PatternDetector{
 		return false;
 	}
 
+	class MethodInvocationFinder extends ASTVisitor{
+		boolean isFound = false;
+		String methodName;
+		
+		@Override
+		public boolean visit(MethodInvocation invocation){
+			isFound = true;
+			methodName = invocation.getName().getFullyQualifiedName();
+			return false;
+		}
+	}
+	
 	private boolean isIfChanged(DiffChunk chunk, FilePairWithDiff filePair) {
-		StringBuffer buffer = new StringBuffer();
-		List<Integer> removedIfs = new ArrayList<>();
-		List<Integer> addedIfs = new ArrayList<>();
+		Map<Integer, String> removedInvocations = new HashMap<>();
+		Map<Integer, String> addedInvocations = new HashMap<>();
 		for(LineChange lineChange: chunk.getChangeList()){
 			if(lineChange.getType()==LineChange.REMOVE){
 				String content = lineChange.getLineContent();
-				buffer.append(content.substring(1, content.length())+"\n");
+				content = content.substring(1, content.length());
 				
-				if(content.contains("(")){
+				ASTNode node = parseAST(content);
+				MethodInvocationFinder finder = new MethodInvocationFinder();
+				node.accept(finder);
+				
+				if(finder.isFound){
 					int line = chunk.getLineNumberInSource(lineChange);
-					removedIfs.add(line);
+					removedInvocations.put(line, finder.methodName);
 				}
 			}
 			
 			if(lineChange.getType()==LineChange.ADD){
 				String content = lineChange.getLineContent();
-				buffer.append(content.substring(1, content.length())+"\n");
-				if(content.contains("(")){
+				content = content.substring(1, content.length());
+				
+				ASTNode node = parseAST(content);
+				MethodInvocationFinder finder = new MethodInvocationFinder();
+				node.accept(finder);
+				
+				if(finder.isFound){
 					int line = chunk.getLineNumberInTarget(lineChange);
-					addedIfs.add(line);
+					addedInvocations.put(line, finder.methodName);
 				}
 			}
 		}
-		System.currentTimeMillis();
-		if(!removedIfs.isEmpty() && !addedIfs.isEmpty()){
-			for(Integer removedLine: removedIfs){
-				for(Integer addedLine: addedIfs){
+
+		if(!removedInvocations.isEmpty() && !addedInvocations.isEmpty()){
+			for(Integer removedLine: removedInvocations.keySet()){
+				for(Integer addedLine: addedInvocations.keySet()){
 					List<Integer> targetLines = filePair.getSourceToTargetMap().get(removedLine);
 					if(targetLines!=null && targetLines.contains(addedLine)){
-						return true;
+						String methodBefore = removedInvocations.get(removedLine);
+						String methodAfter = addedInvocations.get(addedLine);
+						return !methodBefore.equals(methodAfter);
 					}
 				}
 			}
