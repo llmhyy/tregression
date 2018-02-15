@@ -5,6 +5,14 @@ import java.util.List;
 
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.solutionpattern.control.InvokeDifferentMethod;
+import tregression.empiricalstudy.solutionpattern.control.MissingIfBlockBody;
+import tregression.empiricalstudy.solutionpattern.control.MissingIfReturn;
+import tregression.empiricalstudy.solutionpattern.control.MissingIfThrow;
+import tregression.empiricalstudy.solutionpattern.data.ExtraNestedIfBlock;
+import tregression.empiricalstudy.solutionpattern.data.IncorrectAssignment;
+import tregression.empiricalstudy.solutionpattern.data.IncorrectCondition;
+import tregression.empiricalstudy.solutionpattern.data.MissingAssignment;
 
 public class PatternIdentifier {
 	

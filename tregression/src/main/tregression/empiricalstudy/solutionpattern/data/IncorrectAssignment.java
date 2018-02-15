@@ -1,4 +1,4 @@
-package tregression.empiricalstudy.solutionpattern;
+package tregression.empiricalstudy.solutionpattern.data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,8 @@ import org.eclipse.jdt.core.dom.Assignment;
 
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.solutionpattern.PatternDetector;
+import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
