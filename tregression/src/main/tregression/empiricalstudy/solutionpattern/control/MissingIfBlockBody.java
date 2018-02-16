@@ -1,4 +1,4 @@
-package tregression.empiricalstudy.solutionpattern;
+package tregression.empiricalstudy.solutionpattern.control;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IfStatement;
@@ -6,6 +6,8 @@ import org.eclipse.jdt.core.dom.IfStatement;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseNode;
+import tregression.empiricalstudy.solutionpattern.PatternDetector;
+import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
