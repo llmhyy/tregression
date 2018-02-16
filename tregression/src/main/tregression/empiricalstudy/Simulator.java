@@ -423,7 +423,7 @@ public class Simulator  {
 		TraceNode startNode = buggyTrace.getTraceNode(startOrder);
 		list.add(startNode);
 		while(startNode.getStepOverPrevious()!=null && 
-				startNode.getStepOverPrevious().getLineNumber()==startNode.getLineNumber()){
+				startNode.getStepOverPrevious().getBreakPoint().equals(startNode.getBreakPoint())){
 			startNode = startNode.getStepOverPrevious();
 			list.add(startNode);
 		}
@@ -458,7 +458,7 @@ public class Simulator  {
 		while(domOnRef != null){
 			StepChangeType changeType = typeChecker.getType(domOnRef, false, pairList, matcher);
 			if(changeType.getType()==StepChangeType.SRC){
-				breakSteps = findTheNearestCorrespondence(domOnRef, pairList, matchingStep.getTrace());
+				breakSteps = findTheNearestCorrespondence(domOnRef, pairList, buggyNode.getTrace());
 				break;
 			}
 			else{
