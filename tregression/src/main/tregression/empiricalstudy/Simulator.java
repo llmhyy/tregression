@@ -42,13 +42,13 @@ public class Simulator  {
 	
 	protected TraceNode findObservedFault(TraceNode node, Trace buggyTrace, Trace correctTrace){
 		StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-		
+		boolean everInvokedByTearDownMethod = previousNodeInvokedByTearDown(node);
 		while(node != null) {
 			StepChangeType changeType = checker.getType(node, true, pairList, matcher);
-			if (isInvokedByTearDownMethod(node)) {
+			if (everInvokedByTearDownMethod && isInvokedByTearDownMethod(node)) {
 				
 			}
-			else if(previousNodeInvokedByTearDown(node)){
+			else if(everInvokedByTearDownMethod && previousNodeInvokedByTearDown(node)){
 				
 			}
 			else if(changeType.getType()==StepChangeType.CTL && node.getControlDominator()==null) {
