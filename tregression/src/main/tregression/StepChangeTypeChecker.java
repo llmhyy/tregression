@@ -53,7 +53,7 @@ public class StepChangeTypeChecker {
 			return new StepChangeType(StepChangeType.CTL, matchedStep);
 		}
 		else{
-			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList);
+			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList, matcher);
 			if(wrongVariableList.isEmpty()){
 				return new StepChangeType(StepChangeType.IDT, matchedStep);
 			}
@@ -84,10 +84,10 @@ public class StepChangeTypeChecker {
 	}
 
 	private List<VarValue> checkWrongVariable(boolean isOnBefore,
-			TraceNode thisStep, TraceNode thatStep, PairList pairList) {
+			TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
 		List<VarValue> wrongVariableList = new ArrayList<>();
 		for(VarValue readVar: thisStep.getReadVariables()){
-			if(!canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList)){
+			if(!canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList, matcher)){
 				wrongVariableList.add(readVar);
 			}
 		}
@@ -103,7 +103,7 @@ public class StepChangeTypeChecker {
 	}
 
 	private boolean canbeMatched(boolean isOnBeforeTrace, 
-			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList) {
+			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		System.currentTimeMillis();
@@ -121,7 +121,7 @@ public class StepChangeTypeChecker {
 				List<TraceNode> thatAssignChain = new ArrayList<>(); 
 				getAssignChain(thatDom, thatVar, thatAssignChain);
 				
-				boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList);
+				boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList, matcher);
 				if(isAssignChainMatch){
 					return true;
 				}
@@ -147,7 +147,7 @@ public class StepChangeTypeChecker {
 	}
 
 	private boolean isAssignChainMatch(List<TraceNode> thisAssignChain, List<TraceNode> thatAssignChain,
-			boolean isOnBeforeTrace, PairList pairList) {
+			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
 		if(thisAssignChain.size() != thatAssignChain.size()){
 			return false;
 		}
@@ -174,6 +174,15 @@ public class StepChangeTypeChecker {
 			
 			if(thisDom.getOrder()!=pair.getBeforeNode().getOrder()){
 				return false;
+			}
+			
+			if(thisDom.getOrder()==pair.getBeforeNode().getOrder()){
+				boolean isThisDiff = matcher.checkSourceDiff(thisDom.getBreakPoint(), true);
+				boolean isThatDiff = matcher.checkSourceDiff(thatDom.getBreakPoint(), false);
+				
+				if(isThisDiff || isThatDiff){
+					return false;
+				}
 			}
 		}
 
