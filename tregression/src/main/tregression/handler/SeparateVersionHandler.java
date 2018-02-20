@@ -11,6 +11,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
+import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
+import microbat.recommendation.calculator.Dependency;
+import microbat.recommendation.calculator.DependencyCalculator;
+import microbat.recommendation.calculator.Traverse;
+import microbat.recommendation.calculator.TraversingDistanceCalculator;
+import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
@@ -43,6 +50,23 @@ public class SeparateVersionHandler extends AbstractHandler{
 				for(int i=0; i<trials.size(); i++) {
 					System.out.println("Trial " + (i+1));
 					System.out.println(trials.get(i));
+					
+					EmpiricalTrial t = trials.get(i);
+					Trace trace = t.getBuggyTrace();
+					for(DeadEndRecord r: t.getDeadEndRecordList()){
+						TraceNode breakStep = trace.getTraceNode(r.getBreakStepOrder());
+						TraceNode occurStep = trace.getTraceNode(91);
+//						TraceNode occurStep = trace.getTraceNode(r.getOccurOrder());
+						
+						TraversingDistanceCalculator cal = new TraversingDistanceCalculator(trace.getAppJavaClassPath());
+						Traverse tra = cal.calculateASTTravsingDistance(occurStep.getBreakPoint(), breakStep.getBreakPoint());
+						
+						DependencyCalculator dCal = new DependencyCalculator(trace.getAppJavaClassPath());
+						Dependency dep = dCal.calculateDependency(occurStep.getBreakPoint(), breakStep.getBreakPoint());
+						
+						System.currentTimeMillis();
+						break;
+					}
 				}
 				
 //				try {
