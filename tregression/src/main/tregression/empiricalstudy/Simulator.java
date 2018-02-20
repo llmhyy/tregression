@@ -322,7 +322,7 @@ public class Simulator  {
 					wrongReadVar = null;
 				}
 			} else if (changeType.getType() == StepChangeType.CTL) {
-				TraceNode controlDom = currentNode.getControlDominator();
+				TraceNode controlDom = currentNode.getInvocationMethodOrDominator();
 				if(controlDom==null) {
 					controlDom = currentNode.getInvocationParent();
 					if(controlDom==null){
