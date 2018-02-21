@@ -94,7 +94,11 @@ public class AppClassPathInitializer {
 		appClassPath.setOptionalTestMethod(testCase.testMethod);
 		
 		appClassPath.setLaunchClass(TestCaseAnalyzer.TEST_RUNNER);
-		
+		/**
+		 * setting java agent lib 
+		 */
+		String agentLib = junitDir + File.separator + "instrumentator.jar";
+		appClassPath.setAgentLib(agentLib);
 		return appClassPath;
 	}
 	
