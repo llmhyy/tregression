@@ -42,13 +42,13 @@ public class Simulator  {
 	
 	protected TraceNode findObservedFault(TraceNode node, Trace buggyTrace, Trace correctTrace){
 		StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-		
+		boolean everInvokedByTearDownMethod = previousNodeInvokedByTearDown(node);
 		while(node != null) {
 			StepChangeType changeType = checker.getType(node, true, pairList, matcher);
-			if (isInvokedByTearDownMethod(node)) {
+			if (everInvokedByTearDownMethod && isInvokedByTearDownMethod(node)) {
 				
 			}
-			else if(previousNodeInvokedByTearDown(node)){
+			else if(everInvokedByTearDownMethod && previousNodeInvokedByTearDown(node)){
 				
 			}
 			else if(changeType.getType()==StepChangeType.CTL && node.getControlDominator()==null) {
@@ -322,7 +322,7 @@ public class Simulator  {
 					wrongReadVar = null;
 				}
 			} else if (changeType.getType() == StepChangeType.CTL) {
-				TraceNode controlDom = currentNode.getControlDominator();
+				TraceNode controlDom = currentNode.getInvocationMethodOrDominator();
 				if(controlDom==null) {
 					controlDom = currentNode.getInvocationParent();
 					if(controlDom==null){
@@ -423,7 +423,7 @@ public class Simulator  {
 		TraceNode startNode = buggyTrace.getTraceNode(startOrder);
 		list.add(startNode);
 		while(startNode.getStepOverPrevious()!=null && 
-				startNode.getStepOverPrevious().getLineNumber()==startNode.getLineNumber()){
+				startNode.getStepOverPrevious().getBreakPoint().equals(startNode.getBreakPoint())){
 			startNode = startNode.getStepOverPrevious();
 			list.add(startNode);
 		}
@@ -458,7 +458,7 @@ public class Simulator  {
 		while(domOnRef != null){
 			StepChangeType changeType = typeChecker.getType(domOnRef, false, pairList, matcher);
 			if(changeType.getType()==StepChangeType.SRC){
-				breakSteps = findTheNearestCorrespondence(domOnRef, pairList, matchingStep.getTrace());
+				breakSteps = findTheNearestCorrespondence(domOnRef, pairList, buggyNode.getTrace());
 				break;
 			}
 			else{

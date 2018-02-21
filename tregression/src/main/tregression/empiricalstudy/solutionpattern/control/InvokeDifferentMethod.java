@@ -1,4 +1,4 @@
-package tregression.empiricalstudy.solutionpattern;
+package tregression.empiricalstudy.solutionpattern.control;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +11,8 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseNode;
+import tregression.empiricalstudy.solutionpattern.PatternDetector;
+import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.diff.DiffChunk;
 import tregression.separatesnapshots.diff.FilePairWithDiff;
