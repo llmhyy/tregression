@@ -95,6 +95,20 @@ public class AppClassPathInitializer {
 		
 		appClassPath.setLaunchClass(TestCaseAnalyzer.TEST_RUNNER);
 		
+		/**
+		 * setting bcel lib (for instrumentation) into classpath
+		 */
+		String bcelDir = junitDir + File.separator + "bcel-6.0.jar";
+		appClassPath.addClasspath(bcelDir);
+		String javassitDir = junitDir + File.separator + "javassist.jar";
+		appClassPath.addClasspath(javassitDir);
+		
+		/**
+		 * setting java agent lib 
+		 */
+		String agentLib = junitDir + File.separator + "instrumentator.jar";
+		appClassPath.setAgentLib(agentLib);
+		
 		return appClassPath;
 	}
 	
