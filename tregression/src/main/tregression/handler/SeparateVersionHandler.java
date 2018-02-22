@@ -55,8 +55,8 @@ public class SeparateVersionHandler extends AbstractHandler{
 					Trace trace = t.getBuggyTrace();
 					for(DeadEndRecord r: t.getDeadEndRecordList()){
 						TraceNode breakStep = trace.getTraceNode(r.getBreakStepOrder());
-						TraceNode occurStep = trace.getTraceNode(91);
-//						TraceNode occurStep = trace.getTraceNode(r.getOccurOrder());
+//						TraceNode occurStep = trace.getTraceNode(91);
+						TraceNode occurStep = trace.getTraceNode(r.getOccurOrder());
 						
 						TraversingDistanceCalculator cal = new TraversingDistanceCalculator(trace.getAppJavaClassPath());
 						Traverse tra = cal.calculateASTTravsingDistance(occurStep.getBreakPoint(), breakStep.getBreakPoint());
