@@ -78,6 +78,7 @@ public class TraceCollector {
 		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath);
 		Trace trace = exectuor.run();
 		trace.setMultiThread(result.getChecker().isMultiThread());
+		trace.setAppJavaClassPath(appClassPath);
 		
 		for(TraceNode node: trace.getExecutionList()){
 			BreakPoint point = node.getBreakPoint();
