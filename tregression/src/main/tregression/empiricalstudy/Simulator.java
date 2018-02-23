@@ -407,7 +407,7 @@ public class Simulator  {
 		return deadEndRecords;
 	}
 
-	private List<TraceNode> findTheNearestCorrespondence(TraceNode domOnRef, PairList pairList, Trace buggyTrace) {
+	private List<TraceNode> findTheNearestCorrespondence(TraceNode domOnRef, PairList pairList, Trace buggyTrace, Trace correctTrace) {
 		List<TraceNode> list = new ArrayList<>();
 		
 		TraceNodePair pair = pairList.findByAfterNode(domOnRef);
@@ -419,8 +419,8 @@ public class Simulator  {
 			}
 		}
 		
-		int startOrder = new RootCauseFinder().findStartOrderInOtherTrace(domOnRef, pairList, false);
-		TraceNode startNode = buggyTrace.getTraceNode(startOrder);
+		int endOrder = new RootCauseFinder().findEndOrderInOtherTrace(domOnRef, pairList, false, correctTrace);
+		TraceNode startNode = buggyTrace.getTraceNode(endOrder);
 		list.add(startNode);
 		while(startNode.getStepOverPrevious()!=null && 
 				startNode.getStepOverPrevious().getBreakPoint().equals(startNode.getBreakPoint())){
@@ -428,7 +428,7 @@ public class Simulator  {
 			list.add(startNode);
 		}
 		
-		TraceNode start = buggyTrace.getTraceNode(startOrder);
+		TraceNode start = buggyTrace.getTraceNode(endOrder);
 		TraceNode n = start.getStepOverNext();
 		while(n!=null && (n.getLineNumber()==start.getLineNumber())){
 			list.add(n);
@@ -458,7 +458,7 @@ public class Simulator  {
 		while(domOnRef != null){
 			StepChangeType changeType = typeChecker.getType(domOnRef, false, pairList, matcher);
 			if(changeType.getType()==StepChangeType.SRC){
-				breakSteps = findTheNearestCorrespondence(domOnRef, pairList, buggyNode.getTrace());
+				breakSteps = findTheNearestCorrespondence(domOnRef, pairList, buggyNode.getTrace(), matchingStep.getTrace());
 				break;
 			}
 			else{
