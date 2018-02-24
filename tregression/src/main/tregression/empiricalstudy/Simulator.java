@@ -428,12 +428,12 @@ public class Simulator  {
 			list.add(startNode);
 		}
 		
-		TraceNode start = buggyTrace.getTraceNode(endOrder);
-		TraceNode n = start.getStepOverNext();
-		while(n!=null && (n.getLineNumber()==start.getLineNumber())){
-			list.add(n);
-			n = n.getStepOverNext();
-		}
+//		TraceNode end = buggyTrace.getTraceNode(endOrder);
+//		TraceNode n = end.getStepOverNext();
+//		while(n!=null && (n.getLineNumber()==end.getLineNumber())){
+//			list.add(n);
+//			n = n.getStepOverNext();
+//		}
 		
 		return list;
 	}
