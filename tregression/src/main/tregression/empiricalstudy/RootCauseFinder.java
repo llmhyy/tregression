@@ -61,7 +61,7 @@ public class RootCauseFinder {
 		for(TraceNode node: correctNodeList) {
 			StepChangeType type = typeChecker.getType(node, false, pairList, matcher);
 			if(type.getType()==StepChangeType.SRC) {
-				int startOrder  = findStartOrderInOtherTrace(node, pairList, false);
+				int startOrder  = findEndOrderInOtherTrace(node, pairList, false, buggyTrace);
 				return buggyTrace.getExecutionList().get(startOrder-1);
 			}
 		}
