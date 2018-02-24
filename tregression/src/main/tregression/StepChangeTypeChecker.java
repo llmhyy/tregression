@@ -151,7 +151,7 @@ public class StepChangeTypeChecker {
 					continue;
 				}
 				else {
-					return new VarMatch(true, false);					
+					return new VarMatch(true, true);					
 				}
 			}
 		}
