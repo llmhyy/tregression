@@ -103,6 +103,8 @@ public class TrainingDataTransfer {
 		data.sameWArrayParent = vs[1].isSameArrayParent;
 		data.sameWArrayIndex = vs[1].isSameArrayIndex;
 		
+		data.traceOrder = step.getOrder();
+		
 		return data;
 	}
 	
@@ -124,6 +126,8 @@ public class TrainingDataTransfer {
 		
 		data.controlDependency = dependency.getControlDependency();
 		data.dataDependency = dependency.getDataDependency();
+		
+		data.traceOrder = step.getOrder();
 		
 		return data;
 	}
