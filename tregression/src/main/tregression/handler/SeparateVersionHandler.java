@@ -3,6 +3,7 @@ package tregression.handler;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.bcel.Repository;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -75,10 +76,10 @@ public class SeparateVersionHandler extends AbstractHandler{
 //					}
 					
 					if(!t.getDeadEndRecordList().isEmpty()){
+						Repository.clearCache();
 						DeadEndRecord record = t.getDeadEndRecordList().get(0);
 						DED datas = new TrainingDataTransfer().transfer(record, trace);
 						setTestCase(datas, t.getTestcase());						
-						
 						try {
 							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
 						} catch (NumberFormatException | IOException e) {
