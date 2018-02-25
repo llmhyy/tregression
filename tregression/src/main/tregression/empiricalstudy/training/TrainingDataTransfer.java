@@ -36,8 +36,11 @@ public class TrainingDataTransfer {
 			for(int i=start; i<end; i++){
 				TraceNode step = buggyTrace.getTraceNode(i);
 				if(!step.getBreakPoint().equals(breakStep.getBreakPoint())){
-					DeadEndData d = transferControl(false, occurStep, step);
-					falseDatas.add(d);
+					if(step.getMethodSign().equals(occurStep.getMethodSign())){
+						DeadEndData d = transferControl(false, occurStep, step);
+						falseDatas.add(d);
+					}
+					
 				}
 			}
 		}
