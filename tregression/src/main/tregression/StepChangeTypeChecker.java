@@ -53,7 +53,7 @@ public class StepChangeTypeChecker {
 			return new StepChangeType(StepChangeType.CTL, matchedStep);
 		}
 		else{
-			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList);
+			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList, matcher);
 			if(wrongVariableList.isEmpty()){
 				return new StepChangeType(StepChangeType.IDT, matchedStep);
 			}
@@ -84,10 +84,11 @@ public class StepChangeTypeChecker {
 	}
 
 	private List<VarValue> checkWrongVariable(boolean isOnBefore,
-			TraceNode thisStep, TraceNode thatStep, PairList pairList) {
+			TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
 		List<VarValue> wrongVariableList = new ArrayList<>();
 		for(VarValue readVar: thisStep.getReadVariables()){
-			if(!canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList)){
+			VarMatch varMatch = canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList, matcher);
+			if(varMatch.canBeMatched && !varMatch.sameVariable){
 				wrongVariableList.add(readVar);
 			}
 		}
@@ -101,15 +102,30 @@ public class StepChangeTypeChecker {
 	private Trace getOtherCorrespondingTrace(boolean isOnBeforeTrace, Trace buggyTrace, Trace correctTrace) {
 		return !isOnBeforeTrace ? buggyTrace : correctTrace;
 	}
+	
+	class VarMatch{
+		boolean canBeMatched;
+		boolean sameVariable;
+		public VarMatch(boolean canBeMatched, boolean sameVariable) {
+			super();
+			this.canBeMatched = canBeMatched;
+			this.sameVariable = sameVariable;
+		}
+		
+	}
 
-	private boolean canbeMatched(boolean isOnBeforeTrace, 
-			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList) {
+	private VarMatch canbeMatched(boolean isOnBeforeTrace, 
+			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		System.currentTimeMillis();
 //		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
 		
 		List<VarValue> synonymVarList = findSynonymousVarList(thatStep.getReadVariables(), thisVar);
+		
+		if(synonymVarList.isEmpty()){
+			return new VarMatch(false, false);
+		}
 		
 		for(VarValue thatVar: synonymVarList){
 			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
@@ -121,9 +137,9 @@ public class StepChangeTypeChecker {
 				List<TraceNode> thatAssignChain = new ArrayList<>(); 
 				getAssignChain(thatDom, thatVar, thatAssignChain);
 				
-				boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList);
+				boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList, matcher);
 				if(isAssignChainMatch){
-					return true;
+					return new VarMatch(true, true);
 				}
 			}
 			else {
@@ -135,19 +151,17 @@ public class StepChangeTypeChecker {
 					continue;
 				}
 				else {
-					return equal;					
+					return new VarMatch(true, true);					
 				}
 			}
 		}
 		
-		/**
-		 * if a variable does not have corresponding variable in the other trace, we do not record it.
-		 */
-		return false;
+		
+		return new VarMatch(true, false);
 	}
 
 	private boolean isAssignChainMatch(List<TraceNode> thisAssignChain, List<TraceNode> thatAssignChain,
-			boolean isOnBeforeTrace, PairList pairList) {
+			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
 		if(thisAssignChain.size() != thatAssignChain.size()){
 			return false;
 		}
@@ -174,6 +188,15 @@ public class StepChangeTypeChecker {
 			
 			if(thisDom.getOrder()!=pair.getBeforeNode().getOrder()){
 				return false;
+			}
+			
+			if(thisDom.getOrder()==pair.getBeforeNode().getOrder()){
+				boolean isThisDiff = matcher.checkSourceDiff(thisDom.getBreakPoint(), true);
+				boolean isThatDiff = matcher.checkSourceDiff(thatDom.getBreakPoint(), false);
+				
+				if(isThisDiff || isThatDiff){
+					return false;
+				}
 			}
 		}
 
