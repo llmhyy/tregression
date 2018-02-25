@@ -16,6 +16,7 @@ import microbat.algorithm.graphdiff.MatchingGraphPair;
 import microbat.model.BreakPoint;
 import microbat.model.value.GraphNode;
 import microbat.util.JavaUtil;
+import microbat.util.MinimumASTNodeFinder;
 import tregression.separatesnapshots.DiffMatcher;
 
 public abstract class IndexTreeMatcher implements Matcher{
@@ -206,6 +207,6 @@ public abstract class IndexTreeMatcher implements Matcher{
 	private ASTNode findSpecificNode(CompilationUnit cu, BreakPoint point) {
 		MinimumASTNodeFinder finder = new MinimumASTNodeFinder(point.getLineNumber(), cu);
 		cu.accept(finder);
-		return finder.minimumNode;
+		return finder.getMinimumNode();
 	}
 }
