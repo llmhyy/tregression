@@ -9,4 +9,9 @@ public class TestCase {
 		this.testClass = testClass;
 		this.testMethod = testMethod;
 	}
+	
+	@Override
+	public String toString(){
+		return testClass + "#" + testMethod;
+	}
 }

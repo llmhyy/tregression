@@ -17,6 +17,9 @@ import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
+import tregression.empiricalstudy.training.DED;
+import tregression.empiricalstudy.training.DeadEndData;
+import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.io.RegressionRecorder;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
@@ -300,10 +303,12 @@ public class TrialGenerator {
 		}
 
 		EmpiricalTrial trial = trials0.get(0);
-		if(isRecordDB){
-			DBRecording dbRecording = new DBRecording(trial, buggyTrace, correctTrace, diffMatcher, pairList, config);
-			new Thread(dbRecording).start();
-		}
+		
+		//TODO generate a folder with a name of the regression, and store the traces
+//		if(isRecordDB){
+//			DBRecording dbRecording = new DBRecording(trial, buggyTrace, correctTrace, diffMatcher, pairList, config);
+//			new Thread(dbRecording).start();
+//		}
 		
 		return trial;
 	}

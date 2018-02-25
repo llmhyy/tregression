@@ -1,5 +1,6 @@
 package tregression.handler;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -18,9 +19,14 @@ import microbat.recommendation.calculator.DependencyCalculator;
 import microbat.recommendation.calculator.Traverse;
 import microbat.recommendation.calculator.TraversingDistanceCalculator;
 import tregression.empiricalstudy.DeadEndRecord;
+import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.training.DED;
+import tregression.empiricalstudy.training.DeadEndData;
+import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
@@ -53,30 +59,51 @@ public class SeparateVersionHandler extends AbstractHandler{
 					
 					EmpiricalTrial t = trials.get(i);
 					Trace trace = t.getBuggyTrace();
-					for(DeadEndRecord r: t.getDeadEndRecordList()){
-						TraceNode breakStep = trace.getTraceNode(r.getBreakStepOrder());
-//						TraceNode occurStep = trace.getTraceNode(91);
-						TraceNode occurStep = trace.getTraceNode(r.getOccurOrder());
+//					for(DeadEndRecord r: t.getDeadEndRecordList()){
+//						TraceNode breakStep = trace.getTraceNode(r.getBreakStepOrder());
+////						TraceNode occurStep = trace.getTraceNode(91);
+//						TraceNode occurStep = trace.getTraceNode(r.getOccurOrder());
+//						
+//						TraversingDistanceCalculator cal = new TraversingDistanceCalculator(trace.getAppJavaClassPath());
+//						Traverse tra = cal.calculateASTTravsingDistance(occurStep.getBreakPoint(), breakStep.getBreakPoint());
+//						
+//						DependencyCalculator dCal = new DependencyCalculator(trace.getAppJavaClassPath());
+//						Dependency dep = dCal.calculateDependency(occurStep.getBreakPoint(), breakStep.getBreakPoint());
+//						
+//						System.currentTimeMillis();
+//						break;
+//					}
+					
+					if(!t.getDeadEndRecordList().isEmpty()){
+						DeadEndRecord record = t.getDeadEndRecordList().get(0);
+						DED datas = new TrainingDataTransfer().transfer(record, trace);
+						setTestCase(datas, t.getTestcase());						
 						
-						TraversingDistanceCalculator cal = new TraversingDistanceCalculator(trace.getAppJavaClassPath());
-						Traverse tra = cal.calculateASTTravsingDistance(occurStep.getBreakPoint(), breakStep.getBreakPoint());
-						
-						DependencyCalculator dCal = new DependencyCalculator(trace.getAppJavaClassPath());
-						Dependency dep = dCal.calculateDependency(occurStep.getBreakPoint(), breakStep.getBreakPoint());
-						
-						System.currentTimeMillis();
-						break;
+						try {
+							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
+						} catch (NumberFormatException | IOException e) {
+							e.printStackTrace();
+						}
 					}
+					
 				}
 				
 //				try {
 //					TrialRecorder recorder = new TrialRecorder();
 //					recorder.export(trials, projectName, Integer.valueOf(id));
+//					
 //				} catch (IOException e) {
 //					e.printStackTrace();
 //				}
 				
 				return Status.OK_STATUS;
+			}
+			
+			private void setTestCase(DED datas, String tc) {
+				datas.getTrueData().testcase = tc;
+				for(DeadEndData data: datas.getFalseDatas()){
+					data.testcase = tc;
+				}
 			}
 		};
 		

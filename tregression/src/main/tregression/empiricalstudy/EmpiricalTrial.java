@@ -5,6 +5,7 @@ import java.util.List;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import tregression.empiricalstudy.training.DeadEndData;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.DiffMatcher;
@@ -288,5 +289,17 @@ public class EmpiricalTrial {
 	public void setDiffMatcher(DiffMatcher diffMatcher) {
 		this.diffMatcher = diffMatcher;
 	}
+
+	public List<DeadEndData> getDeadEndDataList() {
+		return deadEndDataList;
+	}
+
+	public void setDeadEndDataList(List<DeadEndData> deadEndDataList) {
+		this.deadEndDataList = deadEndDataList;
+	}
+
+	private List<DeadEndData> deadEndDataList = new ArrayList<>();
+	
+	
 
 }
