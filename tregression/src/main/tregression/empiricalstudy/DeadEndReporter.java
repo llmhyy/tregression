@@ -164,24 +164,26 @@ public class DeadEndReporter {
 		row.createCell(2).setCellValue(data.testcase);
 		row.createCell(3).setCellValue(data.isBreakStep);
 		
-		row.createCell(4).setCellValue(data.sameWLocalVarType);
-		row.createCell(5).setCellValue(data.sameWLocalVarName);
-		row.createCell(6).setCellValue(data.sameWFieldParent);
-		row.createCell(7).setCellValue(data.sameWFieldType);
-		row.createCell(8).setCellValue(data.sameWFieldName);
-		row.createCell(9).setCellValue(data.sameWArrayParent);
-		row.createCell(10).setCellValue(data.sameWArrayType);
-		row.createCell(11).setCellValue(data.sameWArrayIndex);
+		row.createCell(4).setCellValue(data.criticalConditionalStep);
+		
+		row.createCell(5).setCellValue(data.sameWLocalVarType);
+		row.createCell(6).setCellValue(data.sameWLocalVarName);
+		row.createCell(7).setCellValue(data.sameWFieldParent);
+		row.createCell(8).setCellValue(data.sameWFieldType);
+		row.createCell(9).setCellValue(data.sameWFieldName);
+		row.createCell(10).setCellValue(data.sameWArrayParent);
+		row.createCell(11).setCellValue(data.sameWArrayType);
+		row.createCell(12).setCellValue(data.sameWArrayIndex);
 		
 		
-		row.createCell(12).setCellValue(data.sameRLocalVarType);
-		row.createCell(13).setCellValue(data.sameRLocalVarName);
-		row.createCell(14).setCellValue(data.sameRFieldParent);
-		row.createCell(15).setCellValue(data.sameRFieldType);
-		row.createCell(16).setCellValue(data.sameRFieldName);
-		row.createCell(17).setCellValue(data.sameRArrayParent);
-		row.createCell(18).setCellValue(data.sameRArrayType);
-		row.createCell(19).setCellValue(data.sameRArrayIndex);
+		row.createCell(13).setCellValue(data.sameRLocalVarType);
+		row.createCell(14).setCellValue(data.sameRLocalVarName);
+		row.createCell(15).setCellValue(data.sameRFieldParent);
+		row.createCell(16).setCellValue(data.sameRFieldType);
+		row.createCell(17).setCellValue(data.sameRFieldName);
+		row.createCell(18).setCellValue(data.sameRArrayParent);
+		row.createCell(19).setCellValue(data.sameRArrayType);
+		row.createCell(20).setCellValue(data.sameRArrayIndex);
 		
 	}
 	
