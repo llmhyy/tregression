@@ -76,7 +76,7 @@ public class TraceCollector {
 		
 		AppJavaClassPath appClassPath = result.getAppClassPath();
 		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath);
-		Trace trace = exectuor.run();
+		Trace trace = exectuor.run(false);
 		trace.setMultiThread(result.getChecker().isMultiThread());
 		trace.setAppJavaClassPath(appClassPath);
 		
