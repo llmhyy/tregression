@@ -14,17 +14,11 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import microbat.model.trace.Trace;
-import microbat.model.trace.TraceNode;
-import microbat.recommendation.calculator.Dependency;
-import microbat.recommendation.calculator.DependencyCalculator;
-import microbat.recommendation.calculator.Traverse;
-import microbat.recommendation.calculator.TraversingDistanceCalculator;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
-import tregression.empiricalstudy.TestCase;
-import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
 import tregression.empiricalstudy.training.TrainingDataTransfer;
@@ -32,7 +26,7 @@ import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
 
-	private TrialGenerator generator = new TrialGenerator();
+	private TrialGenerator0 generator = new TrialGenerator0();
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {

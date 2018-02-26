@@ -4,16 +4,19 @@ import java.io.File;
 import java.util.List;
 
 import microbat.codeanalysis.runtime.ExecutionStatementCollector;
+import microbat.codeanalysis.runtime.InstrumentationExecutor;
+import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
 import microbat.util.MicroBatUtil;
+import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
-import tregression.TraceModelConstructor;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
 
-public class TraceCollector {
+public class TraceCollector0 {
 	
 	public RunningResult preCheck(String workingDir, TestCase tc, 
 			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread) {
@@ -66,38 +69,56 @@ public class TraceCollector {
 		return rs;
 	}
 
-	public RunningResult run(RunningResult result, boolean isRunInTestCaseMode){
+	public RunningResult run(String workingDir, TestCase tc, 
+			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread){
 		
-		TraceModelConstructor constructor = new TraceModelConstructor();
-		ExecutionStatementCollector checker = result.getChecker();
-		Trace trace = constructor.constructTraceModel(result.getAppClassPath(), result.getExecutedStatements(), 
-				checker.getExecutionOrderList(), checker.getStepNum(), false, isRunInTestCaseMode);
+		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);
+		if(!isRunInTestCaseMode) {
+			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
+		}
 		
-//		AppJavaClassPath appClassPath = result.getAppClassPath();
-//		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath);
-//		Trace trace = exectuor.run();
-//		trace.setMultiThread(result.getChecker().isMultiThread());
-//		trace.setAppJavaClassPath(appClassPath);
-//		
-//		for(TraceNode node: trace.getExecutionList()){
-//			BreakPoint point = node.getBreakPoint();
-//			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
-//			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
-//			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
-//			
-//			if(new File(sourcePath).exists()) {
-//				point.setFullJavaFilePath(sourcePath);
-//			}
-//			else if(new File(testPath).exists()) {
-//				point.setFullJavaFilePath(testPath);
-//			}
-//			else {
-//				System.err.println("cannot find the source code file for " + point);
-//			}
-//		}
+		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath);
+		Trace trace = exectuor.run();
 		
-		result.setRunningTrace(trace);
-		return result;
+		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
+		//TODO
+		if(/*precheckInfo.isOverLong()*/precheckInfo.getStepNum()>Settings.stepLimit) {
+			System.out.println("The trace is over long!");
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator.OVER_LONG);
+			return rs;
+		}
+		
+		boolean isMultiThread = precheckInfo.getThreadNum()!=1;
+		if(isMultiThread && !allowMultiThread) {
+			System.out.println("It is multi-thread program!");
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator.MULTI_THREAD);
+			return rs;
+		}
+		
+		trace.setMultiThread(isMultiThread);
+		trace.setAppJavaClassPath(appClassPath);
+		for(TraceNode node: trace.getExecutionList()){
+			BreakPoint point = node.getBreakPoint();
+			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
+			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
+			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
+			
+			if(new File(sourcePath).exists()) {
+				point.setFullJavaFilePath(sourcePath);
+			}
+			else if(new File(testPath).exists()) {
+				point.setFullJavaFilePath(testPath);
+			}
+			else {
+				System.err.println("cannot find the source code file for " + point);
+			}
+		}
+		
+		RunningResult rs = new RunningResult(trace, null, null, appClassPath);
+		rs.setRunningTrace(trace);
+		return rs;
 	}
 
 	

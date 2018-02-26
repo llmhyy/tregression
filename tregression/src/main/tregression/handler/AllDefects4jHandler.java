@@ -18,7 +18,7 @@ import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
-import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
@@ -69,7 +69,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						System.out.println("analyzing the " + j + "th bug in " + projects[i] + " project.");
 						
-						TrialGenerator generator = new TrialGenerator();
+						TrialGenerator0 generator = new TrialGenerator0();
 						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, 
 								false, false, true, false, d4jConfig, null);
