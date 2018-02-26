@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.bcel.Repository;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -13,10 +14,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
+import tregression.empiricalstudy.DeadEndRecord;
+import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialRecorder;
+import tregression.empiricalstudy.training.DED;
+import tregression.empiricalstudy.training.DeadEndData;
+import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.preference.TregressionPreference;
 
 public class AllDefects4jHandler extends AbstractHandler {
@@ -72,7 +78,22 @@ public class AllDefects4jHandler extends AbstractHandler {
 						try {
 							recorder = new TrialRecorder();
 							recorder.export(trials, projects[i], j);
-						} catch (IOException e) {
+							
+							for(EmpiricalTrial t: trials){
+								
+								if(!t.getDeadEndRecordList().isEmpty()){
+									Repository.clearCache();
+									DeadEndRecord record = t.getDeadEndRecordList().get(0);
+									DED datas = new TrainingDataTransfer().transfer(record, t.getBuggyTrace());
+									setTestCase(datas, t.getTestcase());						
+									try {
+										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
+									} catch (NumberFormatException | IOException e) {
+										e.printStackTrace();
+									}
+								}
+							}
+						} catch (Exception e) {
 							e.printStackTrace();
 						}
 						
@@ -86,7 +107,15 @@ public class AllDefects4jHandler extends AbstractHandler {
 //					}
 				}
 				
+				
 				return Status.OK_STATUS;
+			}
+			
+			private void setTestCase(DED datas, String tc) {
+				datas.getTrueData().testcase = tc;
+				for(DeadEndData data: datas.getFalseDatas()){
+					data.testcase = tc;
+				}
 			}
 		};
 		
