@@ -81,8 +81,7 @@ public class TraceCollector0 {
 		Trace trace = exectuor.run();
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
-		//TODO
-		if(/*precheckInfo.isOverLong()*/precheckInfo.getStepNum()>Settings.stepLimit) {
+		if(!precheckInfo.isOverLong()) {
 			System.out.println("The trace is over long!");
 			RunningResult rs = new RunningResult();
 			rs.setFailureType(TrialGenerator.OVER_LONG);
