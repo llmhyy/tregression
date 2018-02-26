@@ -60,13 +60,15 @@ public class TrainingDataTransfer {
 				if(!step.getBreakPoint().equals(breakStep.getBreakPoint())){
 					if(wrongVar.getVariable() instanceof LocalVar){
 						if(step.getInvocationLevel()==occurStep.getInvocationLevel()){
-							DeadEndData d = transferData(false, occurStep, step, deadEndStep, 
+							boolean label = identifyDataLabel(step, breakStep);
+							DeadEndData d = transferData(label, occurStep, step, deadEndStep, 
 									wrongVar, criticalConditionalSteps);
 							falseDatas.add(d);	
 						}
 					}
 					else{
-						DeadEndData d = transferData(false, occurStep, step, deadEndStep, 
+						boolean label = identifyDataLabel(step, breakStep);
+						DeadEndData d = transferData(label, occurStep, step, deadEndStep, 
 								wrongVar, criticalConditionalSteps);
 						falseDatas.add(d);						
 					}
@@ -75,6 +77,16 @@ public class TrainingDataTransfer {
 		}
 		
 		return new DED(trueData, falseDatas);
+	}
+	
+	private boolean identifyDataLabel(TraceNode step, TraceNode breakStep){
+		if(step.getMethodSign().equals(breakStep.getMethodSign())){
+			if(Math.abs(step.getLineNumber()-breakStep.getLineNumber())<=1){
+				return true;
+			}
+		}
+		
+		return false;
 	}
 
 	private DeadEndData transferData(boolean label, TraceNode occurStep, TraceNode step, 
