@@ -8,6 +8,7 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import microbat.model.value.VirtualValue;
+import microbat.model.variable.ArrayElementVar;
 import microbat.model.variable.Variable;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
@@ -118,10 +119,10 @@ public class StepChangeTypeChecker {
 			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
-		System.currentTimeMillis();
 //		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
 		
-		List<VarValue> synonymVarList = findSynonymousVarList(thatStep.getReadVariables(), thisVar);
+		List<VarValue> synonymVarList = findSynonymousVarList(thisStep, thatStep, thisVar, 
+				isOnBeforeTrace, pairList, matcher);
 		
 		if(synonymVarList.isEmpty()){
 			return new VarMatch(false, false);
@@ -130,15 +131,10 @@ public class StepChangeTypeChecker {
 		for(VarValue thatVar: synonymVarList){
 			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
 			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
-			
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
-				List<TraceNode> thisAssignChain = new ArrayList<>();
-				getAssignChain(thisDom, thisVar, thisAssignChain);
-				List<TraceNode> thatAssignChain = new ArrayList<>(); 
-				getAssignChain(thatDom, thatVar, thatAssignChain);
-				
-				boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList, matcher);
-				if(isAssignChainMatch){
+				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
+						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
+				if(isReferenceValueMatch){
 					return new VarMatch(true, true);
 				}
 			}
@@ -158,6 +154,18 @@ public class StepChangeTypeChecker {
 		
 		
 		return new VarMatch(true, false);
+	}
+
+	private boolean isReferenceValueMatch(ReferenceValue thisVar, ReferenceValue thatVar, TraceNode thisDom, TraceNode thatDom,
+			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
+		
+		List<TraceNode> thisAssignChain = new ArrayList<>();
+		getAssignChain(thisDom, thisVar, thisAssignChain);
+		List<TraceNode> thatAssignChain = new ArrayList<>(); 
+		getAssignChain(thatDom, thatVar, thatAssignChain);
+		
+		boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList, matcher);
+		return isAssignChainMatch;
 	}
 
 	private boolean isAssignChainMatch(List<TraceNode> thisAssignChain, List<TraceNode> thatAssignChain,
@@ -224,11 +232,45 @@ public class StepChangeTypeChecker {
 		}
 	}
 
-	private List<VarValue> findSynonymousVarList(List<VarValue> readVariables, VarValue var) {
+	private List<VarValue> findSynonymousVarList(TraceNode thisStep, TraceNode thatStep, VarValue thisVar,
+			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
+		List<VarValue> readVariables = thatStep.getReadVariables();
 		List<VarValue> synonymousList = new ArrayList<>();
 		for(VarValue readVar: readVariables) {
-			if(readVar.getVarName().equals(var.getVarName())) {
-				synonymousList.add(readVar);
+			if(readVar.getVariable() instanceof ArrayElementVar && thisVar.getVariable() instanceof ArrayElementVar){
+				
+				String thisIndex = ((ArrayElementVar)thisVar.getVariable()).getIndex();
+				String thatIndex = ((ArrayElementVar)readVar.getVariable()).getIndex();
+				
+				if(thisIndex!=null && thatIndex!=null && thisIndex.equals(thatIndex)){
+					ReferenceValue thisParent = (ReferenceValue)thisVar.getParents().get(0);
+					ReferenceValue thatParent = (ReferenceValue)readVar.getParents().get(0);
+					String thisParentID = Variable.truncateSimpleID(thisParent.getVarID());
+					String thatParentID = Variable.truncateSimpleID(thatParent.getVarID());
+					TraceNode thisDom = thisStep.getTrace().findLastestNodeDefiningPrimitiveVariable(
+							thisParentID, thisStep.getOrder());
+					TraceNode thatDom = thatStep.getTrace().findLastestNodeDefiningPrimitiveVariable(
+							thatParentID, thatStep.getOrder());
+					
+					int thisOrder = (thisDom==null) ? 0 : thisDom.getOrder();
+					int thatOrder = (thatDom==null) ? 0 : thatDom.getOrder();
+					thisParent.setVarID(thisParentID+":"+thisOrder);
+					thatParent.setVarID(thatParentID+":"+thatOrder);
+					
+					boolean isReferenceValueMatch = isReferenceValueMatch(thisParent, thatParent, thisDom, thatDom, 
+							isOnBeforeTrace, pairList, matcher);
+					
+					if(isReferenceValueMatch){
+						
+						synonymousList.add(readVar);
+					}
+				}
+				
+			}
+			else{
+				if(readVar.getVarName().equals(thisVar.getVarName())) {
+					synonymousList.add(readVar);
+				}				
 			}
 		}
 		return synonymousList;
