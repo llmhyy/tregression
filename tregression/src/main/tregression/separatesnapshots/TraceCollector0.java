@@ -212,9 +212,9 @@ public class TraceCollector0 {
 	}
 
 	private String generateTraceDir(Defects4jProjectConfig config) {
-		String traceFolder = FileUtils.getFilePath(MicroBatUtil.getTraceFolder(), config.projectName, 
+		String traceFolder = sav.common.core.utils.FileUtils.getFilePath(MicroBatUtil.getTraceFolder(), config.projectName, 
 				String.valueOf(config.bugID));
-		FileUtils.createFolder(traceFolder);
+		sav.common.core.utils.FileUtils.createFolder(traceFolder);
 		return traceFolder;
 	}
 	
