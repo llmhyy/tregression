@@ -322,12 +322,18 @@ public class Simulator  {
 					wrongReadVar = null;
 				}
 			} else if (changeType.getType() == StepChangeType.CTL) {
-				TraceNode controlDom = currentNode.getInvocationMethodOrDominator();
-				if(controlDom==null) {
-					controlDom = currentNode.getInvocationParent();
-					if(controlDom==null){
-						controlDom = currentNode.getStepInPrevious();
-					}
+				TraceNode controlDom = null;
+				if(currentNode.insideException()){
+					controlDom = currentNode.getStepInPrevious();
+				}
+				else{
+					controlDom = currentNode.getInvocationMethodOrDominator();
+					if(controlDom==null) {
+						controlDom = currentNode.getInvocationParent();
+						if(controlDom==null){
+							controlDom = currentNode.getStepInPrevious();
+						}
+					}					
 				}
 
 				StepOperationTuple operation = new StepOperationTuple(currentNode,
