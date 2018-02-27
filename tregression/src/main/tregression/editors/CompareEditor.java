@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -174,8 +175,9 @@ public class CompareEditor extends EditorPart {
 		Composite composite = new Composite(sashForm, SWT.NONE);
 		composite.setLayout(new GridLayout(1, true));
 		
-		Label label = new Label(composite, SWT.NONE);
+		Text label = new Text(composite, SWT.NONE);
 		label.setText(path);
+		label.setEditable(false);
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		
 		final StyledText text = new StyledText(composite, 
