@@ -163,8 +163,8 @@ public class TrialGenerator0 {
 	private EmpiricalTrial analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
 			TestCase tc, Defects4jProjectConfig config, 
 			boolean requireVisualization, boolean isRunInTestCaseMode, boolean isRecordDB) throws SimulationFailException {
-		TraceCollector0 buggyCollector = new TraceCollector0();
-		TraceCollector0 correctCollector = new TraceCollector0();
+		TraceCollector0 buggyCollector = new TraceCollector0(true);
+		TraceCollector0 correctCollector = new TraceCollector0(false);
 		long time1 = 0;
 		long time2 = 0;
 

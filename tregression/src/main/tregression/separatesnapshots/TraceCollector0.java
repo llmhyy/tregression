@@ -25,6 +25,11 @@ import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
 
 public class TraceCollector0 {
+	private boolean isBuggy;
+	
+	public TraceCollector0(boolean buggy) {
+		this.isBuggy = buggy;
+	}
 	
 	public RunningResult preCheck(String workingDir, TestCase tc, 
 			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread) {
@@ -85,7 +90,8 @@ public class TraceCollector0 {
 			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
 		}
 		
-		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath);
+		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath, generateTraceDir(config),
+				isBuggy ? "bug" : "fix");
 		Trace trace = exectuor.run();
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
@@ -204,4 +210,12 @@ public class TraceCollector0 {
 		}
 		
 	}
+
+	private String generateTraceDir(Defects4jProjectConfig config) {
+		String traceFolder = FileUtils.getFilePath(MicroBatUtil.getTraceFolder(), config.projectName, 
+				String.valueOf(config.bugID));
+		FileUtils.createFolder(traceFolder);
+		return traceFolder;
+	}
+	
 }

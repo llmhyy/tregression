@@ -17,7 +17,7 @@ import org.eclipse.jdt.core.dom.WhileStatement;
  */
 
 public class LoopStatementChecker extends ASTVisitor {
-	CompilationUnit cu;
+	CompilationUnit cu; 
 	ASTNode node;
 
 	public boolean isValid = false;

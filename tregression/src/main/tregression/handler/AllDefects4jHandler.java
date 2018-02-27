@@ -18,6 +18,7 @@ import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.training.DED;
@@ -32,7 +33,6 @@ public class AllDefects4jHandler extends AbstractHandler {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				
 				int skippedNum = 0;
 				int endNum = 500;
 				
@@ -60,8 +60,6 @@ public class AllDefects4jHandler extends AbstractHandler {
 							continue;
 						}
 						
-						
-						
 						System.out.println("working on the " + j + "th bug of " + projects[i] + " project.");
 						
 						String buggyPath = prefix + projects[i] + File.separator + j + File.separator + "bug";
@@ -69,7 +67,9 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						System.out.println("analyzing the " + j + "th bug in " + projects[i] + " project.");
 						
-						TrialGenerator0 generator = new TrialGenerator0();
+						TrialGenerator generator = new TrialGenerator();
+						TrialGenerator0 generator0 = new TrialGenerator0();
+						
 						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, 
 								false, false, true, false, d4jConfig, null);

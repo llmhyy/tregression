@@ -18,6 +18,7 @@ import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
@@ -26,13 +27,14 @@ import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
 
-	private TrialGenerator0 generator = new TrialGenerator0();
-	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				TrialGenerator generator = new TrialGenerator();
+				TrialGenerator0 generator0 = new TrialGenerator0();
+				
 				String buggyPath = PathConfiguration.getBuggyPath();
 				String fixPath = PathConfiguration.getCorrectPath();
 				
@@ -44,7 +46,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 				
-				List<EmpiricalTrial> trials = generator.generateTrials(buggyPath, fixPath, 
+				List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
 						false, true, true, false, config, testcase);
 				
 				System.out.println("all the trials");
