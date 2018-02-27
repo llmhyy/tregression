@@ -10,13 +10,18 @@ import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.util.MicroBatUtil;
-import microbat.util.Settings;
+import sav.common.core.utils.FileUtils;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
 
 public class TraceCollector0 {
+	private boolean isBuggy;
+	
+	public TraceCollector0(boolean buggy) {
+		this.isBuggy = buggy;
+	}
 	
 	public RunningResult preCheck(String workingDir, TestCase tc, 
 			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread) {
@@ -77,11 +82,12 @@ public class TraceCollector0 {
 			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
 		}
 		
-		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath);
+		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath, generateTraceDir(config),
+				isBuggy ? "bug" : "fix");
 		Trace trace = exectuor.run();
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
-		if(!precheckInfo.isOverLong()) {
+		if(precheckInfo.isOverLong()) {
 			System.out.println("The trace is over long!");
 			RunningResult rs = new RunningResult();
 			rs.setFailureType(TrialGenerator.OVER_LONG);
@@ -120,5 +126,11 @@ public class TraceCollector0 {
 		return rs;
 	}
 
+	private String generateTraceDir(Defects4jProjectConfig config) {
+		String traceFolder = FileUtils.getFilePath(MicroBatUtil.getTraceFolder(), config.projectName, 
+				String.valueOf(config.bugID));
+		FileUtils.createFolder(traceFolder);
+		return traceFolder;
+	}
 	
 }
