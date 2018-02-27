@@ -1,7 +1,15 @@
 package tregression.separatesnapshots;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import microbat.codeanalysis.runtime.ExecutionStatementCollector;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
@@ -9,8 +17,8 @@ import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.util.JavaUtil;
 import microbat.util.MicroBatUtil;
-import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
@@ -98,6 +106,9 @@ public class TraceCollector0 {
 		
 		trace.setMultiThread(isMultiThread);
 		trace.setAppJavaClassPath(appClassPath);
+		
+		Map<String, String> classNameMap = new HashMap<>();
+		
 		for(TraceNode node: trace.getExecutionList()){
 			BreakPoint point = node.getBreakPoint();
 			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
@@ -111,7 +122,38 @@ public class TraceCollector0 {
 				point.setFullJavaFilePath(testPath);
 			}
 			else {
-				System.err.println("cannot find the source code file for " + point);
+				String canonicalClassName = point.getClassCanonicalName(); 
+				String declaringCompilationUnitName = classNameMap.get(canonicalClassName);
+				
+				if(declaringCompilationUnitName==null){
+					String packageName = point.getPackageName();
+					String packageRelativePath = packageName.replace(".", File.separator);
+					String sourcePackagePath = appClassPath.getSoureCodePath() + File.separator + packageRelativePath;
+					String testPackagePath = appClassPath.getTestCodePath() + File.separator + packageRelativePath;
+					
+					declaringCompilationUnitName = findDeclaringCompilationUnitName(sourcePackagePath, canonicalClassName);
+					if(declaringCompilationUnitName==null){
+						declaringCompilationUnitName = findDeclaringCompilationUnitName(testPackagePath, canonicalClassName);
+					}
+				}
+				classNameMap.put(canonicalClassName, declaringCompilationUnitName);
+				
+				if(declaringCompilationUnitName!=null){
+					point.setDeclaringCompilationUnitName(declaringCompilationUnitName);
+					relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
+					sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
+					testPath = appClassPath.getSoureCodePath() + File.separator + relativePath;
+					
+					if(new File(sourcePath).exists()) {
+						point.setFullJavaFilePath(sourcePath);
+					}
+					else if(new File(testPath).exists()) {
+						point.setFullJavaFilePath(testPath);
+					}
+				}
+				else{
+					System.err.println("cannot find the source code file for " + point);					
+				}
 			}
 		}
 		
@@ -120,5 +162,46 @@ public class TraceCollector0 {
 		return rs;
 	}
 
-	
+	@SuppressWarnings("rawtypes")
+	private String findDeclaringCompilationUnitName(String packagePath, String canonicalClassName) {
+		File packageFolder = new File(packagePath);
+		Collection javaFiles = FileUtils.listFiles(packageFolder, new String[]{"java"}, false);;
+		for(Object javaFileObject: javaFiles){
+			String javaFile = ((File)javaFileObject).getAbsolutePath();
+			CompilationUnit cu = JavaUtil.parseCompilationUnit(javaFile);
+			TypeNameFinder finder = new TypeNameFinder(cu, canonicalClassName);
+			cu.accept(finder);
+			if(finder.isFind){
+				return JavaUtil.getFullNameOfCompilationUnit(cu);
+			}
+		}
+		
+		return null;
+	}
+
+	class TypeNameFinder extends ASTVisitor{
+		CompilationUnit cu;
+		boolean isFind = false;
+		String canonicalClassName;
+
+		public TypeNameFinder(CompilationUnit cu, String canonicalClassName) {
+			super();
+			this.cu = cu;
+			this.canonicalClassName = canonicalClassName;
+		}
+		
+		public boolean visit(TypeDeclaration type){
+			String simpleName = canonicalClassName;
+			if(canonicalClassName.contains(".")){
+				simpleName = canonicalClassName.substring(
+						canonicalClassName.lastIndexOf(".")+1, canonicalClassName.length());
+			}
+			if(type.getName().getFullyQualifiedName().equals(simpleName)){
+				this.isFind = true;
+			}
+			
+			return false;
+		}
+		
+	}
 }
