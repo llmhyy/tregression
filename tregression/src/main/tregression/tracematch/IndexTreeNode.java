@@ -59,9 +59,9 @@ public class IndexTreeNode implements GraphNode {
 			return new IndexTreeNode(invocationParent);
 		}
 		else{
-			TraceNode smallerNode = (invocationParent.getOrder() < controlDominator.getOrder())?
+			TraceNode largerNode = (invocationParent.getOrder() > controlDominator.getOrder())?
 					invocationParent : controlDominator;
-			return new IndexTreeNode(smallerNode);
+			return new IndexTreeNode(largerNode);
 		}
 	}
 	
@@ -86,7 +86,6 @@ public class IndexTreeNode implements GraphNode {
 			ControlNode controlNode = new ControlNode(node, appearingTime);
 			controlNodeList.add(controlNode);
 		}
-		
 		return controlNodeList;
 	}
 
