@@ -104,6 +104,14 @@ public class TraceCollector0 {
 			return rs;
 		}
 		
+		if(!precheckInfo.getOverLongMethods().isEmpty()) {
+			String method = precheckInfo.getOverLongMethods().get(0);
+			System.out.println("Method " + method + " is over long after instrumentation!");
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator.OVER_LONG);
+			return rs;
+		}
+		
 		boolean isMultiThread = precheckInfo.getThreadNum()!=1;
 		if(isMultiThread && !allowMultiThread) {
 			System.out.println("It is multi-thread program!");
