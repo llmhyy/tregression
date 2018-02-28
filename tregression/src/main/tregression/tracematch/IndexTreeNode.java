@@ -1,7 +1,9 @@
 package tregression.tracematch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
@@ -88,9 +90,18 @@ public class IndexTreeNode implements GraphNode {
 		}
 		
 		List<ControlNode> controlNodeList = new ArrayList<>();
+		Map<BreakPoint, Integer> map = new HashMap<>();
 		for(int i=path.size()-1; i>=0; i--){
 			IndexTreeNode node = path.get(i);
-			int appearingTime = calculateAppearingTime(controlNodeList, node);
+			BreakPoint point = node.getBreakPoint();
+			
+			Integer appearingTime = map.get(point);
+			if(appearingTime==null){
+				appearingTime = 0;
+			}
+			appearingTime++;
+			map.put(point, appearingTime);
+			//int appearingTime = calculateAppearingTime(controlNodeList, node);
 			
 			ControlNode controlNode = new ControlNode(node, appearingTime);
 			controlNodeList.add(controlNode);

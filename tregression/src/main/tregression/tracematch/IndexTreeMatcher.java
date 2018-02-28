@@ -139,11 +139,20 @@ public abstract class IndexTreeMatcher implements Matcher{
 	}
 	
 	private boolean canFindMatchingNode(ControlNode node, List<ControlNode> path) {
+		Map<BreakPoint, Boolean> map = new HashMap<>();
 		for(ControlNode thatNode: path){
-			if(node.isMatchableWith(thatNode, diffMatcher)){
-				return true;
+			BreakPoint point = thatNode.getBreakPoint();
+			Boolean flag = map.get(point);
+			if(flag==null){
+				if(node.isMatchableWith(thatNode, diffMatcher)){
+					return true;
+				}
+				else{
+					map.put(point, false);
+				}				
 			}
 		}
+		
 		return false;
 	}
 	

@@ -67,6 +67,12 @@ public class ControlNode {
 		this.appearOrder = appearOrder;
 	}
 	
-	
+	private BreakPoint point;
+	public BreakPoint getBreakPoint(){
+		if(point == null){
+			point = this.getItNode().getBreakPoint();
+		}
+		return point;
+	}
 	
 }
