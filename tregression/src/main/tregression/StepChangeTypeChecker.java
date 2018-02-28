@@ -165,7 +165,8 @@ public class StepChangeTypeChecker {
 		getAssignChain(thatDom, thatVar, thatAssignChain);
 		
 		boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList, matcher);
-		return isAssignChainMatch;
+		boolean isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+		return isAssignChainMatch && isContentMatch;
 	}
 
 	private boolean isAssignChainMatch(List<TraceNode> thisAssignChain, List<TraceNode> thatAssignChain,
