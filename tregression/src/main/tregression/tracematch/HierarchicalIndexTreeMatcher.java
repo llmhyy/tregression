@@ -1,9 +1,12 @@
 package tregression.tracematch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import microbat.algorithm.graphdiff.MatchingGraphPair;
+import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
 import tregression.separatesnapshots.DiffMatcher;
@@ -89,8 +92,19 @@ public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 
 	private List<IndexTreeNode> filterByMatchedLocation(IndexTreeNode nodeBefore, List<IndexTreeNode> treeAfter) {
 		List<IndexTreeNode> list = new ArrayList<>();
+		BreakPoint beforePoint = nodeBefore.getBreakPoint();
+		
+		Map<BreakPoint, Boolean> map = new HashMap<>();
 		for(IndexTreeNode node: treeAfter){
-			if(diffMatcher.isMatch(nodeBefore.getBreakPoint(), node.getBreakPoint())){
+			BreakPoint afterPoint = node.getBreakPoint();
+			
+			Boolean isMatch = map.get(afterPoint);
+			if(isMatch==null){
+				isMatch = diffMatcher.isMatch(beforePoint, afterPoint);
+				map.put(afterPoint, isMatch);
+			}
+			
+			if(isMatch){
 				list.add(node);
 			}
 		}
