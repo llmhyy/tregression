@@ -27,14 +27,14 @@ import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
 
+	TrialGenerator generator = new TrialGenerator();
+	TrialGenerator0 generator0 = new TrialGenerator0();
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				TrialGenerator generator = new TrialGenerator();
-				TrialGenerator0 generator0 = new TrialGenerator0();
-				
 				String buggyPath = PathConfiguration.getBuggyPath();
 				String fixPath = PathConfiguration.getCorrectPath();
 				
