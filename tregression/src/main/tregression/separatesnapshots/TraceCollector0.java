@@ -90,8 +90,10 @@ public class TraceCollector0 {
 			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
 		}
 		
-		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath, generateTraceDir(config),
+		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath,
+				MicroBatUtil.generateTraceDir(config.projectName, String.valueOf(config.bugID)),
 				isBuggy ? "bug" : "fix");
+		
 		Trace trace = exectuor.run();
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
@@ -209,13 +211,6 @@ public class TraceCollector0 {
 			return false;
 		}
 		
-	}
-
-	private String generateTraceDir(Defects4jProjectConfig config) {
-		String traceFolder = sav.common.core.utils.FileUtils.getFilePath(MicroBatUtil.getTraceFolder(), config.projectName, 
-				String.valueOf(config.bugID));
-		sav.common.core.utils.FileUtils.createFolder(traceFolder);
-		return traceFolder;
 	}
 	
 }

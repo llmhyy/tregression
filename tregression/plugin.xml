@@ -31,7 +31,7 @@
        <command
              defaultHandler="tregression.handler.RegressionRetrieveHandler"
              id="tregression.command.retrieveRegression"
-             name="Retrieve the Bug from DB">
+             name="Retrieve the Bug from exec file">
        </command>
  </extension>	
  <extension
