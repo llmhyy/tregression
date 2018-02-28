@@ -30,17 +30,21 @@ public class ControlNode {
 		return buffer.toString();
 	}
 	
+	private int order = -1;
 	public int getOrder() {
-		return this.itNode.getOrder();
+		if(order == -1){
+			order = this.itNode.getOrder();
+		}
+		return order;
 	}
 	
 	public boolean isMatchableWith(ControlNode thatNode, DiffMatcher diffMatcher){
 		BreakPoint thisPoint = itNode.getBreakPoint();
 		BreakPoint thatPoint = thatNode.getItNode().getBreakPoint();
 		
-		if(diffMatcher.isMatch(thisPoint, thatPoint)){
-			if(this.appearOrder==thatNode.getAppearOrder()){
-				return true;
+		if(this.appearOrder==thatNode.getAppearOrder()){
+			if(diffMatcher.isMatch(thisPoint, thatPoint)){
+				return true;				
 			}
 		}
 		

@@ -65,11 +65,20 @@ public class IndexTreeNode implements GraphNode {
 		}
 	}
 	
+	private int order=-1;
 	public int getOrder() {
-		return this.node.getOrder();
+		if(order==-1){
+			this.order = this.node.getOrder();
+		}
+		return this.order;
 	}
 	
+	private List<ControlNode> controlPath;
 	public List<ControlNode> getControlPath(){
+		if(controlPath!=null){
+			return controlPath;
+		}
+		
 		List<IndexTreeNode> path = new ArrayList<>();
 		IndexTreeNode parent = this.getIndexParent();
 		
@@ -86,6 +95,8 @@ public class IndexTreeNode implements GraphNode {
 			ControlNode controlNode = new ControlNode(node, appearingTime);
 			controlNodeList.add(controlNode);
 		}
+		
+		this.controlPath = controlNodeList;
 		return controlNodeList;
 	}
 
@@ -139,8 +150,12 @@ public class IndexTreeNode implements GraphNode {
 		return true;
 	}
 	
+	private BreakPoint point;
 	public BreakPoint getBreakPoint(){
-		return node.getBreakPoint();
+		if(point==null){
+			point = node.getBreakPoint();
+		}
+		return point;
 	}
 
 	public TraceNode getTraceNode() {
