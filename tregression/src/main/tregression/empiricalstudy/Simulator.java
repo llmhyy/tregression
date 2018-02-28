@@ -351,6 +351,12 @@ public class Simulator  {
 				checkingList.add(operation);
 
 				int overskipLen = checkOverskipLength(pairList, matcher, buggyTrace, rootcauseNode, checkingList);
+				if(overskipLen<0 && checkingList.size()>=2){
+					int size = checkingList.size();
+					if(checkingList.get(size-2).getUserFeedback().getFeedbackType().equals(UserFeedback.WRONG_PATH)){
+						overskipLen = 1;
+					}
+				}
 
 				long endTime = System.currentTimeMillis();
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, 
