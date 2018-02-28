@@ -10,6 +10,7 @@ import microbat.model.value.VarValue;
 import microbat.model.value.VirtualValue;
 import microbat.model.variable.ArrayElementVar;
 import microbat.model.variable.Variable;
+import microbat.util.PrimitiveUtils;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
@@ -165,7 +166,12 @@ public class StepChangeTypeChecker {
 		getAssignChain(thatDom, thatVar, thatAssignChain);
 		
 		boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList, matcher);
-		boolean isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+		
+		boolean isContentMatch = true;
+		if(PrimitiveUtils.isPrimitiveType(thisVar.getType()) && PrimitiveUtils.isPrimitiveType(thatVar.getType())){
+			isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+		}
+		
 		return isAssignChainMatch && isContentMatch;
 	}
 
