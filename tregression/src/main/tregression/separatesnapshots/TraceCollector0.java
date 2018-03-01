@@ -97,6 +97,7 @@ public class TraceCollector0 {
 		Trace trace = exectuor.run();
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
+		System.out.println("There are " + precheckInfo.getStepNum() + " steps in this trace");
 		if(precheckInfo.isOverLong()) {
 			System.out.println("The trace is over long!");
 			RunningResult rs = new RunningResult();

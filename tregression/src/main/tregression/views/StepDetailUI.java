@@ -358,12 +358,16 @@ public class StepDetailUI {
 					}
 					return name;
 				case 2:
-					String value = varValue.getManifestationValue();
+					String value = varValue.getStringValue();
+					
+					return value;
+				case 3:
+					String id = varValue.getVarID();
 					String aliasVarID = varValue.getAliasVarID();
 					if(aliasVarID != null){
-						return value + (" aliasID:" + aliasVarID);
+						return id + (" aliasID:" + aliasVarID);
 					}
-					return value;
+					return id;
 				}
 			}
 
@@ -449,7 +453,12 @@ public class StepDetailUI {
 		TreeColumn valueColumn = new TreeColumn(tree, SWT.LEFT);
 		valueColumn.setAlignment(SWT.LEFT);
 		valueColumn.setText("Variable Value");
-		valueColumn.setWidth(300);
+		valueColumn.setWidth(150);
+		
+		TreeColumn idColumn = new TreeColumn(tree, SWT.LEFT);
+		idColumn.setAlignment(SWT.LEFT);
+		idColumn.setText("ID");
+		idColumn.setWidth(200);
 
 		CheckboxTreeViewer viewer = new CheckboxTreeViewer(tree);
 		createContextMenu(viewer);
