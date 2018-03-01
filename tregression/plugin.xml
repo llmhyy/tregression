@@ -127,6 +127,12 @@
                   label="Run for Separate Versions"
                   style="push">
             </command>
+            <command
+                  commandId="tregression.command.retrieveRegression"
+                  icon="icons/before.ico"
+                  label="Recover Trace"
+                  style="push">
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
