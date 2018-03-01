@@ -1,12 +1,15 @@
 package tregression.handler;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.bcel.Repository;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import microbat.agent.ExecTraceFileReader;
@@ -44,65 +47,77 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		Settings.compilationUnitMap.clear();
 		Settings.iCompilationUnitMap.clear();
 		
-		String buggyPath = PathConfiguration.getBuggyPath();
-		String fixPath = PathConfiguration.getCorrectPath();
-		
-		String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-		String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-		
-		Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
-		
-		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
-		diffMatcher.matchCode();
-		
-		try {
-			List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);
-			TestCase tc = list.get(0);		
-			
-			AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(buggyPath, tc, config);
-			AppJavaClassPath fixApp = AppClassPathInitializer.initialize(fixPath, tc, config);
-			
-//			Regression regression = new RegressionRetriever().retriveRegression(projectName, id);
-			Regression regression = retrieveRegression(config, buggyPath, fixPath);
-			
-			Trace buggyTrace = regression.getBuggyTrace();
-			buggyTrace.setAppJavaClassPath(buggyApp);
-			Trace correctTrace = regression.getCorrectTrace();
-			correctTrace.setAppJavaClassPath(fixApp);
-			
-//			PairList pairList = regression.getPairList();
-			regression.fillMissingInfor(config, buggyPath, fixPath);
+		Job job = new Job("Recovering Regression ...") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					String buggyPath = PathConfiguration.getBuggyPath();
+					String fixPath = PathConfiguration.getCorrectPath();
+					
+					String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
+					String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+					
+					Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
+					
+					DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
+					diffMatcher.matchCode();
+					
+					List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);
+					TestCase tc = list.get(0);		
+					
+					AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(buggyPath, tc, config);
+					AppJavaClassPath fixApp = AppClassPathInitializer.initialize(fixPath, tc, config);
+					
+//					Regression regression = new RegressionRetriever().retriveRegression(projectName, id);
+					Regression regression = retrieveRegression(config, buggyPath, fixPath);
+					
+					Trace buggyTrace = regression.getBuggyTrace();
+					buggyTrace.setAppJavaClassPath(buggyApp);
+					Trace correctTrace = regression.getCorrectTrace();
+					correctTrace.setAppJavaClassPath(fixApp);
+					
+//					PairList pairList = regression.getPairList();
+					regression.fillMissingInfor(config, buggyPath, fixPath);
 
-			/* PairList */
-			System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()
-					+ ", correct trace length: " + correctTrace.size());
-			long time1 = System.currentTimeMillis();
+					/* PairList */
+					System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()
+							+ ", correct trace length: " + correctTrace.size());
+					long time1 = System.currentTimeMillis();
 
-			ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-			PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, diffMatcher);
-			long time2 = System.currentTimeMillis();
-			int matchTime = (int) (time2 - time1);
-			System.out.println("finish matching trace, taking " + matchTime + "ms");
-			
-			Visualizer visualizer = new Visualizer();
-			visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
-			
-			EmpiricalTrial trial = simulate(buggyTrace, correctTrace, pairList, diffMatcher);
-			System.out.println(trial);
-			if(!trial.getDeadEndRecordList().isEmpty()){
-				Repository.clearCache();
-				DeadEndRecord record = trial.getDeadEndRecordList().get(0);
-				DED datas = new TrainingDataTransfer().transfer(record, buggyTrace);
-//				try {
-//					new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
-//				} catch (NumberFormatException | IOException e) {
-//					e.printStackTrace();
-//				}
-				System.currentTimeMillis();
+					ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+					PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, diffMatcher);
+					long time2 = System.currentTimeMillis();
+					int matchTime = (int) (time2 - time1);
+					System.out.println("finish matching trace, taking " + matchTime + "ms");
+					
+					Visualizer visualizer = new Visualizer();
+					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
+					
+					EmpiricalTrial trial = simulate(buggyTrace, correctTrace, pairList, diffMatcher);
+					System.out.println(trial);
+					if(!trial.getDeadEndRecordList().isEmpty()){
+						Repository.clearCache();
+						DeadEndRecord record = trial.getDeadEndRecordList().get(0);
+						DED datas = new TrainingDataTransfer().transfer(record, buggyTrace);
+//						try {
+//							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
+//						} catch (NumberFormatException | IOException e) {
+//							e.printStackTrace();
+//						}
+						System.currentTimeMillis();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}	
+				
+				
+				
+				return Status.OK_STATUS;
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}	
+		};
+		job.schedule();
+		
+		
 		
 		return null;
 	}
