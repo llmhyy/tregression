@@ -76,11 +76,11 @@ public class SeparateVersionHandler extends AbstractHandler{
 						DeadEndRecord record = t.getDeadEndRecordList().get(0);
 						DED datas = new TrainingDataTransfer().transfer(record, trace);
 						setTestCase(datas, t.getTestcase());						
-						try {
-							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
-						} catch (NumberFormatException | IOException e) {
-							e.printStackTrace();
-						}
+//						try {
+//							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
+//						} catch (NumberFormatException | IOException e) {
+//							e.printStackTrace();
+//						}
 					}
 					
 				}
