@@ -15,6 +15,7 @@ import microbat.model.trace.Trace;
 import microbat.recommendation.DebugState;
 import microbat.recommendation.UserFeedback;
 import microbat.util.MicroBatUtil;
+import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
 import tregression.empiricalstudy.DeadEndRecord;
@@ -40,6 +41,9 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		Settings.compilationUnitMap.clear();
+		Settings.iCompilationUnitMap.clear();
+		
 		String buggyPath = PathConfiguration.getBuggyPath();
 		String fixPath = PathConfiguration.getCorrectPath();
 		
