@@ -135,7 +135,6 @@ public class StepChangeTypeChecker {
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
 				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
 						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
-				System.currentTimeMillis();
 				if(isReferenceValueMatch){
 					return new VarMatch(true, true);
 				}
@@ -158,6 +157,7 @@ public class StepChangeTypeChecker {
 		return new VarMatch(true, false);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean isReferenceValueMatch(ReferenceValue thisVar, ReferenceValue thatVar, TraceNode thisDom, TraceNode thatDom,
 			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
 		
@@ -170,7 +170,30 @@ public class StepChangeTypeChecker {
 		
 		boolean isContentMatch = true;
 		if(!thisVar.getStringValue().contains("@")){
-			isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+			String thisType = thisVar.getType();
+			String thatType = thatVar.getType();
+			if(!PrimitiveUtils.isPrimitiveType(thisType) && !PrimitiveUtils.isPrimitiveType(thatType)){
+				try {
+					Class thisClass = Class.forName(thisType);
+					Class thatClass = Class.forName(thatType);
+					
+					if(java.util.Collection.class.isAssignableFrom(thisClass) ||
+							java.util.Collection.class.isAssignableFrom(thatClass) ||
+							java.util.Map.class.isAssignableFrom(thisClass) ||
+							java.util.Map.class.isAssignableFrom(thatClass)){
+						isContentMatch = true;
+					}
+					else{
+						isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+					}
+					
+				} catch (ClassNotFoundException e) {
+					isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+				}
+			}
+			else{
+				isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());				
+			}
 		}
 		
 		return isAssignChainMatch && isContentMatch;
