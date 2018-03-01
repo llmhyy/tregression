@@ -82,9 +82,9 @@ public class IndexTreeNode implements GraphNode {
 	
 	private List<ControlNode> controlPath;
 	public List<ControlNode> getControlPath(){
-//		if(controlPath!=null){
-//			return controlPath;
-//		}
+		if(controlPath!=null){
+			return controlPath;
+		}
 		
 		List<IndexTreeNode> path = new ArrayList<>();
 		IndexTreeNode parent = this.getIndexParent();
