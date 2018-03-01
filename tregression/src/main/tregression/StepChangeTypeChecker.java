@@ -135,6 +135,7 @@ public class StepChangeTypeChecker {
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
 				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
 						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
+				System.currentTimeMillis();
 				if(isReferenceValueMatch){
 					return new VarMatch(true, true);
 				}
@@ -168,7 +169,7 @@ public class StepChangeTypeChecker {
 		boolean isAssignChainMatch = isAssignChainMatch(thisAssignChain, thatAssignChain, isOnBeforeTrace, pairList, matcher);
 		
 		boolean isContentMatch = true;
-		if(PrimitiveUtils.isPrimitiveType(thisVar.getType()) && PrimitiveUtils.isPrimitiveType(thatVar.getType())){
+		if(!thisVar.getStringValue().contains("@")){
 			isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
 		}
 		
