@@ -5,9 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.dom.CompilationUnit;
+
+import microbat.codeanalysis.ast.LoopHeadParser;
 import microbat.model.BreakPoint;
+import microbat.model.ClassLocation;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
+import microbat.util.JavaUtil;
 
 public class IndexTreeNode implements GraphNode {
 
@@ -77,15 +82,17 @@ public class IndexTreeNode implements GraphNode {
 	
 	private List<ControlNode> controlPath;
 	public List<ControlNode> getControlPath(){
-		if(controlPath!=null){
-			return controlPath;
-		}
+//		if(controlPath!=null){
+//			return controlPath;
+//		}
 		
 		List<IndexTreeNode> path = new ArrayList<>();
 		IndexTreeNode parent = this.getIndexParent();
 		
 		while(parent != null && hasSameInvocationParent(this, parent)){
-			path.add(parent);
+			if(isLoopControlBy(parent)){
+				path.add(parent);				
+			}
 			parent = parent.getIndexParent();
 		}
 		
@@ -109,6 +116,27 @@ public class IndexTreeNode implements GraphNode {
 		
 		this.controlPath = controlNodeList;
 		return controlNodeList;
+	}
+
+	private boolean isLoopControlBy(IndexTreeNode parent) {
+		BreakPoint p = parent.getBreakPoint();
+		CompilationUnit cu = JavaUtil.findCompilationUnitInProject(p.getDeclaringCompilationUnitName(), 
+				parent.getTraceNode().getTrace().getAppJavaClassPath());
+		
+		LoopHeadParser lhParser = new LoopHeadParser(cu, p);
+		cu.accept(lhParser);
+		
+		List<ClassLocation> confirmedList = lhParser.extractLocation();
+		
+		if(confirmedList!=null){
+			BreakPoint thisPoint = this.getBreakPoint();
+			if(confirmedList.contains(thisPoint)){
+				return true;
+			}
+			
+		}
+		
+		return false;
 	}
 
 	private int calculateAppearingTime(List<ControlNode> controlNodeList, IndexTreeNode node) {

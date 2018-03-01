@@ -83,6 +83,7 @@ public abstract class IndexTreeMatcher implements Matcher{
 	private boolean isControlPathCompatible(IndexTreeNode itNodeBefore, IndexTreeNode itNodeAfter) {
 		List<ControlNode> pathBefore = itNodeBefore.getControlPath();
 		List<ControlNode> pathAfter = itNodeAfter.getControlPath();
+		System.currentTimeMillis();
 		
 		/**
 		 * Here is an optimization:
