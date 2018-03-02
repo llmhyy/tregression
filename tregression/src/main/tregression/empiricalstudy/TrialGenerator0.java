@@ -365,6 +365,11 @@ public class TrialGenerator0 {
 			TraceNode node = buggyTrace.getExecutionList().get(1478);
 			simulator.setObservedFault(node);
 		}
+		
+		if(config.projectName.equals("Closure")&&config.bugID==116){
+			TraceNode node = buggyTrace.getExecutionList().get(8668);
+			simulator.setObservedFault(node);
+		}
 	}
 
 	public List<TestCase> retrieveD4jFailingTestCase(String buggyVersionPath) throws IOException {
