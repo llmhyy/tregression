@@ -57,6 +57,12 @@ public class AppClassPathInitializer {
 		String testCodePath = workingDir + File.separator + config.srcTestFolder;
 		appClassPath.setTestCodePath(testCodePath);
 		
+		for(int i=0; i<config.additionalSourceFolder.size(); i++){
+			String relativePath = config.additionalSourceFolder.get(i);
+			String path = workingDir + File.separator + relativePath;
+			appClassPath.getAdditionalSourceFolders().add(path);
+		}
+		
 		/**
 		 * setting junit lib into classpath
 		 */

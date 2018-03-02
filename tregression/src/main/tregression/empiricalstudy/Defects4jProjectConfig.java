@@ -1,6 +1,8 @@
 package tregression.empiricalstudy;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import microbat.Activator;
 import microbat.preference.MicrobatPreference;
@@ -11,6 +13,8 @@ public class Defects4jProjectConfig {
 	public String bytecodeTestFolder;
 	public String bytecodeSourceFolder;
 	public String buildFolder;
+	
+	public List<String> additionalSourceFolder = new ArrayList<>();
 	
 	public String projectName;
 	public int bugID;
@@ -64,12 +68,19 @@ public class Defects4jProjectConfig {
 			}
 		}
 		else if (projectName.equals("Mockito")) {
-			if(bugID<12){
+			if(bugID<12 || bugID==20 || bugID==21){
 				config = new Defects4jProjectConfig("test", "src", "build"+File.separator+"classes"+File.separator+"test", "build"+File.separator+"classes"+File.separator+"main", "build", projectName, bugID);				
 			}
 			else{
 				config = new Defects4jProjectConfig("test", "src", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, bugID);
 			}
+			
+			List<String> addSrcList = new ArrayList<>();
+			addSrcList.add("mockmaker" + File.separator + "bytebuddy"+ File.separator + "main" + File.separator + "java");
+			addSrcList.add("mockmaker" + File.separator + "bytebuddy"+ File.separator + "test" + File.separator + "java");
+			addSrcList.add("mockmaker" + File.separator + "cglib"+ File.separator + "main" + File.separator + "java");
+			addSrcList.add("mockmaker" + File.separator + "cglib"+ File.separator + "test" + File.separator + "java");
+			config.additionalSourceFolder = addSrcList;
 		}
 		else if (projectName.equals("Time")) {
 			if(bugID<12){

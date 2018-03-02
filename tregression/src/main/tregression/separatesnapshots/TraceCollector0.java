@@ -1,6 +1,7 @@
 package tregression.separatesnapshots;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -125,51 +126,49 @@ public class TraceCollector0 {
 		trace.setAppJavaClassPath(appClassPath);
 		
 		Map<String, String> classNameMap = new HashMap<>();
+		Map<String, String> pathMap = new HashMap<>();
 		
 		for(TraceNode node: trace.getExecutionList()){
 			BreakPoint point = node.getBreakPoint();
 			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
-			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
-			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
+//			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
+//			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
 			
-			if(new File(sourcePath).exists()) {
-				point.setFullJavaFilePath(sourcePath);
+			List<String> candidateSourceFolders = appClassPath.getAllSourceFolders();
+			for(String candidateSourceFolder: candidateSourceFolders){
+				String filePath = candidateSourceFolder + File.separator + relativePath;
+				if(new File(filePath).exists()){
+					point.setFullJavaFilePath(filePath);
+				}
 			}
-			else if(new File(testPath).exists()) {
-				point.setFullJavaFilePath(testPath);
-			}
-			else {
+			
+			//indicate the declaring compilation name is not correct
+			if(point.getFullJavaFilePath()==null){
 				String canonicalClassName = point.getClassCanonicalName(); 
 				String declaringCompilationUnitName = classNameMap.get(canonicalClassName);
+				String fullPath = pathMap.get(canonicalClassName);
 				
 				if(declaringCompilationUnitName==null){
 					String packageName = point.getPackageName();
 					String packageRelativePath = packageName.replace(".", File.separator);
-					String sourcePackagePath = appClassPath.getSoureCodePath() + File.separator + packageRelativePath;
-					String testPackagePath = appClassPath.getTestCodePath() + File.separator + packageRelativePath;
-					
-					declaringCompilationUnitName = findDeclaringCompilationUnitName(sourcePackagePath, canonicalClassName);
-					if(declaringCompilationUnitName==null){
-						declaringCompilationUnitName = findDeclaringCompilationUnitName(testPackagePath, canonicalClassName);
+					for(String candidateSourceFolder: candidateSourceFolders){
+						declaringCompilationUnitName = findDeclaringCompilationUnitName(packageRelativePath, canonicalClassName);
+						if(declaringCompilationUnitName!=null){
+							fullPath = candidateSourceFolder + File.separator + 
+									declaringCompilationUnitName.replace(".", File.separator) + ".java";
+							break;
+						}
 					}
 				}
-				classNameMap.put(canonicalClassName, declaringCompilationUnitName);
 				
-				if(declaringCompilationUnitName!=null){
-					point.setDeclaringCompilationUnitName(declaringCompilationUnitName);
-					relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
-					sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
-					testPath = appClassPath.getSoureCodePath() + File.separator + relativePath;
-					
-					if(new File(sourcePath).exists()) {
-						point.setFullJavaFilePath(sourcePath);
-					}
-					else if(new File(testPath).exists()) {
-						point.setFullJavaFilePath(testPath);
-					}
-				}
-				else{
-					System.err.println("cannot find the source code file for " + point);					
+				classNameMap.put(canonicalClassName, declaringCompilationUnitName);
+				classNameMap.put(canonicalClassName, fullPath);
+				
+				point.setDeclaringCompilationUnitName(declaringCompilationUnitName);
+				point.setFullJavaFilePath(fullPath);
+				
+				if(fullPath==null){
+					System.err.println("cannot find the source code file for " + point);
 				}
 			}
 		}
@@ -182,6 +181,11 @@ public class TraceCollector0 {
 	@SuppressWarnings("rawtypes")
 	private String findDeclaringCompilationUnitName(String packagePath, String canonicalClassName) {
 		File packageFolder = new File(packagePath);
+		
+		if(!packageFolder.exists()){
+			return null;
+		}
+		
 		Collection javaFiles = FileUtils.listFiles(packageFolder, new String[]{"java"}, false);;
 		for(Object javaFileObject: javaFiles){
 			String javaFile = ((File)javaFileObject).getAbsolutePath();
