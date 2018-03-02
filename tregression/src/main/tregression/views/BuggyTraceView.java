@@ -97,32 +97,20 @@ public class BuggyTraceView extends TregressionTraceView {
 	}
 
 	private CompareFileName generateCompareFile(BreakPoint breakPoint, DiffMatcher matcher) {
-		String buggyFileName;
-		String fixFileName;
 		
-		String buggyPath = diffMatcher.getBuggyPath() + File.separator + matcher.getSourceFolderName() + File.separator;
-		String fixPath = diffMatcher.getFixPath() + File.separator + matcher.getSourceFolderName() + File.separator;
-
+		String fixPath = "null";
+		String buggyPath = breakPoint.getFullJavaFilePath();
+		
 		FilePairWithDiff fileDiff = diffMatcher.findDiffBySourceFile(breakPoint);
-		if (diffMatcher == null || fileDiff == null) {
-			String baseFileName = breakPoint.getDeclaringCompilationUnitName();
-			baseFileName = baseFileName.replace(".", File.separator) + ".java";
-			buggyFileName = buggyPath + baseFileName;
-			fixFileName = fixPath + baseFileName;
-			if (!new File(buggyFileName).exists()) {
-				buggyFileName = fixFileName;
-			}
+		if (getDiffMatcher() == null || fileDiff == null) {
+			String bugBase = diffMatcher.getBuggyPath();
+			String content = buggyPath.substring(bugBase.length(), buggyPath.length());
+			fixPath = diffMatcher.getFixPath() + content;
 		} else {
-			String sourceBase = fileDiff.getSourceDeclaringCompilationUnit();
-			sourceBase = sourceBase.replace(".", File.separator) + ".java";
-			buggyFileName = buggyPath + sourceBase;
-
-			String targetBase = fileDiff.getTargetDeclaringCompilationUnit();
-			targetBase = targetBase.replace(".", File.separator) + ".java";
-			fixFileName = fixPath + targetBase;
+			fixPath = fileDiff.getTargetFile();
 		}
 		
-		CompareFileName cfn = new CompareFileName(buggyFileName, fixFileName);
+		CompareFileName cfn = new CompareFileName(buggyPath, fixPath);
 		return cfn;
 	}
 
