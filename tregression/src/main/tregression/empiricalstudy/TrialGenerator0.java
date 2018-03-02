@@ -33,6 +33,7 @@ public class TrialGenerator0 {
 	public static final int MULTI_THREAD = 2;
 	public static final int INSUFFICIENT_TRACE = 3;
 	public static final int SAME_LENGTH = 4;
+	public static final int OVER_LONG_INSTRUMENTATION_METHOD = 5;
 
 	private RunningResult cachedBuggyRS;
 	private RunningResult cachedCorrectRS;
@@ -50,6 +51,8 @@ public class TrialGenerator0 {
 			return "the trace is insufficient";
 		case SAME_LENGTH:
 			return "two traces are of the same length";
+		case OVER_LONG_INSTRUMENTATION_METHOD:
+			return "over long instrumented byte code method";
 		default:
 			break;
 		}

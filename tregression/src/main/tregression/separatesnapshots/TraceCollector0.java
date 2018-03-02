@@ -22,7 +22,7 @@ import microbat.util.MicroBatUtil;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
-import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.TrialGenerator0;
 
 public class TraceCollector0 {
 	private boolean isBuggy;
@@ -49,14 +49,14 @@ public class TraceCollector0 {
 		if(checker.isOverLong()) {
 			System.out.println("The trace is over long!");
 			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator.OVER_LONG);
+			rs.setFailureType(TrialGenerator0.OVER_LONG);
 			return rs;
 		}
 		
 		if(checker.isMultiThread() && !allowMultiThread) {
 			System.out.println("It is multi-thread program!");
 			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator.MULTI_THREAD);
+			rs.setFailureType(TrialGenerator0.MULTI_THREAD);
 			return rs;
 		}
 		
@@ -101,7 +101,7 @@ public class TraceCollector0 {
 		if(precheckInfo.isOverLong()) {
 			System.out.println("The trace is over long!");
 			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator.OVER_LONG);
+			rs.setFailureType(TrialGenerator0.OVER_LONG);
 			return rs;
 		}
 		
@@ -109,7 +109,7 @@ public class TraceCollector0 {
 			String method = precheckInfo.getOverLongMethods().get(0);
 			System.out.println("Method " + method + " is over long after instrumentation!");
 			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator.OVER_LONG);
+			rs.setFailureType(TrialGenerator0.OVER_LONG_INSTRUMENTATION_METHOD);
 			return rs;
 		}
 		
@@ -117,7 +117,7 @@ public class TraceCollector0 {
 		if(isMultiThread && !allowMultiThread) {
 			System.out.println("It is multi-thread program!");
 			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator.MULTI_THREAD);
+			rs.setFailureType(TrialGenerator0.MULTI_THREAD);
 			return rs;
 		}
 		
