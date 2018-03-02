@@ -34,6 +34,7 @@ public class TrialGenerator0 {
 	public static final int INSUFFICIENT_TRACE = 3;
 	public static final int SAME_LENGTH = 4;
 	public static final int OVER_LONG_INSTRUMENTATION_METHOD = 5;
+	public static final int EXPECTED_STEP_NOT_MET = 6;
 
 	private RunningResult cachedBuggyRS;
 	private RunningResult cachedCorrectRS;
@@ -53,6 +54,8 @@ public class TrialGenerator0 {
 			return "two traces are of the same length";
 		case OVER_LONG_INSTRUMENTATION_METHOD:
 			return "over long instrumented byte code method";
+		case EXPECTED_STEP_NOT_MET:
+			return "expected steps are not met";
 		default:
 			break;
 		}

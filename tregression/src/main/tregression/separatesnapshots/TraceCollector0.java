@@ -1,7 +1,6 @@
 package tregression.separatesnapshots;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +14,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import microbat.codeanalysis.runtime.ExecutionStatementCollector;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
+import microbat.codeanalysis.runtime.RunningInformation;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -95,7 +95,15 @@ public class TraceCollector0 {
 				MicroBatUtil.generateTraceDir(config.projectName, String.valueOf(config.bugID)),
 				isBuggy ? "bug" : "fix");
 		
-		Trace trace = exectuor.run();
+		RunningInformation info = exectuor.run();
+		if(!info.isExpectedStepsMet()){
+			System.out.println("The expected steps are not met by normal run");
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator0.EXPECTED_STEP_NOT_MET);
+			return rs;
+		}
+		
+		Trace trace = info.getTrace();
 		trace.setSourceVersion(isBuggy);
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
