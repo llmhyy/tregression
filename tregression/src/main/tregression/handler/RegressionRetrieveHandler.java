@@ -1,5 +1,6 @@
 package tregression.handler;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.bcel.Repository;
@@ -42,87 +43,120 @@ import tregression.views.Visualizer;
 
 public class RegressionRetrieveHandler extends AbstractHandler {
 
+	class Result {
+		Trace buggyTrace;
+		Trace correctTrace;
+		PairList pairList;
+		DiffMatcher diffMatcher;
+
+		public Result(Trace cachedBuggyTrace, Trace cachedCorrectTrace, PairList cachedPairList,
+				DiffMatcher cachedDiffMatcher) {
+			super();
+			this.buggyTrace = cachedBuggyTrace;
+			this.correctTrace = cachedCorrectTrace;
+			this.pairList = cachedPairList;
+			this.diffMatcher = cachedDiffMatcher;
+		}
+
+	}
+
+	Result result = null;
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Settings.compilationUnitMap.clear();
-		Settings.iCompilationUnitMap.clear();
+
 		
 		Job job = new Job("Recovering Regression ...") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					String buggyPath = PathConfiguration.getBuggyPath();
-					String fixPath = PathConfiguration.getCorrectPath();
+					boolean isReuse = true;
 					
-					String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-					String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-					
-					Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
-					
-					DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
-					diffMatcher.matchCode();
-					
-					List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);
-					TestCase tc = list.get(0);		
-					
-					AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(buggyPath, tc, config);
-					AppJavaClassPath fixApp = AppClassPathInitializer.initialize(fixPath, tc, config);
-					
-//					Regression regression = new RegressionRetriever().retriveRegression(projectName, id);
-					Regression regression = retrieveRegression(config, buggyPath, fixPath);
-					
-					Trace buggyTrace = regression.getBuggyTrace();
-					buggyTrace.setAppJavaClassPath(buggyApp);
-					Trace correctTrace = regression.getCorrectTrace();
-					correctTrace.setAppJavaClassPath(fixApp);
-					
-//					PairList pairList = regression.getPairList();
-					regression.fillMissingInfor(config, buggyPath, fixPath);
+					Settings.compilationUnitMap.clear();
+					Settings.iCompilationUnitMap.clear();
 
-					/* PairList */
-					System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()
-							+ ", correct trace length: " + correctTrace.size());
-					long time1 = System.currentTimeMillis();
+					if(!isReuse || result==null){
+						result = parseResult();
+					}
 
-					ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-					PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, diffMatcher);
-					long time2 = System.currentTimeMillis();
-					int matchTime = (int) (time2 - time1);
-					System.out.println("finish matching trace, taking " + matchTime + "ms");
-					
 					Visualizer visualizer = new Visualizer();
-					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
-					
-					EmpiricalTrial trial = simulate(buggyTrace, correctTrace, pairList, diffMatcher);
+					visualizer.visualize(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
+
+					EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
 					System.out.println(trial);
-					if(!trial.getDeadEndRecordList().isEmpty()){
+					if (!trial.getDeadEndRecordList().isEmpty()) {
 						Repository.clearCache();
 						DeadEndRecord record = trial.getDeadEndRecordList().get(0);
-						DED datas = new TrainingDataTransfer().transfer(record, buggyTrace);
-//						try {
-//							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
-//						} catch (NumberFormatException | IOException e) {
-//							e.printStackTrace();
-//						}
+						DED datas = new TrainingDataTransfer().transfer(record, result.buggyTrace);
+						// try {
+						// new DeadEndReporter().export(datas.getAllData(),
+						// projectName, Integer.valueOf(id));
+						// } catch (NumberFormatException | IOException e) {
+						// e.printStackTrace();
+						// }
 						System.currentTimeMillis();
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-				}	
-				
-				
-				
+				}
+
 				return Status.OK_STATUS;
+			}
+
+			private Result parseResult() throws IOException {
+				String buggyPath = PathConfiguration.getBuggyPath();
+				String fixPath = PathConfiguration.getCorrectPath();
+
+				String projectName = Activator.getDefault().getPreferenceStore()
+						.getString(TregressionPreference.PROJECT_NAME);
+				String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+
+				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName,
+						Integer.valueOf(id));
+
+				DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
+						fixPath);
+				diffMatcher.matchCode();
+
+				List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);
+				TestCase tc = list.get(0);
+
+				AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(buggyPath, tc, config);
+				AppJavaClassPath fixApp = AppClassPathInitializer.initialize(fixPath, tc, config);
+
+				// Regression regression = new
+				// RegressionRetriever().retriveRegression(projectName, id);
+				Regression regression = retrieveRegression(config, buggyPath, fixPath);
+
+				Trace buggyTrace = regression.getBuggyTrace();
+				buggyTrace.setAppJavaClassPath(buggyApp);
+				Trace correctTrace = regression.getCorrectTrace();
+				correctTrace.setAppJavaClassPath(fixApp);
+
+				// PairList pairList = regression.getPairList();
+				regression.fillMissingInfor(config, buggyPath, fixPath);
+
+				/* PairList */
+				System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()
+						+ ", correct trace length: " + correctTrace.size());
+				long time1 = System.currentTimeMillis();
+
+				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, diffMatcher);
+				long time2 = System.currentTimeMillis();
+				int matchTime = (int) (time2 - time1);
+				System.out.println("finish matching trace, taking " + matchTime + "ms");
+				
+				return new Result(buggyTrace, correctTrace, pairList, diffMatcher);
 			}
 		};
 		job.schedule();
-		
-		
-		
+
 		return null;
 	}
-	
-	private EmpiricalTrial simulate(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher diffMatcher) throws SimulationFailException{
+
+	private EmpiricalTrial simulate(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher diffMatcher)
+			throws SimulationFailException {
 		long time1 = System.currentTimeMillis();
 		System.out.println("start simulating debugging...");
 		Simulator simulator = new Simulator();
@@ -130,38 +164,37 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 
 		RootCauseFinder rootcauseFinder = new RootCauseFinder();
 		rootcauseFinder.getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
-		
-		if(rootcauseFinder.getRealRootCaseList().isEmpty()){
+
+		if (rootcauseFinder.getRealRootCaseList().isEmpty()) {
 			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
-			if(buggyTrace.isMultiThread() || correctTrace.isMultiThread()){
+			if (buggyTrace.isMultiThread() || correctTrace.isMultiThread()) {
 				trial.setMultiThread(true);
-				StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(), 
+				StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(),
 						new UserFeedback(UserFeedback.UNCLEAR), simulator.getObservedFault(), DebugState.UNCLEAR);
 				trial.getCheckList().add(tuple);
 			}
-			
+
 			return trial;
 		}
-		
-		if(simulator.getObservedFault()==null){
+
+		if (simulator.getObservedFault() == null) {
 			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find observable fault");
 			return trial;
 		}
-		
+
 		List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 
 		long time2 = System.currentTimeMillis();
 		int simulationTime = (int) (time2 - time1);
 		System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
-		
-		
+
 		for (EmpiricalTrial trial : trials0) {
 			trial.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
 			trial.setBuggyTrace(buggyTrace);
 			trial.setFixedTrace(correctTrace);
 			trial.setPairList(pairList);
 			trial.setDiffMatcher(diffMatcher);
-			
+
 			PatternIdentifier identifier = new PatternIdentifier();
 			identifier.identifyPattern(trial);
 		}
@@ -169,9 +202,9 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		EmpiricalTrial trial = trials0.get(0);
 		return trial;
 	}
-	
+
 	private Regression retrieveRegression(Defects4jProjectConfig config, String buggyPath, String fixPath) {
-		String projectName = config.projectName; 
+		String projectName = config.projectName;
 		String bugId = String.valueOf(config.bugID);
 		ExecTraceFileReader execTraceReader = new ExecTraceFileReader();
 		String buggyExec = InstrumentationExecutor
@@ -180,7 +213,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		String fixExec = InstrumentationExecutor
 				.generateTraceFilePath(MicroBatUtil.generateTraceDir(projectName, bugId), "fix");
 		Trace fixTrace = execTraceReader.read(fixExec);
-		
+
 		Regression regression = new Regression(buggyTrace, fixTrace, null);
 		return regression;
 	}
