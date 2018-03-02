@@ -64,7 +64,12 @@ public class Defects4jProjectConfig {
 			}
 		}
 		else if (projectName.equals("Mockito")) {
-			config = new Defects4jProjectConfig("test", "src", "build"+File.separator+"classes"+File.separator+"test", "build"+File.separator+"classes"+File.separator+"main", "build", projectName, bugID);
+			if(bugID<12){
+				config = new Defects4jProjectConfig("test", "src", "build"+File.separator+"classes"+File.separator+"test", "build"+File.separator+"classes"+File.separator+"main", "build", projectName, bugID);				
+			}
+			else{
+				config = new Defects4jProjectConfig("test", "src", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, bugID);
+			}
 		}
 		else if (projectName.equals("Time")) {
 			if(bugID<12){
