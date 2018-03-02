@@ -9,7 +9,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import microbat.codeanalysis.ast.LoopHeadParser;
 import microbat.model.BreakPoint;
-import microbat.model.ClassLocation;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
 import microbat.util.JavaUtil;
@@ -120,23 +119,19 @@ public class IndexTreeNode implements GraphNode {
 
 	private boolean isLoopControlBy(IndexTreeNode parent) {
 		BreakPoint p = parent.getBreakPoint();
-		CompilationUnit cu = JavaUtil.findCompilationUnitInProject(p.getDeclaringCompilationUnitName(), 
-				parent.getTraceNode().getTrace().getAppJavaClassPath());
 		
-		LoopHeadParser lhParser = new LoopHeadParser(cu, p);
-		cu.accept(lhParser);
-		
-		List<ClassLocation> confirmedList = lhParser.extractLocation();
-		
-		if(confirmedList!=null){
-			BreakPoint thisPoint = this.getBreakPoint();
-			if(confirmedList.contains(thisPoint)){
-				return true;
-			}
+		if(p.getLoopScope()==null){
+			CompilationUnit cu = JavaUtil.findCompilationUnitInProject(p.getDeclaringCompilationUnitName(), 
+					parent.getTraceNode().getTrace().getAppJavaClassPath());
 			
+			LoopHeadParser lhParser = new LoopHeadParser(cu, p);
+			cu.accept(lhParser);
+			
+			p.setLoopScope(lhParser.extractScope());
 		}
 		
-		return false;
+		
+		return p.getLoopScope().containLocation(point);
 	}
 
 	private int calculateAppearingTime(List<ControlNode> controlNodeList, IndexTreeNode node) {
