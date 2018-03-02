@@ -130,52 +130,55 @@ public class TraceCollector0 {
 		
 		for(TraceNode node: trace.getExecutionList()){
 			BreakPoint point = node.getBreakPoint();
-			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
-//			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
-//			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
-			
-			List<String> candidateSourceFolders = appClassPath.getAllSourceFolders();
-			for(String candidateSourceFolder: candidateSourceFolders){
-				String filePath = candidateSourceFolder + File.separator + relativePath;
-				if(new File(filePath).exists()){
-					point.setFullJavaFilePath(filePath);
-				}
-			}
-			
-			//indicate the declaring compilation name is not correct
-			if(point.getFullJavaFilePath()==null){
-				String canonicalClassName = point.getClassCanonicalName(); 
-				String declaringCompilationUnitName = classNameMap.get(canonicalClassName);
-				String fullPath = pathMap.get(canonicalClassName);
-				
-				if(declaringCompilationUnitName==null){
-					String packageName = point.getPackageName();
-					String packageRelativePath = packageName.replace(".", File.separator);
-					for(String candidateSourceFolder: candidateSourceFolders){
-						declaringCompilationUnitName = findDeclaringCompilationUnitName(packageRelativePath, canonicalClassName);
-						if(declaringCompilationUnitName!=null){
-							fullPath = candidateSourceFolder + File.separator + 
-									declaringCompilationUnitName.replace(".", File.separator) + ".java";
-							break;
-						}
-					}
-				}
-				
-				classNameMap.put(canonicalClassName, declaringCompilationUnitName);
-				classNameMap.put(canonicalClassName, fullPath);
-				
-				point.setDeclaringCompilationUnitName(declaringCompilationUnitName);
-				point.setFullJavaFilePath(fullPath);
-				
-				if(fullPath==null){
-					System.err.println("cannot find the source code file for " + point);
-				}
-			}
+			attachFullPathInfo(point, appClassPath, classNameMap, pathMap);
 		}
 		
 		RunningResult rs = new RunningResult(trace, null, null, appClassPath);
 		rs.setRunningTrace(trace);
 		return rs;
+	}
+	
+	public void attachFullPathInfo(BreakPoint point, AppJavaClassPath appClassPath, 
+			Map<String, String> classNameMap, Map<String, String> pathMap){
+		String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
+		List<String> candidateSourceFolders = appClassPath.getAllSourceFolders();
+		for(String candidateSourceFolder: candidateSourceFolders){
+			String filePath = candidateSourceFolder + File.separator + relativePath;
+			if(new File(filePath).exists()){
+				point.setFullJavaFilePath(filePath);
+			}
+		}
+		
+		//indicate the declaring compilation name is not correct
+		if(point.getFullJavaFilePath()==null){
+			String canonicalClassName = point.getClassCanonicalName(); 
+			String declaringCompilationUnitName = classNameMap.get(canonicalClassName);
+			String fullPath = pathMap.get(canonicalClassName);
+			
+			if(declaringCompilationUnitName==null){
+				String packageName = point.getPackageName();
+				String packageRelativePath = packageName.replace(".", File.separator);
+				for(String candidateSourceFolder: candidateSourceFolders){
+					String packageFullPath = candidateSourceFolder + File.separator + packageRelativePath;
+					declaringCompilationUnitName = findDeclaringCompilationUnitName(packageFullPath, canonicalClassName);
+					if(declaringCompilationUnitName!=null){
+						fullPath = candidateSourceFolder + File.separator + 
+								declaringCompilationUnitName.replace(".", File.separator) + ".java";
+						break;
+					}
+				}
+			}
+			
+			classNameMap.put(canonicalClassName, declaringCompilationUnitName);
+			pathMap.put(canonicalClassName, fullPath);
+			
+			point.setDeclaringCompilationUnitName(declaringCompilationUnitName);
+			point.setFullJavaFilePath(fullPath);
+			
+			if(fullPath==null){
+				System.err.println("cannot find the source code file for " + point);
+			}
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
