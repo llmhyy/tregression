@@ -105,7 +105,10 @@ public class BuggyTraceView extends TregressionTraceView {
 		if (getDiffMatcher() == null || fileDiff == null) {
 			String bugBase = diffMatcher.getBuggyPath();
 			String content = buggyPath.substring(bugBase.length(), buggyPath.length());
-			fixPath = diffMatcher.getFixPath() + content;
+			fixPath = diffMatcher.getFixPath() + content;				
+			if(!new File(fixPath).exists()){
+				fixPath = buggyPath;
+			}
 		} else {
 			fixPath = fileDiff.getTargetFile();
 		}

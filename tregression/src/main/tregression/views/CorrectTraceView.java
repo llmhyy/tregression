@@ -104,7 +104,12 @@ public class CorrectTraceView extends TregressionTraceView {
 		if (getDiffMatcher() == null || fileDiff == null) {
 			String fixBase = diffMatcher.getFixPath();
 			String content = fixPath.substring(fixBase.length(), fixPath.length());
-			buggyPath = diffMatcher.getBuggyPath() + content;
+			buggyPath = diffMatcher.getBuggyPath() + content;	
+			
+			if(!new File(buggyPath).exists()){
+				buggyPath = fixPath;
+			}
+			
 		} else {
 			buggyPath = fileDiff.getSourceFile();
 		}
