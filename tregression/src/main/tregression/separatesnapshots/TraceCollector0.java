@@ -96,6 +96,7 @@ public class TraceCollector0 {
 				isBuggy ? "bug" : "fix");
 		
 		Trace trace = exectuor.run();
+		trace.setSourceVersion(isBuggy);
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
 		System.out.println("There are " + precheckInfo.getStepNum() + " steps in this trace");
