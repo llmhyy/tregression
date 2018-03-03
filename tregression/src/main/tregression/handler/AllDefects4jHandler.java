@@ -36,17 +36,17 @@ public class AllDefects4jHandler extends AbstractHandler {
 				int skippedNum = 0;
 				int endNum = 500;
 				
-//				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
-//				int[] bugNum = {26, 133, 65, 106, 38, 27};
+				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
+				int[] bugNum = {26, 133, 65, 106, 38, 27};
 				
-				String[] projects = {"Chart", "Lang", "Math", "Time"};
-				int[] bugNum = {26, 65, 106, 27};
+//				String[] projects = {"Chart", "Lang", "Math", "Time"};
+//				int[] bugNum = {26, 65, 106, 27};
 				
 //				String[] projects = {"Lang"};
 //				int[] bugNum = {65};
 				
-//				String[] projects = {"Chart"};
-//				int[] bugNum = {26};
+//				String[] projects = {"Time"};
+//				int[] bugNum = {27};
 				
 				String prefix = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH) + File.separator;
 				
@@ -60,7 +60,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							continue;
 						}
 						
-						System.out.println("working on the " + j + "th bug of " + projects[i] + " project.");
+						System.out.println("***working on the " + j + "th bug of " + projects[i] + " project.");
 						
 						String buggyPath = prefix + projects[i] + File.separator + j + File.separator + "bug";
 						String fixPath = prefix + projects[i] + File.separator + j + File.separator + "fix";
