@@ -96,15 +96,6 @@ public class TraceCollector0 {
 				isBuggy ? "bug" : "fix");
 		
 		RunningInformation info = exectuor.run();
-		if(!info.isExpectedStepsMet()){
-			System.out.println("The expected steps are not met by normal run");
-			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator0.EXPECTED_STEP_NOT_MET);
-			return rs;
-		}
-		
-		Trace trace = info.getTrace();
-		trace.setSourceVersion(isBuggy);
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
 		System.out.println("There are " + precheckInfo.getStepNum() + " steps in this trace");
@@ -130,6 +121,16 @@ public class TraceCollector0 {
 			rs.setFailureType(TrialGenerator0.MULTI_THREAD);
 			return rs;
 		}
+		
+		if(!info.isExpectedStepsMet()){
+			System.out.println("The expected steps are not met by normal run");
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator0.EXPECTED_STEP_NOT_MET);
+			return rs;
+		}
+		
+		Trace trace = info.getTrace();
+		trace.setSourceVersion(isBuggy);
 		
 		trace.setMultiThread(isMultiThread);
 		trace.setAppJavaClassPath(appClassPath);
