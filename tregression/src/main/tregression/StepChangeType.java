@@ -4,7 +4,6 @@ import java.util.List;
 
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.model.value.VirtualValue;
 import microbat.model.variable.VirtualVar;
 
 public class StepChangeType {
