@@ -3,6 +3,10 @@ package tregression.empiricalstudy.training;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+
+import microbat.codeanalysis.ast.ASTEncoder;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -18,6 +22,8 @@ import microbat.recommendation.calculator.Traverse;
 import microbat.recommendation.calculator.TraversingDistanceCalculator;
 import microbat.recommendation.calculator.VariableSimilarity;
 import microbat.recommendation.calculator.VariableSimilarityCalculator;
+import microbat.util.JavaUtil;
+import microbat.util.MinimumASTNodeFinder;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.DeadEndRecord;
 
@@ -34,13 +40,13 @@ public class TrainingDataTransfer {
 		TraceNode deadEndStep = buggyTrace.getTraceNode(record.getDeadEndOrder());
 		
 		if(record.getType()==DeadEndRecord.CONTROL){
-			trueData = transferControl(true, occurStep, breakStep);
+			trueData = transferControl(true, occurStep, breakStep, deadEndStep);
 			
 			for(int i=start+1; i<end; i++){
 				TraceNode step = buggyTrace.getTraceNode(i);
 				if(!step.getBreakPoint().equals(breakStep.getBreakPoint())){
 					if(step.getMethodSign().equals(occurStep.getMethodSign())){
-						DeadEndData d = transferControl(false, occurStep, step);
+						DeadEndData d = transferControl(false, occurStep, step, deadEndStep);
 						falseDatas.add(d);
 					}
 					
@@ -79,7 +85,8 @@ public class TrainingDataTransfer {
 			}
 		}
 		
-		return new DED(trueData, falseDatas);
+		DED ded = new DED(trueData, falseDatas);
+		return ded;
 	}
 	
 	private boolean identifyDataLabel(TraceNode step, TraceNode breakStep){
@@ -140,11 +147,11 @@ public class TrainingDataTransfer {
 		data.sameWArrayIndex = vs[1].isSameArrayIndex;
 		
 		data.traceOrder = step.getOrder();
-		
+		data.setASTInfo(step, occurStep, deadEndStep);
 		return data;
 	}
 	
-	private DeadEndData transferControl(boolean label, TraceNode occurStep, TraceNode step) {
+	private DeadEndData transferControl(boolean label, TraceNode occurStep, TraceNode step, TraceNode deadEndStep) {
 		ControlDeadEndData data = new ControlDeadEndData();
 		data.isBreakStep = label ? 1 : 0;
 		
@@ -164,6 +171,8 @@ public class TrainingDataTransfer {
 		data.dataDependency = dependency.getDataDependency();
 		
 		data.traceOrder = step.getOrder();
+		
+		data.setASTInfo(step, occurStep, deadEndStep);
 		
 		return data;
 	}

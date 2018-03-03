@@ -13,7 +13,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.eclipse.jdt.core.dom.ASTNode;
 
+import microbat.codeanalysis.ast.ASTEncoder;
 import tregression.empiricalstudy.training.ControlDeadEndData;
 import tregression.empiricalstudy.training.DataDeadEndData;
 import tregression.empiricalstudy.training.DeadEndData;
@@ -99,6 +101,9 @@ public class DeadEndReporter {
 		titles.add("data_dependency");
 		titles.add("control_dependency");
 		
+		List<String> cTitles = getCommonTitles();
+		titles.addAll(cTitles);
+		
 		Row row = controlSheet.createRow(0);
 		for(int i = 0; i < titles.size(); i++){
 			row.createCell(i).setCellValue(titles.get(i)); 
@@ -106,7 +111,47 @@ public class DeadEndReporter {
 		
 		this.lastControlRowNum = 1;
 	}
-
+	
+	private List<String> getCommonPrefix(){
+		List<String> list = new ArrayList<>();
+		list.add("b");
+		list.add("bc");
+		list.add("o");
+		list.add("oc");
+		list.add("d");
+		list.add("dc");
+		
+		return list;
+	}
+	
+	private List<String> getCommonTitles(){
+		List<String> titles = new ArrayList<>();
+		titles.add("length");
+		
+		List<String> commonPrefix = getCommonPrefix();
+		
+		for(String str: commonPrefix){
+			for(int i=0; i<ASTEncoder.getDimensions(); i++){
+				int type = i+1;
+				String columnName = null;
+				if(type<=ASTEncoder.baseASTNodeNumber){
+					columnName = ASTNode.nodeClassForType(type).getName();
+				}
+				else{
+					columnName = ASTEncoder.getAbstractASTType(i);
+				}
+				
+				if(columnName.contains(".")){
+					columnName = columnName.substring(columnName.lastIndexOf(".")+1, columnName.length());
+				}
+				
+				titles.add(str+"-"+columnName);
+			}
+		}
+		
+		return titles;
+	}
+	
 	private void createLocalVarSheet() {
 		localDataSheet = book.createSheet(LOCAL_DATA_SHEET);
 		
@@ -123,6 +168,9 @@ public class DeadEndReporter {
 		
 		titles.add("r_local_var_type");
 		titles.add("r_local_var_name");
+		
+		List<String> cTitles = getCommonTitles();
+		titles.addAll(cTitles);
 		
 		Row row = localDataSheet.createRow(0);
 		for(int i = 0; i < titles.size(); i++){
@@ -153,6 +201,9 @@ public class DeadEndReporter {
 		titles.add("r_type");
 		titles.add("r_name");
 		
+		List<String> cTitles = getCommonTitles();
+		titles.addAll(cTitles);
+		
 		Row row = fieldSheet.createRow(0);
 		for(int i = 0; i < titles.size(); i++){
 			row.createCell(i).setCellValue(titles.get(i)); 
@@ -180,6 +231,9 @@ public class DeadEndReporter {
 		titles.add("r_type");
 		titles.add("r_name");
 		
+		List<String> cTitles = getCommonTitles();
+		titles.addAll(cTitles);
+		
 		Row row = arraySheet.createRow(0);
 		for(int i = 0; i < titles.size(); i++){
 			row.createCell(i).setCellValue(titles.get(i)); 
@@ -193,7 +247,6 @@ public class DeadEndReporter {
 		if(!dataList.isEmpty()) {
 			for(DeadEndData data: dataList) {
 				if(data instanceof DataDeadEndData){
-					
 					DataDeadEndData ddd = (DataDeadEndData)data;
 					if(ddd.type==DataDeadEndData.LOCAL_VAR){
 						Row row = this.localDataSheet.createRow(this.lastLocalVarRowNum);
@@ -249,6 +302,10 @@ public class DeadEndReporter {
 		row.createCell(8).setCellValue(data.sameRLocalVarType);
 		row.createCell(9).setCellValue(data.sameRLocalVarName);
 		
+		row.createCell(10).setCellValue(data.deadEndLength);
+		
+		fillCommonRowInfomation(row, 11, data);
+		
 	}
 	
 	private void fillFieldRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
@@ -271,6 +328,37 @@ public class DeadEndReporter {
 		row.createCell(12).setCellValue(data.sameRFieldType);
 		row.createCell(13).setCellValue(data.sameRFieldName);
 		
+		row.createCell(14).setCellValue(data.deadEndLength);
+		
+		fillCommonRowInfomation(row, 15, data);
+		
+	}
+	
+	private void fillCommonRowInfomation(Row row, int startCell, DeadEndData data){
+		int count = startCell;
+		for(int value: data.stepAST){
+			row.createCell(count++).setCellValue(value);
+		}
+		
+		for(int value: data.stepContextAST){
+			row.createCell(count++).setCellValue(value);
+		}
+		
+		for(int value: data.occurStepAST){
+			row.createCell(count++).setCellValue(value);
+		}
+		
+		for(int value: data.occurStepContextAST){
+			row.createCell(count++).setCellValue(value);
+		}
+		
+		for(int value: data.deadEndStepAST){
+			row.createCell(count++).setCellValue(value);
+		}
+		
+		for(int value: data.deadEndStepContextAST){
+			row.createCell(count++).setCellValue(value);
+		}
 	}
 	
 	private void fillArrayRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
@@ -291,6 +379,9 @@ public class DeadEndReporter {
 		row.createCell(10).setCellValue(data.sameRArrayType);
 		row.createCell(11).setCellValue(data.sameRArrayIndex);
 		
+		row.createCell(12).setCellValue(data.deadEndLength);
+		
+		fillCommonRowInfomation(row, 13, data);
 	}
 	
 	private void fillControlRowInformation(Row row, ControlDeadEndData data, String project, int bugID) {
@@ -307,6 +398,10 @@ public class DeadEndReporter {
 		
 		row.createCell(8).setCellValue(data.dataDependency);
 		row.createCell(9).setCellValue(data.controlDependency);
+		
+		row.createCell(10).setCellValue(data.deadEndLength);
+		
+		fillCommonRowInfomation(row, 11, data);
 	}
 	
 	private void writeToExcel(Workbook book, String fileName){

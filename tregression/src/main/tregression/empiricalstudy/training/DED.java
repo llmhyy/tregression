@@ -6,7 +6,7 @@ import java.util.List;
 public class DED {
 	DeadEndData trueData;
 	List<DeadEndData> falseDatas;
-
+	
 	public DED(DeadEndData trueData, List<DeadEndData> falseDatas) {
 		super();
 		this.trueData = trueData;
