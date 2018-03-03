@@ -70,7 +70,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					boolean isReuse = true;
+					boolean isReuse = false;
 					
 					Settings.compilationUnitMap.clear();
 					Settings.iCompilationUnitMap.clear();
@@ -130,8 +130,10 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 
 				Trace buggyTrace = regression.getBuggyTrace();
 				buggyTrace.setAppJavaClassPath(buggyApp);
+				buggyTrace.setSourceVersion(true);
 				Trace correctTrace = regression.getCorrectTrace();
 				correctTrace.setAppJavaClassPath(fixApp);
+				correctTrace.setSourceVersion(false);
 
 				// PairList pairList = regression.getPairList();
 				regression.fillMissingInfor(config, buggyPath, fixPath);
