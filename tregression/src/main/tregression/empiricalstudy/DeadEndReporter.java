@@ -17,18 +17,26 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import tregression.empiricalstudy.training.ControlDeadEndData;
 import tregression.empiricalstudy.training.DataDeadEndData;
 import tregression.empiricalstudy.training.DeadEndData;
-import tregression.model.StepOperationTuple;
 
 public class DeadEndReporter {
 	private String fileTitle = "dead-end";
 	
 	private File file;
 	
-	private Sheet dataSheet;
+	private Sheet localDataSheet;
+	private Sheet fieldSheet;
+	private Sheet arraySheet;
 	private Sheet controlSheet;
 	
+	public static String LOCAL_DATA_SHEET = "local_var";
+	public static String FIELD_SHEET = "field";
+	public static String ARRAY_SHEET = "array";
+	public static String CONTROL_SHEET = "control";
+	
 	private Workbook book;
-	private int lastDataRowNum = 1;
+	private int lastLocalVarRowNum = 1;
+	private int lastFieldRowNum = 1;
+	private int lastArrayRowNum = 1;
 	private int lastControlRowNum = 1;
 	
 	private int filePage = 0;
@@ -41,10 +49,14 @@ public class DeadEndReporter {
 		while(file.exists()){
 			InputStream excelFileToRead = new FileInputStream(file);
 			book = new XSSFWorkbook(excelFileToRead);
-			dataSheet = book.getSheet("data");
-			controlSheet = book.getSheet("control");
+			localDataSheet = book.getSheet(LOCAL_DATA_SHEET);
+			fieldSheet = book.getSheet(FIELD_SHEET);
+			arraySheet = book.getSheet(ARRAY_SHEET);
+			controlSheet = book.getSheet(CONTROL_SHEET);
 			
-			lastDataRowNum = dataSheet.getPhysicalNumberOfRows();
+			lastLocalVarRowNum = localDataSheet.getPhysicalNumberOfRows();
+			lastFieldRowNum = fieldSheet.getPhysicalNumberOfRows();
+			lastArrayRowNum = arraySheet.getPhysicalNumberOfRows();
 			lastControlRowNum = controlSheet.getPhysicalNumberOfRows();
 //			if(lastRowNum > trialNumberLimitPerFile){
 //				filePage++;
@@ -64,7 +76,9 @@ public class DeadEndReporter {
 	
 	private void initializeNewExcel() {
 		book = new XSSFWorkbook();
-		createDataSheet();
+		createLocalVarSheet();
+		createFieldSheet();
+		createArraySheet();
 		createControlSheet();
 	}
 	
@@ -93,8 +107,8 @@ public class DeadEndReporter {
 		this.lastControlRowNum = 1;
 	}
 
-	private void createDataSheet() {
-		dataSheet = book.createSheet("data");
+	private void createLocalVarSheet() {
+		localDataSheet = book.createSheet(LOCAL_DATA_SHEET);
 		
 		List<String> titles = new ArrayList<>();
 		titles.add("project");
@@ -106,28 +120,72 @@ public class DeadEndReporter {
 		titles.add("critical_conditional_step");
 		titles.add("w_local_var_type");
 		titles.add("w_local_var_name");
-		titles.add("w_field_parent");
-		titles.add("w_field_type");
-		titles.add("w_field_name");
-		titles.add("w_arraye_parent");
-		titles.add("w_arraye_type");
-		titles.add("w_arraye_index");
 		
 		titles.add("r_local_var_type");
 		titles.add("r_local_var_name");
-		titles.add("r_field_parent");
-		titles.add("r_field_type");
-		titles.add("r_field_name");
-		titles.add("r_arraye_parent");
-		titles.add("r_arraye_type");
-		titles.add("r_arraye_index");
 		
-		Row row = dataSheet.createRow(0);
+		Row row = localDataSheet.createRow(0);
 		for(int i = 0; i < titles.size(); i++){
 			row.createCell(i).setCellValue(titles.get(i)); 
 		}
 		
-		this.lastDataRowNum = 1;
+		this.lastLocalVarRowNum = 1;
+	}
+	
+	private void createFieldSheet() {
+		fieldSheet = book.createSheet(FIELD_SHEET);
+		
+		List<String> titles = new ArrayList<>();
+		titles.add("project");
+		titles.add("bug_ID");
+		titles.add("test_case");
+		titles.add("trace_order");
+		titles.add("is_break_step");
+		
+		titles.add("critical_conditional_step");
+		titles.add("w_parent");
+		titles.add("w_parent_type");
+		titles.add("w_type");
+		titles.add("w_name");
+		
+		titles.add("r_parent");
+		titles.add("r_parent_type");
+		titles.add("r_type");
+		titles.add("r_name");
+		
+		Row row = fieldSheet.createRow(0);
+		for(int i = 0; i < titles.size(); i++){
+			row.createCell(i).setCellValue(titles.get(i)); 
+		}
+		
+		this.lastFieldRowNum = 1;
+	}
+	
+	private void createArraySheet() {
+		arraySheet = book.createSheet(ARRAY_SHEET);
+		
+		List<String> titles = new ArrayList<>();
+		titles.add("project");
+		titles.add("bug_ID");
+		titles.add("test_case");
+		titles.add("trace_order");
+		titles.add("is_break_step");
+		
+		titles.add("critical_conditional_step");
+		titles.add("w_parent");
+		titles.add("w_type");
+		titles.add("w_name");
+		
+		titles.add("r_parent");
+		titles.add("r_type");
+		titles.add("r_name");
+		
+		Row row = arraySheet.createRow(0);
+		for(int i = 0; i < titles.size(); i++){
+			row.createCell(i).setCellValue(titles.get(i)); 
+		}
+		
+		this.lastArrayRowNum = 1;
 	}
 
 	public void export(List<DeadEndData> dataList, String project, int bugID) {
@@ -135,9 +193,24 @@ public class DeadEndReporter {
 		if(!dataList.isEmpty()) {
 			for(DeadEndData data: dataList) {
 				if(data instanceof DataDeadEndData){
-					Row row = this.dataSheet.createRow(this.lastDataRowNum);
-					fillDataRowInformation(row, (DataDeadEndData)data, project, bugID);
-					this.lastDataRowNum++;
+					
+					DataDeadEndData ddd = (DataDeadEndData)data;
+					if(ddd.type==DataDeadEndData.LOCAL_VAR){
+						Row row = this.localDataSheet.createRow(this.lastLocalVarRowNum);
+						fillLocalVarRowInformation(row, ddd, project, bugID);
+						this.lastLocalVarRowNum++;
+					}
+					else if(ddd.type==DataDeadEndData.FIELD){
+						Row row = this.fieldSheet.createRow(this.lastFieldRowNum);
+						fillFieldRowInformation(row, ddd, project, bugID);
+						this.lastFieldRowNum++;
+					}
+					else if(ddd.type==DataDeadEndData.ARRAY_ELEMENT){
+						Row row = this.arraySheet.createRow(this.lastArrayRowNum);
+						fillArrayRowInformation(row, ddd, project, bugID);
+						this.lastArrayRowNum++;
+					}
+					
 				}
 				else if(data instanceof ControlDeadEndData){
 					Row row = this.controlSheet.createRow(this.lastControlRowNum);
@@ -159,7 +232,7 @@ public class DeadEndReporter {
 //		}
 	}
 	
-	private void fillDataRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
+	private void fillLocalVarRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
 		
 		row.createCell(0).setCellValue(project);
 		row.createCell(1).setCellValue(bugID);
@@ -171,22 +244,52 @@ public class DeadEndReporter {
 		
 		row.createCell(6).setCellValue(data.sameWLocalVarType);
 		row.createCell(7).setCellValue(data.sameWLocalVarName);
-		row.createCell(8).setCellValue(data.sameWFieldParent);
-		row.createCell(9).setCellValue(data.sameWFieldType);
-		row.createCell(10).setCellValue(data.sameWFieldName);
-		row.createCell(11).setCellValue(data.sameWArrayParent);
-		row.createCell(12).setCellValue(data.sameWArrayType);
-		row.createCell(13).setCellValue(data.sameWArrayIndex);
 		
 		
-		row.createCell(14).setCellValue(data.sameRLocalVarType);
-		row.createCell(15).setCellValue(data.sameRLocalVarName);
-		row.createCell(16).setCellValue(data.sameRFieldParent);
-		row.createCell(17).setCellValue(data.sameRFieldType);
-		row.createCell(18).setCellValue(data.sameRFieldName);
-		row.createCell(19).setCellValue(data.sameRArrayParent);
-		row.createCell(20).setCellValue(data.sameRArrayType);
-		row.createCell(21).setCellValue(data.sameRArrayIndex);
+		row.createCell(8).setCellValue(data.sameRLocalVarType);
+		row.createCell(9).setCellValue(data.sameRLocalVarName);
+		
+	}
+	
+	private void fillFieldRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
+		
+		row.createCell(0).setCellValue(project);
+		row.createCell(1).setCellValue(bugID);
+		row.createCell(2).setCellValue(data.testcase);
+		row.createCell(3).setCellValue(data.traceOrder);
+		row.createCell(4).setCellValue(data.isBreakStep);
+		
+		row.createCell(5).setCellValue(data.criticalConditionalStep);
+		
+		row.createCell(6).setCellValue(data.sameWFieldParent);
+		row.createCell(7).setCellValue(data.sameWFieldParentType);
+		row.createCell(8).setCellValue(data.sameWFieldType);
+		row.createCell(9).setCellValue(data.sameWFieldName);		
+		
+		row.createCell(10).setCellValue(data.sameRFieldParent);
+		row.createCell(11).setCellValue(data.sameRFieldParentType);
+		row.createCell(12).setCellValue(data.sameRFieldType);
+		row.createCell(13).setCellValue(data.sameRFieldName);
+		
+	}
+	
+	private void fillArrayRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
+		
+		row.createCell(0).setCellValue(project);
+		row.createCell(1).setCellValue(bugID);
+		row.createCell(2).setCellValue(data.testcase);
+		row.createCell(3).setCellValue(data.traceOrder);
+		row.createCell(4).setCellValue(data.isBreakStep);
+		
+		row.createCell(5).setCellValue(data.criticalConditionalStep);
+		
+		row.createCell(6).setCellValue(data.sameWArrayParent);
+		row.createCell(7).setCellValue(data.sameWArrayType);
+		row.createCell(8).setCellValue(data.sameRArrayIndex);		
+		
+		row.createCell(9).setCellValue(data.sameRArrayParent);
+		row.createCell(10).setCellValue(data.sameRArrayType);
+		row.createCell(11).setCellValue(data.sameRArrayIndex);
 		
 	}
 	
