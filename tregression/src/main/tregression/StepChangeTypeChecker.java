@@ -190,7 +190,6 @@ public class StepChangeTypeChecker {
 				} catch (ClassNotFoundException e) {
 					isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
 				}
-//				isContentMatch = true;
 			}
 			else{
 				isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());				
@@ -237,6 +236,16 @@ public class StepChangeTypeChecker {
 				if(isThisDiff || isThatDiff){
 					return false;
 				}
+				
+//				StepChangeType t1 = getType(thisDom, thisDom.getBreakPoint().isSourceVersion(), pairList, matcher);
+//				if(t1.getType()!=StepChangeType.IDT){
+//					return false;
+//				}
+//				
+//				StepChangeType t2 = getType(thatDom, thatDom.getBreakPoint().isSourceVersion(), pairList, matcher);
+//				if(t2.getType()!=StepChangeType.IDT){
+//					return false;
+//				}
 			}
 		}
 
