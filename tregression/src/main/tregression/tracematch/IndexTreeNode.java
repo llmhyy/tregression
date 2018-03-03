@@ -119,10 +119,8 @@ public class IndexTreeNode implements GraphNode {
 
 	private boolean isLoopControlBy(IndexTreeNode parent) {
 		BreakPoint p = parent.getBreakPoint();
-		
 		if(p.getLoopScope()==null){
-			CompilationUnit cu = JavaUtil.findCompilationUnitInProject(p.getDeclaringCompilationUnitName(), 
-					parent.getTraceNode().getTrace().getAppJavaClassPath());
+			CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(p.getFullJavaFilePath(), p.getDeclaringCompilationUnitName());
 			
 			LoopHeadParser lhParser = new LoopHeadParser(cu, p);
 			cu.accept(lhParser);
