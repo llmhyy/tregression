@@ -16,6 +16,7 @@ import microbat.Activator;
 import microbat.agent.ExecTraceFileReader;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
 import microbat.recommendation.DebugState;
 import microbat.recommendation.UserFeedback;
 import microbat.util.MicroBatUtil;
@@ -129,8 +130,10 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 				Regression regression = retrieveRegression(config, buggyPath, fixPath);
 
 				Trace buggyTrace = regression.getBuggyTrace();
+				buggyTrace.setSourceVersion(true);
 				buggyTrace.setAppJavaClassPath(buggyApp);
 				Trace correctTrace = regression.getCorrectTrace();
+				correctTrace.setSourceVersion(false);
 				correctTrace.setAppJavaClassPath(fixApp);
 
 				// PairList pairList = regression.getPairList();
@@ -161,6 +164,8 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		System.out.println("start simulating debugging...");
 		Simulator simulator = new Simulator();
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
+//		TraceNode node = buggyTrace.getExecutionList().get(8667);
+//		simulator.setObservedFault(node);
 
 		RootCauseFinder rootcauseFinder = new RootCauseFinder();
 		rootcauseFinder.getRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
