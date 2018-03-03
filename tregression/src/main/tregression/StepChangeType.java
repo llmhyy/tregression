@@ -4,6 +4,8 @@ import java.util.List;
 
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.model.value.VirtualValue;
+import microbat.model.variable.VirtualVar;
 
 public class StepChangeType {
 	public static int IDT = 0;
@@ -50,6 +52,19 @@ public class StepChangeType {
 
 	public void setMatchingStep(TraceNode matchingStep) {
 		this.matchingStep = matchingStep;
+	}
+
+	public VarValue getWrongVariable() {
+		VarValue returnVar = null;
+		for(VarValue var: wrongVariableList){
+			if(var.getVariable() instanceof VirtualVar){
+				returnVar = var;
+			}
+			else{
+				return var;
+			}
+		}
+		return returnVar;
 	}
 
 }

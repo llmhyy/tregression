@@ -299,7 +299,7 @@ public class Simulator  {
 						}
 					}
 					
-					VarValue readVar = changeType.getWrongVariableList().get(0);
+					VarValue readVar = changeType.getWrongVariable();
 					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 					checkingList.add(operation);
 					
