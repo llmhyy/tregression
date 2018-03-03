@@ -463,7 +463,7 @@ public class Simulator  {
 			return deadEndlist;
 		}
 		
-		VarValue wrongVar = matchingStepType.getWrongVariableList().get(0);
+		VarValue wrongVar = matchingStepType.getWrongVariable();
 		domOnRef = matchingStep.getDataDominator(wrongVar);
 		
 		List<TraceNode> breakSteps = new ArrayList<>();
