@@ -172,7 +172,7 @@ public class StepChangeTypeChecker {
 		if(!thisVar.getStringValue().contains("@")){
 			String thisType = thisVar.getType();
 			String thatType = thatVar.getType();
-			if(!PrimitiveUtils.isPrimitiveType(thisType) && !PrimitiveUtils.isPrimitiveType(thatType)){
+			if(!PrimitiveUtils.isPrimitiveTypeOrString(thisType) && !PrimitiveUtils.isPrimitiveTypeOrString(thatType)){
 				try {
 					Class thisClass = Class.forName(thisType);
 					Class thatClass = Class.forName(thatType);
@@ -190,6 +190,7 @@ public class StepChangeTypeChecker {
 				} catch (ClassNotFoundException e) {
 					isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
 				}
+//				isContentMatch = true;
 			}
 			else{
 				isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());				

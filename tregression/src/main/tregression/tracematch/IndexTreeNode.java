@@ -84,7 +84,7 @@ public class IndexTreeNode implements GraphNode {
 		if(controlPath!=null){
 			return controlPath;
 		}
-		
+		System.currentTimeMillis();
 		List<IndexTreeNode> path = new ArrayList<>();
 		IndexTreeNode parent = this.getIndexParent();
 		
@@ -119,6 +119,7 @@ public class IndexTreeNode implements GraphNode {
 
 	private boolean isLoopControlBy(IndexTreeNode parent) {
 		BreakPoint p = parent.getBreakPoint();
+//		p.setLoopScope(null);
 		if(p.getLoopScope()==null){
 			CompilationUnit cu = JavaUtil.findCompiltionUnitBySourcePath(p.getFullJavaFilePath(), p.getDeclaringCompilationUnitName());
 			
