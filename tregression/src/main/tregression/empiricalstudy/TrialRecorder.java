@@ -93,6 +93,10 @@ public class TrialRecorder {
 	}
 	
 	public void export(List<EmpiricalTrial> trialList, String project, int bugID) {
+		export(trialList, project, String.valueOf(bugID));
+	}
+	
+	public void export(List<EmpiricalTrial> trialList, String project, String bugID) {
 		
 		if(!trialList.isEmpty()) {
 			for(EmpiricalTrial trial: trialList) {
@@ -117,7 +121,7 @@ public class TrialRecorder {
 		}
 	}
 	
-	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, int bugID) {
+	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, String bugID) {
 		if (trial==null) {
 			trial = new EmpiricalTrial(-1, -1, null, null, 0, 0, 0, -1, -1, null, false);
 		}
