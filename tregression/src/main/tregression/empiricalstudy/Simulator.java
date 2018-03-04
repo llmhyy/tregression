@@ -328,18 +328,25 @@ public class Simulator  {
 				}
 				else{
 					controlDom = currentNode.getInvocationMethodOrDominator();
-					if(controlDom==null) {
-						controlDom = currentNode.getInvocationParent();
-						if(controlDom==null){
-							controlDom = currentNode.getStepInPrevious();
+					//indicate the control flow is caused by try-catch
+					if(controlDom!=null && !controlDom.isConditional() && controlDom.isBranch()
+							&& !controlDom.equals(currentNode.getInvocationParent())){
+						StepChangeType t = typeChecker.getType(controlDom, true, pairList, matcher);
+						if(t.getType()==StepChangeType.IDT){
+							controlDom = findLatestControlDifferent(currentNode, controlDom, 
+									typeChecker, pairList, matcher);
 						}
-					}					
+					}
+					
+					if(controlDom==null) {
+						controlDom = currentNode.getStepInPrevious();
+					}	
 				}
 
 				StepOperationTuple operation = new StepOperationTuple(currentNode,
 						new UserFeedback(UserFeedback.WRONG_PATH), null);
 				checkingList.add(operation);
-
+				
 				currentNode = controlDom;
 			}
 			/**
@@ -391,6 +398,22 @@ public class Simulator  {
 		
 	}
 	
+	private TraceNode findLatestControlDifferent(TraceNode currentNode, TraceNode controlDom, 
+			StepChangeTypeChecker checker, PairList pairList, DiffMatcher matcher) {
+		TraceNode n = currentNode.getStepInPrevious();
+		StepChangeType t = checker.getType(n, true, pairList, matcher);
+		while(t.getType()==StepChangeType.CTL && n.getOrder()>controlDom.getOrder()){
+			TraceNode dom = n.getInvocationMethodOrDominator();
+			if(dom.getMethodSign().equals(n.getMethodSign())){
+				return n;
+			}
+			
+			n = n.getStepInPrevious();
+			t = checker.getType(n, true, pairList, matcher);
+		}
+		return controlDom;
+	}
+
 	private List<DeadEndRecord> createControlRecord(TraceNode currentNode, TraceNode latestBugNode, StepChangeTypeChecker typeChecker,
 			PairList pairList, DiffMatcher matcher) {
 		List<DeadEndRecord> deadEndRecords = new ArrayList<>();
