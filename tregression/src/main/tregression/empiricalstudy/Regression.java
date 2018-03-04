@@ -55,7 +55,7 @@ public class Regression {
 		fillMissingInfor(correctTrace, AppClassPathInitializer.initialize(fixPath, new TestCase(testClass, testMethod), config));
 	}
 
-	public void fillMissingInfor(Trace trace, AppJavaClassPath appClassPath) {
+	public static void fillMissingInfor(Trace trace, AppJavaClassPath appClassPath) {
 		trace.setAppJavaClassPath(appClassPath);
 		Map<String, String> classNameMap = new HashMap<>();
 		Map<String, String> pathMap = new HashMap<>();

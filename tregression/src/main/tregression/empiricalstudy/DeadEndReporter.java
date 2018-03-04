@@ -47,7 +47,6 @@ public class DeadEndReporter {
 	public DeadEndReporter() throws IOException{
 		String fileName = fileTitle + filePage + ".xlsx";
 		file = new File(fileName);
-		
 		while(file.exists()){
 			InputStream excelFileToRead = new FileInputStream(file);
 			book = new XSSFWorkbook(excelFileToRead);
@@ -241,8 +240,12 @@ public class DeadEndReporter {
 		
 		this.lastArrayRowNum = 1;
 	}
+	
+	public void export(List<DeadEndData> dataList, String project, int bugId) {
+		export(dataList, project, String.valueOf(bugId));
+	}
 
-	public void export(List<DeadEndData> dataList, String project, int bugID) {
+	public void export(List<DeadEndData> dataList, String project, String bugId) {
 		
 		if(!dataList.isEmpty()) {
 			for(DeadEndData data: dataList) {
@@ -250,24 +253,24 @@ public class DeadEndReporter {
 					DataDeadEndData ddd = (DataDeadEndData)data;
 					if(ddd.type==DataDeadEndData.LOCAL_VAR){
 						Row row = this.localDataSheet.createRow(this.lastLocalVarRowNum);
-						fillLocalVarRowInformation(row, ddd, project, bugID);
+						fillLocalVarRowInformation(row, ddd, project, bugId);
 						this.lastLocalVarRowNum++;
 					}
 					else if(ddd.type==DataDeadEndData.FIELD){
 						Row row = this.fieldSheet.createRow(this.lastFieldRowNum);
-						fillFieldRowInformation(row, ddd, project, bugID);
+						fillFieldRowInformation(row, ddd, project, bugId);
 						this.lastFieldRowNum++;
 					}
 					else if(ddd.type==DataDeadEndData.ARRAY_ELEMENT){
 						Row row = this.arraySheet.createRow(this.lastArrayRowNum);
-						fillArrayRowInformation(row, ddd, project, bugID);
+						fillArrayRowInformation(row, ddd, project, bugId);
 						this.lastArrayRowNum++;
 					}
 					
 				}
 				else if(data instanceof ControlDeadEndData){
 					Row row = this.controlSheet.createRow(this.lastControlRowNum);
-					fillControlRowInformation(row, (ControlDeadEndData)data, project, bugID);
+					fillControlRowInformation(row, (ControlDeadEndData)data, project, bugId);
 					this.lastControlRowNum++;
 				}
 				
@@ -285,10 +288,10 @@ public class DeadEndReporter {
 //		}
 	}
 	
-	private void fillLocalVarRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
+	private void fillLocalVarRowInformation(Row row, DataDeadEndData data, String project, String bugId) {
 		
 		row.createCell(0).setCellValue(project);
-		row.createCell(1).setCellValue(bugID);
+		row.createCell(1).setCellValue(bugId);
 		row.createCell(2).setCellValue(data.testcase);
 		row.createCell(3).setCellValue(data.traceOrder);
 		row.createCell(4).setCellValue(data.isBreakStep);
@@ -308,10 +311,10 @@ public class DeadEndReporter {
 		
 	}
 	
-	private void fillFieldRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
+	private void fillFieldRowInformation(Row row, DataDeadEndData data, String project, String bugId) {
 		
 		row.createCell(0).setCellValue(project);
-		row.createCell(1).setCellValue(bugID);
+		row.createCell(1).setCellValue(bugId);
 		row.createCell(2).setCellValue(data.testcase);
 		row.createCell(3).setCellValue(data.traceOrder);
 		row.createCell(4).setCellValue(data.isBreakStep);
@@ -361,10 +364,10 @@ public class DeadEndReporter {
 		}
 	}
 	
-	private void fillArrayRowInformation(Row row, DataDeadEndData data, String project, int bugID) {
+	private void fillArrayRowInformation(Row row, DataDeadEndData data, String project, String bugId) {
 		
 		row.createCell(0).setCellValue(project);
-		row.createCell(1).setCellValue(bugID);
+		row.createCell(1).setCellValue(bugId);
 		row.createCell(2).setCellValue(data.testcase);
 		row.createCell(3).setCellValue(data.traceOrder);
 		row.createCell(4).setCellValue(data.isBreakStep);
@@ -384,10 +387,10 @@ public class DeadEndReporter {
 		fillCommonRowInfomation(row, 13, data);
 	}
 	
-	private void fillControlRowInformation(Row row, ControlDeadEndData data, String project, int bugID) {
+	private void fillControlRowInformation(Row row, ControlDeadEndData data, String project, String bugId) {
 		
 		row.createCell(0).setCellValue(project);
-		row.createCell(1).setCellValue(bugID);
+		row.createCell(1).setCellValue(bugId);
 		row.createCell(2).setCellValue(data.testcase);
 		row.createCell(3).setCellValue(data.traceOrder);
 		row.createCell(4).setCellValue(data.isBreakStep);
