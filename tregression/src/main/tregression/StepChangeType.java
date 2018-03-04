@@ -1,8 +1,11 @@
 package tregression;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import microbat.model.trace.TraceNode;
+import microbat.model.value.PrimitiveValue;
+import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import microbat.model.variable.VirtualVar;
 
@@ -54,16 +57,30 @@ public class StepChangeType {
 	}
 
 	public VarValue getWrongVariable() {
-		VarValue returnVar = null;
+		List<VarValue> virList = new ArrayList<>();
+		List<VarValue> primitiveList = new ArrayList<>();
+		List<VarValue> referenceList = new ArrayList<>();
 		for(VarValue var: wrongVariableList){
 			if(var.getVariable() instanceof VirtualVar){
-				returnVar = var;
+				virList.add(var);
+			}
+			else if(var instanceof PrimitiveValue){
+				primitiveList.add(var);
 			}
 			else{
-				return var;
+				referenceList.add(var);
 			}
 		}
-		return returnVar;
+		
+		if(!primitiveList.isEmpty()){
+			return primitiveList.get(0);
+		}
+		
+		if(!referenceList.isEmpty()){
+			return referenceList.get(0);
+		}
+		
+		return virList.get(0);
 	}
 
 }
