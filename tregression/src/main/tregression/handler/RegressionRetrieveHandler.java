@@ -16,14 +16,15 @@ import microbat.Activator;
 import microbat.agent.ExecTraceFileReader;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.model.trace.Trace;
-import microbat.model.trace.TraceNode;
 import microbat.recommendation.DebugState;
 import microbat.recommendation.UserFeedback;
 import microbat.util.MicroBatUtil;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
+import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
+import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.Regression;
@@ -89,12 +90,13 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 						Repository.clearCache();
 						DeadEndRecord record = trial.getDeadEndRecordList().get(0);
 						DED datas = new TrainingDataTransfer().transfer(record, result.buggyTrace);
-						// try {
-						// new DeadEndReporter().export(datas.getAllData(),
-						// projectName, Integer.valueOf(id));
-						// } catch (NumberFormatException | IOException e) {
-						// e.printStackTrace();
-						// }
+						 try {
+//							 new DeadEndReporter().export(datas.getAllData(),
+//									 Settings.projectName, 2);
+							 new DeadEndCSVWriter().export(datas.getAllData());
+						 } catch (NumberFormatException | IOException e) {
+							 e.printStackTrace();
+						 }
 						System.currentTimeMillis();
 					}
 				} catch (Exception e) {

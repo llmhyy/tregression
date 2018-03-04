@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import microbat.model.trace.Trace;
+import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
@@ -76,11 +77,12 @@ public class SeparateVersionHandler extends AbstractHandler{
 						DeadEndRecord record = t.getDeadEndRecordList().get(0);
 						DED datas = new TrainingDataTransfer().transfer(record, trace);
 						setTestCase(datas, t.getTestcase());						
-//						try {
-//							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
-//						} catch (NumberFormatException | IOException e) {
-//							e.printStackTrace();
-//						}
+						try {
+							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
+							new DeadEndCSVWriter().export(datas.getAllData());
+						} catch (NumberFormatException | IOException e) {
+							e.printStackTrace();
+						}
 					}
 					
 				}
