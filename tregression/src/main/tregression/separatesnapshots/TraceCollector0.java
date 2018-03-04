@@ -160,6 +160,12 @@ public class TraceCollector0 {
 		}
 		
 		//indicate the declaring compilation name is not correct
+		if (point.getFullJavaFilePath() == null) {
+			String fullPath = pathMap.get(point.getDeclaringCompilationUnitName());
+			if (fullPath != null) {
+				point.setFullJavaFilePath(fullPath);
+			}
+		}
 		if(point.getFullJavaFilePath()==null){
 			String canonicalClassName = point.getClassCanonicalName(); 
 			String declaringCompilationUnitName = classNameMap.get(canonicalClassName);
