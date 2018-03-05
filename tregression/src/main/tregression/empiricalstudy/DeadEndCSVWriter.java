@@ -163,8 +163,14 @@ public class DeadEndCSVWriter {
 			writer.append(String.valueOf(value)+",");
 		}
 		
-		for(int value: data.deadEndStepContextAST){
-			writer.append(String.valueOf(value)+",");
+		for(int i=0; i<data.deadEndStepContextAST.length; i++) {
+			int value = data.deadEndStepContextAST[i];
+			if(i != data.deadEndStepContextAST.length-1) {
+				writer.append(String.valueOf(value)+",");				
+			}
+			else {
+				writer.append(String.valueOf(value));
+			}
 		}
 		
 		writer.append("\n");
