@@ -59,10 +59,14 @@ public class ExcelReader {
 							trial.setTestCaseName(testcaseName);
 							break;
 						case 1:
+							String mutationType = cell.getStringCellValue();
+							trial.setMutationType(mutationType);
+							break;
+						case 2:
 							String mutatedFile = cell.getStringCellValue();
 							trial.setMutatedFile(mutatedFile);
 							break;
-						case 2:
+						case 3:
 							int linNum = (int) cell.getNumericCellValue();
 							trial.setMutatedLineNumber(linNum);
 							break;

@@ -14,6 +14,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import sav.common.core.utils.CollectionUtils;
+import sav.common.core.utils.StringUtils;
 import tregression.model.Trial;
 
 public class ExcelReporter {
@@ -68,6 +70,7 @@ public class ExcelReporter {
 		
 		List<String> titles = new ArrayList<>();
 		titles.add("test case");
+		titles.add("mutation type");
 		titles.add("mutation file");
 		titles.add("mutation line");
 		titles.add("total steps");
@@ -111,16 +114,18 @@ public class ExcelReporter {
 
 	private void fillRowInformation(Row row, List<Trial> trialList) {
 		Trial trial = trialList.get(0);
-		row.createCell(0).setCellValue(trial.getTestCaseName());
-		row.createCell(1).setCellValue(trial.getMutatedFile());
-		row.createCell(2).setCellValue(trial.getMutatedLineNumber());
-		row.createCell(3).setCellValue(trial.getTotalSteps());
-		row.createCell(4).setCellValue(trial.getOriginalTotalSteps());
-		row.createCell(5).setCellValue(Math.abs(trial.getOriginalTotalSteps()-trial.getTotalSteps()));
-		row.createCell(6).setCellValue(trial.getTime());
-		row.createCell(7).setCellValue(trial.getJumpSteps().size());
-		row.createCell(8).setCellValue(trial.getResult());
-		row.createCell(9).setCellValue(trial.getJumpSteps().toString());
+		int idx = 0;
+		row.createCell(idx++).setCellValue(trial.getTestCaseName());
+		row.createCell(idx++).setCellValue(trial.getMutationType());
+		row.createCell(idx++).setCellValue(trial.getMutatedFile());
+		row.createCell(idx++).setCellValue(trial.getMutatedLineNumber());
+		row.createCell(idx++).setCellValue(trial.getTotalSteps());
+		row.createCell(idx++).setCellValue(trial.getOriginalTotalSteps());
+		row.createCell(idx++).setCellValue(Math.abs(trial.getOriginalTotalSteps()-trial.getTotalSteps()));
+		row.createCell(idx++).setCellValue(trial.getTime());
+		row.createCell(idx++).setCellValue(CollectionUtils.getSize(trial.getJumpSteps()));
+		row.createCell(idx++).setCellValue(trial.getResult());
+		row.createCell(idx++).setCellValue(StringUtils.toString(trial.getJumpSteps(), ""));
 		
 	}
 	

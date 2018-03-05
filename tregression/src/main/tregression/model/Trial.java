@@ -17,6 +17,7 @@ public class Trial {
 	private int mutatedLineNumber;
 	private List<String> jumpSteps;
 	private int time;
+	private String mutationType;
 	
 	private String result;
 
@@ -146,5 +147,12 @@ public class Trial {
 		this.originalTotalSteps = originalTotalSteps;
 	}
 
-	
+	public String getMutationType() {
+		return mutationType;
+	}
+
+	public void setMutationType(String mutaionType) {
+		this.mutationType = mutaionType;
+	}
+
 }
