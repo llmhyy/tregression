@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
+import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
@@ -33,7 +34,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				int skippedNum = 0;
+				int skippedNum = 26+133+65+106+14;
 				int endNum = 500;
 				
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
@@ -88,6 +89,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 									setTestCase(datas, t.getTestcase());						
 									try {
 										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
+										new DeadEndCSVWriter().export(datas.getAllData());
 									} catch (NumberFormatException | IOException e) {
 										e.printStackTrace();
 									}
