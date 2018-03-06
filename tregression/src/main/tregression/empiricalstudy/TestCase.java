@@ -1,6 +1,7 @@
 package tregression.empiricalstudy;
 
 import sav.common.core.SavRtException;
+import sav.common.core.utils.ClassUtils;
 
 public class TestCase {
 	public String testClass;
@@ -21,6 +22,10 @@ public class TestCase {
 			throw new SavRtException("Invalid testcase format: " + tc);
 		}
 	} 
+	
+	public String getClassSimpleName() {
+		return ClassUtils.getSimpleName(testClass);
+	}
 	
 	@Override
 	public String toString(){
