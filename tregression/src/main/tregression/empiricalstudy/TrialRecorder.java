@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -57,57 +56,28 @@ public class TrialRecorder {
 		book = new XSSFWorkbook();
 		sheet = book.createSheet("data");
 		
-		List<String> titles = new ArrayList<>();
-		titles.add("project");
-		titles.add("bug_ID");
-		titles.add("test case");
-		titles.add("found cause");
-		titles.add("general cause");
-		
-		titles.add("buggy trace length");
-		titles.add("correct trace length");
-		titles.add("trace collection time");
-		titles.add("trace match time");
-		titles.add("simulation time");
-		titles.add("explanation size");
-		titles.add("regression explanation nodes");
-		titles.add("correct explanation nodes");
-		
-		titles.add("type");
-		titles.add("overskip steps");
-		titles.add("checklist");
-		
-		titles.add("exception");
-		titles.add("multi thread");
-		
-		titles.add("deadend type");
-		titles.add("deadend occur");
-		titles.add("deadend ");
-		titles.add("deadend break");
-		titles.add("deadend solution");
-		
 		Row row = sheet.createRow(0);
-		for(int i = 0; i < titles.size(); i++){
-			row.createCell(i).setCellValue(titles.get(i)); 
+		for (Header header : Header.values()) {
+			row.createCell(header.getIndex()).setCellValue(header.getTitle()); 
 		}
 	}
 	
 	public void export(List<EmpiricalTrial> trialList, String project, int bugID) {
-		export(trialList, project, String.valueOf(bugID));
+		export(trialList, project, String.valueOf(bugID), null);
 	}
 	
-	public void export(List<EmpiricalTrial> trialList, String project, String bugID) {
+	public void export(List<EmpiricalTrial> trialList, String project, String bugID, String mutationType) {
 		
 		if(!trialList.isEmpty()) {
 			for(EmpiricalTrial trial: trialList) {
 				Row row = sheet.createRow(lastRowNum);
-				fillRowInformation(row, trial, project, bugID);
+				fillRowInformation(row, trial, project, bugID, mutationType);
 				lastRowNum++;
 			}
 		}
 		else {
 			Row row = sheet.createRow(lastRowNum);
-			fillRowInformation(row, null, project, bugID);
+			fillRowInformation(row, null, project, bugID, mutationType);
 		}
 		
 		writeToExcel(book, file.getName());
@@ -121,20 +91,20 @@ public class TrialRecorder {
 		}
 	}
 	
-	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, String bugID) {
+	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, String bugID, String mutationType) {
 		if (trial==null) {
 			trial = new EmpiricalTrial(-1, -1, null, null, 0, 0, 0, -1, -1, null, false);
 		}
-		
-		row.createCell(0).setCellValue(project);
-		row.createCell(1).setCellValue(bugID);
-		row.createCell(2).setCellValue(trial.getTestcase());
+		setCellValue(row, Header.PROJECT, project);
+		setCellValue(row, Header.BUG_ID, bugID);
+		setCellValue(row, Header.MUTATION_TYPE, mutationType);
+		setCellValue(row, Header.TESTCASE, trial.getTestcase());
 		
 		int order = -1;
 		if(trial.getRootcauseNode()!=null) {
 			order = trial.getRootcauseNode().getOrder();
 		}
-		row.createCell(3).setCellValue(order);
+		setCellValue(row, Header.FOUND_CAUSE, order);
 		
 		order = -1;
 		if(trial.getRootCauseFinder()!=null) {
@@ -142,42 +112,39 @@ public class TrialRecorder {
 				order = trial.getRootCauseFinder().getRealRootCaseList().get(0).getRoot().getOrder();				
 			}
 		}
-		row.createCell(4).setCellValue(order);
-		
-		row.createCell(5).setCellValue(trial.getBuggyTraceLength());
-		row.createCell(6).setCellValue(trial.getCorrectTranceLength());
-		
-		row.createCell(7).setCellValue(trial.getTraceCollectionTime());
-		row.createCell(8).setCellValue(trial.getTraceMatchTime());
-		row.createCell(9).setCellValue(trial.getSimulationTime());
-		row.createCell(10).setCellValue(trial.getTotalVisitedNodesNum());
+		setCellValue(row, Header.GENERAL_CAUSE, order);
+		setCellValue(row, Header.BUGGY_TRACE_LENGTH, trial.getBuggyTraceLength());
+		setCellValue(row, Header.CORRECT_TRACE_LENGTH, trial.getCorrectTranceLength());
+		setCellValue(row, Header.TRACE_COLLECTION_TIME, trial.getTraceCollectionTime());
+		setCellValue(row, Header.TRACE_MATCH_TIME, trial.getTraceMatchTime());
+		setCellValue(row, Header.SIMULATION_TIME, trial.getSimulationTime());
+		setCellValue(row, Header.EXPLANATION_SIZE, trial.getTotalVisitedNodesNum());
 		
 		if(trial.getVisitedRegressionNodes()!=null) {
-			row.createCell(11).setCellValue(trial.getVisitedRegressionNodes().toString());			
+			setCellValue(row, Header.REGRESSION_EXPLANATION, trial.getVisitedRegressionNodes().toString());			
 		}
 		
 		if(trial.getVisitedCorrectNodes()!=null) {
-			row.createCell(12).setCellValue(trial.getVisitedCorrectNodes().toString());			
+			setCellValue(row, Header.CORRECT_EXPLANATION, trial.getVisitedCorrectNodes().toString());			
 		}
 		
-		row.createCell(13).setCellValue(EmpiricalTrial.getTypeStringName(trial.getBugType()));
-		row.createCell(14).setCellValue(trial.getOverskipLength());
+		setCellValue(row, Header.TYPE, EmpiricalTrial.getTypeStringName(trial.getBugType()));
+		setCellValue(row, Header.OVERSKIP, trial.getOverskipLength());
 		StringBuffer buf = new StringBuffer();
 		if(trial.getCheckList()!=null) {
 			for(StepOperationTuple t: trial.getCheckList()) {
 				buf.append(t.toString());
 				buf.append("\n");
 			}
-			row.createCell(15).setCellValue(buf.toString());
+			setCellValue(row, Header.CHECK_LIST, buf.toString());
 		}
 		
 		if (trial.getExceptionExplanation()!=null) {
-			row.createCell(16).setCellValue(trial.getExceptionExplanation());
+			setCellValue(row, Header.EXCEPTION, trial.getExceptionExplanation());
 		}
+		setCellValue(row, Header.MULTI_THREAD, trial.isMultiThread());
 		
-		row.createCell(17).setCellValue(trial.isMultiThread());
-		
-		int count = 18;
+		int count = Header.DEADEND_TYPE.getIndex();
 		List<DeadEndRecord> mendings = trial.getDeadEndRecordList();
 		for(DeadEndRecord r: mendings){
 			row.createCell(count++).setCellValue(r.getTypeString());
@@ -190,9 +157,20 @@ public class TrialRecorder {
 			}
 			row.createCell(count++).setCellValue(type);
 		}	
-		
 	}
 	
+	private void setCellValue(Row row, Header header, boolean value) {
+		row.createCell(header.getIndex()).setCellValue(value);
+	}
+
+	private void setCellValue(Row row, Header header, int value) {
+		row.createCell(header.getIndex()).setCellValue(value);
+	}
+
+	private void setCellValue(Row row, Header header, String value) {
+		row.createCell(header.getIndex()).setCellValue(value);
+	}
+
 	private void writeToExcel(Workbook book, String fileName){
 		try {
 			FileOutputStream fileOut = new FileOutputStream(fileName);
@@ -203,5 +181,49 @@ public class TrialRecorder {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
+	}
+	
+	private static enum Header {
+		PROJECT ("project"), 
+		BUG_ID ("bug_ID"),
+		MUTATION_TYPE ("mutation type"),
+		TESTCASE("test case"),
+		FOUND_CAUSE ("found cause"),
+		GENERAL_CAUSE ("general cause"),
+		
+		BUGGY_TRACE_LENGTH ("buggy trace length"),
+		CORRECT_TRACE_LENGTH ("correct trace length"),
+		TRACE_COLLECTION_TIME ("trace collection time"),
+		TRACE_MATCH_TIME ("trace match time"),
+		SIMULATION_TIME ("simulation time"),
+		EXPLANATION_SIZE ("explanation size"),
+		REGRESSION_EXPLANATION ("regression explanation nodes"),
+		CORRECT_EXPLANATION ("correct explanation nodes"),
+		
+		TYPE ("type"),
+		OVERSKIP ("overskip steps"),
+		CHECK_LIST ("checklist"),
+		
+		EXCEPTION ("exception"),
+		MULTI_THREAD ("multi thread"),
+		
+		DEADEND_TYPE ("deadend type"),
+		DEADEND_OCCUR ("deadend occur"),
+		DEADEND ("deadend "),
+		DEADEND_BREAK ("deadend break"),
+		DEADEND_SOLUTION ("deadend solution");
+		
+		private String title;
+		private Header(String title) {
+			this.title = title;
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+		
+		public int getIndex() {
+			return ordinal();
+		}
 	}
 }
