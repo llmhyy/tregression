@@ -9,11 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.INVOKEINTERFACE;
+import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InvokeInstruction;
-import org.apache.bcel.generic.MethodGen;
 
 import microbat.codeanalysis.bytecode.ByteCodeParser;
 import microbat.codeanalysis.bytecode.MethodFinderByLine;
@@ -297,8 +299,8 @@ public class TrialGenerator0 {
 					List<TraceNode> correctSteps = rootcauseFinder.getStopStepsOnCorrectTrace();
 					
 					List<String> newIncludedClassNames = new ArrayList<>();
-					List<String> newIncludedBuggyClassNames = identifyIncludedClassNames(buggySteps, buggyRS.getPrecheckInfo());
-					List<String> newIncludedCorrectClassNames = identifyIncludedClassNames(correctSteps, correctRs.getPrecheckInfo());
+					List<String> newIncludedBuggyClassNames = identifyIncludedClassNames(buggySteps, buggyRS.getPrecheckInfo(), rootcauseFinder.getRegressionNodeList());
+					List<String> newIncludedCorrectClassNames = identifyIncludedClassNames(correctSteps, correctRs.getPrecheckInfo(), rootcauseFinder.getCorrectNodeList());
 					newIncludedClassNames.addAll(newIncludedBuggyClassNames);
 					newIncludedClassNames.addAll(newIncludedCorrectClassNames);
 					boolean includedClassChanged = false;
@@ -352,36 +354,76 @@ public class TrialGenerator0 {
 	}
 	
 	private List<String> identifyIncludedClassNames(List<TraceNode> steps,
-			PreCheckInformation precheckInfo) {
+			PreCheckInformation precheckInfo, List<TraceNode> visitedSteps) {
 		
 		List<BreakPoint> parsedBreakPoints = new ArrayList<>();
 		List<String> classes = new ArrayList<>();
 		
 		for(TraceNode step: steps){
-			 AppJavaClassPath appClassPath = step.getTrace().getAppJavaClassPath();
+			AppJavaClassPath appClassPath = step.getTrace().getAppJavaClassPath();
 			
-			BreakPoint point = step.getBreakPoint();
-			if(parsedBreakPoints.contains(point)){
-				continue;
-			}
-			parsedBreakPoints.add(point);
+			List<TraceNode> range = identifyEnhanceRange(step, visitedSteps);
+			range.add(step);
 			
-			String clazz = point.getClassCanonicalName();
-			
-			MethodFinderByLine finder = new MethodFinderByLine(point);
-			ByteCodeParser.parse(clazz, finder, appClassPath);
-			Method method = finder.getMethod();
-			List<InstructionHandle> insList = finder.getHandles();
-			
-			List<String> visitedLibClasses = findInvokedLibClasses(step, insList, method, precheckInfo);
-			for(String str: visitedLibClasses){
-				if(!classes.contains(str)){
-					classes.add(str);
+			for(TraceNode rangeStep: range) {
+				BreakPoint point = rangeStep.getBreakPoint();
+				if(parsedBreakPoints.contains(point)){
+					continue;
+				}
+				parsedBreakPoints.add(point);
+				
+				String clazz = point.getClassCanonicalName();
+				
+				MethodFinderByLine finder = new MethodFinderByLine(point);
+				ByteCodeParser.parse(clazz, finder, appClassPath);
+				Method method = finder.getMethod();
+				List<InstructionHandle> insList = finder.getHandles();
+				
+				List<String> visitedLibClasses = findInvokedLibClasses(rangeStep, insList, method, precheckInfo);
+				for(String str: visitedLibClasses){
+					if(!classes.contains(str)){
+						classes.add(str);
+					}
 				}
 			}
 		}
 		
 		return classes;
+	}
+
+	private List<TraceNode> identifyEnhanceRange(TraceNode stopStep, List<TraceNode> visitedSteps){
+		TraceNode closetStep = findClosestStep(stopStep, visitedSteps);
+		List<TraceNode> list = new ArrayList<>();
+		
+		Trace trace = stopStep.getTrace();
+		for(int i=closetStep.getOrder(); i>stopStep.getOrder(); i--) {
+			TraceNode step = trace.getTraceNode(i);
+			list.add(step);
+		}
+		
+		return list;
+	}
+	
+	private TraceNode findClosestStep(TraceNode stopStep, List<TraceNode> visitedSteps) {
+		TraceNode closestStep = null;
+		int distance = -1;
+		for(TraceNode step: visitedSteps) {
+			if(step.getOrder()>stopStep.getOrder()) {
+				if(closestStep==null) {
+					closestStep = step;
+					distance = step.getOrder() - stopStep.getOrder();
+				}
+				else {
+					int newDis = step.getOrder() - stopStep.getOrder();
+					if(newDis < distance) {
+						closestStep = step;
+						distance = newDis;
+					}
+				}
+			}
+		}
+		
+		return closestStep;
 	}
 
 	private List<String> findInvokedLibClasses(TraceNode step, List<InstructionHandle> insList, Method method,
@@ -390,18 +432,57 @@ public class TrialGenerator0 {
 		if(step.getInvocationChildren().isEmpty()){
 			ConstantPoolGen cGen = new ConstantPoolGen(method.getConstantPool());
 			for(InstructionHandle handle: insList){
-				if(handle.getInstruction() instanceof InvokeInstruction){
-					InvokeInstruction iIns = (InvokeInstruction)handle.getInstruction();
+				Instruction ins = handle.getInstruction();
+				if(ins instanceof InvokeInstruction){
+					InvokeInstruction iIns = (InvokeInstruction)ins;
 					String className = iIns.getClassName(cGen);
 					
 					if(!list.contains(className)){
 						list.add(className);
+					}	
+					
+					//add implementation class
+					if(ins instanceof INVOKEINTERFACE) {
+						List<String> loadedClassStrings = precheckInfo.getLoadedClasses();
+						List<String> implementations = findImplementation(className, 
+								loadedClassStrings, step.getTrace().getAppJavaClassPath());
+						
+						for(String implementation: implementations) {
+							list.add(implementation);
+						}
 					}
+					
 				}
 			}
 			
 		}
 		
+		return list;
+	}
+
+	private List<String> findImplementation(String className, List<String> loadedClassStrings,
+			AppJavaClassPath appClassPath) {
+		List<String> list = new ArrayList<>();
+		for(String loadedClassString: loadedClassStrings) {
+			if(loadedClassString.contains("microbat") || loadedClassString.contains("sav.common")) {
+				continue;
+			}
+			
+			JavaClass javaClass = ByteCodeParser.parse(loadedClassString, appClassPath);
+			if(javaClass!=null) {
+				try {
+					for(JavaClass interfaze: javaClass.getAllInterfaces()) {
+						if(interfaze.getClassName().equals(className)) {
+							list.add(loadedClassString);
+							break;
+						}
+					}
+				} catch (ClassNotFoundException e) {
+//					e.printStackTrace();
+				}
+				
+			}
+		}
 		return list;
 	}
 
