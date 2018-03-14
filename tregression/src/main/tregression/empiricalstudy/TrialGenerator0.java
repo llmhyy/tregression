@@ -215,6 +215,10 @@ public class TrialGenerator0 {
 
 			diffMatcher = cachedDiffMatcher;
 			pairList = cachedPairList;
+			
+			EmpiricalTrial trial = simulateDebuggingWithCatchedObjects(buggyRS.getRunningTrace(), 
+					correctRs.getRunningTrace(), pairList, diffMatcher, requireVisualization);
+			return trial;
 		} else {
 			
 			int trialLimit = 10;
@@ -353,6 +357,55 @@ public class TrialGenerator0 {
 		return null;
 	}
 	
+	private EmpiricalTrial simulateDebuggingWithCatchedObjects(Trace buggyTrace, Trace correctTrace, PairList pairList,
+			DiffMatcher diffMatcher, boolean requireVisualization) throws SimulationFailException {
+		Simulator simulator = new Simulator();
+		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
+		RootCauseFinder rootcauseFinder = new RootCauseFinder();
+		if(rootcauseFinder.getRealRootCaseList().isEmpty()){
+			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
+			if(buggyTrace.isMultiThread() || correctTrace.isMultiThread()){
+				trial.setMultiThread(true);
+				StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(), 
+						new UserFeedback(UserFeedback.UNCLEAR), simulator.getObservedFault(), DebugState.UNCLEAR);
+				trial.getCheckList().add(tuple);
+			}
+			
+			return trial;
+		}
+		
+		if(simulator.getObservedFault()==null){
+			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find observable fault");
+			return trial;
+		}
+		
+		System.out.println("start simulating debugging...");
+		long time1 = System.currentTimeMillis();
+		List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
+		long time2 = System.currentTimeMillis();
+		int simulationTime = (int) (time2 - time1);
+		System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
+		
+		if (requireVisualization) {
+			Visualizer visualizer = new Visualizer();
+			visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
+		}
+		
+		for (EmpiricalTrial t : trials0) {
+			t.setTraceCollectionTime(buggyTrace.getConstructTime() + correctTrace.getConstructTime());
+			t.setBuggyTrace(buggyTrace);
+			t.setFixedTrace(correctTrace);
+			t.setPairList(pairList);
+			t.setDiffMatcher(diffMatcher);
+			
+			PatternIdentifier identifier = new PatternIdentifier();
+			identifier.identifyPattern(t);
+		}
+
+		EmpiricalTrial trial = trials0.get(0);
+		return trial;
+	}
+
 	private List<String> identifyIncludedClassNames(List<TraceNode> steps,
 			PreCheckInformation precheckInfo, List<TraceNode> visitedSteps) {
 		
