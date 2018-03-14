@@ -62,7 +62,7 @@ public class TraceCollector {
 			}
 		}
 		
-		RunningResult rs = new RunningResult(null, executingStatements, checker, appClassPath);
+		RunningResult rs = new RunningResult(null, executingStatements, checker, null, appClassPath);
 		return rs;
 	}
 

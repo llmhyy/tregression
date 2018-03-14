@@ -3,6 +3,7 @@ package tregression.separatesnapshots;
 import java.util.List;
 
 import microbat.codeanalysis.runtime.ExecutionStatementCollector;
+import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import sav.strategies.dto.AppJavaClassPath;
@@ -14,17 +15,22 @@ public class RunningResult {
 	private ExecutionStatementCollector checker;
 	private AppJavaClassPath appClassPath;
 	
+	private PreCheckInformation precheckInfo;
+	
 	private int failureType = TrialGenerator.NORMAL;
 
 	public RunningResult() {
 	}
 	
-	public RunningResult(Trace runningTrace, List<BreakPoint> executedStatements, ExecutionStatementCollector checker, AppJavaClassPath appClassPath) {
+	public RunningResult(Trace runningTrace, List<BreakPoint> executedStatements, ExecutionStatementCollector checker, 
+			PreCheckInformation precheckInfo,
+			AppJavaClassPath appClassPath) {
 		super();
 		this.runningTrace = runningTrace;
 		this.executedStatements = executedStatements;
 		this.setChecker(checker);
 		this.appClassPath = appClassPath;
+		this.precheckInfo = precheckInfo;
 	}
 
 	public Trace getRunningTrace() {
@@ -71,5 +77,14 @@ public class RunningResult {
 	public void setFailureType(int failureType) {
 		this.failureType = failureType;
 	}
+
+	public PreCheckInformation getPrecheckInfo() {
+		return precheckInfo;
+	}
+
+	public void setPrecheckInfo(PreCheckInformation precheckInfo) {
+		this.precheckInfo = precheckInfo;
+	}
+
 
 }

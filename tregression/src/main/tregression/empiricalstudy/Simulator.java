@@ -146,11 +146,11 @@ public class Simulator  {
 			RootCauseFinder finder = new RootCauseFinder();
 			
 			long start = System.currentTimeMillis();
-			finder.checkRootCause(getObservedFault(), buggyTrace, correctTrace, pairList, matcher);
+			finder.checkRootCause(observedFault, buggyTrace, correctTrace, pairList, matcher);
 			long end = System.currentTimeMillis();
 			int checkTime = (int) (end-start);
 
-			List<EmpiricalTrial> trials = startSimulation(getObservedFault(), buggyTrace, correctTrace, getPairList(), matcher, finder);
+			List<EmpiricalTrial> trials = startSimulation(observedFault, buggyTrace, correctTrace, getPairList(), matcher, finder);
 			if(trials!=null) {
 				for(EmpiricalTrial trial: trials) {
 					trial.setSimulationTime(checkTime);
@@ -253,7 +253,7 @@ public class Simulator  {
 		currentNode = state.currentNode;
 		
 		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
-		rootCauseFinder.getRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
+		rootCauseFinder.setRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
 		
 		boolean isMultiThread = buggyTrace.isMultiThread() || correctTrace.isMultiThread();
 		

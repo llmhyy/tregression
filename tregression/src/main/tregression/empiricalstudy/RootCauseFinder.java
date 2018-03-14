@@ -36,8 +36,20 @@ public class RootCauseFinder {
 		}
 	}
 	
+	/**
+	 * visited nodes on buggy trace
+	 */
 	private List<TraceNode> regressionNodeList = new ArrayList<>();
+	/**
+	 * visited nodes on correct trace
+	 */
 	private List<TraceNode> correctNodeList = new ArrayList<>();
+	
+	/**
+	 * visited "correct" statements which cannot lead to further slicing
+	 */
+	private List<TraceNode> stopStepsOnBuggyTrace = new ArrayList<>();
+	private List<TraceNode> stopStepsOnCorrectTrace = new ArrayList<>();
 	
 	private List<RootCauseNode> realRootCaseList = new ArrayList<>();
 	
@@ -81,7 +93,7 @@ public class RootCauseFinder {
 		return null;
 	}
 	
-	public void getRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
+	public void setRootCauseBasedOnDefects4J(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
 		List<RootCauseNode> list = new ArrayList<>();
 		for(int i=buggyTrace.size()-1; i>=0; i--) {
 			TraceNode buggyNode = buggyTrace.getExecutionList().get(i);
@@ -144,8 +156,6 @@ public class RootCauseFinder {
 					if(matchedVar != null) {
 						TraceNode otherDataDom = trace.findDataDominator(matchedStep, matchedVar);
 						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);						
-//						appendDataMendingRecord(stepW, step, matchedStep, 
-//								typeChecker, dataDom, pairList, matcher, buggyTrace);
 					}
 					
 				}
@@ -174,10 +184,18 @@ public class RootCauseFinder {
 				
 				TraceNode otherControlDom = findControlMendingNodeOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
 				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);
-				
-//				appendControlRecord(stepW, otherControlDom, controlDom,
-//						typeChecker, pairList, matcher, buggyTrace);
-				
+			}
+			else if(changeType.getType()==StepChangeType.IDT){
+				if(stepW.isOnBefore){
+					if(!this.stopStepsOnBuggyTrace.contains(step)){
+						this.stopStepsOnBuggyTrace.add(step);
+					}
+				}
+				else{
+					if(!this.stopStepsOnCorrectTrace.contains(step)){
+						this.stopStepsOnCorrectTrace.add(step);
+					}
+				}
 			}
 		}
 	}
@@ -502,6 +520,23 @@ public class RootCauseFinder {
 	public void setRealRootCaseList(List<RootCauseNode> realRootCaseList) {
 		this.realRootCaseList = realRootCaseList;
 	}
-	
+
+	public List<TraceNode> getStopStepsOnBuggyTrace() {
+		return stopStepsOnBuggyTrace;
+	}
+
+	public void setStopStepsOnBuggyTrace(List<TraceNode> stopStepsOnBuggyTrace) {
+		this.stopStepsOnBuggyTrace = stopStepsOnBuggyTrace;
+	}
+
+	public List<TraceNode> getStopStepsOnCorrectTrace() {
+		return stopStepsOnCorrectTrace;
+	}
+
+	public void setStopStepsOnCorrectTrace(List<TraceNode> stopStepsOnCorrectTrace) {
+		this.stopStepsOnCorrectTrace = stopStepsOnCorrectTrace;
+	}
+
+
 	
 }

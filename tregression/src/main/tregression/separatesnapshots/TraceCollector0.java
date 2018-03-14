@@ -11,7 +11,6 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import microbat.codeanalysis.runtime.ExecutionStatementCollector;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.codeanalysis.runtime.RunningInformation;
@@ -32,68 +31,19 @@ public class TraceCollector0 {
 		this.isBuggy = buggy;
 	}
 	
-	public RunningResult preCheck(String workingDir, TestCase tc, 
-			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread) {
-		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);
-		if(!isRunInTestCaseMode) {
-			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
-		}
-		
-		List<String> libJars = appClassPath.getExternalLibPaths();
-		List<String> exlcudes = MicroBatUtil.extractExcludeFiles("", libJars);
-		
-		ExecutionStatementCollector checker = new ExecutionStatementCollector();
-		
-		checker.addLibExcludeList(exlcudes);
-		List<BreakPoint> executingStatements = checker.collectBreakPoints(appClassPath, isRunInTestCaseMode);
-		
-		if(checker.isOverLong()) {
-			System.out.println("The trace is over long!");
-			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator0.OVER_LONG);
-			return rs;
-		}
-		
-		if(checker.isMultiThread() && !allowMultiThread) {
-			System.out.println("It is multi-thread program!");
-			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator0.MULTI_THREAD);
-			return rs;
-		}
-		
-//		System.out.println("There are " + checker.getExecutionOrderList().size() + " steps for this trace.");
-		
-		for(BreakPoint point: executingStatements){
-			String relativePath = point.getDeclaringCompilationUnitName().replace(".", File.separator) + ".java";
-			String sourcePath = appClassPath.getSoureCodePath() + File.separator + relativePath;
-			String testPath = appClassPath.getTestCodePath() + File.separator + relativePath;
-			
-			if(new File(sourcePath).exists()) {
-				point.setFullJavaFilePath(sourcePath);
-			}
-			else if(new File(testPath).exists()) {
-				point.setFullJavaFilePath(testPath);
-			}
-			else {
-				System.err.println("cannot find the source code file for " + point);
-			}
-		}
-		
-		RunningResult rs = new RunningResult(null, executingStatements, checker, appClassPath);
-		return rs;
-	}
-
 	public RunningResult run(String workingDir, TestCase tc, 
-			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread){
+			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread, 
+			List<String> includeLibs, List<String> excludeLibs){
 		
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);
 		if(!isRunInTestCaseMode) {
 			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
 		}
 		
+		String traceDir = MicroBatUtil.generateTraceDir(config.projectName, String.valueOf(config.bugID));
+		String traceName = isBuggy ? "bug" : "fix";
 		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath,
-				MicroBatUtil.generateTraceDir(config.projectName, String.valueOf(config.bugID)),
-				isBuggy ? "bug" : "fix");
+				traceDir, traceName, includeLibs, excludeLibs);
 		
 		RunningInformation info = exectuor.run();
 		
@@ -143,7 +93,7 @@ public class TraceCollector0 {
 			attachFullPathInfo(point, appClassPath, classNameMap, pathMap);
 		}
 		
-		RunningResult rs = new RunningResult(trace, null, null, appClassPath);
+		RunningResult rs = new RunningResult(trace, null, null, precheckInfo, appClassPath);
 		rs.setRunningTrace(trace);
 		return rs;
 	}
