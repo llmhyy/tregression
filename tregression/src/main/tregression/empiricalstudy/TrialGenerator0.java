@@ -223,7 +223,7 @@ public class TrialGenerator0 {
 			List<String> excludedClassNames = AnalysisScopePreference.getExcludedLibList();
 			
 			while(!isDataFlowComplete && trialNum<trialLimit){
-				trialLimit++;
+				trialNum++;
 				
 				Settings.compilationUnitMap.clear();
 				Settings.iCompilationUnitMap.clear();
@@ -301,13 +301,20 @@ public class TrialGenerator0 {
 					List<String> newIncludedCorrectClassNames = identifyIncludedClassNames(correctSteps, correctRs.getPrecheckInfo());
 					newIncludedClassNames.addAll(newIncludedBuggyClassNames);
 					newIncludedClassNames.addAll(newIncludedCorrectClassNames);
+					boolean includedClassChanged = false;
 					for(String name: newIncludedClassNames){
 						if(!includedClassNames.contains(name)){
 							includedClassNames.add(name);
+							includedClassChanged = true;
 						}
 					}
 					
-					continue;
+					if(!includedClassChanged) {
+						trialNum = trialLimit + 1;
+					}
+					else {
+						continue;						
+					}
 				}
 				
 				isDataFlowComplete = true;
