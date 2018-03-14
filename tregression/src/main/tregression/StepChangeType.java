@@ -61,6 +61,10 @@ public class StepChangeType {
 		List<VarValue> primitiveList = new ArrayList<>();
 		List<VarValue> referenceList = new ArrayList<>();
 		for(VarValue var: wrongVariableList){
+			String varID = var.getVarID();
+			if(varID.endsWith(":0")){
+				continue;
+			}
 			if(var.getVariable() instanceof VirtualVar){
 				virList.add(var);
 			}
