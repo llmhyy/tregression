@@ -84,7 +84,11 @@ public class StepChangeType {
 			return referenceList.get(0);
 		}
 		
-		return virList.get(0);
+		if(!virList.isEmpty()){
+			return virList.get(0);			
+		}
+		
+		return wrongVariableList.get(0);
 	}
 
 }
