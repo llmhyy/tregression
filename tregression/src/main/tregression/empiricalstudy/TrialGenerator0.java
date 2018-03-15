@@ -323,17 +323,17 @@ public class TrialGenerator0 {
 					}
 				}
 				
+				if (requireVisualization) {
+					Visualizer visualizer = new Visualizer();
+					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
+				}
+				
 				isDataFlowComplete = true;
 				System.out.println("start simulating debugging...");
 				List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 				time2 = System.currentTimeMillis();
 				int simulationTime = (int) (time2 - time1);
 				System.out.println("finish simulating debugging, taking " + simulationTime / 1000 + "s");
-				
-				if (requireVisualization) {
-					Visualizer visualizer = new Visualizer();
-					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
-				}
 				
 				for (EmpiricalTrial t : trials0) {
 					t.setTestcase(tc.testClass + "#" + tc.testMethod);
