@@ -162,12 +162,15 @@ public class RootCauseFinder {
 				
 			}
 			else if(changeType.getType()==StepChangeType.CTL){
-				TraceNode controlDom = null;
-				if(step.insideException()){
-					controlDom = step.getStepInPrevious();
-				}
-				else{
-					controlDom = step.getInvocationMethodOrDominator();					
+				TraceNode controlDom = step.getInvocationMethodOrDominator();
+				
+				if(controlDom!=null && !controlDom.isConditional() && controlDom.isBranch()
+						&& !controlDom.equals(step.getInvocationParent())){
+					StepChangeType t = typeChecker.getType(controlDom, true, pairList, matcher);
+					if(t.getType()==StepChangeType.IDT){
+						controlDom = findLatestControlDifferent(step, controlDom, 
+								typeChecker, pairList, matcher);
+					}
 				}
 				
 				if(controlDom==null){
@@ -198,6 +201,22 @@ public class RootCauseFinder {
 				}
 			}
 		}
+	}
+	
+	private TraceNode findLatestControlDifferent(TraceNode currentNode, TraceNode controlDom, 
+			StepChangeTypeChecker checker, PairList pairList, DiffMatcher matcher) {
+		TraceNode n = currentNode.getStepInPrevious();
+		StepChangeType t = checker.getType(n, true, pairList, matcher);
+		while(t.getType()==StepChangeType.CTL && n.getOrder()>controlDom.getOrder()){
+			TraceNode dom = n.getInvocationMethodOrDominator();
+			if(dom.getMethodSign().equals(n.getMethodSign())){
+				return n;
+			}
+			
+			n = n.getStepInPrevious();
+			t = checker.getType(n, true, pairList, matcher);
+		}
+		return controlDom;
 	}
 
 	private boolean isMatchable(TraceNode invocationParent, PairList pairList, boolean isOnBefore) {
