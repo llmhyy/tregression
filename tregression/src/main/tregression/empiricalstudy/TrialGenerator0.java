@@ -518,7 +518,9 @@ public class TrialGenerator0 {
 			AppJavaClassPath appClassPath) {
 		List<String> list = new ArrayList<>();
 		for(String loadedClassString: loadedClassStrings) {
-			if(loadedClassString.contains("microbat") || loadedClassString.contains("sav.common")) {
+			if(loadedClassString.contains("microbat") || loadedClassString.contains("sav.common")
+					|| loadedClassString.contains("sun.reflect")
+					|| loadedClassString.contains("com.sun")) {
 				continue;
 			}
 			
