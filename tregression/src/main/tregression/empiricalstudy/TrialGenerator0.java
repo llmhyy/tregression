@@ -407,17 +407,17 @@ public class TrialGenerator0 {
 		return trial;
 	}
 
-	private List<String> identifyIncludedClassNames(List<TraceNode> steps,
+	private List<String> identifyIncludedClassNames(List<TraceNode> stopSteps,
 			PreCheckInformation precheckInfo, List<TraceNode> visitedSteps) {
 		
 		List<BreakPoint> parsedBreakPoints = new ArrayList<>();
 		List<String> classes = new ArrayList<>();
 		
-		for(TraceNode step: steps){
-			AppJavaClassPath appClassPath = step.getTrace().getAppJavaClassPath();
+		for(TraceNode stopStep: stopSteps){
+			AppJavaClassPath appClassPath = stopStep.getTrace().getAppJavaClassPath();
 			
-			List<TraceNode> range = identifyEnhanceRange(step, visitedSteps);
-			range.add(step);
+			List<TraceNode> range = identifyEnhanceRange(stopStep, visitedSteps);
+			range.add(stopStep);
 			
 			for(TraceNode rangeStep: range) {
 				BreakPoint point = rangeStep.getBreakPoint();

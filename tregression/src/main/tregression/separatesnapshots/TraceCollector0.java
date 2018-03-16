@@ -82,6 +82,8 @@ public class TraceCollector0 {
 		Trace trace = info.getTrace();
 		trace.setSourceVersion(isBuggy);
 		
+		System.currentTimeMillis();
+		
 		trace.setMultiThread(isMultiThread);
 		trace.setAppJavaClassPath(appClassPath);
 		
