@@ -112,9 +112,15 @@ public class RootCauseFinder {
 		this.setRealRootCaseList(list);
 	}
 	
+	private CausalityGraph causalityGraph;
+	
 	public void checkRootCause(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace, 
 			PairList pairList, DiffMatcher matcher){
 		getRegressionNodeList().add(observedFaultNode);
+		
+		CausalityGraph causalityGraph = new CausalityGraph();
+		CausalityNode causeNode = new CausalityNode(observedFaultNode, true);
+		causalityGraph.getObservedFaults().add(causeNode);
 		
 		List<TraceNodeW> workList = new ArrayList<>();
 		workList.add(new TraceNodeW(observedFaultNode, true));
@@ -125,10 +131,10 @@ public class RootCauseFinder {
 			TraceNodeW stepW = workList.remove(0);
 			TraceNode step = stepW.node;
 			
+			CausalityNode resultNode = causalityGraph.findOrCreate(step, stepW.isOnBefore);
+			
 			StepChangeType changeType = typeChecker.getType(step, stepW.isOnBefore, pairList, matcher);
 			Trace trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
-			
-			System.currentTimeMillis();
 			
 //			String isBefore = stepW.isOnBefore?"before":"after";
 //			System.out.println("On " + isBefore + " trace," + step);
@@ -136,7 +142,7 @@ public class RootCauseFinder {
 			
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
-				System.currentTimeMillis();
+				causalityGraph.setRoot(resultNode);
 				break;
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
@@ -145,9 +151,11 @@ public class RootCauseFinder {
 					
 					TraceNode dataDom = trace.findDataDominator(step, readVar); 
 					addWorkNode(workList, dataDom, stepW.isOnBefore);
+					addCausality(dataDom, stepW.isOnBefore, causalityGraph, resultNode, readVar);
 					
 					TraceNode matchedStep = changeType.getMatchingStep();
 					addWorkNode(workList, matchedStep, !stepW.isOnBefore);
+					CausalityNode cNode = addCausality(matchedStep, !stepW.isOnBefore, causalityGraph, resultNode, null);
 					
 					trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
 					
@@ -155,7 +163,8 @@ public class RootCauseFinder {
 					
 					if(matchedVar != null) {
 						TraceNode otherDataDom = trace.findDataDominator(matchedStep, matchedVar);
-						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);						
+						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);	
+						addCausality(otherDataDom, !stepW.isOnBefore, causalityGraph, cNode, matchedVar);
 					}
 					
 				}
@@ -180,6 +189,7 @@ public class RootCauseFinder {
 					}
 				}
 				addWorkNode(workList, controlDom, stepW.isOnBefore);
+				CausalityNode cNode = addCausality(controlDom, stepW.isOnBefore, causalityGraph, resultNode, null);
 				
 				trace = getCorrespondingTrace(!stepW.isOnBefore, buggyTrace, correctTrace);
 				
@@ -187,6 +197,7 @@ public class RootCauseFinder {
 				
 				TraceNode otherControlDom = findControlMendingNodeOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
 				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);
+				addCausality(otherControlDom, !stepW.isOnBefore, causalityGraph, cNode, null);
 			}
 			else if(changeType.getType()==StepChangeType.IDT){
 				if(stepW.isOnBefore){
@@ -201,8 +212,24 @@ public class RootCauseFinder {
 				}
 			}
 		}
+		
+		causalityGraph.generateSimulationGuidance();
+		this.causalityGraph = causalityGraph;
 	}
 	
+	private CausalityNode addCausality(TraceNode causeTraceNode, boolean isOnBefore, CausalityGraph causalityGraph, 
+			CausalityNode resultNode, VarValue value) {
+		if(causeTraceNode==null){
+			return null;
+		}
+		
+		CausalityNode causeNode = causalityGraph.findOrCreate(causeTraceNode, isOnBefore);
+		causeNode.getResults().put(resultNode, value);
+		resultNode.getReasons().put(causeNode, value);
+		
+		return causeNode;
+	}
+
 	private TraceNode findLatestControlDifferent(TraceNode currentNode, TraceNode controlDom, 
 			StepChangeTypeChecker checker, PairList pairList, DiffMatcher matcher) {
 		TraceNode n = currentNode.getStepInPrevious();
@@ -486,19 +513,6 @@ public class RootCauseFinder {
 			
 			if(!isVisited) {
 				workList.add(new TraceNodeW(node, isOnBeforeTrace));
-//				String str = isOnBeforeTrace?"before:":"after:";
-//				System.out.println(str+node);
-				/**
-				 * method invocation will cause a return step with the same line number
-				 */
-//				TraceNode previous = node.getStepOverPrevious();
-//				if(previous!=null && previous.getLineNumber()==node.getLineNumber()) {
-//					addWorkNode(workList, previous, isOnBeforeTrace);
-//				}
-//				TraceNode next = node.getStepOverNext();
-//				if(next!=null && next.getLineNumber()==node.getLineNumber()) {
-//					addWorkNode(workList, next, isOnBeforeTrace);
-//				}
 			}
 		}
 		
@@ -554,6 +568,14 @@ public class RootCauseFinder {
 
 	public void setStopStepsOnCorrectTrace(List<TraceNode> stopStepsOnCorrectTrace) {
 		this.stopStepsOnCorrectTrace = stopStepsOnCorrectTrace;
+	}
+
+	public CausalityGraph getCausalityGraph() {
+		return causalityGraph;
+	}
+
+	public void setCausalityGraph(CausalityGraph causalityGraph) {
+		this.causalityGraph = causalityGraph;
 	}
 
 

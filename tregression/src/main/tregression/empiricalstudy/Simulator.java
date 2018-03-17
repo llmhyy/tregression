@@ -299,7 +299,7 @@ public class Simulator  {
 						}
 					}
 					
-					VarValue readVar = changeType.getWrongVariable();
+					VarValue readVar = changeType.getWrongVariable(currentNode, true, rootCauseFinder);
 					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 					checkingList.add(operation);
 					
@@ -378,7 +378,7 @@ public class Simulator  {
 						trial.setDeadEndRecordList(list);
 					}
 					else if(prevChangeType.getType()==StepChangeType.DAT){
-						list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher);
+						list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher, rootCauseFinder);
 						trial.setDeadEndRecordList(list);
 					}
 					
@@ -474,7 +474,7 @@ public class Simulator  {
 	}
 	
 	private List<DeadEndRecord> createDataRecord(TraceNode currentNode, TraceNode buggyNode,
-			StepChangeTypeChecker typeChecker, PairList pairList, DiffMatcher matcher) {
+			StepChangeTypeChecker typeChecker, PairList pairList, DiffMatcher matcher, RootCauseFinder rootCauseFinder) {
 		
 		List<DeadEndRecord> deadEndlist = new ArrayList<>();
 		TraceNodePair pair = pairList.findByBeforeNode(buggyNode);
@@ -486,7 +486,7 @@ public class Simulator  {
 			return deadEndlist;
 		}
 		
-		VarValue wrongVar = matchingStepType.getWrongVariable();
+		VarValue wrongVar = matchingStepType.getWrongVariable(currentNode, false, rootCauseFinder);
 		domOnRef = matchingStep.getDataDominator(wrongVar);
 		
 		List<TraceNode> breakSteps = new ArrayList<>();

@@ -2,12 +2,14 @@ package tregression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import microbat.model.trace.TraceNode;
 import microbat.model.value.PrimitiveValue;
-import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import microbat.model.variable.VirtualVar;
+import tregression.empiricalstudy.CausalityNode;
+import tregression.empiricalstudy.RootCauseFinder;
 
 public class StepChangeType {
 	public static int IDT = 0;
@@ -56,7 +58,16 @@ public class StepChangeType {
 		this.matchingStep = matchingStep;
 	}
 
-	public VarValue getWrongVariable() {
+	public VarValue getWrongVariable(TraceNode node, boolean isOnBefore, RootCauseFinder finder) {
+		Map<CausalityNode, VarValue> guidance = finder.getCausalityGraph().getGuidance();
+		if(finder.getCausalityGraph().getGuidance()!=null){
+			CausalityNode cNode = new CausalityNode(node, isOnBefore);
+			VarValue value = guidance.get(cNode);
+			if(value != null){
+				return value;
+			}
+		}
+		
 		List<VarValue> virList = new ArrayList<>();
 		List<VarValue> primitiveList = new ArrayList<>();
 		List<VarValue> referenceList = new ArrayList<>();
