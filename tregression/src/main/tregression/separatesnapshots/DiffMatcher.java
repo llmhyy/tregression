@@ -430,16 +430,16 @@ public class DiffMatcher {
 		return null;
 	}
 
-	public ClassLocation findCorrespondingLocation(BreakPoint breakPoint, boolean isSourceVersion) {
-		if(isSourceVersion){
-			return getCorrespondentLocationForSource(breakPoint);
+	public ClassLocation findCorrespondingLocation(BreakPoint breakPoint, boolean isTragetVersion) {
+		if(isTragetVersion){
+			return getCorrespondentLocationFromSource(breakPoint);
 		}
 		else{
-			return getCorrespondentLocationForTarget(breakPoint);
+			return getCorrespondentLocationFromTarget(breakPoint);
 		}
 	}
 
-	private ClassLocation getCorrespondentLocationForSource(BreakPoint breakPoint) {
+	private ClassLocation getCorrespondentLocationFromSource(BreakPoint breakPoint) {
 		FilePairWithDiff diff = findDiffBySourceFile(breakPoint);
 		if(diff == null){
 			return (BreakPoint) breakPoint.clone();
@@ -478,7 +478,7 @@ public class DiffMatcher {
 	}
 	
 	
-	private ClassLocation getCorrespondentLocationForTarget(BreakPoint breakPoint) {
+	private ClassLocation getCorrespondentLocationFromTarget(BreakPoint breakPoint) {
 		FilePairWithDiff diff = findDiffByTargetFile(breakPoint);
 		if(diff == null){
 			return (BreakPoint) breakPoint.clone();

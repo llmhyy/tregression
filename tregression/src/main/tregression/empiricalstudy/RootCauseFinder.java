@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import org.apache.bcel.generic.InstructionHandle;
+
+import microbat.codeanalysis.bytecode.ByteCodeParser;
+import microbat.codeanalysis.bytecode.MethodFinderByLine;
 import microbat.model.BreakPoint;
 import microbat.model.ClassLocation;
 import microbat.model.ControlScope;
@@ -197,7 +201,8 @@ public class RootCauseFinder {
 				
 				ClassLocation correspondingLocation = matcher.findCorrespondingLocation(step.getBreakPoint(), !stepW.isOnBefore);
 				
-				TraceNode otherControlDom = findControlMendingNodeOnOtherTrace(step, pairList, trace, !stepW.isOnBefore, correspondingLocation);
+				TraceNode otherControlDom = findControlMendingNodeOnOtherTrace(step, pairList, trace, 
+						!stepW.isOnBefore, correspondingLocation, matcher);
 				addWorkNode(workList, otherControlDom, !stepW.isOnBefore);
 				addCausality(otherControlDom, !stepW.isOnBefore, causalityGraph, cNode, null);
 			}
@@ -221,7 +226,7 @@ public class RootCauseFinder {
 	
 	private CausalityNode addCausality(TraceNode causeTraceNode, boolean isOnBefore, CausalityGraph causalityGraph, 
 			CausalityNode resultNode, VarValue value) {
-		if(causeTraceNode==null){
+		if(causeTraceNode==null || resultNode==null){
 			return null;
 		}
 		
@@ -280,7 +285,7 @@ public class RootCauseFinder {
 	}
 
 	public TraceNode findControlMendingNodeOnOtherTrace(TraceNode problematicStep, PairList pairList,
-			Trace otherTrace, boolean isOtherTraceTheBeforeTrace, ClassLocation correspondingLocation) {
+			Trace otherTrace, boolean isOtherTraceTheBeforeTrace, ClassLocation correspondingLocation, DiffMatcher matcher) {
 		
 		int startOrder = findStartOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace);
 		int endOrder = findEndOrderInOtherTrace(problematicStep, pairList, !isOtherTraceTheBeforeTrace, otherTrace);
@@ -312,8 +317,6 @@ public class RootCauseFinder {
 						}
 					}
 					else{
-//						List<TraceNode> allControlDominatees = new ArrayList<>();
-//						retrieveAllControlDominatees(node, allControlDominatees);
 						List<TraceNode> allControlDominatees = node.findAllControlDominatees();
 						for(TraceNode controlDominatee: allControlDominatees){
 							if(controlDominatee.isException()){
@@ -331,7 +334,20 @@ public class RootCauseFinder {
 						}
 					}
 					
-				}				
+				}			
+				else{
+					BreakPoint correspondingPoint = new BreakPoint(correspondingLocation.getClassCanonicalName(), null, correspondingLocation.getLineNumber());
+					MethodFinderByLine finder = new MethodFinderByLine(node.getBreakPoint());
+					ByteCodeParser.parse(node.getClassCanonicalName(), finder, node.getTrace().getAppJavaClassPath());
+					String methodSign = correspondingLocation.getClassCanonicalName() + "#" + finder.getMethod().getName() + finder.getMethod().getSignature();
+					if(node.getMethodSign().equals(methodSign)){
+						if(node.getLineNumber()<correspondingPoint.getLineNumber()){
+							if(finder.isThrow() || finder.isReturn()){
+								bestNode = node;
+							}
+						}
+					}
+				}
 			}
 		}
 		

@@ -44,7 +44,7 @@ public class BuggyTraceView extends TregressionTraceView {
 					CorrectTraceView correctTraceView = TregressionViews.getCorrectTraceView();
 					ClassLocation correspondingLocation = diffMatcher.findCorrespondingLocation(node.getBreakPoint(), false);
 					TraceNode otherControlDom = new RootCauseFinder().findControlMendingNodeOnOtherTrace(node, pairList, 
-							correctTraceView.getTrace(), false, correspondingLocation);
+							correctTraceView.getTrace(), false, correspondingLocation, diffMatcher);
 					
 					if (otherControlDom != null) {
 						correctTraceView.otherViewsBehavior(otherControlDom);
