@@ -402,7 +402,7 @@ public class Simulator  {
 			StepChangeTypeChecker checker, PairList pairList, DiffMatcher matcher) {
 		TraceNode n = currentNode.getStepInPrevious();
 		StepChangeType t = checker.getType(n, true, pairList, matcher);
-		while(t.getType()==StepChangeType.CTL && n.getOrder()>controlDom.getOrder()){
+		while((t.getType()==StepChangeType.CTL || t.getType()==StepChangeType.SRC) && n.getOrder()>controlDom.getOrder()){
 			TraceNode dom = n.getInvocationMethodOrDominator();
 			if(dom.getMethodSign().equals(n.getMethodSign())){
 				return n;
