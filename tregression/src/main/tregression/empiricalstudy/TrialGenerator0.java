@@ -523,6 +523,10 @@ public class TrialGenerator0 {
 	
 	private void appendSuperClass(String className, AppJavaClassPath appPath, List<String> includedClasses){
 		JavaClass javaClazz = ByteCodeParser.parse(className, appPath);
+		if(javaClazz==null){
+			return;
+		}
+		
 		try {
 			for(JavaClass superClass: javaClazz.getSuperClasses()){
 				if(!superClass.getClassName().equals("java.lang.Object")){
