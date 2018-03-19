@@ -449,6 +449,10 @@ public class TrialGenerator0 {
 		TraceNode closetStep = findClosestStep(stopStep, visitedSteps);
 		List<TraceNode> list = new ArrayList<>();
 		
+		if(closetStep==null){
+			return list;
+		}
+		
 		Trace trace = stopStep.getTrace();
 		for(int i=closetStep.getOrder(); i>stopStep.getOrder(); i--) {
 			TraceNode step = trace.getTraceNode(i);
@@ -491,6 +495,8 @@ public class TrialGenerator0 {
 					InvokeInstruction iIns = (InvokeInstruction)ins;
 					String className = iIns.getClassName(cGen);
 					
+					appendSuperClass(className, step.getTrace().getAppJavaClassPath(), list);
+					
 					if(!list.contains(className)){
 						list.add(className);
 					}	
@@ -503,6 +509,7 @@ public class TrialGenerator0 {
 						
 						for(String implementation: implementations) {
 							list.add(implementation);
+							appendSuperClass(className, step.getTrace().getAppJavaClassPath(), list);
 						}
 					}
 					
@@ -512,6 +519,20 @@ public class TrialGenerator0 {
 		}
 		
 		return list;
+	}
+	
+	private void appendSuperClass(String className, AppJavaClassPath appPath, List<String> includedClasses){
+		JavaClass javaClazz = ByteCodeParser.parse(className, appPath);
+		try {
+			for(JavaClass superClass: javaClazz.getSuperClasses()){
+				if(!superClass.getClassName().equals("java.lang.Object")){
+					if(!includedClasses.contains(superClass.getClassName())){
+						includedClasses.add(superClass.getClassName());
+					}	
+				}
+			}
+		} catch (ClassNotFoundException e) {
+		}
 	}
 
 	private List<String> findImplementation(String className, List<String> loadedClassStrings,
