@@ -492,27 +492,37 @@ public class StepDetailUI {
 	protected void fillContextMenu(IMenuManager contextMenu, final Viewer viewer) {
 	    contextMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
-	    contextMenu.add(new Action("Search forward step reading this variable") {
+	    contextMenu.add(new Action("Search next step reading this variable") {
 	        @Override
 	        public void run() {
 	        	IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 	        	Object obj = selection.getFirstElement();
 	        	if(obj instanceof VarValue){
 	        		VarValue value = (VarValue)obj;
-	        		String expression = "id=" + value.getVarID();
+	        		String varID = value.getVarID();
+	        		varID = Variable.truncateSimpleID(varID);
+	        		String expression = "id=" + varID;
+	        		if(currentNode!=null){
+	        			traceView.getTrace().setObservingIndex(currentNode.getOrder()-1);
+	        		}
 	        		traceView.jumpToNode(expression, true);
 	        	}
 	        }
 	    });
 	    
-	    contextMenu.add(new Action("Search backward step reading this variable") {
+	    contextMenu.add(new Action("Search previous step reading this variable") {
 	        @Override
 	        public void run() {
 	        	IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 	        	Object obj = selection.getFirstElement();
 	        	if(obj instanceof VarValue){
 	        		VarValue value = (VarValue)obj;
-	        		String expression = "id=" + value.getVarID();
+	        		String varID = value.getVarID();
+	        		varID = Variable.truncateSimpleID(varID);
+	        		String expression = "id=" + varID;
+	        		if(currentNode!=null){
+	        			traceView.getTrace().setObservingIndex(currentNode.getOrder()-1);
+	        		}
 	        		traceView.jumpToNode(expression, false);
 	        	}
 	        }
