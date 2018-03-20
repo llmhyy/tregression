@@ -273,6 +273,11 @@ public class TrialGenerator0 {
 				Trace buggyTrace = buggyRS.getRunningTrace();
 				Trace correctTrace = correctRs.getRunningTrace();
 				
+				if (requireVisualization) {
+					Visualizer visualizer = new Visualizer();
+					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
+				}
+				
 				RootCauseFinder rootcauseFinder = new RootCauseFinder();
 				rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
 				
@@ -321,11 +326,6 @@ public class TrialGenerator0 {
 					else {
 						continue;						
 					}
-				}
-				
-				if (requireVisualization) {
-					Visualizer visualizer = new Visualizer();
-					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
 				}
 				
 				isDataFlowComplete = true;
