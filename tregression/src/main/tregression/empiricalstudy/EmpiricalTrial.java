@@ -111,6 +111,7 @@ public class EmpiricalTrial {
 			}			
 		}
 		
+		buffer.append("error message: " + exceptionExplanation + "\n");
 		buffer.append("real root cause: " + realcauseOrders + "\n");
 		buffer.append("over skip length: " + this.overskipLength + "\n");
 		buffer.append("explanation size: " + this.totalVisitedNodesNum + "\n");
