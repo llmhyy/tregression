@@ -68,7 +68,7 @@ public class Defects4jProjectConfig {
 			}
 		}
 		else if (projectName.equals("Mockito")) {
-			if(bugID<12 || bugID==20 || bugID==21){
+			if(bugID<12 || bugID==20 || bugID==21 || bugID==18 || bugID==19){
 				config = new Defects4jProjectConfig("test", "src", "build"+File.separator+"classes"+File.separator+"test", "build"+File.separator+"classes"+File.separator+"main", "build", projectName, bugID);				
 			}
 			else{
