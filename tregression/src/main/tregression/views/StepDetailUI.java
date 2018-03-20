@@ -499,13 +499,13 @@ public class StepDetailUI {
 	        	Object obj = selection.getFirstElement();
 	        	if(obj instanceof VarValue){
 	        		VarValue value = (VarValue)obj;
-	        		String varID = value.getVarID();
-	        		varID = Variable.truncateSimpleID(varID);
-	        		String expression = "id=" + varID;
-	        		if(currentNode!=null){
-	        			traceView.getTrace().setObservingIndex(currentNode.getOrder()-1);
+	        		Trace trace = traceView.getTrace();
+	        		List<TraceNode> nodes = trace.findNextReadingTraceNodes(value, currentNode.getOrder());
+	        		if(!nodes.isEmpty()){
+	        			TraceNode n = nodes.get(0);
+	        			traceView.jumpToNode(trace, n.getOrder(), true);
 	        		}
-	        		traceView.jumpToNode(expression, true);
+//	        		traceView.jumpToNode(expression, true);
 	        	}
 	        }
 	    });
@@ -517,13 +517,12 @@ public class StepDetailUI {
 	        	Object obj = selection.getFirstElement();
 	        	if(obj instanceof VarValue){
 	        		VarValue value = (VarValue)obj;
-	        		String varID = value.getVarID();
-	        		varID = Variable.truncateSimpleID(varID);
-	        		String expression = "id=" + varID;
-	        		if(currentNode!=null){
-	        			traceView.getTrace().setObservingIndex(currentNode.getOrder()-1);
+	        		Trace trace = traceView.getTrace();
+	        		List<TraceNode> nodes = trace.findPrevReadingTraceNodes(value, currentNode.getOrder());
+	        		if(!nodes.isEmpty()){
+	        			TraceNode n = nodes.get(0);
+	        			traceView.jumpToNode(trace, n.getOrder(), true);
 	        		}
-	        		traceView.jumpToNode(expression, false);
 	        	}
 	        }
 	    });

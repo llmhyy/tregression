@@ -24,11 +24,15 @@ import microbat.recommendation.calculator.VariableSimilarity;
 import microbat.recommendation.calculator.VariableSimilarityCalculator;
 import microbat.util.JavaUtil;
 import microbat.util.MinimumASTNodeFinder;
+import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.DeadEndRecord;
 
 public class TrainingDataTransfer {
 	public DED transfer(DeadEndRecord record, Trace buggyTrace){
+		Settings.compilationUnitMap.clear();
+		Settings.iCompilationUnitMap.clear();
+		
 		DeadEndData trueData;
 		List<DeadEndData> falseDatas = new ArrayList<>();
 		
