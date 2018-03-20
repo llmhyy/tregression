@@ -27,6 +27,7 @@ import microbat.preference.AnalysisScopePreference;
 import microbat.recommendation.DebugState;
 import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
+import sav.common.core.utils.SignatureUtils;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
@@ -494,6 +495,10 @@ public class TrialGenerator0 {
 				if(ins instanceof InvokeInstruction){
 					InvokeInstruction iIns = (InvokeInstruction)ins;
 					String className = iIns.getClassName(cGen);
+					if(SignatureUtils.isSignature(className)){
+						className = SignatureUtils.signatureToName(className);
+						className = className.replace("[]", "");
+					}
 					
 					appendSuperClass(className, step.getTrace().getAppJavaClassPath(), list);
 					
