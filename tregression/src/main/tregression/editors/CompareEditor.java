@@ -217,7 +217,7 @@ public class CompareEditor extends EditorPart {
 	private Menu generatePopMenu(final boolean isSource, final StyledText text) {
 		Menu popupMenu = new Menu(text);
 	    MenuItem forwardItem = new MenuItem(popupMenu, SWT.CASCADE);
-	    forwardItem.setText("Search Step Forward");
+	    forwardItem.setText("Search Previous Step");
 		forwardItem.addSelectionListener(new SelectionListener() {
 			
 			@Override
@@ -240,7 +240,7 @@ public class CompareEditor extends EditorPart {
 		});
 		
 		MenuItem backwardItem = new MenuItem(popupMenu, SWT.CASCADE);
-	    backwardItem.setText("Search Step Backward");
+	    backwardItem.setText("Search Next Steps");
 		backwardItem.addSelectionListener(new SelectionListener() {
 			
 			@Override
