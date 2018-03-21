@@ -35,6 +35,7 @@ import microbat.util.JTestUtil;
 import microbat.util.JavaUtil;
 import microbat.util.MicroBatUtil;
 import microbat.util.Settings;
+import mutation.mutator.MutationUtils;
 import mutation.mutator.Mutator;
 import sav.strategies.dto.AppJavaClassPath;
 import sav.strategies.dto.ClassLocation;
@@ -45,7 +46,6 @@ import tregression.io.IgnoredTestCaseFiles;
 import tregression.model.PairList;
 import tregression.model.Trial;
 import tregression.tracematch.LCSBasedTraceMatcher;
-import tregression.views.Visualizer;
 
 public class TestCaseAnalyzer {
 	
@@ -94,7 +94,8 @@ public class TestCaseAnalyzer {
 		cleanClassInTestPackage(sourceFolderPath, locationList);
 		System.currentTimeMillis();
 		
-		Mutator mutator = new Mutator(sourceFolderPath, TMP_DIRECTORY);
+		Mutator mutator = new Mutator(sourceFolderPath,
+				MutationUtils.getMutationFolderPathPrjRelevant(sourceFolderPath, TMP_DIRECTORY));
 		Map<String, MutationResult> mutations = mutator.mutate(locationList);
 		
 		return mutations;

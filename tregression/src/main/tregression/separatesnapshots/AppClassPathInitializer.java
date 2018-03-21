@@ -18,7 +18,6 @@ public class AppClassPathInitializer {
 		
 		appClassPath.addClasspath(testTargetPath);
 		appClassPath.addClasspath(codeTargetPath);
-		
 		List<String> libJars = findLibJars(workingDir+File.separator+"lib");
 		for(String libJar: libJars) {
 			appClassPath.addClasspath(libJar);
@@ -114,7 +113,6 @@ public class AppClassPathInitializer {
 		 */
 		String agentLib = junitDir + File.separator + "instrumentator.jar";
 		appClassPath.setAgentLib(agentLib);
-		
 		return appClassPath;
 	}
 	

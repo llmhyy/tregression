@@ -29,6 +29,10 @@ public class TestCase {
 	
 	@Override
 	public String toString(){
+		return getName();
+	}
+
+	public String getName() {
 		return testClass + "#" + testMethod;
 	}
 }

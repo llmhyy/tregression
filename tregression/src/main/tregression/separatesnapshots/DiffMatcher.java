@@ -28,7 +28,7 @@ public class DiffMatcher {
 	private String buggyPath;
 	private String fixPath;
 	
-	private List<FilePairWithDiff> fileDiffList;
+	protected List<FilePairWithDiff> fileDiffList;
 	
 	public DiffMatcher(String sourceFolderName, String testFolderName, String buggyPath, String fixPath) {
 		super();
@@ -235,7 +235,6 @@ public class DiffMatcher {
 		}
 		
 		this.fileDiffList = fileDiffs;
-		
 	}
 
 	protected List<String> getRawDiffContent() {
