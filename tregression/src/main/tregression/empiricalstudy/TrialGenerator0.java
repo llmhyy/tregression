@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -410,6 +411,7 @@ public class TrialGenerator0 {
 
 	private List<String> identifyIncludedClassNames(List<TraceNode> stopSteps,
 			PreCheckInformation precheckInfo, List<TraceNode> visitedSteps) {
+		Repository.clearCache();
 		
 		List<BreakPoint> parsedBreakPoints = new ArrayList<>();
 		List<String> classes = new ArrayList<>();
@@ -489,12 +491,27 @@ public class TrialGenerator0 {
 			PreCheckInformation precheckInfo) {
 		List<String> list = new ArrayList<>();
 		if(step.getInvocationChildren().isEmpty()){
+			TraceNode stepOver = step.getStepOverPrevious();
+			if(stepOver!=null && stepOver.getBreakPoint().equals(step.getBreakPoint())){
+				return list;
+			}
+			
 			ConstantPoolGen cGen = new ConstantPoolGen(method.getConstantPool());
 			for(InstructionHandle handle: insList){
 				Instruction ins = handle.getInstruction();
 				if(ins instanceof InvokeInstruction){
 					InvokeInstruction iIns = (InvokeInstruction)ins;
+					
+					String invokedMethodName = iIns.getMethodName(cGen);
+					if(invokedMethodName.equals(method.getName())){
+						continue;
+					}
+					
 					String className = iIns.getClassName(cGen);
+					if(className.equals("java.lang.Object") || className.equals("java.lang.String")){
+						continue;
+					}
+					
 					if(SignatureUtils.isSignature(className)){
 						className = SignatureUtils.signatureToName(className);
 						className = className.replace("[]", "");
