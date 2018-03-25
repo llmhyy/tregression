@@ -267,7 +267,7 @@ public class StepChangeTypeChecker {
 			}
 			
 			String readAddress = Variable.truncateSimpleID(readVarID);
-			if(address.equals(readAddress)){
+			if(address!=null && address.equals(readAddress)){
 				TraceNode newDom = dom.getDataDominator(readVar);
 				if(!chain.contains(newDom)){
 					getAssignChain(newDom, readVar, chain);					
