@@ -259,11 +259,15 @@ public class StepChangeTypeChecker {
 		
 		chain.add(dom);
 		
-		String varID = Variable.truncateSimpleID(var.getVarID());
+		String address = Variable.truncateSimpleID(var.getAliasVarID());
 		for(VarValue readVar: dom.getReadVariables()){
-			String readVarID = readVar.getVarID();
-			String simpleReadVarID = Variable.truncateSimpleID(readVarID);
-			if(varID.equals(simpleReadVarID)){
+			String readVarID = readVar.getAliasVarID();
+			if(readVarID==null){
+				continue;
+			}
+			
+			String readAddress = Variable.truncateSimpleID(readVarID);
+			if(address.equals(readAddress)){
 				TraceNode newDom = dom.getDataDominator(readVar);
 				if(!chain.contains(newDom)){
 					getAssignChain(newDom, readVar, chain);					
