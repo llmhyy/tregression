@@ -124,7 +124,6 @@ public class StepChangeTypeChecker {
 		
 		List<VarValue> synonymVarList = findSynonymousVarList(thisStep, thatStep, thisVar, 
 				isOnBeforeTrace, pairList, matcher);
-		
 		if(synonymVarList.isEmpty()){
 			return new VarMatch(false, false);
 		}
@@ -292,9 +291,9 @@ public class StepChangeTypeChecker {
 					ReferenceValue thatParent = (ReferenceValue)readVar.getParents().get(0);
 					String thisParentID = Variable.truncateSimpleID(thisParent.getVarID());
 					String thatParentID = Variable.truncateSimpleID(thatParent.getVarID());
-					TraceNode thisDom = thisStep.getTrace().findLastestNodeDefiningPrimitiveVariable(
+					TraceNode thisDom = thisStep.getTrace().findLastestNodeDefiningVariable(
 							thisParentID, thisStep.getOrder());
-					TraceNode thatDom = thatStep.getTrace().findLastestNodeDefiningPrimitiveVariable(
+					TraceNode thatDom = thatStep.getTrace().findLastestNodeDefiningVariable(
 							thatParentID, thatStep.getOrder());
 					
 					int thisOrder = (thisDom==null) ? 0 : thisDom.getOrder();
