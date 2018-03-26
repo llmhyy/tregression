@@ -120,6 +120,9 @@ public class DiffMatcher {
 				cu.accept(finder);
 				node = finder.getMinimumNode();
 				astMap.put(breakPoint.getFullJavaFilePath()+currentLineNo, node);
+				if(node==null){
+					continue;
+				}
 			}
 			
 			int nodeStartLine = cu.getLineNumber(node.getParent().getStartPosition());
