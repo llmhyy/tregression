@@ -14,6 +14,8 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.Statement;
 
 import microbat.model.BreakPoint;
 import microbat.model.ClassLocation;
@@ -125,10 +127,11 @@ public class DiffMatcher {
 				}
 			}
 			
-			int nodeStartLine = cu.getLineNumber(node.getParent().getStartPosition());
-			int nodeEndLine = cu.getLineNumber(node.getParent().getStartPosition()+node.getParent().getLength());
+			ASTNode parent = node.getParent();
+			int nodeStartLine = cu.getLineNumber(parent.getStartPosition());
+			int nodeEndLine = cu.getLineNumber(parent.getStartPosition()+parent.getLength());
 			
-			if(nodeEndLine-nodeStartLine>=5){
+			if(/*!(parent instanceof Statement) && */!(parent instanceof Expression) ){
 				nodeStartLine = cu.getLineNumber(node.getStartPosition());
 				nodeEndLine = cu.getLineNumber(node.getStartPosition()+node.getLength());
 			}
