@@ -490,6 +490,7 @@ public class Simulator  {
 		domOnRef = matchingStep.getDataDominator(wrongVar);
 		
 		List<TraceNode> breakSteps = new ArrayList<>();
+		 
 		while(domOnRef != null){
 			StepChangeType changeType = typeChecker.getType(domOnRef, false, pairList, matcher);
 			if(changeType.getType()==StepChangeType.SRC){
@@ -499,8 +500,20 @@ public class Simulator  {
 			else{
 				TraceNodePair conPair = pairList.findByAfterNode(domOnRef);
 				if(conPair != null && conPair.getBeforeNode() != null){
-					TraceNode returningPoint = conPair.getBeforeNode();
-					breakSteps.add(returningPoint);
+					/**
+					 * if we find a matched step on buggy trace, then we find the first incorrect step starting at the matched
+					 * step as the break step.
+					 */
+					TraceNode matchingPoint = conPair.getBeforeNode();
+					for(int order=matchingPoint.getOrder(); order<=matchingPoint.getTrace().size(); order++){
+						TraceNode potentialPoint = matchingPoint.getTrace().getTraceNode(order);
+						StepChangeType ct = typeChecker.getType(potentialPoint, true, pairList, matcher);
+						if(ct.getType()!=StepChangeType.IDT){
+							breakSteps.add(potentialPoint);
+							break;
+						}
+					}
+					
 					break;
 				}
 				else{
