@@ -3,10 +3,6 @@ package tregression.empiricalstudy.training;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-
-import microbat.codeanalysis.ast.ASTEncoder;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -22,8 +18,6 @@ import microbat.recommendation.calculator.Traverse;
 import microbat.recommendation.calculator.TraversingDistanceCalculator;
 import microbat.recommendation.calculator.VariableSimilarity;
 import microbat.recommendation.calculator.VariableSimilarityCalculator;
-import microbat.util.JavaUtil;
-import microbat.util.MinimumASTNodeFinder;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.DeadEndRecord;
@@ -33,7 +27,7 @@ public class TrainingDataTransfer {
 		Settings.compilationUnitMap.clear();
 		Settings.iCompilationUnitMap.clear();
 		
-		DeadEndData trueData;
+		DeadEndData trueData = null;
 		List<DeadEndData> falseDatas = new ArrayList<>();
 		
 		int start = record.getDeadEndOrder();
@@ -65,8 +59,12 @@ public class TrainingDataTransfer {
 			inspector.setInspectingRange(range);
 			List<TraceNode> criticalConditionalSteps = inspector.analyze(wrongVar);
 			
-			trueData = transferData(true, occurStep, breakStep, deadEndStep, 
-					wrongVar, criticalConditionalSteps);
+			if(wrongVar.getVariable() instanceof LocalVar){
+				if(occurStep.getMethodSign().equals(breakStep.getMethodSign())){
+					trueData = transferData(true, occurStep, breakStep, deadEndStep, 
+							wrongVar, criticalConditionalSteps);									
+				}
+			}
 			
 			for(int i=start+1; i<end; i++){
 				TraceNode step = buggyTrace.getTraceNode(i);

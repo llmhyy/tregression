@@ -31,7 +31,9 @@ public class DED {
 	
 	public List<DeadEndData> getAllData(){
 		List<DeadEndData> deadEndList = new ArrayList<>();
-		deadEndList.add(trueData);
+		if(trueData!=null){
+			deadEndList.add(trueData);			
+		}
 		deadEndList.addAll(falseDatas);
 		return deadEndList;
 	}
