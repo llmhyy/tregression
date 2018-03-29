@@ -64,6 +64,14 @@ public class TraceCollector0 {
 			return rs;
 		}
 		
+		if(precheckInfo.isUndeterministic()){
+			System.out.println("This is undeterministic testcase!");
+			RunningResult rs = new RunningResult();
+			rs.setFailureType(TrialGenerator0.UNDETERMINISTIC);
+			return rs;
+		}
+		
+		
 		boolean isMultiThread = precheckInfo.getThreadNum()!=1;
 		if(isMultiThread && !allowMultiThread) {
 			System.out.println("It is multi-thread program!");
@@ -72,12 +80,12 @@ public class TraceCollector0 {
 			return rs;
 		}
 		
-		if(!info.isExpectedStepsMet()){
-			System.out.println("The expected steps are not met by normal run");
-			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator0.EXPECTED_STEP_NOT_MET);
-			return rs;
-		}
+//		if(!info.isExpectedStepsMet()){
+//			System.out.println("The expected steps are not met by normal run");
+//			RunningResult rs = new RunningResult();
+//			rs.setFailureType(TrialGenerator0.EXPECTED_STEP_NOT_MET);
+//			return rs;
+//		}
 		
 		Trace trace = info.getTrace();
 		trace.setSourceVersion(isBuggy);

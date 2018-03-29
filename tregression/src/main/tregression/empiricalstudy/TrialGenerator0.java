@@ -56,6 +56,7 @@ public class TrialGenerator0 {
 	public static final int SAME_LENGTH = 4;
 	public static final int OVER_LONG_INSTRUMENTATION_METHOD = 5;
 	public static final int EXPECTED_STEP_NOT_MET = 6;
+	public static final int UNDETERMINISTIC = 7;
 
 	private RunningResult cachedBuggyRS;
 	private RunningResult cachedCorrectRS;
@@ -77,6 +78,8 @@ public class TrialGenerator0 {
 			return "over long instrumented byte code method";
 		case EXPECTED_STEP_NOT_MET:
 			return "expected steps are not met";
+		case UNDETERMINISTIC:
+			return "this is undeterministic testcase";
 		default:
 			break;
 		}
