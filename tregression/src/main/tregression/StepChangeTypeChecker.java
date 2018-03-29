@@ -10,6 +10,7 @@ import microbat.model.value.VarValue;
 import microbat.model.value.VirtualValue;
 import microbat.model.variable.ArrayElementVar;
 import microbat.model.variable.Variable;
+import microbat.model.variable.VirtualVar;
 import microbat.util.PrimitiveUtils;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
@@ -312,9 +313,20 @@ public class StepChangeTypeChecker {
 				
 			}
 			else{
-				if(readVar.getVarName().equals(thisVar.getVarName())) {
+				if(readVar.getVariable() instanceof VirtualVar && thisVar.getVariable() instanceof VirtualVar){
+					String virName1 = readVar.getVarName();
+					String virName2 = thisVar.getVarName();
+					
+					String simpleName1 = virName1.substring(virName1.lastIndexOf("#"), virName1.length());
+					String simpleName2 = virName2.substring(virName2.lastIndexOf("#"), virName2.length());
+					
+					if(simpleName1.equals(simpleName2)){
+						synonymousList.add(readVar);
+					}
+				}
+				else if(readVar.getVarName().equals(thisVar.getVarName())) {
 					synonymousList.add(readVar);
-				}				
+				}
 			}
 		}
 		return synonymousList;
