@@ -99,7 +99,9 @@ public class SeparateVersionHandler extends AbstractHandler{
 			}
 			
 			private void setTestCase(DED datas, String tc) {
-				datas.getTrueData().testcase = tc;
+				if(datas.getTrueData()!=null){
+					datas.getTrueData().testcase = tc;					
+				}
 				for(DeadEndData data: datas.getFalseDatas()){
 					data.testcase = tc;
 				}
