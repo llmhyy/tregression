@@ -11,12 +11,18 @@ import java.util.Scanner;
 
 import org.apache.bcel.Repository;
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.LocalVariable;
+import org.apache.bcel.classfile.LocalVariableTable;
 import org.apache.bcel.classfile.Method;
+import org.apache.bcel.generic.ArrayInstruction;
 import org.apache.bcel.generic.ConstantPoolGen;
+import org.apache.bcel.generic.FieldInstruction;
 import org.apache.bcel.generic.INVOKEINTERFACE;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionHandle;
 import org.apache.bcel.generic.InvokeInstruction;
+import org.apache.bcel.generic.LocalVariableInstruction;
+import org.apache.bcel.generic.Type;
 
 import microbat.codeanalysis.bytecode.ByteCodeParser;
 import microbat.codeanalysis.bytecode.MethodFinderByLine;
@@ -499,7 +505,28 @@ public class TrialGenerator0 {
 			ConstantPoolGen cGen = new ConstantPoolGen(method.getConstantPool());
 			for(InstructionHandle handle: insList){
 				Instruction ins = handle.getInstruction();
-				if(ins instanceof InvokeInstruction){
+				
+				if(isForReadWriteVariable(ins)){
+					String className = parseClassName(ins, method, cGen);
+					if(className != null){
+						if(className.equals("java.lang.Object") || className.equals("java.lang.String")){
+							continue;
+						}
+						
+						if(SignatureUtils.isSignature(className)){
+							className = SignatureUtils.signatureToName(className);
+							className = className.replace("[]", "");
+						}
+						
+						appendSuperClass(className, step.getTrace().getAppJavaClassPath(), list);
+						
+						if(!list.contains(className)){
+							list.add(className);
+						}	
+						
+					}
+				}
+				else if(ins instanceof InvokeInstruction){
 					InvokeInstruction iIns = (InvokeInstruction)ins;
 					
 					String invokedMethodName = iIns.getMethodName(cGen);
@@ -543,6 +570,50 @@ public class TrialGenerator0 {
 		return list;
 	}
 	
+	@SuppressWarnings("deprecation")
+	private String parseClassName(Instruction ins, Method method, ConstantPoolGen cGen) {
+		if(ins instanceof LocalVariableInstruction){
+			LocalVariableTable table = method.getLocalVariableTable();
+			if(table != null){
+				LocalVariableInstruction lIns = (LocalVariableInstruction) ins;
+				LocalVariable localVar = table.getLocalVariable(lIns.getIndex());
+				if(localVar!=null){
+					String classSig = localVar.getSignature();
+					if(classSig.length()!=1){
+						String className = SignatureUtils.signatureToName(classSig);
+						return className;				
+					}
+				}
+			}
+		}
+		else if(ins instanceof FieldInstruction){
+			FieldInstruction fIns = (FieldInstruction)ins;
+			Type type = fIns.getFieldType(cGen);
+			String classSig = type.getSignature();
+			if(classSig.length()!=1){
+				String className = SignatureUtils.signatureToName(classSig);
+				return className;				
+			}
+		}
+		else if(ins instanceof ArrayInstruction){
+			ArrayInstruction aIns = (ArrayInstruction)ins;
+			Type type = aIns.getType(cGen);
+			String classSig = type.getSignature();
+			if(classSig.length()!=1){
+				String className = SignatureUtils.signatureToName(classSig);
+				return className;				
+			}
+		}
+		
+		return null;
+	}
+
+	private boolean isForReadWriteVariable(Instruction ins) {
+		return ins instanceof FieldInstruction || 
+				ins instanceof ArrayInstruction ||
+				ins instanceof LocalVariableInstruction;
+	}
+
 	private void appendSuperClass(String className, AppJavaClassPath appPath, List<String> includedClasses){
 		JavaClass javaClazz = ByteCodeParser.parse(className, appPath);
 		if(javaClazz==null){
