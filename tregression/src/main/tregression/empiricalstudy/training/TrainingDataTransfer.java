@@ -21,6 +21,7 @@ import microbat.recommendation.calculator.VariableSimilarityCalculator;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.DeadEndRecord;
+import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 
 public class TrainingDataTransfer {
 	public DED transfer(DeadEndRecord record, Trace buggyTrace){
@@ -71,14 +72,14 @@ public class TrainingDataTransfer {
 				if(!step.getBreakPoint().equals(breakStep.getBreakPoint())){
 					if(wrongVar.getVariable() instanceof LocalVar){
 						if(step.getInvocationLevel()==occurStep.getInvocationLevel()){
-							boolean label = identifyDataLabel(step, breakStep);
+							boolean label = identifyDataLabel(step, breakStep, record.getSolutionPattern());
 							DeadEndData d = transferData(label, occurStep, step, deadEndStep, 
 									wrongVar, criticalConditionalSteps);
 							falseDatas.add(d);	
 						}
 					}
 					else{
-						boolean label = identifyDataLabel(step, breakStep);
+						boolean label = identifyDataLabel(step, breakStep, record.getSolutionPattern());
 						DeadEndData d = transferData(label, occurStep, step, deadEndStep, 
 								wrongVar, criticalConditionalSteps);
 						falseDatas.add(d);						
@@ -91,9 +92,17 @@ public class TrainingDataTransfer {
 		return ded;
 	}
 	
-	private boolean identifyDataLabel(TraceNode step, TraceNode breakStep){
+	private boolean identifyDataLabel(TraceNode step, TraceNode breakStep, SolutionPattern pattern){
+		int errorBound = 1;
+		if(pattern.getType()==SolutionPattern.INCORRECT_ASSIGNMENT || 
+				pattern.getType()==SolutionPattern.MISS_EVALUATED_CONDITION ||
+				pattern.getType()==SolutionPattern.INCORRECT_CONDITION ||
+				pattern.getType()==SolutionPattern.INVOKE_DIFFERENT_METHOD){
+			errorBound = 0;
+		}
+		
 		if(step.getMethodSign().equals(breakStep.getMethodSign())){
-			if(Math.abs(step.getLineNumber()-breakStep.getLineNumber())<=1){
+			if(Math.abs(step.getLineNumber()-breakStep.getLineNumber())<=errorBound){
 				return true;
 			}
 		}
