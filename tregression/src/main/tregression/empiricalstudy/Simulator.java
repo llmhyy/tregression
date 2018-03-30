@@ -356,6 +356,11 @@ public class Simulator  {
 				StepOperationTuple operation = new StepOperationTuple(currentNode,
 						new UserFeedback(UserFeedback.CORRECT), null);
 				checkingList.add(operation);
+				
+				if(currentNode.isException()){
+					currentNode = currentNode.getStepInPrevious();
+					continue;
+				}
 
 				int overskipLen = checkOverskipLength(pairList, matcher, buggyTrace, rootcauseNode, checkingList);
 				if(overskipLen<0 && checkingList.size()>=2){

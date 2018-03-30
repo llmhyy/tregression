@@ -63,8 +63,10 @@ public class StepChangeType {
 		if(finder.getCausalityGraph().getGuidance()!=null){
 			CausalityNode cNode = new CausalityNode(node, isOnBefore);
 			VarValue value = guidance.get(cNode);
-			if(value != null){
-				return value;
+			if(value != null ){
+				if(!node.getWrittenVariables().contains(value)){
+					return value;					
+				}
 			}
 		}
 		
@@ -76,6 +78,11 @@ public class StepChangeType {
 			if(varID.endsWith(":0")){
 				continue;
 			}
+			
+			if(node.getWrittenVariables().contains(var)){
+				continue;
+			}
+			
 			if(var.getVariable() instanceof VirtualVar){
 				virList.add(var);
 			}
