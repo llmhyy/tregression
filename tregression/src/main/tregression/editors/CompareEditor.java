@@ -181,7 +181,7 @@ public class CompareEditor extends EditorPart {
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		
 		final StyledText text = new StyledText(composite, 
-				SWT.MULTI | SWT.LEAD | SWT.V_SCROLL);
+				SWT.MULTI | SWT.LEAD | SWT.V_SCROLL | SWT.H_SCROLL);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		text.setEditable(false);
 		
