@@ -9,6 +9,7 @@ public class SolutionPattern {
 	public final static int MISSING_IF_THROW = 5;
 	public final static int INCORRECT_ASSIGNMENT = 6;
 	public final static int INVOKE_DIFFERENT_METHOD = 7;
+	public final static int MISS_EVALUATED_CONDITION = 8;
 	
 	private int type;
 	
@@ -45,6 +46,9 @@ public class SolutionPattern {
 		}
 		else if(getType()==INVOKE_DIFFERENT_METHOD){
 			return "invoke different method";
+		}
+		else if(getType()==MISS_EVALUATED_CONDITION){
+			return "miss-evaluated condition";
 		}
 		
 		return "unknown";

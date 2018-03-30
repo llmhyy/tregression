@@ -12,6 +12,7 @@ import tregression.empiricalstudy.solutionpattern.control.MissingIfThrow;
 import tregression.empiricalstudy.solutionpattern.data.ExtraNestedIfBlock;
 import tregression.empiricalstudy.solutionpattern.data.IncorrectAssignment;
 import tregression.empiricalstudy.solutionpattern.data.IncorrectCondition;
+import tregression.empiricalstudy.solutionpattern.data.MissEvaluedCondition;
 import tregression.empiricalstudy.solutionpattern.data.MissingAssignment;
 
 public class PatternIdentifier {
@@ -28,6 +29,7 @@ public class PatternIdentifier {
 		patternDetectors.add(new MissingIfBlockBody());
 		patternDetectors.add(new IncorrectAssignment());
 		patternDetectors.add(new InvokeDifferentMethod());
+		patternDetectors.add(new MissEvaluedCondition());
 	}
 	
 	public void identifyPattern(EmpiricalTrial trial){
