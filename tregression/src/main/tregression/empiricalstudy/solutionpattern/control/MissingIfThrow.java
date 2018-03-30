@@ -18,9 +18,9 @@ public class MissingIfThrow extends PatternDetector {
 
 	@Override
 	public boolean detect(DeadEndRecord deadEndRecord, EmpiricalTrial trial) {
-		if (deadEndRecord.getType() == DeadEndRecord.DATA) {
-			return false;
-		}
+//		if (deadEndRecord.getType() == DeadEndRecord.DATA) {
+//			return false;
+//		}
 
 		for (RootCauseNode rootCause : trial.getRootCauseFinder().getRealRootCaseList()) {
 			if (!rootCause.isOnBefore()) {
