@@ -450,13 +450,18 @@ public class Simulator  {
 	private List<TraceNode> findTheNearestCorrespondence(TraceNode domOnRef, PairList pairList, Trace buggyTrace, Trace correctTrace) {
 		List<TraceNode> list = new ArrayList<>();
 		
-		TraceNodePair pair = pairList.findByAfterNode(domOnRef);
-		if(pair!=null){
-			TraceNode beforeNode = pair.getBeforeNode();
-			if(beforeNode!=null){
-				list.add(beforeNode);
-				return list;
+		List<TraceNode> sameLineSteps = findSameLineSteps(domOnRef);
+		for(TraceNode sameLineStep: sameLineSteps){
+			TraceNodePair pair = pairList.findByAfterNode(sameLineStep);
+			if(pair!=null){
+				TraceNode beforeNode = pair.getBeforeNode();
+				if(beforeNode!=null){
+					list.add(beforeNode);
+				}
 			}
+		}
+		if(!list.isEmpty()){
+			return list;
 		}
 		
 		int endOrder = new RootCauseFinder().findEndOrderInOtherTrace(domOnRef, pairList, false, correctTrace);
@@ -478,6 +483,25 @@ public class Simulator  {
 		return list;
 	}
 	
+	private List<TraceNode> findSameLineSteps(TraceNode domOnRef) {
+		List<TraceNode> list = new ArrayList<>();
+		list.add(domOnRef);
+		
+		TraceNode node = domOnRef.getStepOverPrevious();
+		while(node.getLineNumber()==domOnRef.getLineNumber()){
+			list.add(node);
+			node = node.getStepOverPrevious();
+		}
+		
+		node = domOnRef.getStepOverNext();
+		while(node.getLineNumber()==domOnRef.getLineNumber()){
+			list.add(node);
+			node = node.getStepOverNext();
+		}
+		
+		return list;
+	}
+
 	private List<DeadEndRecord> createDataRecord(TraceNode currentNode, TraceNode buggyNode,
 			StepChangeTypeChecker typeChecker, PairList pairList, DiffMatcher matcher, RootCauseFinder rootCauseFinder) {
 		
