@@ -34,7 +34,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				int skippedNum = 26+80;
+				int skippedNum = 0;//26+133+32;
 				int endNum = 500;
 				
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
@@ -88,7 +88,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 									DED datas = new TrainingDataTransfer().transfer(record, t.getBuggyTrace());
 									setTestCase(datas, t.getTestcase());						
 									try {
-										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
+										//new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
 										new DeadEndCSVWriter().export(datas.getAllData());
 									} catch (NumberFormatException | IOException e) {
 										e.printStackTrace();
@@ -114,7 +114,9 @@ public class AllDefects4jHandler extends AbstractHandler {
 			}
 			
 			private void setTestCase(DED datas, String tc) {
-				datas.getTrueData().testcase = tc;
+				if(datas.getTrueData()!=null){
+					datas.getTrueData().testcase = tc;					
+				}
 				for(DeadEndData data: datas.getFalseDatas()){
 					data.testcase = tc;
 				}
