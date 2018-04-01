@@ -207,11 +207,11 @@ public class TrialRecorder {
 		EXCEPTION ("exception"),
 		MULTI_THREAD ("multi thread"),
 		
-		DEADEND_TYPE ("deadend type"),
-		DEADEND_OCCUR ("deadend occur"),
-		DEADEND ("deadend "),
-		DEADEND_BREAK ("deadend break"),
-		DEADEND_SOLUTION ("deadend solution");
+		DEADEND_TYPE ("type"),
+		DEADEND_OCCUR ("occur"),
+		DEADEND ("dead end"),
+		DEADEND_BREAK ("break"),
+		DEADEND_SOLUTION ("solution");
 		
 		private String title;
 		private Header(String title) {
