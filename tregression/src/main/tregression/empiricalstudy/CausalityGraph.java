@@ -87,6 +87,7 @@ public class CausalityGraph {
 		Set<VisitedResult> visitedSet = new HashSet<>();
 		visitedSet.add(new VisitedResult(root, null));
 		traverse(root, guidance, visitedSet);
+		
 	}
 
 	private void traverse(CausalityNode node, Map<CausalityNode, VarValue> guidance, Set<VisitedResult> visitedSet) {
