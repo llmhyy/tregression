@@ -156,6 +156,12 @@ public class TrialRecorder {
 				type = r.getSolutionPattern().getTypeName();
 			}
 			row.createCell(count++).setCellValue(type);
+			
+			String varType = "";
+			if(r.getType()==DeadEndRecord.DATA){
+				varType = r.getVarValue().getVariable().getClass().getName();
+				row.createCell(count++).setCellValue(varType);
+			}
 		}	
 	}
 	
@@ -211,7 +217,8 @@ public class TrialRecorder {
 		DEADEND_OCCUR ("occur"),
 		DEADEND ("dead end"),
 		DEADEND_BREAK ("break"),
-		DEADEND_SOLUTION ("solution");
+		DEADEND_SOLUTION ("solution"),
+		VAR_TYPE ("var type");
 		
 		private String title;
 		private Header(String title) {
