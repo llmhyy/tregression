@@ -656,13 +656,13 @@ public class Simulator  {
 		list.add(domOnRef);
 		
 		TraceNode node = domOnRef.getStepOverPrevious();
-		while(node.getLineNumber()==domOnRef.getLineNumber()){
+		while(node!=null && node.getLineNumber()==domOnRef.getLineNumber()){
 			list.add(node);
 			node = node.getStepOverPrevious();
 		}
 		
 		node = domOnRef.getStepOverNext();
-		while(node.getLineNumber()==domOnRef.getLineNumber()){
+		while(node!=null && node.getLineNumber()==domOnRef.getLineNumber()){
 			list.add(node);
 			node = node.getStepOverNext();
 		}
