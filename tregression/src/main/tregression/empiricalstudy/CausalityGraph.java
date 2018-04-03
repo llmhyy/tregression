@@ -12,7 +12,7 @@ import microbat.model.value.VarValue;
 
 public class CausalityGraph {
 	private List<CausalityNode> observedFaults = new ArrayList<>();
-	private CausalityNode root;
+	private List<CausalityNode> roots = new ArrayList<>();
 	private Map<CausalityNode, CausalityNode> nodes = new HashMap<>();
 
 	public CausalityNode findOrCreate(TraceNode node, boolean isOnBefore){
@@ -79,14 +79,16 @@ public class CausalityGraph {
 	
 	private Map<CausalityNode, VarValue> guidance = new HashMap<>(); 
 	public void generateSimulationGuidance(){
-		if(root==null){
+		if(this.roots.isEmpty()){
 			return;
 		}
 		
-		guidance.put(root, null);
-		Set<VisitedResult> visitedSet = new HashSet<>();
-		visitedSet.add(new VisitedResult(root, null));
-		traverse(root, guidance, visitedSet);
+		for(CausalityNode root: roots){
+			guidance.put(root, null);
+			Set<VisitedResult> visitedSet = new HashSet<>();
+			visitedSet.add(new VisitedResult(root, null));
+			traverse(root, guidance, visitedSet);			
+		}
 		
 	}
 
@@ -113,14 +115,6 @@ public class CausalityGraph {
 		this.observedFaults = observedFaults;
 	}
 
-	public CausalityNode getRoot() {
-		return root;
-	}
-
-	public void setRoot(CausalityNode root) {
-		this.root = root;
-	}
-
 	public Map<CausalityNode, CausalityNode> getNodes() {
 		return nodes;
 	}
@@ -137,4 +131,17 @@ public class CausalityGraph {
 		this.guidance = guidance;
 	}
 
+	public List<CausalityNode> getRoots() {
+		return roots;
+	}
+
+	public void setRoots(List<CausalityNode> roots) {
+		this.roots = roots;
+	}
+
+	public void addRoot(CausalityNode root){
+		if(!this.roots.contains(root)){
+			this.roots.add(root);
+		}
+	}
 }

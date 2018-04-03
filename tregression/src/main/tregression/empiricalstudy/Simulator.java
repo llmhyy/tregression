@@ -230,7 +230,7 @@ public class Simulator  {
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TraceNode currentNode = observedFaultNode;
 		
-		EmpiricalTrial trial = workSingleTrial(buggyTrace, correctTrace, pairList, matcher, 
+		EmpiricalTrial trial = workSingleTrial0(buggyTrace, correctTrace, pairList, matcher, 
 				rootCauseFinder, typeChecker, currentNode);
 		trials.add(trial);
 		
@@ -256,7 +256,7 @@ public class Simulator  {
 	 * @param state
 	 * @return
 	 */
-	private EmpiricalTrial workSingleTrial(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
+	private EmpiricalTrial workSingleTrial0(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
 			RootCauseFinder rootCauseFinder, StepChangeTypeChecker typeChecker,
 			TraceNode currentNode) {
 		

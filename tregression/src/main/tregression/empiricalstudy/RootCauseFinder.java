@@ -144,7 +144,7 @@ public class RootCauseFinder {
 			
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
-				causalityGraph.setRoot(resultNode);
+				causalityGraph.addRoot(resultNode);
 				//break;
 			}
 			else if(changeType.getType()==StepChangeType.DAT){

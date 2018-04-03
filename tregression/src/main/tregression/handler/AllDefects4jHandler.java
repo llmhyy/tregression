@@ -89,7 +89,10 @@ public class AllDefects4jHandler extends AbstractHandler {
 									setTestCase(datas, t.getTestcase());						
 									try {
 										//new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
-										new DeadEndCSVWriter().export(datas.getAllData());
+										
+										if(t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
+											new DeadEndCSVWriter().export(datas.getAllData());											
+										}
 									} catch (NumberFormatException | IOException e) {
 										e.printStackTrace();
 									}
