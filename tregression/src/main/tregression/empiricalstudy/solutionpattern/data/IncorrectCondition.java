@@ -68,7 +68,7 @@ public class IncorrectCondition extends PatternDetector{
 			for(Integer removedLine: removedIfs){
 				for(Integer addedLine: addedIfs){
 					List<Integer> targetLines = filePair.getSourceToTargetMap().get(removedLine);
-					if(targetLines.contains(addedLine)){
+					if(targetLines!=null && targetLines.contains(addedLine)){
 						return true;
 					}
 				}
