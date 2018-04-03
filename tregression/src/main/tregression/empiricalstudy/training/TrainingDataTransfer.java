@@ -66,6 +66,10 @@ public class TrainingDataTransfer {
 							wrongVar, criticalConditionalSteps);									
 				}
 			}
+			else{
+				trueData = transferData(true, occurStep, breakStep, deadEndStep, 
+						wrongVar, criticalConditionalSteps);
+			}
 			
 			for(int i=start+1; i<end; i++){
 				TraceNode step = buggyTrace.getTraceNode(i);
