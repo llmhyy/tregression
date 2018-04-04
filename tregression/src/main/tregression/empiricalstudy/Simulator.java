@@ -46,15 +46,36 @@ public class Simulator  {
 		while(node != null) {
 			StepChangeType changeType = checker.getType(node, true, pairList, matcher);
 			if (everInvokedByTearDownMethod && isInvokedByTearDownMethod(node)) {
-				
+				node = node.getStepInPrevious();
+				continue;
 			}
 			else if(everInvokedByTearDownMethod && previousNodeInvokedByTearDown(node)){
-				
+				node = node.getStepInPrevious();
+				continue;
 			}
-			else if(changeType.getType()==StepChangeType.CTL && node.getControlDominator()==null) {
-				if(node.isException()) {
-					return node;
-				}	
+			else if(changeType.getType()==StepChangeType.CTL) {
+				TraceNode cDom = node.getControlDominator();
+				if(cDom==null){
+					if(node.isException()) {
+						return node;
+					}	
+					else{
+						node = node.getStepInPrevious();
+						continue;
+					}
+				}
+				
+				StepChangeType cDomType = checker.getType(cDom, true, pairList, matcher);
+				if(cDomType.getType()==StepChangeType.IDT){
+					if(node.getStepOverPrevious()!=null){
+						if(node.getStepOverPrevious().equals(cDom)){
+							node = node.getStepInPrevious();
+							continue;
+						}
+					}
+				}
+				
+				return node;
 			}
 			else if(changeType.getType()!=StepChangeType.IDT){
 				return node;
