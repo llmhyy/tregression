@@ -60,11 +60,15 @@ public class TrainingDataTransfer {
 			inspector.setInspectingRange(range);
 			List<TraceNode> criticalConditionalSteps = inspector.analyze(wrongVar);
 			
-			if(wrongVar.getVariable() instanceof LocalVar){
+			if(wrongVar.getVariable() instanceof LocalVar && !wrongVar.getVarName().equals("this")){
 				if(occurStep.getMethodSign().equals(breakStep.getMethodSign())){
 					trueData = transferData(true, occurStep, breakStep, deadEndStep, 
 							wrongVar, criticalConditionalSteps);									
 				}
+			}
+			else{
+				trueData = transferData(true, occurStep, breakStep, deadEndStep, 
+						wrongVar, criticalConditionalSteps);
 			}
 			
 			for(int i=start+1; i<end; i++){

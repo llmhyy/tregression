@@ -40,8 +40,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 				int[] bugNum = {26, 133, 65, 106, 38, 27};
 				
-//				String[] projects = {"Chart", "Lang", "Math", "Time"};
-//				int[] bugNum = {26, 65, 106, 27};
+//				String[] projects = {"Chart"};
+//				int[] bugNum = {2};
 				
 //				String[] projects = {"Lang"};
 //				int[] bugNum = {65};
@@ -89,7 +89,10 @@ public class AllDefects4jHandler extends AbstractHandler {
 									setTestCase(datas, t.getTestcase());						
 									try {
 										//new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
-										new DeadEndCSVWriter().export(datas.getAllData());
+										
+										if(!t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
+											new DeadEndCSVWriter().export(datas.getAllData());											
+										}
 									} catch (NumberFormatException | IOException e) {
 										e.printStackTrace();
 									}

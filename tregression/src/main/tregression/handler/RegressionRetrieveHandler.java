@@ -67,36 +67,35 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
-		
 		Job job = new Job("Recovering Regression ...") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					boolean isReuse = false;
-					
+
 					Settings.compilationUnitMap.clear();
 					Settings.iCompilationUnitMap.clear();
 
-					if(!isReuse || result==null){
+					if (!isReuse || result == null) {
 						result = parseResult();
 					}
 
 					Visualizer visualizer = new Visualizer();
 					visualizer.visualize(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
 
-					EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
+					EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList,
+							result.diffMatcher);
 					System.out.println(trial);
 					if (!trial.getDeadEndRecordList().isEmpty()) {
 						Repository.clearCache();
 						DeadEndRecord record = trial.getDeadEndRecordList().get(0);
 						DED datas = new TrainingDataTransfer().transfer(record, result.buggyTrace);
-						 try {
-							 new DeadEndReporter().export(datas.getAllData(),
-									 Settings.projectName, 2);
-							 new DeadEndCSVWriter().export(datas.getAllData());
-						 } catch (NumberFormatException | IOException e) {
-							 e.printStackTrace();
-						 }
+						try {
+							new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
+							new DeadEndCSVWriter().export(datas.getAllData());
+						} catch (NumberFormatException | IOException e) {
+							e.printStackTrace();
+						}
 						System.currentTimeMillis();
 					}
 				} catch (Exception e) {
@@ -114,8 +113,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 						.getString(TregressionPreference.PROJECT_NAME);
 				String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 
-				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName,
-						Integer.valueOf(id));
+				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 
 				DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
 						fixPath);
@@ -153,7 +151,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 				long time2 = System.currentTimeMillis();
 				int matchTime = (int) (time2 - time1);
 				System.out.println("finish matching trace, taking " + matchTime + "ms");
-				
+
 				return new Result(buggyTrace, correctTrace, pairList, diffMatcher);
 			}
 		};
@@ -168,8 +166,8 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		System.out.println("start simulating debugging...");
 		Simulator simulator = new Simulator();
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
-//		TraceNode node = buggyTrace.getExecutionList().get(8667);
-//		simulator.setObservedFault(node);
+		// TraceNode node = buggyTrace.getExecutionList().get(8667);
+		// simulator.setObservedFault(node);
 
 		RootCauseFinder rootcauseFinder = new RootCauseFinder();
 		rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);

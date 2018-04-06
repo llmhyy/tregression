@@ -501,8 +501,11 @@ public class TrialGenerator0 {
 		List<String> list = new ArrayList<>();
 		if(step.getInvocationChildren().isEmpty()){
 			TraceNode stepOver = step.getStepOverPrevious();
+			
+			String ignoreMethod = null;
 			if(stepOver!=null && stepOver.getBreakPoint().equals(step.getBreakPoint())){
-				return list;
+				TraceNode invocationChild = stepOver.getInvocationChildren().get(0);
+				ignoreMethod = invocationChild.getMethodSign();
 			}
 			
 			ConstantPoolGen cGen = new ConstantPoolGen(method.getConstantPool());
@@ -534,6 +537,10 @@ public class TrialGenerator0 {
 					
 					String invokedMethodName = iIns.getMethodName(cGen);
 					if(invokedMethodName.equals(method.getName())){
+						continue;
+					}
+					
+					if(ignoreMethod!=null && ignoreMethod.contains(invokedMethodName)){
 						continue;
 					}
 					
