@@ -67,8 +67,9 @@ public class Simulator  {
 				
 				StepChangeType cDomType = checker.getType(cDom, true, pairList, matcher);
 				if(cDomType.getType()==StepChangeType.IDT){
-					if(node.getStepOverPrevious()!=null){
-						if(node.getStepOverPrevious().equals(cDom)){
+					TraceNode stepOverPrev = node.getStepOverPrevious();
+					if(stepOverPrev!=null){
+						if(stepOverPrev.equals(cDom) && stepOverPrev.isBranch() && !stepOverPrev.isConditional()){
 							node = node.getStepInPrevious();
 							continue;
 						}

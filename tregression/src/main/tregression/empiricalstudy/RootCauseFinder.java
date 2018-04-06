@@ -271,16 +271,16 @@ public class RootCauseFinder {
 		return false;
 	}
 
-	public void checkRootCause(List<TraceNode> observedFaults, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
-		for(TraceNode observedFaultNode:observedFaults){
-			checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
-			TraceNode root = retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
-			System.currentTimeMillis();
-			if(root!=null){
-				break;
-			}
-		}
-	}
+//	public void checkRootCause(List<TraceNode> observedFaults, Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher){
+//		for(TraceNode observedFaultNode:observedFaults){
+//			checkRootCause(observedFaultNode, buggyTrace, correctTrace, pairList, matcher);
+//			TraceNode root = retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
+//			System.currentTimeMillis();
+//			if(root!=null){
+//				break;
+//			}
+//		}
+//	}
 
 	public TraceNode findControlMendingNodeOnOtherTrace(TraceNode problematicStep, PairList pairList,
 			Trace otherTrace, boolean isOtherTraceTheBeforeTrace, ClassLocation correspondingLocation, DiffMatcher matcher) {
