@@ -25,12 +25,12 @@ public class PatternIdentifier {
 		patternDetectors.add(new MissingIfThrow());
 		patternDetectors.add(new MissingIfReturn());
 		patternDetectors.add(new IncorrectCondition());
+		patternDetectors.add(new MissEvaluedCondition());
 		patternDetectors.add(new MissingAssignment());
 		patternDetectors.add(new ExtraNestedIfBlock());
 		patternDetectors.add(new MissingIfBlockBody());
 		patternDetectors.add(new IncorrectAssignment());
 		patternDetectors.add(new InvokeDifferentMethod());
-		patternDetectors.add(new MissEvaluedCondition());
 		patternDetectors.add(new InvokeNewMethod());
 	}
 	
