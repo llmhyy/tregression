@@ -56,13 +56,13 @@ public class TraceCollector0 {
 			return rs;
 		}
 		
-		if(!precheckInfo.getOverLongMethods().isEmpty()) {
-			String method = precheckInfo.getOverLongMethods().get(0);
-			System.out.println("Method " + method + " is over long after instrumentation!");
-			RunningResult rs = new RunningResult();
-			rs.setFailureType(TrialGenerator0.OVER_LONG_INSTRUMENTATION_METHOD);
-			return rs;
-		}
+//		if(!precheckInfo.getOverLongMethods().isEmpty()) {
+//			String method = precheckInfo.getOverLongMethods().get(0);
+//			System.out.println("Method " + method + " is over long after instrumentation!");
+//			RunningResult rs = new RunningResult();
+//			rs.setFailureType(TrialGenerator0.OVER_LONG_INSTRUMENTATION_METHOD);
+//			return rs;
+//		}
 		
 		if(precheckInfo.isUndeterministic()){
 			System.out.println("This is undeterministic testcase!");
