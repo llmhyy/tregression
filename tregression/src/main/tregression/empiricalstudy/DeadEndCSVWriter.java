@@ -52,6 +52,7 @@ public class DeadEndCSVWriter {
 			ControlDeadEndData dData = (ControlDeadEndData)data0;
 			writer.append(project+",");
 			writer.append(bugID+",");
+			writer.append(String.valueOf(dData.traceOrder)+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.moveUps)+",");
 			writer.append(String.valueOf(dData.moveDowns)+",");
@@ -77,6 +78,7 @@ public class DeadEndCSVWriter {
 			DataDeadEndData dData = (DataDeadEndData)data0;
 			writer.append(project+",");
 			writer.append(bugID+",");
+			writer.append(String.valueOf(dData.traceOrder)+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.criticalConditionalStep)+",");
 			writer.append(String.valueOf(dData.sameWArrayParent)+",");
@@ -104,6 +106,7 @@ public class DeadEndCSVWriter {
 			DataDeadEndData dData = (DataDeadEndData)data0;
 			writer.append(project+",");
 			writer.append(bugID+",");
+			writer.append(String.valueOf(dData.traceOrder)+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.criticalConditionalStep)+",");
 			writer.append(String.valueOf(dData.sameWFieldParent)+",");
@@ -133,6 +136,7 @@ public class DeadEndCSVWriter {
 			DataDeadEndData dData = (DataDeadEndData)data0;
 			writer.append(project+",");
 			writer.append(bugID+",");
+			writer.append(String.valueOf(dData.traceOrder)+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.criticalConditionalStep)+",");
 			writer.append(String.valueOf(dData.sameWLocalVarType)+",");
