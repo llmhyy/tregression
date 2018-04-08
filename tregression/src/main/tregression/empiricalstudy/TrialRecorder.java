@@ -24,8 +24,10 @@ public class TrialRecorder {
 	private int filePage = 0;
 	private int trialNumberLimitPerFile = 3000;
 	
+	private String fileName = "defects4j";
+	
 	public TrialRecorder() throws IOException{
-		String fileTitle = "defects4j";
+		String fileTitle = fileName;
 		String fileName = fileTitle + filePage + ".xlsx";
 		file = new File(fileName);
 		
@@ -84,8 +86,8 @@ public class TrialRecorder {
 		
 		if(lastRowNum > trialNumberLimitPerFile){
 			filePage++;
-			String fileName = "defects4j" + filePage + ".xlsx";
-			file = new File(fileName);
+			String outputName = fileName + filePage + ".xlsx";
+			file = new File(outputName);
 			
 			initializeNewExcel();
 		}
@@ -189,6 +191,14 @@ public class TrialRecorder {
 		} 
 	}
 	
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
 	private static enum Header {
 		PROJECT ("project"), 
 		BUG_ID ("bug_ID"),
