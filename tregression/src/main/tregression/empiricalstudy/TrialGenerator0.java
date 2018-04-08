@@ -315,6 +315,9 @@ public class TrialGenerator0 {
 				TraceNode rootCause = rootcauseFinder.retrieveRootCause(pairList, diffMatcher, buggyTrace, correctTrace);
 				
 				if(rootCause==null){
+					
+					System.out.println("[Search Lib Class] Cannot find the root cause, I am searching for library classes...");
+					
 					List<TraceNode> buggySteps = rootcauseFinder.getStopStepsOnBuggyTrace();
 					List<TraceNode> correctSteps = rootcauseFinder.getStopStepsOnCorrectTrace();
 					
