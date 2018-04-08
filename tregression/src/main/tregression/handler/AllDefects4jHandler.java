@@ -2,7 +2,9 @@ package tregression.handler;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.bcel.Repository;
 import org.eclipse.core.commands.AbstractHandler;
@@ -18,8 +20,10 @@ import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.ReadEmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
+import tregression.empiricalstudy.TrialReader;
 import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
@@ -33,11 +37,19 @@ public class AllDefects4jHandler extends AbstractHandler {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				int skippedNum = 0;//26+133+32;
+				int skippedNum = 26+28;
 				int endNum = 500;
 				
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 				int[] bugNum = {26, 133, 65, 106, 38, 27};
+				
+				String fileName = "defects4j0.old.xlsx";
+				Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
+				try {
+					map = new TrialReader().readXLSX(fileName);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 				
 //				String[] projects = {"Chart"};
 //				int[] bugNum = {2};
@@ -58,6 +70,23 @@ public class AllDefects4jHandler extends AbstractHandler {
 						count++;
 						if(count <= skippedNum || count > endNum) {
 							continue;
+						}
+						
+						if(!map.isEmpty()){
+							ReadEmpiricalTrial tmp = new ReadEmpiricalTrial();
+							tmp.setProject(projects[i]);
+							tmp.setBugID(String.valueOf(j));
+							
+							ReadEmpiricalTrial t = map.get(tmp);
+							if(t==null){
+								System.err.println(projects[i]+"-"+j+" is missing.");
+								continue;
+							}
+							
+							String deadEndType = t.getDeadEndType();
+							if(deadEndType==null || !deadEndType.equals("control")){
+								continue;
+							}
 						}
 						
 						System.out.println("***working on the " + j + "th bug of " + projects[i] + " project.");
