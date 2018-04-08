@@ -92,7 +92,11 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 						DED datas = new TrainingDataTransfer().transfer(record, result.buggyTrace);
 						try {
 							new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
-							new DeadEndCSVWriter().export(datas.getAllData());
+							
+							String projectName = Activator.getDefault().getPreferenceStore()
+									.getString(TregressionPreference.PROJECT_NAME);
+							String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+							new DeadEndCSVWriter().export(datas.getAllData(), projectName, id);
 						} catch (NumberFormatException | IOException e) {
 							e.printStackTrace();
 						}

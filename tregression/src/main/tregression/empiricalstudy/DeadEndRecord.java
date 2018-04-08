@@ -18,7 +18,8 @@ public class DeadEndRecord {
 	
 	private SolutionPattern solutionPattern;
 
-	public DeadEndRecord(int type, int occurOrder, int deadEndOrder, int correspondingStepOnReference, int breakStepOrder) {
+	public DeadEndRecord(int type, int occurOrder, int deadEndOrder, 
+			int correspondingStepOnReference, int breakStepOrder) {
 		super();
 		this.type = type;
 		this.occurOrder = occurOrder;
@@ -150,5 +151,4 @@ public class DeadEndRecord {
 	public void setSolutionPattern(SolutionPattern solutionPattern) {
 		this.solutionPattern = solutionPattern;
 	}
-
 }

@@ -91,7 +91,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 										//new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
 										
 										if(!t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
-											new DeadEndCSVWriter().export(datas.getAllData());											
+											new DeadEndCSVWriter().export(datas.getAllData(), projects[i], String.valueOf(j));											
 										}
 									} catch (NumberFormatException | IOException e) {
 										e.printStackTrace();

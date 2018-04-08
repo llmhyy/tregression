@@ -15,7 +15,7 @@ public class DeadEndCSVWriter {
 	public static String ARRAY = "array";
 	public static String CONTROL = "control";
 	
-	public void export(List<DeadEndData> dataList) throws IOException{
+	public void export(List<DeadEndData> dataList, String project, String bugID) throws IOException{
 		String fileName = null;
 		
 		DeadEndData data = dataList.get(0);
@@ -24,24 +24,24 @@ public class DeadEndCSVWriter {
 			DataDeadEndData ddd = (DataDeadEndData)data;
 			if(ddd.type==DataDeadEndData.LOCAL_VAR){
 				fileName = LOCAL_DATA + ".csv";
-				appendLocalVarData(fileName, dataList);
+				appendLocalVarData(fileName, dataList, project, bugID);
 			}
 			else if(ddd.type==DataDeadEndData.FIELD){
 				fileName = FIELD + ".csv";
-				appendFieldData(fileName, dataList);
+				appendFieldData(fileName, dataList, project, bugID);
 			}
 			else if(ddd.type==DataDeadEndData.ARRAY_ELEMENT){
 				fileName = ARRAY + ".csv";
-				appendArrayElementData(fileName, dataList);
+				appendArrayElementData(fileName, dataList, project, bugID);
 			}
 		}
 		else if(data instanceof ControlDeadEndData){
 			fileName = CONTROL + ".csv";
-			appendControlData(fileName, dataList);
+			appendControlData(fileName, dataList, project, bugID);
 		}
 	}
 
-	private void appendControlData(String fileName, List<DeadEndData> dataList) throws IOException{
+	private void appendControlData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException{
 		File file = new File(fileName);
 		if(!file.exists()){
 			file.createNewFile();
@@ -50,6 +50,8 @@ public class DeadEndCSVWriter {
 		FileWriter writer = new FileWriter(fileName, true);
 		for(DeadEndData data0: dataList){
 			ControlDeadEndData dData = (ControlDeadEndData)data0;
+			writer.append(project+",");
+			writer.append(bugID+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.moveUps)+",");
 			writer.append(String.valueOf(dData.moveDowns)+",");
@@ -64,7 +66,7 @@ public class DeadEndCSVWriter {
 		writer.close();	
 	}
 
-	private void appendArrayElementData(String fileName, List<DeadEndData> dataList) throws IOException{
+	private void appendArrayElementData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException{
 		File file = new File(fileName);
 		if(!file.exists()){
 			file.createNewFile();
@@ -73,6 +75,8 @@ public class DeadEndCSVWriter {
 		FileWriter writer = new FileWriter(fileName, true);
 		for(DeadEndData data0: dataList){
 			DataDeadEndData dData = (DataDeadEndData)data0;
+			writer.append(project+",");
+			writer.append(bugID+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.criticalConditionalStep)+",");
 			writer.append(String.valueOf(dData.sameWArrayParent)+",");
@@ -89,7 +93,7 @@ public class DeadEndCSVWriter {
 		writer.close();	
 	}
 
-	private void appendFieldData(String fileName, List<DeadEndData> dataList) throws IOException {
+	private void appendFieldData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException {
 		File file = new File(fileName);
 		if(!file.exists()){
 			file.createNewFile();
@@ -98,6 +102,8 @@ public class DeadEndCSVWriter {
 		FileWriter writer = new FileWriter(fileName, true);
 		for(DeadEndData data0: dataList){
 			DataDeadEndData dData = (DataDeadEndData)data0;
+			writer.append(project+",");
+			writer.append(bugID+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.criticalConditionalStep)+",");
 			writer.append(String.valueOf(dData.sameWFieldParent)+",");
@@ -116,7 +122,7 @@ public class DeadEndCSVWriter {
 		writer.close();	
 	}
 
-	private void appendLocalVarData(String fileName, List<DeadEndData> dataList) throws IOException {
+	private void appendLocalVarData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException {
 		File file = new File(fileName);
 		if(!file.exists()){
 			file.createNewFile();
@@ -125,6 +131,8 @@ public class DeadEndCSVWriter {
 		FileWriter writer = new FileWriter(fileName, true);
 		for(DeadEndData data0: dataList){
 			DataDeadEndData dData = (DataDeadEndData)data0;
+			writer.append(project+",");
+			writer.append(bugID+",");
 			writer.append(String.valueOf(dData.isBreakStep)+",");
 			writer.append(String.valueOf(dData.criticalConditionalStep)+",");
 			writer.append(String.valueOf(dData.sameWLocalVarType)+",");

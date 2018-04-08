@@ -79,7 +79,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 						setTestCase(datas, t.getTestcase());						
 						try {
 							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
-							new DeadEndCSVWriter().export(datas.getAllData());
+							new DeadEndCSVWriter().export(datas.getAllData(), projectName, id);
 						} catch (NumberFormatException | IOException e) {
 							e.printStackTrace();
 						}
