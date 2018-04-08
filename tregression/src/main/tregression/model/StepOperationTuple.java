@@ -53,6 +53,10 @@ public class StepOperationTuple {
 		
 		buffer.append(userFeedback.getFeedbackType() + ": ");
 
+		if(node==null){
+			return buffer.toString();
+		}
+		
 		int order = node.getOrder();
 		int lineNumber = node.getBreakPoint().getLineNumber();
 		buffer.append("order " + order + ", ");
