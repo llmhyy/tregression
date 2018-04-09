@@ -37,7 +37,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				int skippedNum = 26+28;
+				int skippedNum = 0;//26+83;
 				int endNum = 500;
 				
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};

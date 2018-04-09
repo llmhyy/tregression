@@ -11,9 +11,13 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
+import sav.common.core.SavException;
 import tregression.SimulationFailException;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
+import tregression.empiricalstudy.recommendation.BreakerRecommender;
+import tregression.empiricalstudy.training.DED;
+import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.model.TraceNodePair;
@@ -401,6 +405,18 @@ public class Simulator  {
 							DeadEndRecord record = list.get(0);
 							int len = currentNode.getOrder() - record.getBreakStepOrder();
 							trial.setOverskipLength(len);
+						}
+					}
+					
+					DeadEndRecord record = list.get(0);
+					if(record.getType()==DeadEndRecord.CONTROL){
+						
+						DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
+						
+						try {
+							new BreakerRecommender().recommend(ded.getTrueData());
+						} catch (SavException e) {
+							e.printStackTrace();
 						}
 					}
 				}

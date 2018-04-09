@@ -28,4 +28,26 @@ public class DataDeadEndData extends DeadEndData{
 	public int sameRArrayIndex;
 	
 	public int type;
+	
+	public String getPlainText(String project, String bugID){
+		StringBuffer buffer = new StringBuffer();
+		
+		buffer.append(project+",");
+		buffer.append(bugID+",");
+		buffer.append(String.valueOf(this.traceOrder)+",");
+		buffer.append(String.valueOf(this.isBreakStep)+",");
+		buffer.append(String.valueOf(this.criticalConditionalStep)+",");
+		buffer.append(String.valueOf(this.sameWArrayParent)+",");
+		buffer.append(String.valueOf(this.sameWArrayType)+",");
+		buffer.append(String.valueOf(this.sameWArrayIndex)+",");
+		buffer.append(String.valueOf(this.sameRArrayParent)+",");
+		buffer.append(String.valueOf(this.sameRArrayType)+",");
+		buffer.append(String.valueOf(this.sameRArrayIndex)+",");
+		buffer.append(String.valueOf(this.deadEndLength)+",");
+		
+		String commonText = super.getPlainText(project, bugID);
+		buffer.append(commonText);
+		
+		return buffer.toString();
+	}
 }

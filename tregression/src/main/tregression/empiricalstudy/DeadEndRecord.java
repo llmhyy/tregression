@@ -85,7 +85,7 @@ public class DeadEndRecord {
 			return false;
 		return true;
 	}
-
+	
 	public String getTypeString(){
 		if(getType()==DeadEndRecord.DATA){
 			return "data";

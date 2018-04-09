@@ -22,11 +22,51 @@ public class DeadEndData {
 	
 	public int deadEndLength;
 	
+	public String getPlainText(String project, String bugID){
+		String plainText = fillCommonRowInfomation();
+		return plainText;
+	}
+	
+	private String fillCommonRowInfomation(){
+		StringBuffer buffer = new StringBuffer();
+		for(int value: this.stepAST){
+			buffer.append(String.valueOf(value)+",");
+		}
+		
+		for(int value: this.stepContextAST){
+			buffer.append(String.valueOf(value)+",");
+		}
+		
+		for(int value: this.occurStepAST){
+			buffer.append(String.valueOf(value)+",");
+		}
+		
+		for(int value: this.occurStepContextAST){
+			buffer.append(String.valueOf(value)+",");
+		}
+		
+		for(int value: this.deadEndStepAST){
+			buffer.append(String.valueOf(value)+",");
+		}
+		
+		for(int i=0; i<this.deadEndStepContextAST.length; i++) {
+			int value = this.deadEndStepContextAST[i];
+			if(i != this.deadEndStepContextAST.length-1) {
+				buffer.append(String.valueOf(value)+",");				
+			}
+			else {
+				buffer.append(String.valueOf(value));
+			}
+		}
+		
+		buffer.append("\n");
+		return buffer.toString();
+	}
+	
 	public void setASTInfo(TraceNode step, TraceNode occurStep, TraceNode deadEndStep){
 		ASTInfo stepAST = encodeAST(step);
 		ASTInfo occurStepAST = encodeAST(occurStep);
 		ASTInfo deadEndStepAST = encodeAST(deadEndStep);
-		System.currentTimeMillis();
 		
 		this.stepAST = stepAST.astCode;
 		this.stepContextAST = stepAST.contextCode;
