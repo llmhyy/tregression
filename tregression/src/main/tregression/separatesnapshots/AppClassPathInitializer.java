@@ -4,12 +4,15 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import microbat.util.MicroBatUtil;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
 import tregression.junit.TestCaseAnalyzer;
 
 public class AppClassPathInitializer {
+	
+	
 	public static AppJavaClassPath initialize(String workingDir, TestCase testCase, Defects4jProjectConfig config){
 		AppJavaClassPath appClassPath = new AppJavaClassPath();
 		
@@ -62,36 +65,11 @@ public class AppClassPathInitializer {
 			appClassPath.getAdditionalSourceFolders().add(path);
 		}
 		
+		MicroBatUtil.setSystemJars(appClassPath);
+		
 		/**
 		 * setting junit lib into classpath
 		 */
-		String userDir = System.getProperty("eclipse.launcher");
-		
-//		Bundle plugin = Platform.getBundle("tregression");
-//		URL url = plugin.getEntry ("/");
-//
-//		File file = null;
-//		try {
-//		// Resolve the URL
-//			URL resolvedURL = Platform.resolve (url);
-//			file = new File (resolvedURL.getFile ());
-//		} catch (Exception e) {
-//		// Something sensible if an error occurs
-//		}
-//		
-//		userDir = file.getAbsolutePath();
-//		userDir = userDir.substring(0, userDir.indexOf("..")-1);
-		
-		userDir = userDir.substring(0, userDir.lastIndexOf(File.separator+"eclipse"));
-		
-		String junitDir = userDir + File.separator + "dropins" + File.separator + "junit_lib";
-		String junitPath = junitDir + File.separator + "junit.jar";
-		String hamcrestCorePath = junitDir + File.separator + "org.hamcrest.core.jar";
-		String testRunnerPath = junitDir + File.separator + "testrunner.jar";
-		appClassPath.addClasspath(junitPath);
-		appClassPath.addClasspath(hamcrestCorePath);
-		appClassPath.addClasspath(testRunnerPath);
-		
 		appClassPath.setJavaHome(config.javaHome);
 		appClassPath.setWorkingDirectory(workingDir);
 		
@@ -99,20 +77,6 @@ public class AppClassPathInitializer {
 		appClassPath.setOptionalTestMethod(testCase.testMethod);
 		
 		appClassPath.setLaunchClass(TestCaseAnalyzer.TEST_RUNNER);
-		
-		/**
-		 * setting bcel lib (for instrumentation) into classpath
-		 */
-		String bcelDir = junitDir + File.separator + "bcel-6.0.jar";
-		appClassPath.addClasspath(bcelDir);
-		String javassitDir = junitDir + File.separator + "javassist.jar";
-		appClassPath.addClasspath(javassitDir);
-		
-		/**
-		 * setting java agent lib 
-		 */
-		String agentLib = junitDir + File.separator + "instrumentator.jar";
-		appClassPath.setAgentLib(agentLib);
 		return appClassPath;
 	}
 	
