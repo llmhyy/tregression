@@ -24,10 +24,12 @@ public class PythonVmRunner extends InterprocessVmRunner {
 		super(inputWriter, outputReader, true);
 	}
 
-	public void start(String pythonHome, String predictorFile) throws SavException {
+	public void start(String pythonHome, String predictorFile, String workingDir) throws SavException {
 		List<String> commands = new ArrayList<String>();
 		commands.add(pythonHome);
 		commands.add(predictorFile);
+		
+		this.setWorkingDir(workingDir);
 		super.startVm(commands, false);
 	}
 }

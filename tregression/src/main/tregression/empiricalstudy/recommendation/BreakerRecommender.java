@@ -13,10 +13,13 @@ public class BreakerRecommender {
 		try {
 			String pythonHome = "C:\\Program Files\\Python36";
 			pythonHome = pythonHome + File.separator + "python.exe";
-			String prediction = "E:\\linyun\\git_space\\train";
-			prediction = prediction + File.separator + "prediction_server.py";
+			String workingDir = "E:\\linyun\\git_space\\train";
+			String prediction = workingDir + File.separator + "prediction_server.py";
 			
-			vmRunner.start(pythonHome, prediction);
+			
+			vmRunner.start(pythonHome, prediction, workingDir);
+//			String input = record.getPlainText("-1", "-1");
+//			System.out.println(input);
 			inputWriter.sendData(record);
 			PythonOutput output = outputReader.readOutput();
 			System.out.println(output);
