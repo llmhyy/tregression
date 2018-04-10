@@ -1,5 +1,6 @@
 package tregression.empiricalstudy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,6 +18,7 @@ import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.recommendation.BreakerRecommender;
 import tregression.empiricalstudy.training.DED;
+import tregression.empiricalstudy.training.DeadEndData;
 import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
@@ -412,9 +414,13 @@ public class Simulator  {
 					if(record.getType()==DeadEndRecord.CONTROL){
 						
 						DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
-						
 						try {
-							new BreakerRecommender().recommend(ded.getTrueData());
+							try {
+								List<TraceNode> breakerCandidates = new BreakerRecommender().recommend(ded.getAllData(), buggyTrace, 3);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							System.currentTimeMillis();
 						} catch (SavException e) {
 							e.printStackTrace();
 						}
