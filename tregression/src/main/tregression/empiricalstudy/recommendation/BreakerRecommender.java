@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import microbat.model.trace.Trace;
@@ -42,6 +44,15 @@ public class BreakerRecommender {
     	return true;
 	}
 	
+	/**
+	 * return a sorted list with size at most {@code limit}.
+	 * @param records
+	 * @param buggyTrace
+	 * @param limit
+	 * @return
+	 * @throws SavException
+	 * @throws IOException
+	 */
 	public List<TraceNode> recommend(List<DeadEndData> records, Trace buggyTrace, int limit) throws SavException, IOException {
 		
 		List<TraceNode> list = new ArrayList<>();
@@ -110,30 +121,32 @@ public class BreakerRecommender {
 			
 			TraceNode node = buggyTrace.getTraceNode(record.traceOrder);
 			node.setSliceBreakerProbability(prob);
-			
-			if(list.size()<limit){
-				list.add(node);
-			}
-			else{
-				int lowProIndex = 0;
-				TraceNode lowProNode = list.get(0);
-				if(list.get(1).getSliceBreakerProbability()<lowProNode.getSliceBreakerProbability()){
-					lowProNode = list.get(1);
-					lowProIndex = 1;
-				}
-				
-				if(list.get(2).getSliceBreakerProbability()<lowProNode.getSliceBreakerProbability()){
-					lowProNode = list.get(2);
-					lowProIndex = 2;
-				}
-				
-				if(node.getSliceBreakerProbability()>lowProNode.getSliceBreakerProbability()){
-					list.set(lowProIndex, node);
-				}
-			}
+			list.add(node);
 		}
 		
 		process.destroy();
+		
+		Collections.sort(list, new Comparator<TraceNode>() {
+			@Override
+			public int compare(TraceNode o1, TraceNode o2) {
+				double comp = o1.getSliceBreakerProbability() - o2.getSliceBreakerProbability();
+				if(comp<0){
+					return 1;
+				}
+				else if(comp>0){
+					return -1;
+				}
+				else{
+					return 0;
+				}
+			}
+		});
+		
+		List<TraceNode> sortedList = new ArrayList<>();
+		int size = (limit < list.size())? limit : list.size();
+		for(int i=0; i<size; i++){
+			sortedList.add(list.get(i));
+		}
 		
 		return list;
 	}
