@@ -1,6 +1,5 @@
 package tregression.empiricalstudy;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -12,13 +11,9 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
-import sav.common.core.SavException;
 import tregression.SimulationFailException;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
-import tregression.empiricalstudy.recommendation.BreakerRecommender;
-import tregression.empiricalstudy.training.DED;
-import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.model.TraceNodePair;
@@ -173,8 +168,14 @@ public class Simulator  {
 			long end = System.currentTimeMillis();
 			int checkTime = (int) (end-start);
 
-//			List<EmpiricalTrial> trials = startSimulation(observedFault, buggyTrace, correctTrace, getPairList(), matcher, finder);
-			List<EmpiricalTrial> trials = startSimulation0(observedFault, buggyTrace, correctTrace, getPairList(), matcher, finder);
+			List<EmpiricalTrial> trials = null;
+			if(useSliceBreaker) {
+				trials = startSimulationWithCachedState(observedFault, buggyTrace, correctTrace, getPairList(), matcher, finder);
+			}
+			else {
+				trials = startSimulation(observedFault, buggyTrace, correctTrace, getPairList(), matcher, finder);				
+			}
+			
 			if(trials!=null) {
 				for(EmpiricalTrial trial: trials) {
 					trial.setSimulationTime(checkTime);
@@ -187,43 +188,8 @@ public class Simulator  {
 		return null;
 	}
 
-	class DebuggingState {
-		TraceNode currentNode;
-		List<StepOperationTuple> checkingList;
-		VarValue wrongReadVar;
-
-		public DebuggingState(TraceNode currentNode, List<StepOperationTuple> checkingList, VarValue wrongReadVar) {
-			super();
-			this.currentNode = currentNode;
-			this.checkingList = checkingList;
-			this.wrongReadVar = wrongReadVar;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if(obj instanceof DebuggingState) {
-				DebuggingState thatState = (DebuggingState)obj;
-				if(thatState.currentNode.getOrder()==currentNode.getOrder() &&
-						thatState.wrongReadVar.getVarName().equals(wrongReadVar.getVarName())) {
-					return true;
-				}
-			}
-			
-			return false;
-		}
-		
-		@Override
-		public int hashCode() {
-			int hashCode1 = currentNode.getOrder();
-			int hashCode2 = wrongReadVar.getVarName().hashCode();
-			return hashCode1*hashCode2;
-		}
-
-	}
-
-	private List<EmpiricalTrial> startSimulation(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace,
+	private List<EmpiricalTrial> startSimulationWithCachedState(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace,
 			PairList pairList, DiffMatcher matcher, RootCauseFinder rootCauseFinder) {
-
 		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TraceNode currentNode = observedFaultNode;
@@ -232,28 +198,25 @@ public class Simulator  {
 		stack.push(new DebuggingState(currentNode, new ArrayList<StepOperationTuple>(), null));
 		Set<DebuggingState> visitedStates = new HashSet<>();
 		
-		int count = 0;
-		
-		while (!stack.isEmpty() && count<10){
+		while (!stack.isEmpty()){
 			DebuggingState state = stack.pop();
 			
-			EmpiricalTrial trial = workSingleTrial(buggyTrace, correctTrace, pairList, matcher, 
+			EmpiricalTrial trial = workSingleTrialWithCachedState(buggyTrace, correctTrace, pairList, matcher, 
 					rootCauseFinder, typeChecker, currentNode, stack, visitedStates, state);
 			trials.add(trial);
-			count++;
 		} 
 		
 		return trials;
 	}
 	
-	private List<EmpiricalTrial> startSimulation0(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace,
+	private List<EmpiricalTrial> startSimulation(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace,
 			PairList pairList, DiffMatcher matcher, RootCauseFinder rootCauseFinder) {
 
 		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 		List<EmpiricalTrial> trials = new ArrayList<>();
 		TraceNode currentNode = observedFaultNode;
 		
-		EmpiricalTrial trial = workSingleTrial0(buggyTrace, correctTrace, pairList, matcher, 
+		EmpiricalTrial trial = workSingleTrial(buggyTrace, correctTrace, pairList, matcher, 
 				rootCauseFinder, typeChecker, currentNode);
 		trials.add(trial);
 		
@@ -279,7 +242,7 @@ public class Simulator  {
 	 * @param state
 	 * @return
 	 */
-	private EmpiricalTrial workSingleTrial0(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
+	private EmpiricalTrial workSingleTrial(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
 			RootCauseFinder rootCauseFinder, StepChangeTypeChecker typeChecker,
 			TraceNode currentNode) {
 		
@@ -323,7 +286,6 @@ public class Simulator  {
 						rootCauseFinder, isMultiThread);
 				return trial;
 			} else if (changeType.getType() == StepChangeType.DAT) {
-				
 				VarValue readVar = changeType.getWrongVariable(currentNode, true, rootCauseFinder);
 				StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 				checkingList.add(operation);
@@ -404,24 +366,6 @@ public class Simulator  {
 							trial.setOverskipLength(len);
 						}
 					}
-					
-					if(useSliceBreaker ){
-						for(DeadEndRecord record: list){
-							DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
-							try {
-								List<TraceNode> breakerCandidates = new BreakerRecommender().
-										recommend(ded.getAllData(), buggyTrace, breakerTrialLimit); 
-								if(!breakerCandidates.isEmpty()){
-									currentNode = breakerCandidates.get(0);
-								}
-								
-							} catch (SavException e) {
-								e.printStackTrace();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-					}
 				}
 				else{
 					return trial;					
@@ -451,7 +395,7 @@ public class Simulator  {
 	 * @param state
 	 * @return
 	 */
-	private EmpiricalTrial workSingleTrial(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
+	private EmpiricalTrial workSingleTrialWithCachedState(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
 			RootCauseFinder rootCauseFinder, StepChangeTypeChecker typeChecker,
 			TraceNode currentNode, Stack<DebuggingState> stack, Set<DebuggingState> visitedStates,
 			DebuggingState state) {
