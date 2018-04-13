@@ -292,7 +292,7 @@ public class TrialGenerator0 {
 				RootCauseFinder rootcauseFinder = new RootCauseFinder();
 				rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
 				
-				Simulator simulator = new Simulator();
+				Simulator simulator = new Simulator(false, -1);
 				simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 				if(rootcauseFinder.getRealRootCaseList().isEmpty()){
 					trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
@@ -373,7 +373,7 @@ public class TrialGenerator0 {
 	
 	private EmpiricalTrial simulateDebuggingWithCatchedObjects(Trace buggyTrace, Trace correctTrace, PairList pairList,
 			DiffMatcher diffMatcher, boolean requireVisualization) throws SimulationFailException {
-		Simulator simulator = new Simulator();
+		Simulator simulator = new Simulator(false, -1);
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		RootCauseFinder rootcauseFinder = new RootCauseFinder();
 		rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);

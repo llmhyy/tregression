@@ -18,7 +18,6 @@ import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.recommendation.BreakerRecommender;
 import tregression.empiricalstudy.training.DED;
-import tregression.empiricalstudy.training.DeadEndData;
 import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
@@ -37,6 +36,14 @@ public class Simulator  {
 	protected PairList pairList;
 	protected DiffMatcher matcher;
 	private TraceNode observedFault;
+	
+	private boolean useSliceBreaker;
+	private int breakerTrialLimit;
+	public Simulator(boolean useSlicerBreaker, int breakerTrialLimit){
+		this.useSliceBreaker = useSlicerBreaker;
+		this.breakerTrialLimit = breakerTrialLimit;
+	}
+	
 	
 	public PairList getPairList() {
 		return pairList;
@@ -135,17 +142,6 @@ public class Simulator  {
 		return false;
 	}
 
-
-	private TraceNode findExceptionNode(List<TraceNode> wrongNodeList) {
-		for(TraceNode node: wrongNodeList) {
-			if(node.isException()) {
-				return node;
-			}
-		}
-		return null;
-	}
-
-
 	protected boolean isObservedFaultWrongPath(TraceNode observableNode, PairList pairList){
 		TraceNodePair pair = pairList.findByBeforeNode(observableNode);
 		if(pair == null){
@@ -159,8 +155,7 @@ public class Simulator  {
 		return false;
 	}
 	
-	List<TraceNode> rootCauseNodes;
-
+//	List<TraceNode> rootCauseNodes;
 	public void prepare(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher) {
 		this.pairList = pairList;
 		this.matcher = matcher;
@@ -410,24 +405,27 @@ public class Simulator  {
 						}
 					}
 					
-					DeadEndRecord record = list.get(0);
-					if(record.getType()==DeadEndRecord.CONTROL){
-						
-						DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
-						try {
+					if(useSliceBreaker ){
+						for(DeadEndRecord record: list){
+							DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
 							try {
-								List<TraceNode> breakerCandidates = new BreakerRecommender().recommend(ded.getAllData(), buggyTrace, 3);
+								List<TraceNode> breakerCandidates = new BreakerRecommender().
+										recommend(ded.getAllData(), buggyTrace, breakerTrialLimit); 
+								if(!breakerCandidates.isEmpty()){
+									currentNode = breakerCandidates.get(0);
+								}
+								
+							} catch (SavException e) {
+								e.printStackTrace();
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							System.currentTimeMillis();
-						} catch (SavException e) {
-							e.printStackTrace();
 						}
 					}
 				}
-				
-				return trial;
+				else{
+					return trial;					
+				}
 			}
 
 		}
