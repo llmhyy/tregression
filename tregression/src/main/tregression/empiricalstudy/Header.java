@@ -24,6 +24,8 @@ public enum Header {
 	EXCEPTION ("exception"),
 	MULTI_THREAD ("multi thread"),
 	
+	BREAK_TO_BUG ("break to bug"),
+
 	DEADEND_TYPE ("type"),
 	DEADEND_OCCUR ("occur"),
 	DEADEND ("dead end"),

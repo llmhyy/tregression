@@ -146,6 +146,8 @@ public class TrialRecorder {
 		}
 		setCellValue(row, Header.MULTI_THREAD, trial.isMultiThread());
 		
+		setCellValue(row, Header.BREAK_TO_BUG, trial.isBreakSlice());
+		
 		int count = Header.DEADEND_TYPE.getIndex();
 		List<DeadEndRecord> mendings = trial.getDeadEndRecordList();
 		for(DeadEndRecord r: mendings){

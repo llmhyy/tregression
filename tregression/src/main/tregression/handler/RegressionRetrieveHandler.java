@@ -1,6 +1,7 @@
 package tregression.handler;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.bcel.Repository;
@@ -32,6 +33,7 @@ import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.Simulator;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.TrainingDataTransfer;
@@ -86,6 +88,17 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 					EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList,
 							result.diffMatcher, true, 3);
 					System.out.println(trial);
+					
+//					try {
+//						List<EmpiricalTrial> trials = new ArrayList<>();
+//						trials.add(trial);
+//						TrialRecorder recorder = new TrialRecorder();
+//						recorder.export(trials, "aa", Integer.valueOf(1));
+//
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+					
 					if (!trial.getDeadEndRecordList().isEmpty()) {
 						Repository.clearCache();
 						DeadEndRecord record = trial.getDeadEndRecordList().get(0);

@@ -542,7 +542,6 @@ public class Simulator  {
 						for(int i=1; i<sliceBreakers.size(); i++){
 							backupDebuggingState(sliceBreakers.get(i), stack, visitedStates, checkingList, null);							
 						}
-						
 					}
 				}
 				else{
