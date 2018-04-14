@@ -17,25 +17,38 @@ public class DebuggingState {
 		this.checkingList = checkingList;
 		this.wrongReadVar = wrongReadVar;
 	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(obj instanceof DebuggingState) {
-			DebuggingState thatState = (DebuggingState)obj;
-			if(thatState.currentNode.getOrder()==currentNode.getOrder() &&
-					thatState.wrongReadVar.getVarName().equals(wrongReadVar.getVarName())) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
+
 	@Override
 	public int hashCode() {
-		int hashCode1 = currentNode.getOrder();
-		int hashCode2 = wrongReadVar.getVarName().hashCode();
-		return hashCode1*hashCode2;
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((currentNode == null) ? 0 : currentNode.hashCode());
+		result = prime * result + ((wrongReadVar == null) ? 0 : wrongReadVar.hashCode());
+		return result;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DebuggingState other = (DebuggingState) obj;
+		if (currentNode == null) {
+			if (other.currentNode != null)
+				return false;
+		} else if (!currentNode.equals(other.currentNode))
+			return false;
+		if (wrongReadVar == null) {
+			if (other.wrongReadVar != null)
+				return false;
+		} else if (!wrongReadVar.equals(other.wrongReadVar))
+			return false;
+		return true;
+	}
+	
+	
 
 }

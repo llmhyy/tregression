@@ -83,6 +83,33 @@ public class RootCauseFinder {
 		return null;
 	}
 	
+	public List<TraceNode> retrieveAllRootCause(PairList pairList, DiffMatcher matcher, Trace buggyTrace, Trace correctTrace) {
+		Collections.sort(regressionNodeList, new TraceNodeOrderComparator());
+		Collections.sort(correctNodeList, new TraceNodeOrderComparator());
+		
+		List<TraceNode> roots = new ArrayList<>();
+		
+		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+		
+		for(TraceNode node: regressionNodeList) {
+			StepChangeType type = typeChecker.getType(node, true, pairList, matcher);
+			if(type.getType()==StepChangeType.SRC) {
+				roots.add(node);
+			}
+		}
+		
+		for(TraceNode node: correctNodeList) {
+			StepChangeType type = typeChecker.getType(node, false, pairList, matcher);
+			if(type.getType()==StepChangeType.SRC) {
+				int startOrder  = findEndOrderInOtherTrace(node, pairList, false, buggyTrace);
+				TraceNode root = buggyTrace.getExecutionList().get(startOrder-1);
+				roots.add(root);
+			}
+		}
+		
+		return roots;
+	}
+	
 	private TraceNode findCorrespondingCorrectNode(PairList pairList, TraceNode buggyNode) {
 		TraceNodePair pair = pairList.findByBeforeNode(buggyNode);
 		if (pair != null) {

@@ -1,5 +1,6 @@
 package tregression.empiricalstudy;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,9 +12,13 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
+import sav.common.core.SavException;
 import tregression.SimulationFailException;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
+import tregression.empiricalstudy.recommendation.BreakerRecommender;
+import tregression.empiricalstudy.training.DED;
+import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.model.TraceNodePair;
@@ -402,7 +407,6 @@ public class Simulator  {
 		/**
 		 * recover the debugging state
 		 */
-		VarValue wrongReadVar = state.wrongReadVar;
 		List<StepOperationTuple> checkingList = state.checkingList;
 		currentNode = state.currentNode;
 		
@@ -445,36 +449,13 @@ public class Simulator  {
 						rootCauseFinder, isMultiThread);
 				return trial;
 			} else if (changeType.getType() == StepChangeType.DAT) {
-				if(wrongReadVar == null) {
-					for(int i=0; i<changeType.getWrongVariableList().size(); i++) {
-						VarValue readVar = changeType.getWrongVariableList().get(i);
-						if(i!=0) {
-							backupDebuggingState(currentNode, stack, visitedStates, checkingList, readVar);
-						}
-					}
-					
-					VarValue readVar = changeType.getWrongVariable(currentNode, true, rootCauseFinder);
-					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
-					checkingList.add(operation);
-					
-					TraceNode dataDom = buggyTrace.findDataDominator(currentNode, readVar);
-					
-					currentNode = dataDom;
-					
-				}
-				else {
-					/**
-					 * use the designated variable from the recovered state for debugging
-					 */
-					VarValue readVar = wrongReadVar;
-					StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
-					checkingList.add(operation);
-					
-					TraceNode dataDom = buggyTrace.findDataDominator(currentNode, readVar);
-					currentNode = dataDom;
-					
-					wrongReadVar = null;
-				}
+				VarValue readVar = changeType.getWrongVariable(currentNode, true, rootCauseFinder);
+				StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
+				checkingList.add(operation);
+				
+				TraceNode dataDom = buggyTrace.findDataDominator(currentNode, readVar);
+				
+				currentNode = dataDom;
 			} else if (changeType.getType() == StepChangeType.CTL) {
 				TraceNode controlDom = null;
 				if(currentNode.insideException()){
@@ -529,9 +510,9 @@ public class Simulator  {
 						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
 				
+				List<DeadEndRecord> list = null;
 				if(previousNode!=null){
 					StepChangeType prevChangeType = typeChecker.getType(previousNode, true, pairList, matcher);
-					List<DeadEndRecord> list = null;
 					if(prevChangeType.getType()==StepChangeType.CTL){
 						list = createControlRecord(currentNode, previousNode, typeChecker, pairList, matcher);
 						trial.setDeadEndRecordList(list);
@@ -550,13 +531,60 @@ public class Simulator  {
 					}
 				}
 				
-				return trial;
+				List<TraceNode> sliceBreakers = findBreaker(list, breakerTrialLimit, buggyTrace, rootCauseFinder);
+				if(!sliceBreakers.isEmpty()){
+					if(includeRootCause(sliceBreakers, rootCauseFinder, buggyTrace, correctTrace)){
+						trial.setBreakSlice(true);
+						return trial;	
+					}
+					else{
+						currentNode = sliceBreakers.get(0);
+						for(int i=1; i<sliceBreakers.size(); i++){
+							backupDebuggingState(sliceBreakers.get(i), stack, visitedStates, checkingList, null);							
+						}
+						
+					}
+				}
+				else{
+					return trial;					
+				}
 			}
-
 		}
 		
 	}
 	
+	private boolean includeRootCause(List<TraceNode> sliceBreakers, RootCauseFinder rootCauseFinder, 
+			Trace buggyTrace, Trace correctTrace) {
+		List<TraceNode> roots = rootCauseFinder.retrieveAllRootCause(pairList, matcher, buggyTrace, correctTrace);
+		for(TraceNode breaker: sliceBreakers){
+			for(TraceNode root: roots){
+				if(breaker.getBreakPoint().equals(root.getBreakPoint())){
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+
+
+	private List<TraceNode> findBreaker(List<DeadEndRecord> list, int breakerTrialLimit, 
+			Trace buggyTrace, RootCauseFinder rootCauseFinder) {
+		for(DeadEndRecord record: list){
+			DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
+			try {
+				List<TraceNode> breakerCandidates = new BreakerRecommender().
+						recommend(ded.getAllData(), buggyTrace, breakerTrialLimit); 
+				return breakerCandidates;
+			} catch (SavException | IOException e) {
+				e.printStackTrace();
+			} 
+		}
+		
+		return new ArrayList<>();
+	}
+
+
 	private TraceNode findLatestControlDifferent(TraceNode currentNode, TraceNode controlDom, 
 			StepChangeTypeChecker checker, PairList pairList, DiffMatcher matcher) {
 		TraceNode n = currentNode.getStepInPrevious();

@@ -299,8 +299,17 @@ public class EmpiricalTrial {
 		this.deadEndDataList = deadEndDataList;
 	}
 
+	public boolean isBreakSlice() {
+		return breakSlice;
+	}
+
+	public void setBreakSlice(boolean breakSlice) {
+		this.breakSlice = breakSlice;
+	}
+
 	private List<DeadEndData> deadEndDataList = new ArrayList<>();
-	
+
+	private boolean breakSlice;
 	
 
 }
