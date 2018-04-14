@@ -372,9 +372,8 @@ public class Simulator  {
 						}
 					}
 				}
-				else{
-					return trial;					
-				}
+				
+				return trial;	
 			}
 
 		}
