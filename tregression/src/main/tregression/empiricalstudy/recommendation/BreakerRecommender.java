@@ -148,6 +148,6 @@ public class BreakerRecommender {
 			sortedList.add(list.get(i));
 		}
 		
-		return list;
+		return sortedList;
 	}
 }

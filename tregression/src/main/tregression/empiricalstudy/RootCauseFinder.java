@@ -101,7 +101,7 @@ public class RootCauseFinder {
 		for(TraceNode node: correctNodeList) {
 			StepChangeType type = typeChecker.getType(node, false, pairList, matcher);
 			if(type.getType()==StepChangeType.SRC) {
-				int startOrder  = findEndOrderInOtherTrace(node, pairList, false, buggyTrace);
+				int startOrder  = findStartOrderInOtherTrace(node, pairList, false);
 				TraceNode root = buggyTrace.getExecutionList().get(startOrder-1);
 				roots.add(root);
 			}

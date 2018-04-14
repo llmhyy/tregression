@@ -8,6 +8,7 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.PrimitiveValue;
 import microbat.model.value.VarValue;
 import microbat.model.variable.VirtualVar;
+import microbat.recommendation.UserFeedback;
 import tregression.empiricalstudy.CausalityNode;
 import tregression.empiricalstudy.RootCauseFinder;
 
@@ -32,6 +33,23 @@ public class StepChangeType {
 		this.type = type;
 		this.matchingStep = matchingStep;
 		this.wrongVariableList = wrongVariableList;
+	}
+	
+	public String getTypeString(){
+		if(type==SRC){
+			return UserFeedback.UNCLEAR;
+		}
+		else if(type==DAT){
+			return UserFeedback.WRONG_VARIABLE_VALUE;
+		}
+		else if(type==CTL){
+			return UserFeedback.WRONG_PATH;
+		}
+		else if(type==IDT){
+			return UserFeedback.CORRECT;
+		}
+		
+		return "unkown";
 	}
 
 	public int getType() {
