@@ -48,7 +48,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 				
 				List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
-						false, true, true, false, config, testcase);
+						false, true, 3, true, true, config, testcase);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {

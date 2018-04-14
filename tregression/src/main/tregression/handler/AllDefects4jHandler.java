@@ -101,7 +101,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
-								false, false, true, false, d4jConfig, null);
+								false, true, 3, false, true, d4jConfig, null);
 						
 						TrialRecorder recorder;
 						try {

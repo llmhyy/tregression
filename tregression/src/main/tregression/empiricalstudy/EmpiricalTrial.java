@@ -115,6 +115,7 @@ public class EmpiricalTrial {
 		buffer.append("real root cause: " + realcauseOrders + "\n");
 		buffer.append("over skip length: " + this.overskipLength + "\n");
 		buffer.append("explanation size: " + this.totalVisitedNodesNum + "\n");
+		buffer.append("slice breaker reaches bug: " + this.isBreakSlice() + "\n");
 		buffer.append("debugging trace: \n");
 		if(checkList!=null) {
 			for(StepOperationTuple tuple: checkList) {
