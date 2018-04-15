@@ -98,7 +98,11 @@ public class TrainingDataTransfer {
 	
 	private boolean identifyDataLabel(TraceNode step, TraceNode breakStep, SolutionPattern pattern){
 		int errorBound = 1;
-		if(pattern.getType()==SolutionPattern.INCORRECT_ASSIGNMENT || 
+		
+		if(pattern==null){
+			errorBound = 0;
+		}
+		else if(pattern.getType()==SolutionPattern.INCORRECT_ASSIGNMENT || 
 				pattern.getType()==SolutionPattern.MISS_EVALUATED_CONDITION ||
 				pattern.getType()==SolutionPattern.INCORRECT_CONDITION ||
 				pattern.getType()==SolutionPattern.INVOKE_DIFFERENT_METHOD){

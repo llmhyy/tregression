@@ -108,6 +108,10 @@ public class StepChangeTypeChecker {
 	
 	class VarMatch{
 		boolean canBeMatched;
+		
+		/**
+		 * can find the matched variable
+		 */
 		boolean sameVariable;
 		public VarMatch(boolean canBeMatched, boolean sameVariable) {
 			super();
@@ -172,7 +176,8 @@ public class StepChangeTypeChecker {
 		if(!thisVar.getStringValue().contains("@")){
 			String thisType = thisVar.getType();
 			String thatType = thatVar.getType();
-			if(!PrimitiveUtils.isPrimitiveTypeOrString(thisType) && !PrimitiveUtils.isPrimitiveTypeOrString(thatType)){
+			if(!PrimitiveUtils.isPrimitiveTypeOrString(thisType) 
+					&& !PrimitiveUtils.isPrimitiveTypeOrString(thatType)){
 				try {
 					Class thisClass = Class.forName(thisType);
 					Class thatClass = Class.forName(thatType);
@@ -190,6 +195,10 @@ public class StepChangeTypeChecker {
 				} catch (ClassNotFoundException e) {
 					isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
 				}
+				
+				if(isIgnoreType(thisType) && isIgnoreType(thatType)){
+					isContentMatch = true;
+				}
 			}
 			else{
 				isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());				
@@ -197,6 +206,10 @@ public class StepChangeTypeChecker {
 		}
 		
 		return isAssignChainMatch && isContentMatch;
+	}
+
+	private boolean isIgnoreType(String thisType) {
+		return thisType.contains("StopWatch");
 	}
 
 	private boolean isAssignChainMatch(List<TraceNode> thisAssignChain, List<TraceNode> thatAssignChain,
