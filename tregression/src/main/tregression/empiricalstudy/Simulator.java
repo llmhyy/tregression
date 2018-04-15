@@ -541,7 +541,7 @@ public class Simulator  {
 							trial.setDeadEndRecordList(list);
 						}
 						
-						if(!list.isEmpty()){
+						if(list != null && !list.isEmpty()){
 							rootcauseNode = buggyTrace.getTraceNode(list.get(0).getBreakStepOrder());
 						}
 						
