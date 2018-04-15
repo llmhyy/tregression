@@ -416,7 +416,7 @@ public class Simulator  {
 		
 		long startTime = System.currentTimeMillis();
 		
-		Set<TraceNode> deadEndNodes = new HashSet<>();
+		Set<TraceNode> occuringNodes = new HashSet<>();
 		
 		/**
 		 * start debugging
@@ -511,79 +511,91 @@ public class Simulator  {
 						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
 				
-				if(deadEndNodes.contains(currentNode) && !stack.empty()){
-					DebuggingState backedState = stack.pop();
-					checkingList = backedState.checkingList;
-					currentNode = backedState.currentNode;
-					StepChangeType t = typeChecker.getType(currentNode, true, pairList, matcher);
-					
-					while(t.getType()==StepChangeType.IDT && !stack.isEmpty()){
-						backedState = stack.pop();
-						checkingList = backedState.checkingList;
-						currentNode = backedState.currentNode;
-						t = typeChecker.getType(currentNode, true, pairList, matcher);
+				
+				List<DeadEndRecord> list = null;
+				if(previousNode!=null){
+					StepChangeType prevChangeType = typeChecker.getType(previousNode, true, pairList, matcher);
+					if(prevChangeType.getType()==StepChangeType.CTL){
+						list = createControlRecord(currentNode, previousNode, typeChecker, pairList, matcher);
+						trial.setDeadEndRecordList(list);
+					}
+					else if(prevChangeType.getType()==StepChangeType.DAT){
+						list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher, rootCauseFinder);
+						trial.setDeadEndRecordList(list);
 					}
 					
-					if(t.getType()==StepChangeType.IDT && stack.isEmpty()){
+					if(list != null && !list.isEmpty()){
+						rootcauseNode = buggyTrace.getTraceNode(list.get(0).getBreakStepOrder());
+					}
+					
+					if(trial.getBugType()==EmpiricalTrial.OVER_SKIP && trial.getOverskipLength()==0){
+						if(list != null && !list.isEmpty()){
+							DeadEndRecord record = list.get(0);
+							int len = currentNode.getOrder() - record.getBreakStepOrder();
+							trial.setOverskipLength(len);
+						}
+					}
+				}
+				
+				List<TraceNode> sliceBreakers = findBreaker(list, breakerTrialLimit, buggyTrace, rootCauseFinder);
+				if((sliceBreakers.isEmpty() || occuringNodes.contains(currentNode)) 
+						&& !stack.empty()){
+					currentNode = recoverFromBackedState(stack, pairList, matcher, occuringNodes, checkingList, typeChecker);
+					if(currentNode==null){
 						return trial;
 					}
 				}
-				else{
-					List<DeadEndRecord> list = null;
-					if(previousNode!=null){
-						StepChangeType prevChangeType = typeChecker.getType(previousNode, true, pairList, matcher);
-						if(prevChangeType.getType()==StepChangeType.CTL){
-							list = createControlRecord(currentNode, previousNode, typeChecker, pairList, matcher);
-							trial.setDeadEndRecordList(list);
-						}
-						else if(prevChangeType.getType()==StepChangeType.DAT){
-							list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher, rootCauseFinder);
-							trial.setDeadEndRecordList(list);
-						}
-						
-						if(list != null && !list.isEmpty()){
-							rootcauseNode = buggyTrace.getTraceNode(list.get(0).getBreakStepOrder());
-						}
-						
-						if(trial.getBugType()==EmpiricalTrial.OVER_SKIP && trial.getOverskipLength()==0){
-							if(list != null && !list.isEmpty()){
-								DeadEndRecord record = list.get(0);
-								int len = currentNode.getOrder() - record.getBreakStepOrder();
-								trial.setOverskipLength(len);
-							}
-						}
-					}
-					
-					List<TraceNode> sliceBreakers = findBreaker(list, breakerTrialLimit, buggyTrace, rootCauseFinder);
-					if(sliceBreakers.isEmpty() && !stack.empty()){
-						continue;
-					}
-					else if(!sliceBreakers.isEmpty() && !deadEndNodes.contains(currentNode)){
-						deadEndNodes.add(currentNode);
-						if(includeRootCause(sliceBreakers, rootcauseNode, buggyTrace, correctTrace)){
-							trial.setBreakSlice(true);
-							return trial;	
-						}
-						else{
-							currentNode = sliceBreakers.get(0);
-							for(int i=1; i<sliceBreakers.size(); i++){
-								backupDebuggingState(sliceBreakers.get(i), stack, visitedStates, checkingList, null);							
-							}
-						}
+				else if(!sliceBreakers.isEmpty()){
+					if(includeRootCause(sliceBreakers, rootcauseNode, buggyTrace, correctTrace)){
+						trial.setBreakSlice(true);
+						stack.clear();
+						return trial;	
 					}
 					else{
-						return trial;					
+						int start = 0;
+						currentNode = sliceBreakers.get(start);
+						while(occuringNodes.contains(currentNode) && start<breakerTrialLimit){
+							start++;
+							currentNode = sliceBreakers.get(start);
+						}
+						
+						for(int i=start+1; i<sliceBreakers.size(); i++){
+							backupDebuggingState(sliceBreakers.get(i), stack, visitedStates, checkingList, null);							
+						}
 					}
 				}
-				
-				
-				
-				
+				else{
+					return trial;					
+				}
 			}
 		}
 		
 	}
 	
+	private TraceNode recoverFromBackedState(Stack<DebuggingState> stack, PairList pairList2, DiffMatcher matcher2,
+			Set<TraceNode> occuringNodes, List<StepOperationTuple> checkingList, StepChangeTypeChecker typeChecker) {
+		DebuggingState backedState = stack.pop();
+		checkingList = backedState.checkingList;
+		TraceNode currentNode = backedState.currentNode;
+		StepChangeType t = typeChecker.getType(currentNode, true, pairList, matcher);
+		
+		while(t.getType()==StepChangeType.IDT && !stack.isEmpty()){
+			backedState = stack.pop();
+			checkingList = backedState.checkingList;
+			currentNode = backedState.currentNode;
+			occuringNodes.add(currentNode);
+			t = typeChecker.getType(currentNode, true, pairList, matcher);
+		}
+		
+		if(t.getType()==StepChangeType.IDT && stack.isEmpty()){
+			return null;
+		}
+		else{
+			return currentNode;
+		}
+	}
+
+
 	private boolean includeRootCause(List<TraceNode> sliceBreakers, TraceNode rootCauseNode, 
 			Trace buggyTrace, Trace correctTrace) {
 		for(TraceNode breaker: sliceBreakers){
