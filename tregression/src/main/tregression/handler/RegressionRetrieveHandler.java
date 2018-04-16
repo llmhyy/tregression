@@ -156,7 +156,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 				correctTrace.setSourceVersion(false);
 
 				// PairList pairList = regression.getPairList();
-				regression.fillMissingInfor(config, buggyPath, fixPath);
+				regression.fillMissingInfo(config, buggyPath, fixPath);
 
 				/* PairList */
 				System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()

@@ -1,9 +1,9 @@
 package tregression.empiricalstudy;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -50,12 +50,12 @@ public class Regression {
 		this.pairList = pairList;
 	}
 
-	public void fillMissingInfor(Defects4jProjectConfig config, String buggyPath, String fixPath) {
-		fillMissingInfor(buggyTrace, AppClassPathInitializer.initialize(buggyPath, new TestCase(testClass, testMethod), config));
-		fillMissingInfor(correctTrace, AppClassPathInitializer.initialize(fixPath, new TestCase(testClass, testMethod), config));
+	public void fillMissingInfo(Defects4jProjectConfig config, String buggyPath, String fixPath) {
+		fillMissingInfo(buggyTrace, AppClassPathInitializer.initialize(buggyPath, new TestCase(testClass, testMethod), config));
+		fillMissingInfo(correctTrace, AppClassPathInitializer.initialize(fixPath, new TestCase(testClass, testMethod), config));
 	}
 
-	public static void fillMissingInfor(Trace trace, AppJavaClassPath appClassPath) {
+	public static void fillMissingInfo(Trace trace, AppJavaClassPath appClassPath) {
 		trace.setAppJavaClassPath(appClassPath);
 		Map<String, String> classNameMap = new HashMap<>();
 		Map<String, String> pathMap = new HashMap<>();
@@ -66,7 +66,8 @@ public class Regression {
 				continue;
 			}
 			
-			new TraceCollector0(true).attachFullPathInfo(point, appClassPath, classNameMap, pathMap);
+			new InstrumentationExecutor(null, null, null, null, null).
+				attachFullPathInfo(point, appClassPath, classNameMap, pathMap);
 			
 		}
 	}
