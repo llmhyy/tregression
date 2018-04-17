@@ -1,12 +1,14 @@
 package tregression.empiricalstudy;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.preference.AnalysisScopePreference;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.model.PairList;
 import tregression.separatesnapshots.AppClassPathInitializer;
@@ -57,19 +59,24 @@ public class Regression {
 
 	public static void fillMissingInfo(Trace trace, AppJavaClassPath appClassPath) {
 		trace.setAppJavaClassPath(appClassPath);
-		Map<String, String> classNameMap = new HashMap<>();
-		Map<String, String> pathMap = new HashMap<>();
 		
-		for (TraceNode node : trace.getExecutionList()) {
-			BreakPoint point = node.getBreakPoint();
-			if (point.getFullJavaFilePath() != null) {
-				continue;
-			}
-			
-			new InstrumentationExecutor(null, null, null, null, null).
-				attachFullPathInfo(point, appClassPath, classNameMap, pathMap);
-			
-		}
+		List<String> includedClassNames = AnalysisScopePreference.getIncludedLibList();
+		List<String> excludedClassNames = AnalysisScopePreference.getExcludedLibList();
+		new InstrumentationExecutor(appClassPath, null, null, 
+				includedClassNames, excludedClassNames).appendMissingInfo(trace, appClassPath);
+		
+//		Map<String, String> classNameMap = new HashMap<>();
+//		Map<String, String> pathMap = new HashMap<>();
+//		
+//		for (TraceNode node : trace.getExecutionList()) {
+//			BreakPoint point = node.getBreakPoint();
+//			if (point.getFullJavaFilePath() != null) {
+//				continue;
+//			}
+//			
+//			
+//			
+//		}
 	}
 
 	public void setTestCase(String testClass, String testMethod) {
