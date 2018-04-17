@@ -74,7 +74,8 @@ public class Regression {
 //				continue;
 //			}
 //			
-//			
+//			new InstrumentationExecutor(appClassPath, null, null, 
+//					includedClassNames, excludedClassNames).attachFullPathInfo(point, appClassPath, classNameMap, pathMap);
 //			
 //		}
 	}
