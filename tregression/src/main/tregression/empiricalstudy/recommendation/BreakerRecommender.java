@@ -57,9 +57,9 @@ public class BreakerRecommender {
 		
 		List<TraceNode> list = new ArrayList<>();
 		
-		String pythonHome = "C:\\Program Files\\Python36";
+		String pythonHome = new PythonConfig().pythonHome;
 		pythonHome = pythonHome + File.separator + "python.exe";
-		String workingDir = "E:\\linyun\\git_space\\train";
+		String workingDir = new PythonConfig().workingDir;
 		String predictionFile = workingDir + File.separator + "prediction_server.py";
 		
 		List<String> commands = new ArrayList<String>();
