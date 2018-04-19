@@ -67,7 +67,7 @@ public class Simulator  {
 				continue;
 			}
 			else if(changeType.getType()==StepChangeType.CTL) {
-				TraceNode cDom = node.getControlDominator();
+				TraceNode cDom = node.getInvocationMethodOrDominator();
 				if(cDom==null){
 					if(node.isException()) {
 						return node;
