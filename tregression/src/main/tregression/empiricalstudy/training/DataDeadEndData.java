@@ -29,6 +29,20 @@ public class DataDeadEndData extends DeadEndData{
 	
 	public int type;
 	
+	public String getDataType(){
+		if(type==DataDeadEndData.FIELD){
+			return "field";
+		}
+		else if(type == DataDeadEndData.LOCAL_VAR){
+			return "local_var";
+		}
+		else if(type==DataDeadEndData.ARRAY_ELEMENT){
+			return "array_element";
+		}
+		
+		return "unkown";
+	}
+	
 	public String getPlainText(String project, String bugID){
 		StringBuffer buffer = new StringBuffer();
 		

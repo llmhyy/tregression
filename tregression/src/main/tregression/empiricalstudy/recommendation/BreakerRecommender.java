@@ -16,6 +16,8 @@ import java.util.List;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import sav.common.core.SavException;
+import tregression.empiricalstudy.training.ControlDeadEndData;
+import tregression.empiricalstudy.training.DataDeadEndData;
 import tregression.empiricalstudy.training.DeadEndData;
 
 public class BreakerRecommender {
@@ -89,6 +91,20 @@ public class BreakerRecommender {
 		BufferedReader reader = new BufferedReader (new InputStreamReader(stdout));
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
 		
+		if(!records.isEmpty()){
+			DeadEndData record = records.get(0);
+			String type = "";
+			if(record instanceof ControlDeadEndData){
+				type = "control";
+			}
+			else{
+				DataDeadEndData dd = (DataDeadEndData)record;
+				type = dd.getDataType();
+			}
+			writer.write(type+'\n');
+			writer.flush();
+		}
+		
 		for(DeadEndData record: records){
 			System.out.println(record.getPlainText("1", "1"));
 			
@@ -115,6 +131,10 @@ public class BreakerRecommender {
 			}
 			
 			String result = buffer.toString();
+			
+			if(result.isEmpty()){
+				continue;
+			}
 			
 			String doubleString = result.substring(result.indexOf("[[")+2, result.indexOf("]]"));
 			double prob = Double.valueOf(doubleString);
