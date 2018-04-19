@@ -85,6 +85,7 @@ public class DeadEndCSVWriter {
 		for(DeadEndData data0: dataList){
 			DataDeadEndData dData = (DataDeadEndData)data0;
 			String plainText = dData.getPlainText(project, bugID);
+			System.currentTimeMillis();
 			writer.append(plainText);
 		}
 		

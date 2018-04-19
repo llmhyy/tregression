@@ -51,14 +51,33 @@ public class DataDeadEndData extends DeadEndData{
 		buffer.append(String.valueOf(this.traceOrder)+",");
 		buffer.append(String.valueOf(this.isBreakStep)+",");
 		buffer.append(String.valueOf(this.criticalConditionalStep)+",");
-		buffer.append(String.valueOf(this.sameWArrayParent)+",");
-		buffer.append(String.valueOf(this.sameWArrayType)+",");
-		buffer.append(String.valueOf(this.sameWArrayIndex)+",");
-		buffer.append(String.valueOf(this.sameRArrayParent)+",");
-		buffer.append(String.valueOf(this.sameRArrayType)+",");
-		buffer.append(String.valueOf(this.sameRArrayIndex)+",");
-		buffer.append(String.valueOf(this.deadEndLength)+",");
 		
+		if(this.type==FIELD){
+			buffer.append(String.valueOf(this.sameWFieldParent)+",");
+			buffer.append(String.valueOf(this.sameWFieldParentType)+",");
+			buffer.append(String.valueOf(this.sameWFieldType)+",");
+			buffer.append(String.valueOf(this.sameWFieldName)+",");
+			buffer.append(String.valueOf(this.sameRFieldParent)+",");
+			buffer.append(String.valueOf(this.sameRFieldParentType)+",");
+			buffer.append(String.valueOf(this.sameRFieldType)+",");
+			buffer.append(String.valueOf(this.sameRFieldName)+",");
+		}
+		else if(this.type==ARRAY_ELEMENT){
+			buffer.append(String.valueOf(this.sameWArrayParent)+",");
+			buffer.append(String.valueOf(this.sameWArrayType)+",");
+			buffer.append(String.valueOf(this.sameWArrayIndex)+",");
+			buffer.append(String.valueOf(this.sameRArrayParent)+",");
+			buffer.append(String.valueOf(this.sameRArrayType)+",");
+			buffer.append(String.valueOf(this.sameRArrayIndex)+",");
+		}
+		else if(this.type==LOCAL_VAR){
+			buffer.append(String.valueOf(this.sameWLocalVarType)+",");
+			buffer.append(String.valueOf(this.sameWLocalVarName)+",");
+			buffer.append(String.valueOf(this.sameRLocalVarType)+",");
+			buffer.append(String.valueOf(this.sameRLocalVarName)+",");
+		}
+		
+		buffer.append(String.valueOf(this.deadEndLength)+",");
 		String commonText = super.getPlainText(project, bugID);
 		buffer.append(commonText);
 		

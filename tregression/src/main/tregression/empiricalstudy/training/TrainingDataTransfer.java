@@ -71,6 +71,8 @@ public class TrainingDataTransfer {
 						wrongVar, criticalConditionalSteps);
 			}
 			
+			System.currentTimeMillis();
+			
 			for(int i=start+1; i<end; i++){
 				TraceNode step = buggyTrace.getTraceNode(i);
 				if(!step.getBreakPoint().equals(breakStep.getBreakPoint())){
