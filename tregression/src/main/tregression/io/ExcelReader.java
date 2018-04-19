@@ -19,18 +19,25 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelReader {
-	
+	private String excelDir;
 	private Set<Trial> set = new HashSet<>();
+	
+	public ExcelReader() {
+		this("");
+	}
+	
+	public ExcelReader(String excelDir) {
+		this.excelDir = excelDir;
+	}
 	
 	@SuppressWarnings("resource")
 	public void readXLSX() throws IOException {
-		
 		String projectName = Settings.projectName;
 		projectName = projectName + "_regression";
 		
 		int filePage = 0;
 
-		String fileName = projectName + filePage + ".xlsx";
+		String fileName = excelDir + File.separator + projectName + filePage + ".xlsx";
 		
 		File file = new File(fileName);
 		while(file.exists()) {
