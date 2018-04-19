@@ -94,7 +94,7 @@ public class StepChangeTypeChecker {
 		for(VarValue readVar: thisStep.getReadVariables()){
 			VarMatch varMatch = canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList, matcher);
 			System.currentTimeMillis();
-			if(varMatch.canBeMatched && !varMatch.sameVariable){
+			if(varMatch.canBeMatched && !varMatch.sameContent){
 				if(isOnBefore){
 					Pair<VarValue, VarValue> pair = new Pair<VarValue, VarValue>(readVar, varMatch.matchedVariable);
 					wrongVariableList.add(pair);
@@ -124,11 +124,11 @@ public class StepChangeTypeChecker {
 		/**
 		 * can find the matched variable
 		 */
-		boolean sameVariable;
+		boolean sameContent;
 		public VarMatch(boolean canBeMatched, boolean sameVariable, VarValue matchedVariable) {
 			super();
 			this.canBeMatched = canBeMatched;
-			this.sameVariable = sameVariable;
+			this.sameContent = sameVariable;
 			this.matchedVariable = matchedVariable;
 		}
 		
