@@ -163,7 +163,8 @@ public class TrialRecorder {
 			
 			String varType = "";
 			if(r.getType()==DeadEndRecord.DATA){
-				varType = r.getVarValue().getVariable().getClass().getName();
+				String str = r.getVarValue().getVariable().getClass().getName();
+				varType = str.substring(str.lastIndexOf("."), str.length());
 				row.createCell(count++).setCellValue(varType);
 			}
 		}	
