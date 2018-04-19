@@ -53,6 +53,7 @@ public class DiffMatcher {
 					int start = chunk.getStartLineInSource();
 					int end = start + chunk.getChunkLengthInSource() - 1;
 					int type = findLineChange(breakPoint, chunk, start, end, isOnBeforeTrace);
+					System.currentTimeMillis();
 					if(type == StepChangeType.SRC){
 						return true;
 					}
@@ -131,9 +132,14 @@ public class DiffMatcher {
 			int nodeStartLine = cu.getLineNumber(parent.getStartPosition());
 			int nodeEndLine = cu.getLineNumber(parent.getStartPosition()+parent.getLength());
 			
-			if(/*!(parent instanceof Statement) && */!(parent instanceof Expression) ){
+			if(!(parent instanceof Expression) ){
 				nodeStartLine = cu.getLineNumber(node.getStartPosition());
 				nodeEndLine = cu.getLineNumber(node.getStartPosition()+node.getLength());
+			}
+			
+			if(!(node instanceof Expression)){
+				nodeStartLine = currentLineNo;
+				nodeEndLine = currentLineNo;
 			}
 			
 			int stepLineNo = breakPoint.getLineNumber();
