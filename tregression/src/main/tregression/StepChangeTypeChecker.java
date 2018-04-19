@@ -93,7 +93,7 @@ public class StepChangeTypeChecker {
 		List<Pair<VarValue, VarValue>> wrongVariableList = new ArrayList<>();
 		for(VarValue readVar: thisStep.getReadVariables()){
 			VarMatch varMatch = canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList, matcher);
-			System.currentTimeMillis();
+//			System.currentTimeMillis();
 			if(varMatch.canBeMatched && !varMatch.sameContent){
 				if(isOnBefore){
 					Pair<VarValue, VarValue> pair = new Pair<VarValue, VarValue>(readVar, varMatch.matchedVariable);
@@ -148,11 +148,14 @@ public class StepChangeTypeChecker {
 		
 		VarValue matchedVar = null;
 		for(VarValue thatVar: synonymVarList){
+			matchedVar = thatVar;
+			
 			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
 			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
 				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
 						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
+				System.currentTimeMillis();
 				if(isReferenceValueMatch){
 					return new VarMatch(true, true, thatVar);
 				}

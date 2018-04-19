@@ -738,6 +738,7 @@ public class Simulator  {
 		
 		TraceNode domOnRef = null;
 		StepChangeType matchingStepType = typeChecker.getType(matchingStep, false, pairList, matcher);
+		System.currentTimeMillis();
 		if(matchingStepType.getWrongVariableList()==null) {
 			return deadEndlist;
 		}
