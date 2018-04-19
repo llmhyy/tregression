@@ -199,6 +199,10 @@ public class StepChangeTypeChecker {
 				if(isIgnoreType(thisType) && isIgnoreType(thatType)){
 					isContentMatch = true;
 				}
+				
+				if(thisVar.getVarName().equals("this") && thatVar.getVarName().equals("this")){
+					isContentMatch = true;
+				}
 			}
 			else{
 				isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());				
