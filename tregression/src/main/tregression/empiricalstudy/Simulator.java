@@ -778,10 +778,11 @@ public class Simulator  {
 			}
 		}
 		
+		VarValue wrongVarOnBuggyTrace = matchingStepType.getWrongVariable(currentNode, true, rootCauseFinder);
 		for(TraceNode breakStep: breakSteps){
 			DeadEndRecord record = new DeadEndRecord(DeadEndRecord.DATA, buggyNode.getOrder(), 
 					currentNode.getOrder(), -1, breakStep.getOrder());
-			record.setVarValue(wrongVar);
+			record.setVarValue(wrongVarOnBuggyTrace);
 			if(!deadEndlist.contains(record)) {
 				deadEndlist.add(record);						
 			}

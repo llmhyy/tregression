@@ -79,11 +79,11 @@ public class StepPropertyView extends ViewPart {
 		panel.setLayout(layout);
 		
 		if(view instanceof BuggyTraceView){
-			buggyDetailUI = new StepDetailUI(view, null);			
+			buggyDetailUI = new StepDetailUI(view, null, true);			
 			return buggyDetailUI.createDetails(panel);
 		}
 		else if(view instanceof CorrectTraceView){
-			correctDetailUI = new StepDetailUI(view, null);
+			correctDetailUI = new StepDetailUI(view, null, false);
 			return correctDetailUI.createDetails(panel);
 		}
 		

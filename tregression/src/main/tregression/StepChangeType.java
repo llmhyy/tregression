@@ -9,6 +9,7 @@ import microbat.model.value.PrimitiveValue;
 import microbat.model.value.VarValue;
 import microbat.model.variable.VirtualVar;
 import microbat.recommendation.UserFeedback;
+import sav.common.core.Pair;
 import tregression.empiricalstudy.CausalityNode;
 import tregression.empiricalstudy.RootCauseFinder;
 
@@ -20,7 +21,7 @@ public class StepChangeType {
 	
 	private int type;
 	private TraceNode matchingStep;
-	private List<VarValue> wrongVariableList;
+	private List<Pair<VarValue, VarValue>> wrongVariableList;
 	
 	public StepChangeType(int type, TraceNode matchedStep) {
 		super();
@@ -28,7 +29,7 @@ public class StepChangeType {
 		this.matchingStep = matchedStep;
 	}
 
-	public StepChangeType(int type, TraceNode matchingStep, List<VarValue> wrongVariableList) {
+	public StepChangeType(int type, TraceNode matchingStep, List<Pair<VarValue, VarValue>> wrongVariableList) {
 		super();
 		this.type = type;
 		this.matchingStep = matchingStep;
@@ -60,11 +61,11 @@ public class StepChangeType {
 		this.type = type;
 	}
 
-	public List<VarValue> getWrongVariableList() {
+	public List<Pair<VarValue, VarValue>> getWrongVariableList() {
 		return wrongVariableList;
 	}
 
-	public void setWrongVariableList(List<VarValue> wrongVariableList) {
+	public void setWrongVariableList(List<Pair<VarValue, VarValue>> wrongVariableList) {
 		this.wrongVariableList = wrongVariableList;
 	}
 
@@ -91,7 +92,13 @@ public class StepChangeType {
 		List<VarValue> virList = new ArrayList<>();
 		List<VarValue> primitiveList = new ArrayList<>();
 		List<VarValue> referenceList = new ArrayList<>();
-		for(VarValue var: wrongVariableList){
+		for(Pair<VarValue, VarValue> pair: wrongVariableList){
+			
+			VarValue var = pair.a;
+			if(!isOnBefore){
+				var = pair.b;
+			}
+			
 			String varID = var.getVarID();
 			if(varID.endsWith(":0")){
 				continue;
@@ -124,7 +131,8 @@ public class StepChangeType {
 			return virList.get(0);			
 		}
 		
-		return wrongVariableList.get(0);
+		Pair<VarValue, VarValue> pair = wrongVariableList.get(0);
+		return isOnBefore? pair.a : pair.b;
 	}
 
 }

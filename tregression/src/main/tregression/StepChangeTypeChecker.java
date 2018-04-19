@@ -12,6 +12,7 @@ import microbat.model.variable.ArrayElementVar;
 import microbat.model.variable.Variable;
 import microbat.model.variable.VirtualVar;
 import microbat.util.PrimitiveUtils;
+import sav.common.core.Pair;
 import tregression.empiricalstudy.MatchStepFinder;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
@@ -56,7 +57,8 @@ public class StepChangeTypeChecker {
 			return new StepChangeType(StepChangeType.CTL, matchedStep);
 		}
 		else{
-			List<VarValue> wrongVariableList = checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList, matcher);
+			List<Pair<VarValue, VarValue>> wrongVariableList = 
+					checkWrongVariable(isOnBeforeTrace, step, matchedStep, pairList, matcher);
 			if(wrongVariableList.isEmpty()){
 				return new StepChangeType(StepChangeType.IDT, matchedStep);
 			}
@@ -86,15 +88,24 @@ public class StepChangeTypeChecker {
 		return null;
 	}
 
-	private List<VarValue> checkWrongVariable(boolean isOnBefore,
+	private List<Pair<VarValue, VarValue>> checkWrongVariable(boolean isOnBefore,
 			TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
-		List<VarValue> wrongVariableList = new ArrayList<>();
+		List<Pair<VarValue, VarValue>> wrongVariableList = new ArrayList<>();
 		for(VarValue readVar: thisStep.getReadVariables()){
 			VarMatch varMatch = canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList, matcher);
+			System.currentTimeMillis();
 			if(varMatch.canBeMatched && !varMatch.sameVariable){
-				wrongVariableList.add(readVar);
+				if(isOnBefore){
+					Pair<VarValue, VarValue> pair = new Pair<VarValue, VarValue>(readVar, varMatch.matchedVariable);
+					wrongVariableList.add(pair);
+				}
+				else{
+					Pair<VarValue, VarValue> pair = new Pair<VarValue, VarValue>(varMatch.matchedVariable, readVar);
+					wrongVariableList.add(pair);
+				}
 			}
 		}
+		
 		return wrongVariableList;
 	}
 	
@@ -107,16 +118,18 @@ public class StepChangeTypeChecker {
 	}
 	
 	class VarMatch{
+		VarValue matchedVariable;
 		boolean canBeMatched;
 		
 		/**
 		 * can find the matched variable
 		 */
 		boolean sameVariable;
-		public VarMatch(boolean canBeMatched, boolean sameVariable) {
+		public VarMatch(boolean canBeMatched, boolean sameVariable, VarValue matchedVariable) {
 			super();
 			this.canBeMatched = canBeMatched;
 			this.sameVariable = sameVariable;
+			this.matchedVariable = matchedVariable;
 		}
 		
 	}
@@ -130,9 +143,10 @@ public class StepChangeTypeChecker {
 		List<VarValue> synonymVarList = findSynonymousVarList(thisStep, thatStep, thisVar, 
 				isOnBeforeTrace, pairList, matcher);
 		if(synonymVarList.isEmpty()){
-			return new VarMatch(false, false);
+			return new VarMatch(false, false, null);
 		}
 		
+		VarValue matchedVar = null;
 		for(VarValue thatVar: synonymVarList){
 			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
 			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
@@ -140,7 +154,7 @@ public class StepChangeTypeChecker {
 				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
 						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
 				if(isReferenceValueMatch){
-					return new VarMatch(true, true);
+					return new VarMatch(true, true, thatVar);
 				}
 			}
 			else {
@@ -149,16 +163,17 @@ public class StepChangeTypeChecker {
 				
 				boolean equal = thisString.equals(thatString);
 				if(!equal) {
+					matchedVar = thatVar;
 					continue;
 				}
 				else {
-					return new VarMatch(true, true);					
+					return new VarMatch(true, true, thatVar);					
 				}
 			}
 		}
 		
 		
-		return new VarMatch(true, false);
+		return new VarMatch(true, false, matchedVar);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

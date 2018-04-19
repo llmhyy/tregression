@@ -14,6 +14,7 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.trace.TraceNodeOrderComparator;
 import microbat.model.value.VarValue;
+import sav.common.core.Pair;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.model.PairList;
@@ -175,7 +176,8 @@ public class RootCauseFinder {
 				//break;
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
-				for(VarValue readVar: changeType.getWrongVariableList()){
+				for(Pair<VarValue, VarValue> pair: changeType.getWrongVariableList()){
+					VarValue readVar = (stepW.isOnBefore)? pair.a : pair.b;
 					trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 					
 					TraceNode dataDom = trace.findDataDominator(step, readVar); 

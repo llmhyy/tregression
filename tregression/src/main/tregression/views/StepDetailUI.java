@@ -54,6 +54,7 @@ import microbat.util.JavaUtil;
 import microbat.util.Settings;
 import microbat.util.TempVariableInfo;
 import microbat.views.ImageUI;
+import sav.common.core.Pair;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.StepChangeType;
 
@@ -307,9 +308,11 @@ public class StepDetailUI {
 
 	class VariableLabelProvider implements ITableLabelProvider {
 		private StepChangeType changeType;
+		private boolean isOnBefore;
 		
-		public VariableLabelProvider(StepChangeType changeType) {
+		public VariableLabelProvider(StepChangeType changeType, boolean isOnBefore) {
 			this.changeType = changeType;
+			this.isOnBefore = isOnBefore;
 		}
 
 		public void addListener(ILabelProviderListener listener) {
@@ -329,7 +332,8 @@ public class StepDetailUI {
 			if (element instanceof VarValue && columnIndex==0) {
 				VarValue varValue = (VarValue) element;
 				if(changeType.getType()==StepChangeType.DAT) {
-					for(VarValue var: changeType.getWrongVariableList()) {
+					for(Pair<VarValue, VarValue> pair: changeType.getWrongVariableList()) {
+						VarValue var = (this.isOnBefore) ? pair.a : pair.b;
 						if(var.getVarID().equals(varValue.getVarID())) {
 							return Settings.imageUI.getImage(ImageUI.QUESTION_MARK);
 						}
@@ -382,10 +386,12 @@ public class StepDetailUI {
 
 	private ITreeViewerListener treeListener;
 	private TregressionTraceView traceView;
+	private boolean isOnBefore;
 	
-	public StepDetailUI(TregressionTraceView view, TraceNode node){
+	public StepDetailUI(TregressionTraceView view, TraceNode node, boolean isOnBefore){
 		this.traceView = view;
 		this.currentNode = node;
+		this.isOnBefore = isOnBefore;
 	}
 
 	private void addListener() {
@@ -586,7 +592,7 @@ public class StepDetailUI {
 	
 	private void createWrittenVariableContent(List<VarValue> writtenVariables, StepChangeType changeType) {
 		this.writtenVariableTreeViewer.setContentProvider(new RWVariableContentProvider(false));
-		this.writtenVariableTreeViewer.setLabelProvider(new VariableLabelProvider(changeType));
+		this.writtenVariableTreeViewer.setLabelProvider(new VariableLabelProvider(changeType, isOnBefore));
 		this.writtenVariableTreeViewer.setInput(writtenVariables);	
 		
 		setChecks(this.writtenVariableTreeViewer, RW);
@@ -597,7 +603,7 @@ public class StepDetailUI {
 
 	private void createReadVariableContect(List<VarValue> readVariables, StepChangeType changeType) {
 		this.readVariableTreeViewer.setContentProvider(new RWVariableContentProvider(true));
-		this.readVariableTreeViewer.setLabelProvider(new VariableLabelProvider(changeType));
+		this.readVariableTreeViewer.setLabelProvider(new VariableLabelProvider(changeType, isOnBefore));
 		this.readVariableTreeViewer.setInput(readVariables);	
 		
 		setChecks(this.readVariableTreeViewer, RW);
