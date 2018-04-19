@@ -174,6 +174,7 @@ public class Simulator  {
 			int checkTime = (int) (end-start);
 
 			List<EmpiricalTrial> trials = null;
+			System.out.println("use slice breaker: " + useSliceBreaker);
 			if(useSliceBreaker) {
 				trials = startSimulationWithCachedState(observedFault, buggyTrace, correctTrace, getPairList(), matcher, finder);
 			}

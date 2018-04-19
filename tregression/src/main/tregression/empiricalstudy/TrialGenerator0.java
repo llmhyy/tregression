@@ -208,7 +208,8 @@ public class TrialGenerator0 {
 			pairList = cachedPairList;
 			
 			EmpiricalTrial trial = simulateDebuggingWithCatchedObjects(buggyRS.getRunningTrace(), 
-					correctRs.getRunningTrace(), pairList, diffMatcher, requireVisualization);
+					correctRs.getRunningTrace(), pairList, diffMatcher, requireVisualization,
+					useSliceBreaker, breakLimit);
 			return trial;
 		} else {
 			
@@ -352,8 +353,9 @@ public class TrialGenerator0 {
 	}
 	
 	private EmpiricalTrial simulateDebuggingWithCatchedObjects(Trace buggyTrace, Trace correctTrace, PairList pairList,
-			DiffMatcher diffMatcher, boolean requireVisualization) throws SimulationFailException {
-		Simulator simulator = new Simulator(false, -1);
+			DiffMatcher diffMatcher, boolean requireVisualization, 
+			boolean useSliceBreaker, int breakerLimit) throws SimulationFailException {
+		Simulator simulator = new Simulator(useSliceBreaker, breakerLimit);
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		RootCauseFinder rootcauseFinder = new RootCauseFinder();
 		rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
