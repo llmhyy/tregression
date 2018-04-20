@@ -622,6 +622,7 @@ public class Simulator  {
 						recommend(ded.getAllData(), buggyTrace, breakerTrialLimit); 
 				return breakerCandidates;
 			} catch (SavException | IOException e) {
+				System.out.println("findBreaker: exception: ");
 				e.printStackTrace();
 			} 
 		}
