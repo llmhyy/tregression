@@ -157,6 +157,11 @@ public class StepDetailUI {
 		public Object[] getChildren(Object parentElement) {
 			if (parentElement instanceof ReferenceValue) {
 				ReferenceValue refValue = (ReferenceValue)parentElement;
+				
+				if(refValue.getChildren()==null){
+					return null;
+				}
+				
 				return refValue.getChildren().toArray(new VarValue[0]);
 			}
 
