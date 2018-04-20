@@ -532,7 +532,7 @@ public class Simulator  {
 					if(trial.getBugType()==EmpiricalTrial.OVER_SKIP && trial.getOverskipLength()==0){
 						if(list != null && !list.isEmpty()){
 							DeadEndRecord record = list.get(0);
-							int len = currentNode.getOrder() - record.getBreakStepOrder();
+							int len = record.getOccurOrder() - record.getBreakStepOrder();
 							trial.setOverskipLength(len);
 						}
 					}
