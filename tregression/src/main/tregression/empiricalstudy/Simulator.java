@@ -210,6 +210,10 @@ public class Simulator  {
 			EmpiricalTrial trial = workSingleTrialWithCachedState(buggyTrace, correctTrace, pairList, matcher, 
 					rootCauseFinder, typeChecker, currentNode, stack, visitedStates, state);
 			trials.add(trial);
+			
+			if(trial.isBreakSlice()){
+				break;
+			}
 		} 
 		
 		return trials;
@@ -419,6 +423,7 @@ public class Simulator  {
 		
 		Set<TraceNode> occuringNodes = new HashSet<>();
 		
+		EmpiricalTrial overskipTrial = null; 
 		/**
 		 * start debugging
 		 */
@@ -449,6 +454,12 @@ public class Simulator  {
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.FIND_BUG, 0, rootcauseNode, 
 						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
+				if(overskipTrial!=null){
+					trial.setBugType(overskipTrial.getBugType());
+					trial.setOverskipLength(overskipTrial.getOverskipLength());
+					trial.setDeadEndRecordList(overskipTrial.getDeadEndRecordList());
+					trial.setBreakSlice(true);
+				}
 				return trial;
 			} else if (changeType.getType() == StepChangeType.DAT) {
 				VarValue readVar = changeType.getWrongVariable(currentNode, true, rootCauseFinder);
@@ -511,18 +522,22 @@ public class Simulator  {
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, 
 						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
+				overskipTrial = trial;
 				
-				
-				List<DeadEndRecord> list = null;
+				List<DeadEndRecord> list = new ArrayList<>();
 				if(previousNode!=null){
 					StepChangeType prevChangeType = typeChecker.getType(previousNode, true, pairList, matcher);
 					if(prevChangeType.getType()==StepChangeType.CTL){
 						list = createControlRecord(currentNode, previousNode, typeChecker, pairList, matcher);
-						trial.setDeadEndRecordList(list);
+						if(trial.getDeadEndDataList().isEmpty()){
+							trial.setDeadEndRecordList(list);							
+						}
 					}
 					else if(prevChangeType.getType()==StepChangeType.DAT){
 						list = createDataRecord(currentNode, previousNode, typeChecker, pairList, matcher, rootCauseFinder);
-						trial.setDeadEndRecordList(list);
+						if(trial.getDeadEndDataList().isEmpty()){
+							trial.setDeadEndRecordList(list);							
+						}
 					}
 					
 					if(list != null && !list.isEmpty()){
@@ -617,6 +632,7 @@ public class Simulator  {
 		
 		for(DeadEndRecord record: list){
 			DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
+			record.setTransformedData(ded);
 			try {
 				List<TraceNode> breakerCandidates = new BreakerRecommender().
 						recommend(ded.getAllData(), buggyTrace, breakerTrialLimit); 
