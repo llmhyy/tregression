@@ -132,11 +132,16 @@ public class BreakerRecommender {
 			
 			String result = buffer.toString();
 			
-			if(result.isEmpty()){
-				continue;
+//			if(result.isEmpty()){
+//				continue;
+//			}
+			String doubleString = "0.0";
+			try{
+				doubleString = result.substring(result.indexOf("[[")+2, result.indexOf("]]"));
 			}
-			
-			String doubleString = result.substring(result.indexOf("[[")+2, result.indexOf("]]"));
+			catch(Exception e){
+				e.printStackTrace();
+			}
 			double prob = Double.valueOf(doubleString);
 			
 			TraceNode node = buggyTrace.getTraceNode(record.traceOrder);
