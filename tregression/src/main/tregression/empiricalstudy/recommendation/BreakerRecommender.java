@@ -62,7 +62,7 @@ public class BreakerRecommender {
 		String pythonHome = new PythonConfig().pythonHome;
 		pythonHome = pythonHome + File.separator + "python.exe";
 		String workingDir = new PythonConfig().workingDir;
-		String predictionFile = workingDir + File.separator + "prediction_server.py";
+		String predictionFile = workingDir + File.separator + "server" + File.separator + "prediction_server.py";
 		
 		List<String> commands = new ArrayList<String>();
 		commands.add(pythonHome);
@@ -140,7 +140,12 @@ public class BreakerRecommender {
 				doubleString = result.substring(result.indexOf("[[")+2, result.indexOf("]]"));
 			}
 			catch(Exception e){
-				e.printStackTrace();
+//				e.printStackTrace();
+				stderr = process.getErrorStream();
+				containError = printErrorStream(stderr);
+				if(containError){
+					return list;
+				}
 				break;
 			}
 			double prob = Double.valueOf(doubleString);
