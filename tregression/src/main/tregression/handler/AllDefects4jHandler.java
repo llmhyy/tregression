@@ -37,7 +37,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				int skippedNum = 0;//26+83;
+				int skippedNum = 0;
 				int endNum = 500;
 				
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
@@ -84,7 +84,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							}
 							
 							String deadEndType = t.getDeadEndType();
-							if(deadEndType==null || !deadEndType.equals("control")){
+							if(deadEndType==null || !deadEndType.equals("data")){
 								continue;
 							}
 						}
@@ -101,7 +101,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
-								false, true, 3, false, true, d4jConfig, null);
+								false, false, 3, false, true, d4jConfig, null);
 						
 						TrialRecorder recorder;
 						try {
@@ -113,7 +113,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 								if(!t.getDeadEndRecordList().isEmpty()){
 									Repository.clearCache();
 									DeadEndRecord record = t.getDeadEndRecordList().get(0);
-									DED datas = new TrainingDataTransfer().transfer(record, t.getBuggyTrace());
+//									DED datas = new TrainingDataTransfer().transfer(record, t.getBuggyTrace());
+									DED datas = record.getTransformedData(t.getBuggyTrace());
 									setTestCase(datas, t.getTestcase());						
 									try {
 										//new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));

@@ -102,9 +102,11 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 					if (!trial.getDeadEndRecordList().isEmpty()) {
 						Repository.clearCache();
 						DeadEndRecord record = trial.getDeadEndRecordList().get(0);
-						DED datas = new TrainingDataTransfer().transfer(record, result.buggyTrace);
+						DED datas = record.getTransformedData(result.buggyTrace); 
+//								new TrainingDataTransfer().transfer(record, result.buggyTrace);
+						record.setTransformedData(datas);
 						try {
-							new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
+//							new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
 							
 							String projectName = Activator.getDefault().getPreferenceStore()
 									.getString(TregressionPreference.PROJECT_NAME);

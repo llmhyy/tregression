@@ -75,10 +75,11 @@ public class SeparateVersionHandler extends AbstractHandler{
 					if(!t.getDeadEndRecordList().isEmpty()){
 						Repository.clearCache();
 						DeadEndRecord record = t.getDeadEndRecordList().get(0);
-						DED datas = new TrainingDataTransfer().transfer(record, trace);
+						DED datas = record.getTransformedData(trace);
+//						DED datas = new TrainingDataTransfer().transfer(record, trace);
 						setTestCase(datas, t.getTestcase());						
 						try {
-							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
+//							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
 							new DeadEndCSVWriter().export(datas.getAllData(), projectName, id);
 						} catch (NumberFormatException | IOException e) {
 							e.printStackTrace();

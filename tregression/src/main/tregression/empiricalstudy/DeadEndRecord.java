@@ -1,7 +1,10 @@
 package tregression.empiricalstudy;
 
+import microbat.model.trace.Trace;
 import microbat.model.value.VarValue;
 import tregression.empiricalstudy.solutionpattern.SolutionPattern;
+import tregression.empiricalstudy.training.DED;
+import tregression.empiricalstudy.training.TrainingDataTransfer;
 
 public class DeadEndRecord {
 	public static int CONTROL = 0;
@@ -151,4 +154,21 @@ public class DeadEndRecord {
 	public void setSolutionPattern(SolutionPattern solutionPattern) {
 		this.solutionPattern = solutionPattern;
 	}
+
+	public DED getTransformedData(Trace trace) {
+		if(transformedData!=null){
+			return transformedData;			
+		}
+		else{
+			transformedData = new TrainingDataTransfer().transfer(this, trace);
+			return transformedData;
+		}
+	}
+
+	public void setTransformedData(DED transformedData) {
+		this.transformedData = transformedData;
+	}
+
+	private DED transformedData;
+	
 }
