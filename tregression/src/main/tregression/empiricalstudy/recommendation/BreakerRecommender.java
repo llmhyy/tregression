@@ -62,7 +62,7 @@ public class BreakerRecommender {
 		String pythonHome = new PythonConfig().pythonHome;
 		pythonHome = pythonHome + File.separator + "python.exe";
 		String workingDir = new PythonConfig().workingDir;
-		String predictionFile = workingDir + File.separator + "server" + File.separator + "prediction_server.py";
+		String predictionFile = workingDir + File.separator + "prediction_server.py";
 		
 		List<String> commands = new ArrayList<String>();
 		commands.add(pythonHome);
