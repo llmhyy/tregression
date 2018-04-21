@@ -141,6 +141,7 @@ public class BreakerRecommender {
 			}
 			catch(Exception e){
 				e.printStackTrace();
+				break;
 			}
 			double prob = Double.valueOf(doubleString);
 			
