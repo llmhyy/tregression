@@ -522,7 +522,9 @@ public class Simulator  {
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, overskipLen, rootcauseNode, 
 						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
-				overskipTrial = trial;
+				if(overskipTrial==null){
+					overskipTrial = trial;					
+				}
 				
 				List<DeadEndRecord> list = new ArrayList<>();
 				if(previousNode!=null){
@@ -542,15 +544,14 @@ public class Simulator  {
 					
 					if(list != null && !list.isEmpty()){
 						rootcauseNode = buggyTrace.getTraceNode(list.get(0).getBreakStepOrder());
-					}
-					
-					if(trial.getBugType()==EmpiricalTrial.OVER_SKIP && trial.getOverskipLength()==0){
-						if(list != null && !list.isEmpty()){
+						if(trial.getBugType()==EmpiricalTrial.OVER_SKIP){
 							DeadEndRecord record = list.get(0);
-							int len = record.getOccurOrder() - record.getBreakStepOrder();
+							int len = record.getBreakStepOrder() - record.getDeadEndOrder();
 							trial.setOverskipLength(len);
 						}
 					}
+					
+					
 				}
 				
 				List<TraceNode> sliceBreakers = findBreaker(list, breakerTrialLimit, buggyTrace, rootCauseFinder);
@@ -558,14 +559,16 @@ public class Simulator  {
 						&& !stack.empty()){
 					currentNode = recoverFromBackedState(stack, pairList, matcher, occuringNodes, checkingList, typeChecker);
 					if(currentNode==null){
-						return trial;
+						overskipTrial.setCheckList(trial.getCheckList());
+						return overskipTrial;
 					}
 				}
 				else if(!sliceBreakers.isEmpty()){
 					if(includeRootCause(sliceBreakers, rootcauseNode, buggyTrace, correctTrace)){
 						trial.setBreakSlice(true);
 						stack.clear();
-						return trial;	
+						overskipTrial.setCheckList(trial.getCheckList());
+						return overskipTrial;	
 					}
 					else{
 						int start = 0;
@@ -581,7 +584,8 @@ public class Simulator  {
 					}
 				}
 				else{
-					return trial;					
+					overskipTrial.setCheckList(trial.getCheckList());
+					return overskipTrial;					
 				}
 			}
 		}
