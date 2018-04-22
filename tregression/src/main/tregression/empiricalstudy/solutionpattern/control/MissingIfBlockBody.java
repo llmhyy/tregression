@@ -70,7 +70,9 @@ public class MissingIfBlockBody extends PatternDetector{
 		
 		if(isHit){
 			String code = buffer.toString();
-			return code.contains("if");
+			return code.contains("if") || 
+					code.contains("while") || 
+					code.contains("for");
 		}
 		
 		return false;
