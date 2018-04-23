@@ -25,15 +25,17 @@ public class TrialRecorder {
 	private int trialNumberLimitPerFile = 3000;
 	
 	private String fileName = "defects4j";
+	private String excelFolder = "";
 	
 	public TrialRecorder() throws IOException{
-		this("defects4j");
+		this("defects4j", "");
 	}
 	
-	public TrialRecorder(String initFileName) throws IOException {
+	public TrialRecorder(String initFileName, String excelFolder) throws IOException {
 		String fileTitle = initFileName;
 		fileName = fileTitle + filePage + ".xlsx";
-		file = new File(fileName);
+		this.excelFolder = excelFolder;
+		file = new File(excelFolder + fileName);
 		
 		while(file.exists()){
 			InputStream excelFileToRead = new FileInputStream(file);
@@ -44,7 +46,7 @@ public class TrialRecorder {
 			if(lastRowNum > trialNumberLimitPerFile){
 				filePage++;
 				fileName = fileTitle + filePage + ".xlsx";
-				file = new File(fileName);
+				file = new File(excelFolder + fileName);
 			}
 			else{
 				break;
@@ -86,12 +88,12 @@ public class TrialRecorder {
 			fillRowInformation(row, null, project, bugID, mutationType);
 		}
 		
-		writeToExcel(book, file.getName());
+		writeToExcel(book, file.getAbsolutePath());
 		
 		if(lastRowNum > trialNumberLimitPerFile){
 			filePage++;
 			String outputName = fileName + filePage + ".xlsx";
-			file = new File(outputName);
+			file = new File(excelFolder + outputName);
 			
 			initializeNewExcel();
 		}

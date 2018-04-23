@@ -14,6 +14,14 @@ public class DeadEndCSVWriter {
 	public static String FIELD = "field";
 	public static String ARRAY = "array";
 	public static String CONTROL = "control";
+	private String csvFolder = "";
+	
+	public DeadEndCSVWriter() {
+	}
+	
+	public DeadEndCSVWriter(String csvFolder) {
+		this.csvFolder = csvFolder;
+	}
 	
 	public void export(List<DeadEndData> dataList, String project, String bugID) throws IOException{
 		String fileName = null;
@@ -42,12 +50,12 @@ public class DeadEndCSVWriter {
 	}
 
 	private void appendControlData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException{
-		File file = new File(fileName);
+		File file = new File(csvFolder + fileName);
 		if(!file.exists()){
 			file.createNewFile();
 		}
 		
-		FileWriter writer = new FileWriter(fileName, true);
+		FileWriter writer = new FileWriter(file.getAbsolutePath(), true);
 		for(DeadEndData data0: dataList){
 			ControlDeadEndData dData = (ControlDeadEndData)data0;
 			String plainText = dData.getPlainText(project, bugID);
@@ -59,12 +67,12 @@ public class DeadEndCSVWriter {
 	}
 
 	private void appendArrayElementData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException{
-		File file = new File(fileName);
+		File file = new File(csvFolder + fileName);
 		if(!file.exists()){
 			file.createNewFile();
 		}
 		
-		FileWriter writer = new FileWriter(fileName, true);
+		FileWriter writer = new FileWriter(file.getAbsolutePath(), true);
 		for(DeadEndData data0: dataList){
 			DataDeadEndData dData = (DataDeadEndData)data0;
 			String plainText = dData.getPlainText(project, bugID);
@@ -76,12 +84,12 @@ public class DeadEndCSVWriter {
 	}
 
 	private void appendFieldData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException {
-		File file = new File(fileName);
+		File file = new File(csvFolder + fileName);
 		if(!file.exists()){
 			file.createNewFile();
 		}
 		
-		FileWriter writer = new FileWriter(fileName, true);
+		FileWriter writer = new FileWriter(file.getAbsolutePath(), true);
 		for(DeadEndData data0: dataList){
 			DataDeadEndData dData = (DataDeadEndData)data0;
 			String plainText = dData.getPlainText(project, bugID);
@@ -94,12 +102,12 @@ public class DeadEndCSVWriter {
 	}
 
 	private void appendLocalVarData(String fileName, List<DeadEndData> dataList, String project, String bugID) throws IOException {
-		File file = new File(fileName);
+		File file = new File(csvFolder + fileName);
 		if(!file.exists()){
 			file.createNewFile();
 		}
 		
-		FileWriter writer = new FileWriter(fileName, true);
+		FileWriter writer = new FileWriter(file.getAbsolutePath(), true);
 		for(DeadEndData data0: dataList){
 			DataDeadEndData dData = (DataDeadEndData)data0;
 			String plainText = dData.getPlainText(project, bugID);

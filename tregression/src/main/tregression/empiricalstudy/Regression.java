@@ -60,10 +60,7 @@ public class Regression {
 	public static void fillMissingInfo(Trace trace, AppJavaClassPath appClassPath) {
 		trace.setAppJavaClassPath(appClassPath);
 		
-		List<String> includedClassNames = AnalysisScopePreference.getIncludedLibList();
-		List<String> excludedClassNames = AnalysisScopePreference.getExcludedLibList();
-		new InstrumentationExecutor(appClassPath, null, null, 
-				includedClassNames, excludedClassNames).appendMissingInfo(trace, appClassPath);
+		InstrumentationExecutor.appendMissingInfo(trace, appClassPath);
 		
 //		Map<String, String> classNameMap = new HashMap<>();
 //		Map<String, String> pathMap = new HashMap<>();
