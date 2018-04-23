@@ -27,8 +27,12 @@ public class TrialRecorder {
 	private String fileName = "defects4j";
 	
 	public TrialRecorder() throws IOException{
-		String fileTitle = fileName;
-		String fileName = fileTitle + filePage + ".xlsx";
+		this("defects4j");
+	}
+	
+	public TrialRecorder(String initFileName) throws IOException {
+		String fileTitle = initFileName;
+		fileName = fileTitle + filePage + ".xlsx";
 		file = new File(fileName);
 		
 		while(file.exists()){
