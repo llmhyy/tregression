@@ -38,10 +38,12 @@ public class Simulator  {
 	private TraceNode observedFault;
 	
 	private boolean useSliceBreaker;
+	private boolean enableRandom;
 	private int breakerTrialLimit;
-	public Simulator(boolean useSlicerBreaker, int breakerTrialLimit){
+	public Simulator(boolean useSlicerBreaker, boolean enableRandom, int breakerTrialLimit){
 		this.useSliceBreaker = useSlicerBreaker;
 		this.breakerTrialLimit = breakerTrialLimit;
+		this.enableRandom = enableRandom;
 	}
 	
 	
@@ -404,7 +406,8 @@ public class Simulator  {
 	 * @param state
 	 * @return
 	 */
-	private EmpiricalTrial workSingleTrialWithCachedState(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
+	private EmpiricalTrial workSingleTrialWithCachedState(Trace buggyTrace, Trace correctTrace, 
+			PairList pairList, DiffMatcher matcher,
 			RootCauseFinder rootCauseFinder, StepChangeTypeChecker typeChecker,
 			TraceNode currentNode, Stack<DebuggingState> stack, Set<DebuggingState> visitedStates,
 			DebuggingState state) {
@@ -554,7 +557,14 @@ public class Simulator  {
 					
 				}
 				
-				List<TraceNode> sliceBreakers = findBreaker(list, breakerTrialLimit, buggyTrace, rootCauseFinder);
+				List<TraceNode> sliceBreakers = new ArrayList<>();
+				if(!enableRandom){
+					sliceBreakers = findBreaker(list, breakerTrialLimit, buggyTrace, rootCauseFinder);
+				}
+				else{
+					sliceBreakers = findRandomBreaker(list, breakerTrialLimit, buggyTrace, rootCauseFinder);
+				}
+				
 				if((sliceBreakers.isEmpty() || occuringNodes.contains(currentNode)) 
 						&& !stack.empty()){
 					currentNode = recoverFromBackedState(stack, pairList, matcher, occuringNodes, checkingList, typeChecker);
@@ -648,6 +658,34 @@ public class Simulator  {
 		}
 		
 		return new ArrayList<>();
+	}
+	
+	private List<TraceNode> findRandomBreaker(List<DeadEndRecord> list, int breakerTrialLimit, Trace buggyTrace,
+			RootCauseFinder rootCauseFinder) {
+		if(list==null || list.isEmpty()){
+			return new ArrayList<>();
+		}
+		
+		List<TraceNode> breakers = new ArrayList<>();
+		
+		DeadEndRecord record = list.get(0);
+		int occur = record.getOccurOrder();
+		int deadend = record.getDeadEndOrder();
+		
+		int length = occur - deadend;
+		
+		for(int i=0; i<breakerTrialLimit; i++){
+			double ran = Math.random();
+			int index = (int) (ran * length);
+			int order = deadend + index;
+			
+			TraceNode node = buggyTrace.getTraceNode(order);
+			if(!breakers.contains(node)){
+				breakers.add(node);
+			}
+		}
+		
+		return breakers;
 	}
 
 

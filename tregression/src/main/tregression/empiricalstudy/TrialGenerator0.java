@@ -67,7 +67,8 @@ public class TrialGenerator0 {
 	}
 
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, boolean useSliceBreaker,
-			int breakLimit, boolean requireVisualization, boolean allowMultiThread, Defects4jProjectConfig config, String testcase) {
+			boolean enableRandom, int breakLimit, boolean requireVisualization, 
+			boolean allowMultiThread, Defects4jProjectConfig config, String testcase) {
 		List<TestCase> tcList;
 		EmpiricalTrial trial = null;
 		TestCase workingTC = null;
@@ -83,7 +84,7 @@ public class TrialGenerator0 {
 				workingTC = tc;
 
 				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
-						tc, config, requireVisualization, true, useSliceBreaker, breakLimit);
+						tc, config, requireVisualization, true, useSliceBreaker, enableRandom, breakLimit);
 				if(!trial.isDump()){
 					break;					
 				}
@@ -129,7 +130,7 @@ public class TrialGenerator0 {
 		
 		trials = new ArrayList<>();
 		EmpiricalTrial trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread, 
-				tc, config, requireVisualization, false, false, -1);
+				tc, config, requireVisualization, false, false, false, -1);
 		trials.add(trial);
 		return trials;
 	}
@@ -172,7 +173,7 @@ public class TrialGenerator0 {
 	
 	private EmpiricalTrial analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
 			TestCase tc, Defects4jProjectConfig config, boolean requireVisualization, 
-			boolean isRunInTestCaseMode, boolean useSliceBreaker, int breakLimit) throws SimulationFailException {
+			boolean isRunInTestCaseMode, boolean useSliceBreaker, boolean enableRandom, int breakLimit) throws SimulationFailException {
 		TraceCollector0 buggyCollector = new TraceCollector0(true);
 		TraceCollector0 correctCollector = new TraceCollector0(false);
 		long time1 = 0;
@@ -209,7 +210,7 @@ public class TrialGenerator0 {
 			
 			EmpiricalTrial trial = simulateDebuggingWithCatchedObjects(buggyRS.getRunningTrace(), 
 					correctRs.getRunningTrace(), pairList, diffMatcher, requireVisualization,
-					useSliceBreaker, breakLimit);
+					useSliceBreaker, enableRandom, breakLimit);
 			return trial;
 		} else {
 			
@@ -273,7 +274,7 @@ public class TrialGenerator0 {
 				RootCauseFinder rootcauseFinder = new RootCauseFinder();
 				rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
 				
-				Simulator simulator = new Simulator(useSliceBreaker, breakLimit);
+				Simulator simulator = new Simulator(useSliceBreaker, enableRandom, breakLimit);
 				simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 				if(rootcauseFinder.getRealRootCaseList().isEmpty()){
 					trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
@@ -354,8 +355,8 @@ public class TrialGenerator0 {
 	
 	private EmpiricalTrial simulateDebuggingWithCatchedObjects(Trace buggyTrace, Trace correctTrace, PairList pairList,
 			DiffMatcher diffMatcher, boolean requireVisualization, 
-			boolean useSliceBreaker, int breakerLimit) throws SimulationFailException {
-		Simulator simulator = new Simulator(useSliceBreaker, breakerLimit);
+			boolean useSliceBreaker, boolean enableRandom, int breakerLimit) throws SimulationFailException {
+		Simulator simulator = new Simulator(useSliceBreaker, enableRandom, breakerLimit);
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		RootCauseFinder rootcauseFinder = new RootCauseFinder();
 		rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);

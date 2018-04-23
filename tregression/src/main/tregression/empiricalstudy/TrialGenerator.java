@@ -258,7 +258,7 @@ public class TrialGenerator {
 
 		time1 = System.currentTimeMillis();
 		System.out.println("start simulating debugging...");
-		Simulator simulator = new Simulator(false, -1);
+		Simulator simulator = new Simulator(false, false, -1);
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		addAdditionalObservedFault(simulator, config, buggyTrace);
 

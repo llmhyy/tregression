@@ -84,7 +84,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							}
 							
 							String deadEndType = t.getDeadEndType();
-							if(deadEndType==null || !deadEndType.equals("data")){
+							if(deadEndType==null || !deadEndType.equals("control")){
 								continue;
 							}
 						}
@@ -101,7 +101,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
-								false, false, 3, false, true, d4jConfig, null);
+								false, true, false, 3, false, true, d4jConfig, null);
 						
 						TrialRecorder recorder;
 						try {

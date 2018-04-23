@@ -16,14 +16,13 @@ import microbat.Activator;
 import microbat.model.trace.Trace;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
-import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
+import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
-import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
@@ -48,7 +47,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
 				
 				List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
-						false, true, 3, true, true, config, testcase);
+						false, false, false, 3, true, true, config, testcase);
 				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {
@@ -88,13 +87,13 @@ public class SeparateVersionHandler extends AbstractHandler{
 					
 				}
 				
-//				try {
-//					TrialRecorder recorder = new TrialRecorder();
-//					recorder.export(trials, projectName, Integer.valueOf(id));
-//					
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
+				try {
+					TrialRecorder recorder = new TrialRecorder();
+					recorder.export(trials, projectName, Integer.valueOf(id));
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				
 				return Status.OK_STATUS;
 			}

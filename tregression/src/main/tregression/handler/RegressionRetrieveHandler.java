@@ -86,7 +86,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 					visualizer.visualize(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
 
 					EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList,
-							result.diffMatcher, true, 3);
+							result.diffMatcher, true, true, 3);
 					System.out.println(trial);
 					
 //					try {
@@ -180,11 +180,11 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 	}
 
 	private EmpiricalTrial simulate(Trace buggyTrace, Trace correctTrace, PairList pairList, 
-			DiffMatcher diffMatcher, boolean useSliceBreaker, int breakerLimit)
+			DiffMatcher diffMatcher, boolean useSliceBreaker, boolean enableRandom, int breakerLimit)
 			throws SimulationFailException {
 		long time1 = System.currentTimeMillis();
 		System.out.println("start simulating debugging...");
-		Simulator simulator = new Simulator(useSliceBreaker, breakerLimit);
+		Simulator simulator = new Simulator(useSliceBreaker, enableRandom, breakerLimit);
 		simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 		// TraceNode node = buggyTrace.getExecutionList().get(8667);
 		// simulator.setObservedFault(node);
