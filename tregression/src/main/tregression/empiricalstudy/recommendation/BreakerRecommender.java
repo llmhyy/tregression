@@ -91,9 +91,9 @@ public class BreakerRecommender {
 		BufferedReader reader = new BufferedReader (new InputStreamReader(stdout));
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stdin));
 		
+		String type = "";
 		if(!records.isEmpty()){
 			DeadEndData record = records.get(0);
-			String type = "";
 			if(record instanceof ControlDeadEndData){
 				type = "control";
 			}
@@ -141,6 +141,7 @@ public class BreakerRecommender {
 			}
 			catch(Exception e){
 //				e.printStackTrace();
+				System.out.println("type: " + type);
 				stderr = process.getErrorStream();
 				containError = printErrorStream(stderr);
 				if(containError){
