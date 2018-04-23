@@ -898,4 +898,34 @@ public class Simulator  {
 		this.observedFault = observedFault;
 	}
 
+
+	public int getBreakerTrialLimit() {
+		return breakerTrialLimit;
+	}
+
+
+	public void setBreakerTrialLimit(int breakerTrialLimit) {
+		this.breakerTrialLimit = breakerTrialLimit;
+	}
+
+
+	public boolean isEnableRandom() {
+		return enableRandom;
+	}
+
+
+	public void setEnableRandom(boolean enableRandom) {
+		this.enableRandom = enableRandom;
+	}
+
+
+	public boolean isUseSliceBreaker() {
+		return useSliceBreaker;
+	}
+
+
+	public void setUseSliceBreaker(boolean useSliceBreaker) {
+		this.useSliceBreaker = useSliceBreaker;
+	}
+
 }
