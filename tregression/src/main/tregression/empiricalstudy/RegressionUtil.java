@@ -258,7 +258,19 @@ public class RegressionUtil {
 		for(String loadedClassString: loadedClassStrings) {
 			if(loadedClassString.contains("microbat") || loadedClassString.contains("sav.common")
 					|| loadedClassString.contains("sun.reflect")
-					|| loadedClassString.contains("com.sun")) {
+					|| loadedClassString.contains("com.sun")
+					|| loadedClassString.contains("sun.misc")
+					|| loadedClassString.contains("java.lang.ClassLoader")
+					|| loadedClassString.contains("java.lang.ref")
+					|| loadedClassString.contains("java.security")
+					|| loadedClassString.contains("sun.")
+					|| loadedClassString.contains("java.io")
+					|| loadedClassString.contains("java.nio")
+					|| loadedClassString.contains("java.util.zip")
+					|| loadedClassString.contains("java.util.concurrent")
+					|| loadedClassString.contains("junit")
+					|| loadedClassString.contains("java.lang.ThreadLocal")
+					|| loadedClassString.contains("java.lang.Terminator")) {
 				continue;
 			}
 			
