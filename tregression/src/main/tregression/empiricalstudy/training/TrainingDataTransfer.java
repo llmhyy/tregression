@@ -24,6 +24,10 @@ import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 
 public class TrainingDataTransfer {
+	private List<TraceNode> criticalConditionalSteps = new ArrayList<>();
+	private boolean usingCache = false;
+	private boolean isCached = false;
+	
 	public DED transfer(DeadEndRecord record, Trace buggyTrace){
 		Settings.compilationUnitMap.clear();
 		Settings.iCompilationUnitMap.clear();
@@ -58,7 +62,15 @@ public class TrainingDataTransfer {
 			InspectingRange range = new InspectingRange(deadEndStep, occurStep);
 			DataOmissionInspector inspector = new DataOmissionInspector();
 			inspector.setInspectingRange(range);
-			List<TraceNode> criticalConditionalSteps = inspector.analyze(wrongVar);
+			List<TraceNode> criticalConditionalSteps = new ArrayList<>();
+			if(usingCache && isCached){
+				criticalConditionalSteps = this.criticalConditionalSteps;
+			}
+			else{
+				criticalConditionalSteps = inspector.analyze(wrongVar);
+				this.criticalConditionalSteps = criticalConditionalSteps;	
+				this.isCached = true;
+			}
 			
 			if(wrongVar.getVariable() instanceof LocalVar && !wrongVar.getVarName().equals("this")){
 				if(occurStep.getMethodSign().equals(breakStep.getMethodSign())){
@@ -197,4 +209,30 @@ public class TrainingDataTransfer {
 		
 		return data;
 	}
+
+	public List<TraceNode> getCriticalConditionalSteps() {
+		return criticalConditionalSteps;
+	}
+
+	public void setCriticalConditionalSteps(List<TraceNode> criticalConditionalSteps) {
+		this.criticalConditionalSteps = criticalConditionalSteps;
+	}
+
+	public boolean isUsingCache() {
+		return usingCache;
+	}
+
+	public void setUsingCache(boolean usingCache) {
+		this.usingCache = usingCache;
+	}
+
+	public boolean isCached() {
+		return isCached;
+	}
+
+	public void setCached(boolean isCached) {
+		this.isCached = isCached;
+	}
+
+	
 }

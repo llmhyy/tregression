@@ -40,6 +40,9 @@ public class Simulator  {
 	private boolean useSliceBreaker;
 	private boolean enableRandom;
 	private int breakerTrialLimit;
+	
+	private boolean allowCacheCriticalConditionalStep = false;
+	
 	public Simulator(boolean useSlicerBreaker, boolean enableRandom, int breakerTrialLimit){
 		this.useSliceBreaker = useSlicerBreaker;
 		this.breakerTrialLimit = breakerTrialLimit;
@@ -637,6 +640,7 @@ public class Simulator  {
 		return false;
 	}
 
+	private TrainingDataTransfer transfer = new TrainingDataTransfer();
 
 	private List<TraceNode> findBreaker(List<DeadEndRecord> list, int breakerTrialLimit, 
 			Trace buggyTrace, RootCauseFinder rootCauseFinder) {
@@ -645,7 +649,16 @@ public class Simulator  {
 		}
 		
 		for(DeadEndRecord record: list){
-			DED ded = new TrainingDataTransfer().transfer(record, buggyTrace);
+			DED ded = null;
+			if(this.allowCacheCriticalConditionalStep){
+				transfer.setUsingCache(true);
+				ded = transfer.transfer(record, buggyTrace);
+			}
+			else{
+				transfer = new TrainingDataTransfer();
+				ded = transfer.transfer(record, buggyTrace);
+			}
+			
 			record.setTransformedData(ded);
 			try {
 				List<TraceNode> breakerCandidates = new BreakerRecommender().
@@ -926,6 +939,16 @@ public class Simulator  {
 
 	public void setUseSliceBreaker(boolean useSliceBreaker) {
 		this.useSliceBreaker = useSliceBreaker;
+	}
+
+
+	public boolean isAllowCacheCriticalConditionalStep() {
+		return allowCacheCriticalConditionalStep;
+	}
+
+
+	public void setAllowCacheCriticalConditionalStep(boolean allowCacheCriticalConditionalStep) {
+		this.allowCacheCriticalConditionalStep = allowCacheCriticalConditionalStep;
 	}
 
 }
