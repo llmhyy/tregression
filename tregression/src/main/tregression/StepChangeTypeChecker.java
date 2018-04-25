@@ -212,12 +212,12 @@ public class StepChangeTypeChecker {
 					}
 					else{
 						isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
-						isContentMatch = true;
+//						isContentMatch = true;
 					}
 					
 				} catch (ClassNotFoundException e) {
 					isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
-					isContentMatch = true;
+//					isContentMatch = true;
 				}
 				
 				if(isIgnoreType(thisType) && isIgnoreType(thatType)){
@@ -247,7 +247,8 @@ public class StepChangeTypeChecker {
 	}
 
 	private boolean isIgnoreType(String thisType) {
-		return thisType.contains("StopWatch");
+		return thisType.contains("StopWatch") ||
+				thisType.contains("StringBuffer");
 	}
 
 	private boolean isAssignChainMatch(List<TraceNode> thisAssignChain, List<TraceNode> thatAssignChain,
