@@ -165,6 +165,10 @@ public class StepChangeTypeChecker {
 				String thatString = (thatVar.getStringValue()==null)?"null":thatVar.getStringValue();
 				
 				boolean equal = thisString.equals(thatString);
+				if(isIgnoreVarName(thisVar.getVarName()) && isIgnoreVarName(thatVar.getVarName())){
+					equal = true;
+				}
+				
 				if(!equal) {
 					matchedVar = thatVar;
 					continue;
@@ -179,7 +183,7 @@ public class StepChangeTypeChecker {
 		return new VarMatch(true, false, matchedVar);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes" })
 	private boolean isReferenceValueMatch(ReferenceValue thisVar, ReferenceValue thatVar, TraceNode thisDom, TraceNode thatDom,
 			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
 		
@@ -208,10 +212,12 @@ public class StepChangeTypeChecker {
 					}
 					else{
 						isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+						isContentMatch = true;
 					}
 					
 				} catch (ClassNotFoundException e) {
 					isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());
+					isContentMatch = true;
 				}
 				
 				if(isIgnoreType(thisType) && isIgnoreType(thatType)){
@@ -223,11 +229,21 @@ public class StepChangeTypeChecker {
 				}
 			}
 			else{
-				isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());				
+				if(isIgnoreVarName(thisVar.getVarName()) && isIgnoreVarName(thatVar.getVarName())){
+					isContentMatch = true;
+				}
+				else{
+					isContentMatch = thisVar.getStringValue().equals(thatVar.getStringValue());									
+				}
 			}
 		}
 		
 		return isAssignChainMatch && isContentMatch;
+	}
+	
+	private boolean isIgnoreVarName(String varName){
+		return varName.contains("java.util.HashMap#hash") 
+				|| varName.contains("java.util.HashMap#indexFor");
 	}
 
 	private boolean isIgnoreType(String thisType) {
