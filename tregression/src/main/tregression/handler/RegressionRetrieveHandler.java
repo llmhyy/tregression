@@ -86,7 +86,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 					visualizer.visualize(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
 
 					EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList,
-							result.diffMatcher, true, true, 3);
+							result.diffMatcher, false, false, 3);
 					System.out.println(trial);
 					
 //					try {

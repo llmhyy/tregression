@@ -6,6 +6,7 @@ public class ReadEmpiricalTrial {
 	private int rootcauseNode;
 	private String debugType;
 	private String deadEndType;
+	private String exception;
 	
 	@Override
 	public int hashCode() {
@@ -76,6 +77,14 @@ public class ReadEmpiricalTrial {
 
 	public void setDeadEndType(String deadEndType) {
 		this.deadEndType = deadEndType;
+	}
+
+	public String getException() {
+		return exception;
+	}
+
+	public void setException(String exception) {
+		this.exception = exception;
 	}
 
 }

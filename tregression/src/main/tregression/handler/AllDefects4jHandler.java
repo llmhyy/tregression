@@ -84,9 +84,14 @@ public class AllDefects4jHandler extends AbstractHandler {
 							}
 							
 							String deadEndType = t.getDeadEndType();
-							if(deadEndType==null || !deadEndType.equals("control")){
+							if(deadEndType==null || !deadEndType.equals("data")){
 								continue;
 							}
+							
+//							String exception = t.getException();
+//							if(exception==null || !exception.contains("over long")){
+//								continue;
+//							}
 						}
 						
 						System.out.println("***working on the " + j + "th bug of " + projects[i] + " project.");

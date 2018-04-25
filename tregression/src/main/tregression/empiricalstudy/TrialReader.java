@@ -56,6 +56,10 @@ public class TrialReader {
 							String debugType = cell.getStringCellValue();
 							trial.setDebugType(debugType);
 							break;
+						case 17:
+							String exception = cell.getStringCellValue();
+							trial.setException(exception);
+							break;
 						case 19:
 							String deadEndType = cell.getStringCellValue();
 							trial.setDeadEndType(deadEndType);
