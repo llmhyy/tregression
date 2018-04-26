@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import microbat.Activator;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
+import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.ReadEmpiricalTrial;
@@ -27,7 +28,6 @@ import tregression.empiricalstudy.TrialReader;
 import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
-import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.preference.TregressionPreference;
 
 public class AllDefects4jHandler extends AbstractHandler {
@@ -84,7 +84,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							}
 							
 							String deadEndType = t.getDeadEndType();
-							if(deadEndType==null || !deadEndType.equals("data")){
+							if(deadEndType==null || !deadEndType.equals("control")){
 								continue;
 							}
 							
@@ -122,7 +122,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 									DED datas = record.getTransformedData(t.getBuggyTrace());
 									setTestCase(datas, t.getTestcase());						
 									try {
-										//new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
+//										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
 										
 										if(!t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
 											new DeadEndCSVWriter().export(datas.getAllData(), projects[i], String.valueOf(j));											

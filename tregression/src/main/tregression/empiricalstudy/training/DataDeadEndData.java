@@ -52,6 +52,9 @@ public class DataDeadEndData extends DeadEndData{
 		buffer.append(String.valueOf(this.isBreakStep)+",");
 		buffer.append(String.valueOf(this.criticalConditionalStep)+",");
 		
+		String traverseText = super.fillTraverseInfomation();
+		buffer.append(traverseText);
+		
 		if(this.type==FIELD){
 			buffer.append(String.valueOf(this.sameWFieldParent)+",");
 			buffer.append(String.valueOf(this.sameWFieldParentType)+",");
@@ -78,7 +81,7 @@ public class DataDeadEndData extends DeadEndData{
 		}
 		
 		buffer.append(String.valueOf(this.deadEndLength)+",");
-		String commonText = super.getPlainText(project, bugID);
+		String commonText = super.fillCommonRowInfomation();
 		buffer.append(commonText);
 		
 		return buffer.toString();

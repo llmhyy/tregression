@@ -14,8 +14,10 @@ import microbat.recommendation.DataOmissionInspector;
 import microbat.recommendation.InspectingRange;
 import microbat.recommendation.calculator.Dependency;
 import microbat.recommendation.calculator.DependencyCalculator;
-import microbat.recommendation.calculator.Traverse;
-import microbat.recommendation.calculator.TraversingDistanceCalculator;
+import microbat.recommendation.calculator.TraceTraverse;
+import microbat.recommendation.calculator.TraceTraversingDistanceCalculator;
+import microbat.recommendation.calculator.ASTTraverse;
+import microbat.recommendation.calculator.ASTTraversingDistanceCalculator;
 import microbat.recommendation.calculator.VariableSimilarity;
 import microbat.recommendation.calculator.VariableSimilarityCalculator;
 import microbat.util.Settings;
@@ -141,7 +143,8 @@ public class TrainingDataTransfer {
 			return DataDeadEndData.FIELD;
 		}
 		else if(var instanceof ArrayElementVar){
-			return DataDeadEndData.ARRAY_ELEMENT;
+			return DataDeadEndData.FIELD;
+//			return DataDeadEndData.ARRAY_ELEMENT;
 		}
 		
 		return -1;
@@ -155,6 +158,19 @@ public class TrainingDataTransfer {
 		
 		boolean isCriticalStep = criticalConditionalSteps.contains(step);
 		data.criticalConditionalStep = isCriticalStep ? 1 : 0;
+		
+		AppJavaClassPath appPath = occurStep.getTrace().getAppJavaClassPath();
+		ASTTraversingDistanceCalculator tCal = 
+				new ASTTraversingDistanceCalculator(appPath);
+		ASTTraverse traverse = tCal.calculateASTTravsingDistance(step.getBreakPoint(), occurStep.getBreakPoint());
+		data.astMoveUps = traverse.getMoveUps();
+		data.astMoveRights = traverse.getMoveRights();
+		data.astMoveDowns = traverse.getMoveDowns();
+		
+		TraceTraverse traceTraverse = new TraceTraversingDistanceCalculator().calculateASTTravsingDistance(step, occurStep);
+		data.traceMoveOuts = traceTraverse.getMoveOuts();
+		data.traceMoveIns = traceTraverse.getMoveIns();
+		data.traceMoveDowns = traceTraverse.getMoveDowns();
 		
 		VariableSimilarityCalculator varCal = new VariableSimilarityCalculator(wrongValue);
 		VariableSimilarity[] vs = varCal.calculateVarSimilarity(step);
@@ -190,12 +206,17 @@ public class TrainingDataTransfer {
 		
 		AppJavaClassPath appPath = occurStep.getTrace().getAppJavaClassPath();
 		
-		TraversingDistanceCalculator tCal = 
-				new TraversingDistanceCalculator(appPath);
-		Traverse traverse = tCal.calculateASTTravsingDistance(step.getBreakPoint(), occurStep.getBreakPoint());
-		data.moveUps = traverse.getMoveUps();
-		data.moveRights = traverse.getMoveRights();
-		data.moveDowns = traverse.getMoveDowns();
+		ASTTraversingDistanceCalculator tCal = 
+				new ASTTraversingDistanceCalculator(appPath);
+		ASTTraverse traverse = tCal.calculateASTTravsingDistance(step.getBreakPoint(), occurStep.getBreakPoint());
+		data.astMoveUps = traverse.getMoveUps();
+		data.astMoveRights = traverse.getMoveRights();
+		data.astMoveDowns = traverse.getMoveDowns();
+		
+		TraceTraverse traceTraverse = new TraceTraversingDistanceCalculator().calculateASTTravsingDistance(step, occurStep);
+		data.traceMoveOuts = traceTraverse.getMoveOuts();
+		data.traceMoveIns = traceTraverse.getMoveIns();
+		data.traceMoveDowns = traceTraverse.getMoveDowns();
 		
 		DependencyCalculator dCal = new DependencyCalculator(appPath);
 		Dependency dependency = dCal.calculateDependency(step.getBreakPoint(), occurStep.getBreakPoint());

@@ -395,9 +395,9 @@ public class DeadEndReporter {
 		row.createCell(3).setCellValue(data.traceOrder);
 		row.createCell(4).setCellValue(data.isBreakStep);
 		
-		row.createCell(5).setCellValue(data.moveUps);
-		row.createCell(6).setCellValue(data.moveDowns);
-		row.createCell(7).setCellValue(data.moveRights);
+		row.createCell(5).setCellValue(data.astMoveUps);
+		row.createCell(6).setCellValue(data.astMoveDowns);
+		row.createCell(7).setCellValue(data.astMoveRights);
 		
 		row.createCell(8).setCellValue(data.dataDependency);
 		row.createCell(9).setCellValue(data.controlDependency);

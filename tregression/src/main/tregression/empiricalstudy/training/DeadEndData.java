@@ -13,6 +13,14 @@ public class DeadEndData {
 	public String testcase;
 	public int traceOrder;
 	
+	public int astMoveUps;
+	public int astMoveDowns;
+	public int astMoveRights;
+	
+	public int traceMoveOuts;
+	public int traceMoveIns;
+	public int traceMoveDowns;
+	
 	public int[] stepAST;
 	public int[] stepContextAST;
 	public int[] occurStepAST;
@@ -27,7 +35,21 @@ public class DeadEndData {
 		return plainText;
 	}
 	
-	private String fillCommonRowInfomation(){
+	protected String fillTraverseInfomation(){
+		StringBuffer buffer = new StringBuffer();
+		
+		buffer.append(String.valueOf(this.astMoveUps)+",");
+		buffer.append(String.valueOf(this.astMoveDowns)+",");
+		buffer.append(String.valueOf(this.astMoveRights)+",");
+		
+		buffer.append(String.valueOf(this.traceMoveOuts)+",");
+		buffer.append(String.valueOf(this.traceMoveIns)+",");
+		buffer.append(String.valueOf(this.traceMoveDowns)+",");
+		
+		return buffer.toString();
+	}
+	
+	protected String fillCommonRowInfomation(){
 		StringBuffer buffer = new StringBuffer();
 		for(int value: this.stepAST){
 			buffer.append(String.valueOf(value)+",");

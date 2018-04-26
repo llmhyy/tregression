@@ -106,7 +106,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 //								new TrainingDataTransfer().transfer(record, result.buggyTrace);
 						record.setTransformedData(datas);
 						try {
-//							new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
+							new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
 							
 							String projectName = Activator.getDefault().getPreferenceStore()
 									.getString(TregressionPreference.PROJECT_NAME);
