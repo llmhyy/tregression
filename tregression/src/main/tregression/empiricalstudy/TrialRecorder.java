@@ -22,7 +22,7 @@ public class TrialRecorder {
 	private int lastRowNum = 1;
 	
 	private int filePage = 0;
-	private int trialNumberLimitPerFile = 3000;
+	private int trialNumberLimitPerFile = 300000;
 	
 	private String fileName = "defects4j";
 	private String excelFolder = "";
