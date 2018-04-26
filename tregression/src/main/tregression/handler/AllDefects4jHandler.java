@@ -84,7 +84,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							}
 							
 							String deadEndType = t.getDeadEndType();
-							if(deadEndType==null || !deadEndType.equals("control")){
+							if(deadEndType==null || !(deadEndType.equals("control") || deadEndType.equals("data"))){
 								continue;
 							}
 							
@@ -106,7 +106,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
 						List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
-								false, true, false, 3, false, true, d4jConfig, null);
+								false, false, false, 3, false, true, d4jConfig, null);
 						
 						TrialRecorder recorder;
 						try {
@@ -125,7 +125,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 //										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
 										
 										if(!t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
-											new DeadEndCSVWriter().export(datas.getAllData(), projects[i], String.valueOf(j));											
+											new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projects[i], String.valueOf(j));											
 										}
 									} catch (NumberFormatException | IOException e) {
 										e.printStackTrace();

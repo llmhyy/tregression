@@ -16,7 +16,10 @@ public class DeadEndCSVWriter {
 	public static String CONTROL = "control";
 	private String csvFolder = "";
 	
-	public DeadEndCSVWriter() {
+	private String fileSuffix = "";
+	
+	public DeadEndCSVWriter(String fileSuffix, Object o) {
+		this.fileSuffix = fileSuffix;
 	}
 	
 	public DeadEndCSVWriter(String csvFolder) {
@@ -31,20 +34,20 @@ public class DeadEndCSVWriter {
 		if(data instanceof DataDeadEndData){
 			DataDeadEndData ddd = (DataDeadEndData)data;
 			if(ddd.type==DataDeadEndData.LOCAL_VAR){
-				fileName = LOCAL_DATA + ".csv";
+				fileName = LOCAL_DATA + fileSuffix + ".csv";
 				appendLocalVarData(fileName, dataList, project, bugID);
 			}
 			else if(ddd.type==DataDeadEndData.FIELD){
-				fileName = FIELD + ".csv";
+				fileName = FIELD + fileSuffix + ".csv";
 				appendFieldData(fileName, dataList, project, bugID);
 			}
 			else if(ddd.type==DataDeadEndData.ARRAY_ELEMENT){
-				fileName = ARRAY + ".csv";
+				fileName = ARRAY + fileSuffix + ".csv";
 				appendArrayElementData(fileName, dataList, project, bugID);
 			}
 		}
 		else if(data instanceof ControlDeadEndData){
-			fileName = CONTROL + ".csv";
+			fileName = CONTROL + fileSuffix + ".csv";
 			appendControlData(fileName, dataList, project, bugID);
 		}
 	}
