@@ -42,9 +42,9 @@ public class DeadEndData {
 		buffer.append(String.valueOf(this.astMoveDowns)+",");
 		buffer.append(String.valueOf(this.astMoveRights)+",");
 		
-		buffer.append(String.valueOf(this.traceMoveOuts)+",");
-		buffer.append(String.valueOf(this.traceMoveIns)+",");
-		buffer.append(String.valueOf(this.traceMoveDowns)+",");
+//		buffer.append(String.valueOf(this.traceMoveOuts)+",");
+//		buffer.append(String.valueOf(this.traceMoveIns)+",");
+//		buffer.append(String.valueOf(this.traceMoveDowns)+",");
 		
 		return buffer.toString();
 	}

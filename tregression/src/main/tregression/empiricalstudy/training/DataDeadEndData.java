@@ -52,8 +52,8 @@ public class DataDeadEndData extends DeadEndData{
 		buffer.append(String.valueOf(this.isBreakStep)+",");
 		buffer.append(String.valueOf(this.criticalConditionalStep)+",");
 		
-		String traverseText = super.fillTraverseInfomation();
-		buffer.append(traverseText);
+//		String traverseText = super.fillTraverseInfomation();
+//		buffer.append(traverseText);
 		
 		if(this.type==FIELD){
 			buffer.append(String.valueOf(this.sameWFieldParent)+",");
