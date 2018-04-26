@@ -1,7 +1,7 @@
 package tregression.handler;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.bcel.Repository;
@@ -33,10 +33,8 @@ import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.Simulator;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
-import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
-import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.preference.TregressionPreference;
@@ -73,110 +71,116 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					boolean isReuse = false;
-
-					Settings.compilationUnitMap.clear();
-					Settings.iCompilationUnitMap.clear();
-
-					if (!isReuse || result == null) {
-						result = parseResult();
-					}
-
-					Visualizer visualizer = new Visualizer();
-					visualizer.visualize(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
-
-					EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList,
-							result.diffMatcher, false, false, 3);
-					System.out.println(trial);
-					
-//					try {
-//						List<EmpiricalTrial> trials = new ArrayList<>();
-//						trials.add(trial);
-//						TrialRecorder recorder = new TrialRecorder();
-//						recorder.export(trials, "aa", Integer.valueOf(1));
-//
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
-					
-					if (!trial.getDeadEndRecordList().isEmpty()) {
-						Repository.clearCache();
-						DeadEndRecord record = trial.getDeadEndRecordList().get(0);
-						DED datas = record.getTransformedData(result.buggyTrace); 
-//						new TrainingDataTransfer().transfer(record, result.buggyTrace);
-						record.setTransformedData(datas);
-						try {
-							new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
-							
-							String projectName = Activator.getDefault().getPreferenceStore()
-									.getString(TregressionPreference.PROJECT_NAME);
-							String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-							new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projectName, id);
-						} catch (NumberFormatException | IOException e) {
-							e.printStackTrace();
-						}
-						System.currentTimeMillis();
-					}
+					String projectName = Activator.getDefault().getPreferenceStore()
+							.getString(TregressionPreference.PROJECT_NAME);
+					String bugId = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+					retrieveRegression(projectName, bugId);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 
 				return Status.OK_STATUS;
 			}
-
-			private Result parseResult() throws IOException {
-				String buggyPath = PathConfiguration.getBuggyPath();
-				String fixPath = PathConfiguration.getCorrectPath();
-
-				String projectName = Activator.getDefault().getPreferenceStore()
-						.getString(TregressionPreference.PROJECT_NAME);
-				String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-
-				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
-
-				DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
-						fixPath);
-				diffMatcher.matchCode();
-
-				List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);
-				TestCase tc = list.get(0);
-
-				AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(buggyPath, tc, config);
-				AppJavaClassPath fixApp = AppClassPathInitializer.initialize(fixPath, tc, config);
-
-				// Regression regression = new
-				// RegressionRetriever().retriveRegression(projectName, id);
-				Regression regression = retrieveRegression(config, buggyPath, fixPath);
-
-				Trace buggyTrace = regression.getBuggyTrace();
-				buggyTrace.setSourceVersion(true);
-				buggyTrace.setAppJavaClassPath(buggyApp);
-				buggyTrace.setSourceVersion(true);
-				Trace correctTrace = regression.getCorrectTrace();
-				correctTrace.setSourceVersion(false);
-				correctTrace.setAppJavaClassPath(fixApp);
-				correctTrace.setSourceVersion(false);
-
-				// PairList pairList = regression.getPairList();
-				regression.fillMissingInfo(config, buggyPath, fixPath);
-
-				/* PairList */
-				System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()
-						+ ", correct trace length: " + correctTrace.size());
-				long time1 = System.currentTimeMillis();
-
-				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, diffMatcher);
-				long time2 = System.currentTimeMillis();
-				int matchTime = (int) (time2 - time1);
-				System.out.println("finish matching trace, taking " + matchTime + "ms");
-
-				return new Result(buggyTrace, correctTrace, pairList, diffMatcher);
-			}
 		};
 		job.schedule();
 
 		return null;
+	}
+	
+	protected void retrieveRegression(String projectName, String bugId) throws IOException, SimulationFailException {
+		boolean isReuse = false;
+
+		Settings.compilationUnitMap.clear();
+		Settings.iCompilationUnitMap.clear();
+
+		if (!isReuse || result == null) {
+			result = parseResult(projectName, bugId);
+		}
+		
+		if (result == null) {
+			return;
+		}
+
+		Visualizer visualizer = new Visualizer();
+		visualizer.visualize(result.buggyTrace, result.correctTrace, result.pairList, result.diffMatcher);
+
+		EmpiricalTrial trial = simulate(result.buggyTrace, result.correctTrace, result.pairList,
+				result.diffMatcher, false, false, 3);
+		System.out.println(trial);
+		
+//			try {
+//				List<EmpiricalTrial> trials = new ArrayList<>();
+//				trials.add(trial);
+//				TrialRecorder recorder = new TrialRecorder();
+//				recorder.export(trials, "aa", Integer.valueOf(1));
+//
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+		
+		if (!trial.getDeadEndRecordList().isEmpty()) {
+			Repository.clearCache();
+			DeadEndRecord record = trial.getDeadEndRecordList().get(0);
+			DED datas = record.getTransformedData(result.buggyTrace); 
+//				new TrainingDataTransfer().transfer(record, result.buggyTrace);
+			record.setTransformedData(datas);
+			try {
+				new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
+				new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projectName, bugId);
+			} catch (NumberFormatException | IOException e) {
+				e.printStackTrace();
+			}
+			System.currentTimeMillis();
+		}
+	}
+
+	private Result parseResult(String projectName, String bugId) throws IOException {
+		String buggyPath = PathConfiguration.getBuggyPath();
+		String fixPath = PathConfiguration.getCorrectPath();
+
+		Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(bugId));
+
+		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
+				fixPath);
+		diffMatcher.matchCode();
+
+		List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);
+		TestCase tc = list.get(0);
+
+		AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(buggyPath, tc, config);
+		AppJavaClassPath fixApp = AppClassPathInitializer.initialize(fixPath, tc, config);
+
+		// Regression regression = new
+		// RegressionRetriever().retriveRegression(projectName, id);
+		Regression regression = retrieveRegression(config, buggyPath, fixPath);
+		if (regression == null) {
+			return null;
+		}
+		
+		Trace buggyTrace = regression.getBuggyTrace();
+		buggyTrace.setSourceVersion(true);
+		buggyTrace.setAppJavaClassPath(buggyApp);
+		buggyTrace.setSourceVersion(true);
+		Trace correctTrace = regression.getCorrectTrace();
+		correctTrace.setSourceVersion(false);
+		correctTrace.setAppJavaClassPath(fixApp);
+		correctTrace.setSourceVersion(false);
+
+		// PairList pairList = regression.getPairList();
+		regression.fillMissingInfo(config, buggyPath, fixPath);
+
+		/* PairList */
+		System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()
+				+ ", correct trace length: " + correctTrace.size());
+		long time1 = System.currentTimeMillis();
+
+		ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+		PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, diffMatcher);
+		long time2 = System.currentTimeMillis();
+		int matchTime = (int) (time2 - time1);
+		System.out.println("finish matching trace, taking " + matchTime + "ms");
+
+		return new Result(buggyTrace, correctTrace, pairList, diffMatcher);
 	}
 
 	private EmpiricalTrial simulate(Trace buggyTrace, Trace correctTrace, PairList pairList, 
@@ -236,9 +240,13 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		ExecTraceFileReader execTraceReader = new ExecTraceFileReader();
 		String buggyExec = InstrumentationExecutor
 				.generateTraceFilePath(MicroBatUtil.generateTraceDir(projectName, bugId), "bug");
-		Trace buggyTrace = execTraceReader.read(buggyExec);
 		String fixExec = InstrumentationExecutor
 				.generateTraceFilePath(MicroBatUtil.generateTraceDir(projectName, bugId), "fix");
+		if (!new File(buggyExec).exists() || !new File(fixExec).exists()) {
+			System.out.println(String.format("[%s%s]Missing trace exec files!", projectName, bugId));
+			return null;
+		}
+		Trace buggyTrace = execTraceReader.read(buggyExec);
 		Trace fixTrace = execTraceReader.read(fixExec);
 
 		Regression regression = new Regression(buggyTrace, fixTrace, null);
