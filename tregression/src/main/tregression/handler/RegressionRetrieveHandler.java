@@ -16,7 +16,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import microbat.Activator;
 import microbat.agent.ExecTraceFileReader;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
+import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
 import microbat.recommendation.DebugState;
 import microbat.recommendation.UserFeedback;
 import microbat.util.MicroBatUtil;
@@ -89,7 +91,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 	
 	protected void retrieveRegression(String projectName, String bugId) throws IOException, SimulationFailException {
 		boolean isReuse = false;
-
+		System.out.println("working on the " + bugId + "th bug of " + projectName + " project.");
 		Settings.compilationUnitMap.clear();
 		Settings.iCompilationUnitMap.clear();
 
@@ -135,8 +137,8 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 	}
 
 	private Result parseResult(String projectName, String bugId) throws IOException {
-		String buggyPath = PathConfiguration.getBuggyPath();
-		String fixPath = PathConfiguration.getCorrectPath();
+		String buggyPath = PathConfiguration.getBuggyPath(projectName, bugId);
+		String fixPath = PathConfiguration.getCorrectPath(projectName, bugId);
 
 		Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(bugId));
 
@@ -167,7 +169,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		correctTrace.setSourceVersion(false);
 
 		// PairList pairList = regression.getPairList();
-		regression.fillMissingInfo(config, buggyPath, fixPath);
+		fillingMissingInfo(buggyPath, fixPath, config, regression);
 
 		/* PairList */
 		System.out.println("start matching trace..., buggy trace length: " + buggyTrace.size()
@@ -181,6 +183,23 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		System.out.println("finish matching trace, taking " + matchTime + "ms");
 
 		return new Result(buggyTrace, correctTrace, pairList, diffMatcher);
+	}
+
+	private void fillingMissingInfo(String buggyPath, String fixPath, Defects4jProjectConfig config,
+			Regression regression) {
+		for (TraceNode node : regression.getBuggyTrace().getExecutionList()) {
+			BreakPoint point = node.getBreakPoint();
+			if (point.getDeclaringCompilationUnitName() == null) {
+				point.setDeclaringCompilationUnitName(point.getClassCanonicalName());
+			}
+		}
+		for (TraceNode node : regression.getCorrectTrace().getExecutionList()) {
+			BreakPoint point = node.getBreakPoint();
+			if (point.getDeclaringCompilationUnitName() == null) {
+				point.setDeclaringCompilationUnitName(point.getClassCanonicalName());
+			}
+		}
+		regression.fillMissingInfo(config, buggyPath, fixPath);
 	}
 
 	private EmpiricalTrial simulate(Trace buggyTrace, Trace correctTrace, PairList pairList, 

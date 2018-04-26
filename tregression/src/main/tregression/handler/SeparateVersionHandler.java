@@ -35,8 +35,11 @@ public class SeparateVersionHandler extends AbstractHandler{
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				String buggyPath = PathConfiguration.getBuggyPath();
-				String fixPath = PathConfiguration.getCorrectPath();
+				String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
+				String bugID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+				
+				String buggyPath = PathConfiguration.getBuggyPath(projectPath, bugID);
+				String fixPath = PathConfiguration.getCorrectPath(projectPath, bugID);
 				
 				String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
 				String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
