@@ -43,6 +43,10 @@ public class FilePairWithDiff {
 		String path0 = path.substring(path.indexOf(sourceFolderName)+sourceFolderName.length()+1, path.indexOf(".java"));
 		String qualifier = path0.replace(File.separatorChar, '.');
 		
+		if(qualifier.startsWith(".")){
+			qualifier = qualifier.substring(qualifier.indexOf(".")+1, qualifier.length());
+		}
+		
 		return qualifier;
 	}
 
