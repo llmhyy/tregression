@@ -106,7 +106,7 @@ public class BreakerRecommender {
 		}
 		
 		for(DeadEndData record: records){
-			System.out.println(record.getPlainText("1", "1"));
+//			System.out.println(record.getPlainText("1", "1"));
 			
 			writer.write(record.getPlainText("1", "1"));
 			writer.flush();
@@ -115,7 +115,7 @@ public class BreakerRecommender {
 			String line = null;
 			boolean recording = false;
 			while ((line = reader.readLine ()) != null) {
-				System.out.println ("Stdout: " + line);
+//				System.out.println ("Stdout: " + line);
 				if(line.contains("@@PythonEnd@@")){
 					break;
 				}

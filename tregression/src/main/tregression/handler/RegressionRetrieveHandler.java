@@ -127,7 +127,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 //				new TrainingDataTransfer().transfer(record, result.buggyTrace);
 			record.setTransformedData(datas);
 			try {
-				new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
+//				new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
 				new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projectName, bugId);
 			} catch (NumberFormatException | IOException e) {
 				e.printStackTrace();

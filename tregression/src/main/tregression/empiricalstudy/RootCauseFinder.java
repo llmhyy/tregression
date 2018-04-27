@@ -365,15 +365,21 @@ public class RootCauseFinder {
 				else{
 					BreakPoint correspondingPoint = new BreakPoint(correspondingLocation.getClassCanonicalName(), null, correspondingLocation.getLineNumber());
 					MethodFinderByLine finder = new MethodFinderByLine(node.getBreakPoint());
+					
+					
 					ByteCodeParser.parse(node.getClassCanonicalName(), finder, node.getTrace().getAppJavaClassPath());
-					String methodSign = correspondingLocation.getClassCanonicalName() + "#" + finder.getMethod().getName() + finder.getMethod().getSignature();
-					if(node.getMethodSign().equals(methodSign)){
-						if(node.getLineNumber()<correspondingPoint.getLineNumber()){
-							if(finder.isThrow() || finder.isReturn()){
-								bestNode = node;
+					
+					if(finder.getMethod()!=null){
+						String methodSign = correspondingLocation.getClassCanonicalName() + "#" + finder.getMethod().getName() + finder.getMethod().getSignature();
+						if(node.getMethodSign().equals(methodSign)){
+							if(node.getLineNumber()<correspondingPoint.getLineNumber()){
+								if(finder.isThrow() || finder.isReturn()){
+									bestNode = node;
+								}
 							}
 						}
 					}
+					
 				}
 			}
 		}
