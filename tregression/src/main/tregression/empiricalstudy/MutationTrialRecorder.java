@@ -45,7 +45,7 @@ public class MutationTrialRecorder {
 			InputStream excelFileToRead = new FileInputStream(file);
 			book = new XSSFWorkbook(excelFileToRead);
 			
-			for(int i=0; i<sheets.length; i++){
+			for(int i=0; i<3; i++){
 				sheets[i] = book.getSheetAt(i);
 				lastRowNums[i] = sheets[i].getPhysicalNumberOfRows();
 			}
