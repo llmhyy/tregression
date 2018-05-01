@@ -446,6 +446,10 @@ public class Simulator  {
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, -1, rootcauseNode, 
 						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
+				if(overskipTrial!=null){
+					trial.setOverskipLength(overskipTrial.getOverskipLength());
+					trial.setDeadEndRecordList(overskipTrial.getDeadEndRecordList());
+				}
 				return trial;
 			}
 			
