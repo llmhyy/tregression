@@ -446,6 +446,10 @@ public class Simulator  {
 				EmpiricalTrial trial = new EmpiricalTrial(EmpiricalTrial.OVER_SKIP, -1, rootcauseNode, 
 						checkingList, -1, -1, (int)(endTime-startTime), buggyTrace.size(), correctTrace.size(),
 						rootCauseFinder, isMultiThread);
+				/*
+				 * LLT: this also can happen for the stage of verifying sliceBreaker,
+				 * in such case, original deadEndRecordList need to restore in trial.
+				 */
 				if(overskipTrial!=null){
 					trial.setOverskipLength(overskipTrial.getOverskipLength());
 					trial.setDeadEndRecordList(overskipTrial.getDeadEndRecordList());
@@ -587,9 +591,10 @@ public class Simulator  {
 						overskipTrial.setCheckList(trial.getCheckList());
 						return overskipTrial;	
 					}
-					else{
+					else{ 
 						int start = 0;
 						currentNode = sliceBreakers.get(start);
+						/*
 						while(occuringNodes.contains(currentNode) && start<breakerTrialLimit){
 							start++;
 							currentNode = sliceBreakers.get(start);
@@ -598,6 +603,30 @@ public class Simulator  {
 						for(int i=start+1; i<sliceBreakers.size(); i++){
 							backupDebuggingState(sliceBreakers.get(i), stack, visitedStates, checkingList, null);							
 						}
+						*/
+						/* LLT: number of found sliceBreakers can be less than the trial limit. 
+						 * */
+						while (occuringNodes.contains(currentNode) && start < (sliceBreakers.size() - 1)) {
+							start++;
+							currentNode = sliceBreakers.get(start);
+						}
+						if (!occuringNodes.contains(currentNode)) {
+							for (int i = start + 1; i < sliceBreakers.size(); i++) {
+								backupDebuggingState(sliceBreakers.get(i), stack, visitedStates, checkingList, null);
+							}
+							continue;
+						}
+						currentNode = null;
+						if (!stack.isEmpty()) {
+							/* LLT: checkingList is not recovered? */
+							currentNode = recoverFromBackedState(stack, pairList, matcher, occuringNodes, checkingList,
+									typeChecker);
+						}
+						if (currentNode == null) {
+							overskipTrial.setCheckList(trial.getCheckList());
+							return overskipTrial;
+						}
+						//
 					}
 				}
 				else{
