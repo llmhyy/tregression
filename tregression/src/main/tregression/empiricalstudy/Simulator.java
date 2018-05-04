@@ -450,9 +450,15 @@ public class Simulator  {
 				 * LLT: this also can happen for the stage of verifying sliceBreaker,
 				 * in such case, original deadEndRecordList need to restore in trial.
 				 */
+				currentNode = recoverFromBackedState(stack, pairList, matcher, occuringNodes, checkingList,
+						typeChecker);
+				if (currentNode != null) {
+					continue;
+				}
 				if(overskipTrial!=null){
 					trial.setOverskipLength(overskipTrial.getOverskipLength());
 					trial.setDeadEndRecordList(overskipTrial.getDeadEndRecordList());
+					trial.setCheckList(overskipTrial.getCheckList());
 				}
 				return trial;
 			}
@@ -616,14 +622,9 @@ public class Simulator  {
 							}
 							continue;
 						}
-						currentNode = null;
-						if (!stack.isEmpty()) {
-							/* LLT: checkingList is not recovered? */
-							currentNode = recoverFromBackedState(stack, pairList, matcher, occuringNodes, checkingList,
-									typeChecker);
-						}
+						currentNode = recoverFromBackedState(stack, pairList, matcher, occuringNodes, checkingList,
+								typeChecker);
 						if (currentNode == null) {
-							overskipTrial.setCheckList(trial.getCheckList());
 							return overskipTrial;
 						}
 						//
@@ -638,8 +639,13 @@ public class Simulator  {
 		
 	}
 	
+	
+	
 	private TraceNode recoverFromBackedState(Stack<DebuggingState> stack, PairList pairList2, DiffMatcher matcher2,
 			Set<TraceNode> occuringNodes, List<StepOperationTuple> checkingList, StepChangeTypeChecker typeChecker) {
+		if (stack.isEmpty()) {
+			return null;
+		}
 		DebuggingState backedState = stack.pop();
 		checkingList = backedState.checkingList;
 		TraceNode currentNode = backedState.currentNode;
