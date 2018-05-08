@@ -43,8 +43,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 				int skippedNum = 0;
 				int endNum = 500;
 				
-//				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
-//				int[] bugNum = {26, 133, 65, 106, 38, 27};
+				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
+				int[] bugNum = {26, 133, 65, 106, 38, 27};
 				
 				String fileName = "defects4j0.old.xlsx";
 				Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
@@ -59,9 +59,9 @@ public class AllDefects4jHandler extends AbstractHandler {
 				
 //				String[] projects = {"Lang"};
 //				int[] bugNum = {65};
-				
-				String[] projects = {"Time"};
-				int[] bugNum = {2};
+//				
+//				String[] projects = {"Time"};
+//				int[] bugNum = {2};
 				
 				String prefix = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH) + File.separator;
 				
