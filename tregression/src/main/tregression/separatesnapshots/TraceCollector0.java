@@ -80,6 +80,7 @@ public class TraceCollector0 {
 		
 		RunningResult rs = new RunningResult(trace, null, null, precheckInfo, appClassPath);
 		rs.setRunningTrace(trace);
+		rs.setRunningInfo(info);
 		return rs;
 	}
 	
