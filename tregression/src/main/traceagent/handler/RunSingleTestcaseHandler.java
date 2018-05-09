@@ -46,7 +46,7 @@ public class RunSingleTestcaseHandler extends RunAllDefects4jHandler {
 					Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName,
 							Integer.valueOf(id));
 					AgentDefects4jReport report = new AgentDefects4jReport(new File("Agent_Defect4j_tc.xlsx"));
-					runSingleBug(config, report, tcs);
+					runSingleBug(config, report, tcs, new TestcaseFilter(null), monitor);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

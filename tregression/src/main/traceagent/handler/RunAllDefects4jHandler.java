@@ -15,16 +15,20 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import microbat.codeanalysis.runtime.InstrumentationExecutor;
+import microbat.codeanalysis.runtime.PreCheckInformation;
+import microbat.codeanalysis.runtime.RunningInformation;
 import microbat.preference.AnalysisScopePreference;
+import microbat.util.MicroBatUtil;
 import sav.common.core.utils.SingleTimer;
+import sav.strategies.dto.AppJavaClassPath;
 import traceagent.report.AgentDefects4jReport;
 import traceagent.report.BugCaseTrial;
 import traceagent.report.BugCaseTrial.TraceTrial;
 import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
 import tregression.handler.PathConfiguration;
-import tregression.separatesnapshots.RunningResult;
-import tregression.separatesnapshots.TraceCollector0;
+import tregression.separatesnapshots.AppClassPathInitializer;
 
 /**
  * @author LLT
@@ -39,6 +43,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					runAll(monitor);
+					System.out.println("Complete!");
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -53,21 +58,26 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 		int[] bugNum = {26, 133, 65, 106, 38, 27};
 		AgentDefects4jReport report = new AgentDefects4jReport(new File("Agent_Defect4j.xlsx"));
+		TestcaseFilter filter = new TestcaseFilter("Agent_Defect4j.xlsx");
 		for (int i = 0; i < projects.length; i++) {
 			String project = projects[i];
 			for (int j = 0; j < bugNum[i]; j++) {
+				if (monitor.isCanceled()) {
+					return;
+				}
 				System.out.println("working on the " + j + "th bug of " + project + " project.");
 				Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(project, j);
 				try {
-					runSingleBug(d4jConfig, report, null);
-				} catch (IOException e) {
+					runSingleBug(d4jConfig, report, null, filter, monitor);
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 
-	void runSingleBug(Defects4jProjectConfig config, AgentDefects4jReport report, List<TestCase> tcs)
+	void runSingleBug(Defects4jProjectConfig config, AgentDefects4jReport report, List<TestCase> tcs,
+			TestcaseFilter filter, IProgressMonitor monitor)
 			throws IOException {
 		String projectName = config.projectName;
 		String bugID = String.valueOf(config.bugID);
@@ -79,21 +89,38 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		List<String> includeLibs = AnalysisScopePreference.getIncludedLibList();
 		List<String> excludeLibs = AnalysisScopePreference.getExcludedLibList();
 		for (TestCase tc : tcs) {
+			if (monitor.isCanceled()) {
+				return;
+			}
 			BugCaseTrial trial = new BugCaseTrial(projectName, bugID, tc);
-			TraceCollector0 buggyCollector = new TraceCollector0(true);
-			TraceCollector0 correctCollector = new TraceCollector0(false);
 			SingleTimer timer = SingleTimer.start("run buggy test");
-			RunningResult buggyRS = buggyCollector.run(buggyPath, tc, config, true, true, includeLibs, excludeLibs);
-			TraceTrial bugTrace = new TraceTrial(buggyPath, buggyRS, timer.getExecutionTime());
-			
+			if (!filter.filter(projectName, bugID, tc.getName(), true)) {
+				TraceTrial bugTrace = run(buggyPath, tc, config, includeLibs, excludeLibs, true);
+				trial.setBugTrace(bugTrace);
+			}
 			timer.startNewTask("run correct test");
-			RunningResult correctRs = correctCollector.run(fixPath, tc, config, true, true, includeLibs, excludeLibs);
-			TraceTrial correctTrace = new TraceTrial(fixPath, correctRs, timer.getExecutionTime());
+			if (!filter.filter(projectName, bugID, tc.getName(), false)) {
+				TraceTrial correctTrace = run(fixPath, tc, config, includeLibs, excludeLibs, false);
+				trial.setFixedTrace(correctTrace);
+			}
 			
-			trial.setBugTrace(bugTrace);
-			trial.setFixedTrace(correctTrace);
 			report.record(trial);
 		}
 	}
 	
+	public TraceTrial run(String workingDir, TestCase tc, Defects4jProjectConfig config, List<String> includeLibs,
+			List<String> excludeLibs, boolean isBuggy) {
+		SingleTimer timer = SingleTimer.start(String.format("run %s test", isBuggy ? "buggy" : "correct"));
+		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);
+		
+		String traceDir = MicroBatUtil.generateTraceDir(config.projectName, String.valueOf(config.bugID));
+		String traceName = isBuggy ? "bug" : "fix";
+		InstrumentationExecutor executor = new InstrumentationExecutor(appClassPath, traceDir, traceName, includeLibs,
+				excludeLibs);
+		
+		RunningInformation info = executor.run();
+		PreCheckInformation precheckInfo = executor.getPrecheckInfo();
+		
+		return new TraceTrial(workingDir, precheckInfo, info, timer.getExecutionTime(), isBuggy);
+	}
 }

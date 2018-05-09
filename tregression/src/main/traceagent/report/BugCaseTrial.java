@@ -6,8 +6,6 @@ package traceagent.report;
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.codeanalysis.runtime.RunningInformation;
 import tregression.empiricalstudy.TestCase;
-import tregression.empiricalstudy.TrialGenerator0;
-import tregression.separatesnapshots.RunningResult;
 
 /**
  * @author LLT
@@ -53,20 +51,21 @@ public class BugCaseTrial {
 	public void setBugTrace(TraceTrial bugTrace) {
 		this.bugTrace = bugTrace;
 	}
-
+	
 	public static class TraceTrial {
 		private PreCheckInformation precheckInfo;
 		private RunningInformation runningInfo;
-		private String failureType;
 		private long executionTime;
 		private String workingDir;
+		private boolean isBuggy;
 
-		public TraceTrial(String workingDir, RunningResult rs, long executionTime) {
-			this.precheckInfo = rs.getPrecheckInfo();
-			this.runningInfo = rs.getRunningInfo();
-			this.failureType = TrialGenerator0.getProblemType(rs.getRunningType());
+		public TraceTrial(String workingDir, PreCheckInformation precheckInfo, RunningInformation runningInfo,
+				long executionTime, boolean isBuggy) {
+			this.precheckInfo = precheckInfo;
+			this.runningInfo = runningInfo;
 			this.executionTime = executionTime;
 			this.workingDir = workingDir;
+			this.isBuggy = isBuggy;
 		}
 
 		public PreCheckInformation getPrecheckInfo() {
@@ -85,14 +84,6 @@ public class BugCaseTrial {
 			this.runningInfo = runningInfo;
 		}
 
-		public String getFailureType() {
-			return failureType;
-		}
-
-		public void setFailureType(String failureType) {
-			this.failureType = failureType;
-		}
-
 		public long getExecutionTime() {
 			return executionTime;
 		}
@@ -103,6 +94,36 @@ public class BugCaseTrial {
 
 		public String getWorkingDir() {
 			return workingDir;
+		}
+		
+		public String getSummary() {
+			StringBuilder sb = new StringBuilder();
+			if (precheckInfo == null) {
+				return "Precheck fails!";
+			}
+			if (precheckInfo.isOverLong()) {
+				sb.append("Overlong!; ");
+			} else if (precheckInfo.isUndeterministic()) {
+				sb.append("Undeterministic!; ");
+			} else if (runningInfo != null) {
+				boolean pass = "true;no fail".equals(runningInfo.getProgramMsg());
+				if ((isBuggy && pass)
+						|| (!isBuggy && !pass)) {
+					sb.append("Test result is not correct!; ");
+				}
+				if (precheckInfo.getStepNum() != runningInfo.getCollectedSteps()) {
+					sb.append("Steps mismatched! {")
+						.append(runningInfo.getCollectedSteps() - precheckInfo.getStepNum())
+						.append("}; ");
+				}
+			} else {
+				sb.append("NormalRun fails!");
+			}
+			String sumary = sb.toString();
+			if (sumary.isEmpty()) {
+				sumary = "Ok";
+			}
+			return sumary;
 		}
 	}
 }

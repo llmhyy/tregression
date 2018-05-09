@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import microbat.codeanalysis.runtime.PreCheckInformation;
+import microbat.codeanalysis.runtime.RunningInformation;
 import sav.common.core.utils.StringUtils;
 import traceagent.report.BugCaseTrial.TraceTrial;
 import traceagent.report.excel.AbstractExcelWriter;
@@ -30,6 +31,7 @@ public class AgentDefects4jReport extends AbstractExcelWriter {
 		Sheet sheet = null;
 		sheet = getSheet("testcase", AgentDefects4jHeaders.values(), 0);
 		int rowNum = sheet.getLastRowNum() + 1;
+//		int rowNum = sheet.getFirstRowNum() + sheet.getPhysicalNumberOfRows() + 1;
 		Row row = sheet.createRow(rowNum++);
 		writeTestcase(row, trial, trial.getBugTrace(), true);
 		row = sheet.createRow(rowNum);
@@ -38,6 +40,9 @@ public class AgentDefects4jReport extends AbstractExcelWriter {
 	}
 
 	private void writeTestcase(Row row, BugCaseTrial trial, TraceTrial traceTrial, boolean isBuggy) {
+		if (traceTrial == null) {
+			return;
+		}
 		addCell(row, PROJECT_NAME, trial.getProjectName());
 		addCell(row, BUG_ID, trial.getBugID());
 		addCell(row, TEST_CASE, trial.getTc().getName());
@@ -45,15 +50,21 @@ public class AgentDefects4jReport extends AbstractExcelWriter {
 		addCell(row, WORKING_DIR, traceTrial.getWorkingDir());
 		addCell(row, EXECUTION_TIME, traceTrial.getExecutionTime());
 		PreCheckInformation precheck = traceTrial.getPrecheckInfo();
-		addCell(row, THREAD_NUM, precheck.getThreadNum());
-		addCell(row, VISITED_LOCS, precheck.getLoadedClasses().size());
-		addCell(row, OVERLONG_METHODS, StringUtils.join(precheck.getOverLongMethods(), "; "));
-		addCell(row, IS_OVERLONG, precheck.isOverLong());
-		addCell(row, IS_PASSTEST, precheck.isPassTest());
-		addCell(row, LOADED_CLASSES, precheck.getLoadedClasses().size());
-		addCell(row, PRECHECK_STEP_NUM, precheck.getStepNum());
-		addCell(row, RUN_STEP_NUM, traceTrial.getRunningInfo().getCollectedSteps());
-		addCell(row, PROGRAM_MSG, traceTrial.getRunningInfo().getProgramMsg());
+		if (precheck != null) {
+			addCell(row, THREAD_NUM, precheck.getThreadNum());
+			addCell(row, VISITED_LOCS, precheck.getVisitedLocations().size());
+			addCell(row, OVERLONG_METHODS, StringUtils.join(precheck.getOverLongMethods(), "; "));
+			addCell(row, IS_OVERLONG, precheck.isOverLong());
+			addCell(row, IS_PASSTEST, precheck.isPassTest());
+			addCell(row, LOADED_CLASSES, precheck.getLoadedClasses().size());
+			addCell(row, PRECHECK_STEP_NUM, precheck.getStepNum());
+		}
+		RunningInformation runningInfo = traceTrial.getRunningInfo();
+		if (runningInfo != null) {
+			addCell(row, RUN_STEP_NUM, runningInfo.getCollectedSteps());
+			addCell(row, PROGRAM_MSG, runningInfo.getProgramMsg());
+		}
+		addCell(row, SUMMARY, traceTrial.getSummary());
 	}
 	
 	

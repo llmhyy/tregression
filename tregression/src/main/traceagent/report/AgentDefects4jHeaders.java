@@ -24,7 +24,8 @@ public enum AgentDefects4jHeaders implements ExcelHeader {
 	LOADED_CLASSES,
 	PRECHECK_STEP_NUM,
 	RUN_STEP_NUM,
-	PROGRAM_MSG;
+	PROGRAM_MSG,
+	SUMMARY;
 	
 	@Override
 	public String getTitle() {
