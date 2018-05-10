@@ -79,7 +79,7 @@ public class RetrieveAllDefect4jRegressionsHandler extends RegressionRetrieveHan
 					
 					String deadEndType = t.getDeadEndType();
 					if(deadEndType==null || 
-							!(deadEndType.equals("control") || deadEndType.equals("data"))){
+							!(deadEndType.equals("control") /*|| deadEndType.equals("data")*/)){
 						continue;
 					}
 					
