@@ -44,7 +44,7 @@ public class TrialGenerator0 {
 	private DiffMatcher cachedDiffMatcher;
 	private PairList cachedPairList;
 
-	private String getProblemType(int type) {
+	public static String getProblemType(int type) {
 		switch (type) {
 		case OVER_LONG:
 			return "some trace is over long";
@@ -440,26 +440,6 @@ public class TrialGenerator0 {
 	}
 
 	public List<TestCase> retrieveD4jFailingTestCase(String buggyVersionPath) throws IOException {
-		String failingFile = buggyVersionPath + File.separator + "failing_tests";
-		File file = new File(failingFile);
-
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-
-		List<TestCase> list = new ArrayList<>();
-		String line = null;
-		while ((line = reader.readLine()) != null) {
-			if (line.startsWith("---")) {
-				String testClass = line.substring(line.indexOf(" ") + 1, line.indexOf("::"));
-				String testMethod = line.substring(line.indexOf("::") + 2, line.length());
-
-				TestCase tc = new TestCase(testClass, testMethod);
-				list.add(tc);
-			}
-
-		}
-
-		reader.close();
-
-		return list;
+		return Defects4jProjectConfig.retrieveD4jFailingTestCase(buggyVersionPath);
 	}
 }

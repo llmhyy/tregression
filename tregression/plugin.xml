@@ -38,6 +38,16 @@
              id="tregression.command.retrieveAllDefect4jRegression"
              name="Retrieve All Defect4j Regressions">
        </command>
+       <command
+             defaultHandler="traceagent.handler.RunAllDefects4jHandler"
+             id="traceagent.command.runAllDefects4jBugs"
+             name="Run All Defect4j Bugs">
+       </command>
+       <command
+             defaultHandler="traceagent.handler.RunSingleTestcaseHandler"
+             id="traceagent.command.runSingleDefects4jBugs"
+             name="Run Single Defect4j Bug">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -122,6 +132,19 @@
             <command
                   commandId="tregression.command.retrieveAllDefect4jRegression"
                   label="Retrieve All Defect4j Regressions"
+                  style="push">
+            </command>
+         </menu>
+         <menu
+               label="Trace Agent">
+            <command
+                  commandId="traceagent.command.runAllDefects4jBugs"
+                  label="Run All Defects4j"
+                  style="push">
+            </command>
+            <command
+                  commandId="traceagent.command.runSingleDefects4jBugs"
+                  label="Run Single Testcase"
                   style="push">
             </command>
          </menu>

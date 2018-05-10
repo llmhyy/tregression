@@ -570,8 +570,6 @@ public class Simulator  {
 							trial.setOverskipLength(len);
 						}
 					}
-					
-					
 				}
 				
 				List<TraceNode> sliceBreakers = new ArrayList<>();
@@ -600,18 +598,6 @@ public class Simulator  {
 					else{ 
 						int start = 0;
 						currentNode = sliceBreakers.get(start);
-						/*
-						while(occuringNodes.contains(currentNode) && start<breakerTrialLimit){
-							start++;
-							currentNode = sliceBreakers.get(start);
-						}
-						
-						for(int i=start+1; i<sliceBreakers.size(); i++){
-							backupDebuggingState(sliceBreakers.get(i), stack, visitedStates, checkingList, null);							
-						}
-						*/
-						/* LLT: number of found sliceBreakers can be less than the trial limit. 
-						 * */
 						while (occuringNodes.contains(currentNode) && start < (sliceBreakers.size() - 1)) {
 							start++;
 							currentNode = sliceBreakers.get(start);
@@ -627,7 +613,6 @@ public class Simulator  {
 						if (currentNode == null) {
 							return overskipTrial;
 						}
-						//
 					}
 				}
 				else{

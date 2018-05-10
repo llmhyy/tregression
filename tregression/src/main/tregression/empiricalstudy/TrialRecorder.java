@@ -70,11 +70,11 @@ public class TrialRecorder {
 		}
 	}
 	
-	public void export(List<EmpiricalTrial> trialList, String project, int bugID) {
-		export(trialList, project, String.valueOf(bugID), null);
+	public File export(List<EmpiricalTrial> trialList, String project, int bugID) {
+		return export(trialList, project, String.valueOf(bugID), null);
 	}
 	
-	public void export(List<EmpiricalTrial> trialList, String project, String bugID, String mutationType) {
+	public File export(List<EmpiricalTrial> trialList, String project, String bugID, String mutationType) {
 		
 		if(!trialList.isEmpty()) {
 			for(EmpiricalTrial trial: trialList) {
@@ -97,6 +97,7 @@ public class TrialRecorder {
 			
 			initializeNewExcel();
 		}
+		return file;
 	}
 	
 	private void fillRowInformation(Row row, EmpiricalTrial trial, String project, String bugID, String mutationType) {
