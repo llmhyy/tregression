@@ -234,6 +234,13 @@ public class RootCauseFinder {
 				addCausality(otherControlDom, !stepW.isOnBefore, causalityGraph, cNode, null);
 			}
 			else if(changeType.getType()==StepChangeType.IDT){
+				if(step.isException()){
+					TraceNode nextStep = step.getStepInPrevious();
+					addWorkNode(workList, nextStep, !stepW.isOnBefore);
+					addCausality(nextStep, stepW.isOnBefore, causalityGraph, resultNode, null);
+					continue;
+				}
+				
 				if(stepW.isOnBefore){
 					if(!this.stopStepsOnBuggyTrace.contains(step)){
 						this.stopStepsOnBuggyTrace.add(step);
