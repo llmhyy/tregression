@@ -237,6 +237,18 @@ public class StepChangeTypeChecker {
 				}
 			}
 		}
+		else{
+			String thisType = thisVar.getStringValue().substring(0, thisVar.getStringValue().indexOf("@"));
+			if(!thatVar.getStringValue().contains("@")){
+				isContentMatch = false;
+			}
+			else{
+				String thatType = thatVar.getStringValue().substring(0, thatVar.getStringValue().indexOf("@"));
+				if(!thisType.equals(thatType)){
+					isContentMatch = false;
+				}
+			}
+		}
 		
 		return isAssignChainMatch && isContentMatch;
 	}
