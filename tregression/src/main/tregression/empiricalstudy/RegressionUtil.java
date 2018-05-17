@@ -14,12 +14,14 @@ import org.apache.bcel.generic.FieldInstruction;
 import org.apache.bcel.generic.INVOKEINTERFACE;
 import org.apache.bcel.generic.Instruction;
 import org.apache.bcel.generic.InstructionHandle;
+import org.apache.bcel.generic.InstructionList;
 import org.apache.bcel.generic.InvokeInstruction;
 import org.apache.bcel.generic.LocalVariableInstruction;
 import org.apache.bcel.generic.Type;
 
 import microbat.codeanalysis.bytecode.ByteCodeParser;
 import microbat.codeanalysis.bytecode.MethodFinderByLine;
+import microbat.codeanalysis.bytecode.MethodFinderBySignature;
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
@@ -55,7 +57,7 @@ public class RegressionUtil {
 				Method method = finder.getMethod();
 				List<InstructionHandle> insList = finder.getHandles();
 				
-				List<String> visitedLibClasses = findInvokedLibClasses(rangeStep, insList, method, precheckInfo);
+				List<String> visitedLibClasses = findInvokedLibClasses(rangeStep, insList, finder.getJavaClass(), method, precheckInfo);
 				for(String str: visitedLibClasses){
 					if(!classes.contains(str)){
 						classes.add(str);
@@ -106,9 +108,22 @@ public class RegressionUtil {
 		return list;
 	}
 	
-	private static List<String> findInvokedLibClasses(TraceNode step, List<InstructionHandle> insList, Method method,
+	
+	/**
+	 * step is the trace step being analyzed
+	 * insList is the list of instructions corresponding to the step
+	 * method is the method where the step resides in
+	 * precheckInfo contains the information of all the loaded classes in the runtime.
+	 * 
+	 * @param step
+	 * @param insList
+	 * @param method
+	 * @param precheckInfo
+	 * @return
+	 */
+	private static List<String> findInvokedLibClasses(TraceNode step, List<InstructionHandle> insList, JavaClass clazz, Method method,
 			PreCheckInformation precheckInfo) {
-		List<String> list = new ArrayList<>();
+		List<String> collectedIncludedClasses = new ArrayList<>();
 		if(step.getInvocationChildren().isEmpty()){
 			TraceNode stepOver = step.getStepOverPrevious();
 			
@@ -118,43 +133,52 @@ public class RegressionUtil {
 				ignoreMethod = invocationChild.getMethodSign();
 			}
 			
-			ConstantPoolGen cGen = new ConstantPoolGen(method.getConstantPool());
-			for(InstructionHandle handle: insList){
-				Instruction ins = handle.getInstruction();
-				
-				if(isForReadWriteVariable(ins)){
-					String className = parseClassName(ins, method, cGen);
-					if(className != null){
-						if(className.equals("java.lang.Object") || className.equals("java.lang.String")){
-							continue;
-						}
-						
-						if(SignatureUtils.isSignature(className)){
-							className = SignatureUtils.signatureToName(className);
-							className = className.replace("[]", "");
-						}
-						
-						appendSuperClass(className, step.getTrace().getAppJavaClassPath(), list);
-						
-						if(!list.contains(className)){
-							list.add(className);
-						}	
-						
-					}
-				}
-				else if(ins instanceof InvokeInstruction){
-					InvokeInstruction iIns = (InvokeInstruction)ins;
-					
-					String invokedMethodName = iIns.getMethodName(cGen);
-					if(invokedMethodName.equals(method.getName())){
-						continue;
-					}
-					
-					if(ignoreMethod!=null && ignoreMethod.contains(invokedMethodName)){
-						continue;
-					}
-					
-					String className = iIns.getClassName(cGen);
+			AppJavaClassPath appPath = step.getTrace().getAppJavaClassPath();
+			analyzeIncludedClasses(collectedIncludedClasses, clazz, method, appPath, precheckInfo, 3, insList, ignoreMethod);
+			
+		}
+		
+		return collectedIncludedClasses;
+	}
+	
+	/**
+	 * 
+	 * ignoreMethod is used to identify library classes, which can be set as null.
+	 * 
+	 * @param collectedIncludedClasses
+	 * @param method
+	 * @param insList
+	 * @param appPath
+	 * @param ignoreMethod
+	 * @param precheckInfo
+	 * @return
+	 */
+	private static void analyzeIncludedClasses(List<String> collectedIncludedClasses, JavaClass clazz, Method method,  
+			AppJavaClassPath appPath, PreCheckInformation precheckInfo, int cascadeLimit,
+			List<InstructionHandle> insList, String ignoreMethod){
+		
+		assert(cascadeLimit>=1);
+		cascadeLimit--;
+		if(cascadeLimit==0){
+			return;
+		}
+		
+		ConstantPoolGen cGen = new ConstantPoolGen(method.getConstantPool());
+		
+		if(insList==null){
+			InstructionList iList = new InstructionList(method.getCode().getCode());
+			insList = new ArrayList<>();
+			for(InstructionHandle handle: iList){
+				insList.add(handle);
+			}
+		}
+		
+		for(InstructionHandle handle: insList){
+			Instruction ins = handle.getInstruction();
+			
+			if(isForReadWriteVariable(ins)){
+				String className = parseClassName(ins, method, cGen);
+				if(className != null){
 					if(className.equals("java.lang.Object") || className.equals("java.lang.String")){
 						continue;
 					}
@@ -164,32 +188,76 @@ public class RegressionUtil {
 						className = className.replace("[]", "");
 					}
 					
-					appendSuperClass(className, step.getTrace().getAppJavaClassPath(), list);
+					appendSuperClass(className, appPath, collectedIncludedClasses);
 					
-					if(!list.contains(className)){
-						list.add(className);
+					if(!collectedIncludedClasses.contains(className)){
+						collectedIncludedClasses.add(className);
 					}	
-					
-					//add implementation class
-					if(ins instanceof INVOKEINTERFACE) {
-						List<String> loadedClassStrings = precheckInfo.getLoadedClasses();
-						List<String> implementations = findImplementation(className, 
-								loadedClassStrings, step.getTrace().getAppJavaClassPath());
-						
-						for(String implementation: implementations) {
-							list.add(implementation);
-							appendSuperClass(className, step.getTrace().getAppJavaClassPath(), list);
-						}
-					}
 					
 				}
 			}
-			
+			else if(ins instanceof InvokeInstruction){
+				InvokeInstruction iIns = (InvokeInstruction)ins;
+				
+				String invokedMethodName = iIns.getMethodName(cGen);
+				
+				if(ignoreMethod!=null && ignoreMethod.contains(invokedMethodName)){
+					continue;
+				}
+				
+				String className = iIns.getClassName(cGen);
+				if(className.equals("java.lang.Object") || className.equals("java.lang.String")){
+					continue;
+				}
+				
+				if(invokedMethodName.equals(method.getName()) 
+						&& iIns.getSignature(cGen).equals(method.getSignature()) 
+						&& className.equals(clazz.getClassName())){
+					continue;
+				}
+				
+				if(SignatureUtils.isSignature(className)){
+					className = SignatureUtils.signatureToName(className);
+					className = className.replace("[]", "");
+				}
+				
+				appendSuperClass(className, appPath, collectedIncludedClasses);
+				
+				if(!collectedIncludedClasses.contains(className)){
+					collectedIncludedClasses.add(className);
+				}	
+				
+				//add implementation class
+				if(ins instanceof INVOKEINTERFACE) {
+					List<String> loadedClassStrings = precheckInfo.getLoadedClasses();
+					List<String> implementations = findImplementation(className, 
+							loadedClassStrings, appPath);
+					
+					for(String implementation: implementations) {
+						collectedIncludedClasses.add(implementation);
+						appendSuperClass(className, appPath, collectedIncludedClasses);
+					}
+				}
+				
+				MethodFinderBySignature finder = findInvokedMethod(className, invokedMethodName, iIns.getSignature(cGen), appPath);
+				Method invokedMethod = finder.getMethod();
+				JavaClass invokedClass = finder.getJavaClass();
+				if(invokedMethod!=null){
+					analyzeIncludedClasses(collectedIncludedClasses, invokedClass, invokedMethod, appPath, 
+							precheckInfo, cascadeLimit, null, null);					
+				}
+			}
 		}
-		
-		return list;
 	}
 	
+	private static MethodFinderBySignature findInvokedMethod(String className, String invokedMethodName, String signature,
+			AppJavaClassPath appPath) {
+		MethodFinderBySignature finder = new MethodFinderBySignature(invokedMethodName + signature);
+		ByteCodeParser.parse(className, finder, appPath);
+		
+		return finder;
+	}
+
 	@SuppressWarnings("deprecation")
 	private static String parseClassName(Instruction ins, Method method, ConstantPoolGen cGen) {
 		if(ins instanceof LocalVariableInstruction){
