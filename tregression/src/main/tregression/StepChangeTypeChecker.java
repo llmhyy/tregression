@@ -142,6 +142,7 @@ public class StepChangeTypeChecker {
 		
 		List<VarValue> synonymVarList = findSynonymousVarList(thisStep, thatStep, thisVar, 
 				isOnBeforeTrace, pairList, matcher);
+		System.currentTimeMillis();
 		if(synonymVarList.isEmpty()){
 			return new VarMatch(false, false, null);
 		}
@@ -361,13 +362,15 @@ public class StepChangeTypeChecker {
 					TraceNode thatDom = thatStep.getTrace().findLastestNodeDefiningVariable(
 							thatParentID, thatStep.getOrder());
 					
-					int thisOrder = (thisDom==null) ? 0 : thisDom.getOrder();
-					int thatOrder = (thatDom==null) ? 0 : thatDom.getOrder();
-					thisParent.setVarID(thisParentID+":"+thisOrder);
-					thatParent.setVarID(thatParentID+":"+thatOrder);
+					boolean isReferenceValueMatch = pairList.isPair(thisDom, thatDom, isOnBeforeTrace);
 					
-					boolean isReferenceValueMatch = isReferenceValueMatch(thisParent, thatParent, thisDom, thatDom, 
-							isOnBeforeTrace, pairList, matcher);
+//					int thisOrder = (thisDom==null) ? 0 : thisDom.getOrder();
+//					int thatOrder = (thatDom==null) ? 0 : thatDom.getOrder();
+//					thisParent.setVarID(thisParentID+":"+thisOrder);
+//					thatParent.setVarID(thatParentID+":"+thatOrder);
+//					
+//					boolean isReferenceValueMatch = isReferenceValueMatch(thisParent, thatParent, thisDom, thatDom, 
+//							isOnBeforeTrace, pairList, matcher);
 					
 					if(isReferenceValueMatch){
 						
