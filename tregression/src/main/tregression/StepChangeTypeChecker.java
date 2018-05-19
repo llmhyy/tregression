@@ -142,7 +142,6 @@ public class StepChangeTypeChecker {
 		
 		List<VarValue> synonymVarList = findSynonymousVarList(thisStep, thatStep, thisVar, 
 				isOnBeforeTrace, pairList, matcher);
-		System.currentTimeMillis();
 		if(synonymVarList.isEmpty()){
 			return new VarMatch(false, false, null);
 		}
@@ -156,7 +155,6 @@ public class StepChangeTypeChecker {
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
 				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
 						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
-				System.currentTimeMillis();
 				if(isReferenceValueMatch){
 					return new VarMatch(true, true, thatVar);
 				}
@@ -225,9 +223,9 @@ public class StepChangeTypeChecker {
 					isContentMatch = true;
 				}
 				
-				if(thisVar.getVarName().equals("this") && thatVar.getVarName().equals("this")){
-					isContentMatch = true;
-				}
+//				if(thisVar.getVarName().equals("this") && thatVar.getVarName().equals("this")){
+//					isContentMatch = true;
+//				}
 			}
 			else{
 				if(isIgnoreVarName(thisVar.getVarName()) && isIgnoreVarName(thatVar.getVarName())){
