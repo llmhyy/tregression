@@ -239,15 +239,14 @@ public class RegressionUtil {
 					}
 				}
 				
-				if(!(ins instanceof INVOKEINTERFACE)){
-					MethodFinderBySignature finder = findInvokedMethod(className, invokedMethodName, iIns.getSignature(cGen), appPath);
-					Method invokedMethod = finder.getMethod();
-					JavaClass invokedClass = finder.getJavaClass();
-					if(invokedMethod!=null){
-						analyzeIncludedClasses(collectedIncludedClasses, invokedClass, invokedMethod, appPath, 
-								precheckInfo, cascadeLimit, null, null);					
-					}					
-				}
+				
+				MethodFinderBySignature finder = findInvokedMethod(className, invokedMethodName, iIns.getSignature(cGen), appPath);
+				Method invokedMethod = finder.getMethod();
+				JavaClass invokedClass = finder.getJavaClass();
+				if(invokedMethod!=null && !(ins instanceof INVOKEINTERFACE) && !invokedMethod.isAbstract()){
+					analyzeIncludedClasses(collectedIncludedClasses, invokedClass, invokedMethod, appPath, 
+							precheckInfo, cascadeLimit, null, null);					
+				}	
 			}
 		}
 	}
