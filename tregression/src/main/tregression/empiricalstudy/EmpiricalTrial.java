@@ -48,6 +48,7 @@ public class EmpiricalTrial {
 	private List<DeadEndRecord> deadEndRecordList = new ArrayList<>();
 	
 	private boolean isMultiThread;
+	private long executionTime;
 
 	public EmpiricalTrial(int bugType, int overskipLength, TraceNode rootcauseNode, 
 			List<StepOperationTuple> checkList, int traceCollectionTime,
@@ -311,6 +312,13 @@ public class EmpiricalTrial {
 	private List<DeadEndData> deadEndDataList = new ArrayList<>();
 
 	private boolean breakSlice;
-	
+
+	public long getExecutionTime() {
+		return executionTime;
+	}
+
+	public void setExecutionTime(long executionTime) {
+		this.executionTime = executionTime;
+	}
 
 }

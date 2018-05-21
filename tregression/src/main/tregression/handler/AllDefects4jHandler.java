@@ -16,9 +16,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import experiment.utils.report.ExperimentRegressionTest;
-import experiment.utils.report.TextComparationRule;
+import experiment.utils.report.ExperimentReportComparisonReporter;
+import experiment.utils.report.rules.SimulatorComparisonRule;
+import experiment.utils.report.rules.TextComparisonRule;
 import microbat.Activator;
+import sav.common.core.utils.FileUtils;
+import sav.common.core.utils.SingleTimer;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
@@ -72,6 +75,10 @@ public class AllDefects4jHandler extends AbstractHandler {
 						
 						for(int j=1; j<=bugNum[i]; j++) {
 							
+							SingleTimer timer = SingleTimer.start("generateTrials");
+							if (monitor.isCanceled()) {
+								return Status.OK_STATUS;
+							}
 							count++;
 							if(count <= skippedNum || count > endNum) {
 								continue;
@@ -150,8 +157,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 							&& new File(oldDefects4jFile).exists()) {
 						Map<String, List<String>> keys = new HashMap<String, List<String>>();
 						keys.put("data", Arrays.asList("project", "bug_ID"));
-						ExperimentRegressionTest.reportChange("defects4j_regressiontest.xlsx", oldDefects4jFile, defects4jFile.getAbsolutePath(), 
-									Arrays.asList(new TextComparationRule(null)), keys);
+						ExperimentReportComparisonReporter.reportChange("defects4j_compare.xlsx", oldDefects4jFile, defects4jFile.getAbsolutePath(), 
+									Arrays.asList(new TextComparisonRule(null), new SimulatorComparisonRule()), keys);
 					}
 				}
 					

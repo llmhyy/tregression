@@ -3,43 +3,45 @@
  */
 package traceagent.handler;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
-import experiment.utils.report.excel.ExcelUtils;
 import sav.common.core.utils.StringUtils;
-import traceagent.report.AgentDefects4jHeaders;
 
 /**
  * @author LLT
  *
  */
 public class TestcaseFilter {
-	private static final String SEPARATOR = "_";
-	private List<String> tcs;
+	private List<IFilter> filters;
+	private boolean disable;
 	
-	public TestcaseFilter(String excelFile) {
-		if (excelFile == null || !new File(excelFile).exists()) {
-			tcs = Collections.emptyList();
-		} else {
-			tcs = ExcelUtils.collectKeys(excelFile, "testcase", 
-					Arrays.asList(AgentDefects4jHeaders.PROJECT_NAME.name(),
-							AgentDefects4jHeaders.BUG_ID.name(),
-							AgentDefects4jHeaders.TEST_CASE.name(),
-							AgentDefects4jHeaders.IS_BUG_TRACE.name()),
-					SEPARATOR);
+	public TestcaseFilter(boolean enable) {
+		this.disable = !enable;
+		if (enable) {
+			filters = new ArrayList<>();
+//			filters.add(new DiscardedCasesFilter("defects4j0.old.xlsx"));
+			filters.add(new SucceededCasesFilter("Agent_Defect4j.xlsx"));
+//			filters.add(new TestcaseFilterByName());
 		}
 	}
 
 	public boolean filter(String projectName, String bugID, String name, boolean isBuggy) {
-		String caseId = StringUtils.join(SEPARATOR, projectName, bugID, name, isBuggy);
-		boolean filtered = tcs.contains(caseId);
-		if (filtered) {
-			System.out.println("ignore: " + caseId);
+		if (disable) {
+			return false;
+		}
+		boolean filtered = false;
+		for (IFilter filter : filters) {
+			filtered = filter.filter(projectName, bugID, name, isBuggy);
+			if (filtered) {
+				System.out.println("ignore: " + StringUtils.join("_", projectName, bugID, name, isBuggy));
+				break;
+			}
 		}
 		return filtered;
 	}
 	
+	public static interface IFilter {
+		public boolean filter(String projectName, String bugID, String name, boolean isBuggy);
+	}
 }

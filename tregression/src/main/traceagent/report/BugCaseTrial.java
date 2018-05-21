@@ -17,6 +17,7 @@ public class BugCaseTrial {
 	private TestCase tc;
 	private TraceTrial fixedTrace;
 	private TraceTrial bugTrace;
+	private String exception;
 
 	public BugCaseTrial(String projectName, String bugID, TestCase tc) {
 		this.projectName = projectName;
@@ -52,6 +53,14 @@ public class BugCaseTrial {
 		this.bugTrace = bugTrace;
 	}
 	
+	public String getException() {
+		return exception;
+	}
+
+	public void setException(String exception) {
+		this.exception = exception;
+	}
+
 	public static class TraceTrial {
 		private PreCheckInformation precheckInfo;
 		private RunningInformation runningInfo;
@@ -117,7 +126,7 @@ public class BugCaseTrial {
 						.append("}; ");
 				}
 			} else {
-				sb.append("NormalRun fails!");
+				sb.append("Missing runningInfo!");
 			}
 			String sumary = sb.toString();
 			if (sumary.isEmpty()) {

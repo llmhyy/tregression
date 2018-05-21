@@ -15,6 +15,7 @@ import microbat.preference.AnalysisScopePreference;
 import microbat.recommendation.DebugState;
 import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
+import sav.common.core.utils.SingleTimer;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
@@ -69,6 +70,7 @@ public class TrialGenerator0 {
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, boolean useSliceBreaker,
 			boolean enableRandom, int breakLimit, boolean requireVisualization, 
 			boolean allowMultiThread, Defects4jProjectConfig config, String testcase) {
+		SingleTimer timer = SingleTimer.start("generateTrial");
 		List<TestCase> tcList;
 		EmpiricalTrial trial = null;
 		TestCase workingTC = null;
@@ -98,7 +100,7 @@ public class TrialGenerator0 {
 			trial = EmpiricalTrial.createDumpTrial("runtime exception occurs");
 			trial.setTestcase(workingTC.testClass + "::" + workingTC.testMethod);
 		}
-
+		trial.setExecutionTime(timer.getExecutionTime());
 		List<EmpiricalTrial> list = new ArrayList<>();
 		list.add(trial);
 		return list;

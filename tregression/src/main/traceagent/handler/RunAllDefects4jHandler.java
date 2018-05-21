@@ -5,7 +5,10 @@ package traceagent.handler;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -15,6 +18,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import experiment.utils.report.ExperimentReportComparisonReporter;
+import experiment.utils.report.rules.TextComparisonRule;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.codeanalysis.runtime.RunningInformation;
@@ -41,11 +46,22 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		Job job = new Job("Run Trace Agent On Defects4j") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				String reportFile = "Agent_Defect4j.xlsx";
 				try {
-					runAll(monitor);
+					runAll(reportFile, monitor);
 					System.out.println("Complete!");
 				} catch (Exception e) {
 					e.printStackTrace();
+				} finally {
+					String oldDefects4jFile = "Agent_Defect4j_benchmark.xlsx";
+					File newReport = new File(reportFile);
+					if (newReport != null && newReport.exists() && oldDefects4jFile != null
+							&& new File(oldDefects4jFile).exists()) {
+						Map<String, List<String>> keys = new HashMap<String, List<String>>();
+						keys.put("testcase", Arrays.asList("PROJECT_NAME", "BUG_ID", "TEST_CASE", "IS_BUG_TRACE"));
+						ExperimentReportComparisonReporter.reportChange("Agent_Defect4j_compare.xlsx", oldDefects4jFile, newReport.getAbsolutePath(),
+								Arrays.asList(new TextComparisonRule(null)), keys);
+					}
 				}
 				return Status.OK_STATUS;
 			}
@@ -54,14 +70,17 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		return null;
 	}
 
-	protected void runAll(IProgressMonitor monitor) throws Exception {
+	protected void runAll(String reportFile, IProgressMonitor monitor) throws Exception {
 		String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 		int[] bugNum = {26, 133, 65, 106, 38, 27};
-		AgentDefects4jReport report = new AgentDefects4jReport(new File("Agent_Defect4j.xlsx"));
-		TestcaseFilter filter = new TestcaseFilter("Agent_Defect4j.xlsx");
+		AgentDefects4jReport report = new AgentDefects4jReport(new File(reportFile));
+		TestcaseFilter filter = new TestcaseFilter(false); 
 		for (int i = 0; i < projects.length; i++) {
 			String project = projects[i];
-			for (int j = 0; j < bugNum[i]; j++) {
+			if (monitor.isCanceled()) {
+				return;
+			}
+			for (int j = 0; j <= bugNum[i]; j++) {
 				if (monitor.isCanceled()) {
 					return;
 				}
@@ -120,7 +139,6 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		
 		RunningInformation info = executor.run();
 		PreCheckInformation precheckInfo = executor.getPrecheckInfo();
-		
 		return new TraceTrial(workingDir, precheckInfo, info, timer.getExecutionTime(), isBuggy);
 	}
 }

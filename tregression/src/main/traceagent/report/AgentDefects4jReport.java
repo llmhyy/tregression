@@ -28,21 +28,20 @@ public class AgentDefects4jReport extends AbstractExcelWriter {
 	}
 
 	public void record(BugCaseTrial trial) throws IOException {
-		Sheet sheet = null;
-		sheet = getSheet("testcase", AgentDefects4jHeaders.values(), 0);
+		Sheet sheet = getSheet("testcase", AgentDefects4jHeaders.values(), 0);
 		int rowNum = sheet.getLastRowNum() + 1;
-//		int rowNum = sheet.getFirstRowNum() + sheet.getPhysicalNumberOfRows() + 1;
-		Row row = sheet.createRow(rowNum++);
-		writeTestcase(row, trial, trial.getBugTrace(), true);
-		row = sheet.createRow(rowNum);
-		writeTestcase(row, trial, trial.getFixedTrace(), false);
+		if (trial.getBugTrace() != null) {
+			Row row = sheet.createRow(rowNum++);
+			writeTestcase(row, trial, trial.getBugTrace(), true);
+		}
+		if (trial.getFixedTrace() != null) {
+			Row row = sheet.createRow(rowNum);
+			writeTestcase(row, trial, trial.getFixedTrace(), false);
+		}
 		writeWorkbook();
 	}
 
 	private void writeTestcase(Row row, BugCaseTrial trial, TraceTrial traceTrial, boolean isBuggy) {
-		if (traceTrial == null) {
-			return;
-		}
 		addCell(row, PROJECT_NAME, trial.getProjectName());
 		addCell(row, BUG_ID, trial.getBugID());
 		addCell(row, TEST_CASE, trial.getTc().getName());

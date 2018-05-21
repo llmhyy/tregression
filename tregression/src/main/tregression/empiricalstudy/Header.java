@@ -5,6 +5,7 @@ public enum Header {
 	BUG_ID ("bug_ID"),
 	MUTATION_TYPE ("mutation type"),
 	TESTCASE("test case"),
+	EXECTION_TIME("excution time"),
 	FOUND_CAUSE ("found cause"),
 	GENERAL_CAUSE ("general cause"),
 	
