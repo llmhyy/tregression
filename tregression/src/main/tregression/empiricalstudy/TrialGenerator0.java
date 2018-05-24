@@ -328,6 +328,7 @@ public class TrialGenerator0 {
 				
 				isDataFlowComplete = true;
 				System.out.println("start simulating debugging...");
+				time1 = System.currentTimeMillis();
 				List<EmpiricalTrial> trials0 = simulator.detectMutatedBug(buggyTrace, correctTrace, diffMatcher, 0);
 				time2 = System.currentTimeMillis();
 				int simulationTime = (int) (time2 - time1);
