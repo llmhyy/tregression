@@ -2,7 +2,9 @@ package tregression.tracematch;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import microbat.algorithm.graphdiff.GraphDiff;
 import microbat.algorithm.graphdiff.HierarchyGraphDiffer;
@@ -58,7 +60,17 @@ public class ControlPathBasedTraceMatcher{
 		List<TraceNode> topList = trace.getTopMethodLevelNodes();
 		virtualNode.setInvocationChildren(topList);
 		
-		IndexTreeNode root = new IndexTreeNode(virtualNode);
+//		Map<TraceNode, IndexTreeNode> linkMap = new TreeMap<>(new Comparator<TraceNode>() {
+//
+//			@Override
+//			public int compare(TraceNode o1, TraceNode o2) {
+//				return o1.getOrder()-o2.getOrder();
+//			}
+//		});
+
+		Map<TraceNode, IndexTreeNode> linkMap = new HashMap<TraceNode, IndexTreeNode>();
+		
+		IndexTreeNode root = new IndexTreeNode(virtualNode, linkMap);
 		
 		return root;
 	}

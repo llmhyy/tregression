@@ -28,7 +28,7 @@ public abstract class IndexTreeMatcher implements Matcher{
 	 */
 	protected DiffMatcher diffMatcher;
 	
-	protected Map<Integer, MatchingGraphPair> pairMap = new HashMap<>();
+//	protected Map<Integer, MatchingGraphPair> pairMap = new HashMap<>();
 	protected Map<String, List<String>> lineMap = new HashMap<>();
 	
 	@Override
@@ -36,14 +36,14 @@ public abstract class IndexTreeMatcher implements Matcher{
 			List<? extends GraphNode> childrenAfter);
 
 	protected IndexTreeNode findMostSimilarNode(GraphNode gNodeBefore, List<? extends GraphNode> childrenAfter, 
-			List<MatchingGraphPair> pairList) {
+			Map<Integer, MatchingGraphPair> pairMap) {
 		IndexTreeNode mostSimilarNode = null;
 		double sim = -1;
 		
 		IndexTreeNode itNodeBefore = (IndexTreeNode)gNodeBefore;
 		for(GraphNode gNodeAfter: childrenAfter){
 			IndexTreeNode itNodeAfter = (IndexTreeNode)gNodeAfter;
-			if(hasMatched(pairList, itNodeAfter)){
+			if(hasMatched(pairMap, itNodeAfter)){
 				continue;
 			}
 			
@@ -69,79 +69,87 @@ public abstract class IndexTreeMatcher implements Matcher{
 		return mostSimilarNode;
 	}
 	
-	private boolean hasMatched(List<MatchingGraphPair> pairList, IndexTreeNode itNodeAfter) {
+	private boolean hasMatched(Map<Integer, MatchingGraphPair> pairMap, IndexTreeNode itNodeAfter) {
 		MatchingGraphPair p = pairMap.get(itNodeAfter.getTraceNode().getOrder());
 		return p!=null;
-//		for(MatchingGraphPair pair: pairList){
-//			if(pair.getNodeAfter()==itNodeAfter){
-//				return true;
-//			}
-//		}
-//		return false;
 	}
 	
 	private boolean isControlPathCompatible(IndexTreeNode itNodeBefore, IndexTreeNode itNodeAfter) {
-		List<ControlNode> pathBefore = itNodeBefore.getControlPath();
-		List<ControlNode> pathAfter = itNodeAfter.getControlPath();
-//		System.currentTimeMillis();
-		
-		/**
-		 * Here is an optimization:
-		 * If parent control node has been recorded in pair list, we do not need to compare their control
-		 * path any more. 
-		 */
-		MatchingGraphPair pair = null;
-		int size = pathAfter.size();
-		for(int i=size-1; i>=0; i--) {
-			ControlNode cNode = pathAfter.get(i);
-			MatchingGraphPair p = pairMap.get(cNode.getOrder());
-			if(p!=null) {
-				pair = p;
-				break;
-			}
-		}
-		
-		int cursorBefore = 0;
-		int cursorAfter = 0;
-		if(pair!=null) {
-			cursorBefore = ((IndexTreeNode)pair.getNodeBefore()).getOrder();
-			cursorAfter = ((IndexTreeNode)pair.getNodeAfter()).getOrder();
-		}
-		
-		
-		for(ControlNode nodeBefore: pathBefore){
-			if(nodeBefore.getOrder()<=cursorBefore) {
-				continue;
-			}
-			
-			if(nodeBefore.getAppearOrder() > 1){
-				boolean flag = canFindMatchingNode(nodeBefore, pathAfter);
-				if(!flag){
+		List<IndexTreeNode> pathBefore = itNodeBefore.getControlPath();
+		List<IndexTreeNode> pathAfter = itNodeAfter.getControlPath();
+
+		if(pathBefore.size()==pathAfter.size()){
+			for(int i=0; i<pathBefore.size(); i++){
+				IndexTreeNode nodeBefore = pathBefore.get(i);
+				IndexTreeNode nodeAfter = pathAfter.get(i);
+				
+				if(!nodeBefore.isMatchableWith(nodeAfter, diffMatcher)){
 					return false;
 				}
 			}
-		}
-		
-		for(ControlNode nodeAfter: pathAfter){
-			if(nodeAfter.getOrder()<=cursorAfter) {
-				continue;
-			}
 			
-			if(nodeAfter.getAppearOrder() > 1){
-				boolean flag = canFindMatchingNode(nodeAfter, pathBefore);
-				if(!flag){
-					return false;
-				}
-			}
+			return true;
 		}
 		
+		return false;
 		
-		return true;
+//		/**
+//		 * Here is an optimization:
+//		 * If parent control node has been recorded in pair list, we do not need to compare their control
+//		 * path any more. 
+//		 */
+//		MatchingGraphPair pair = null;
+//		int size = pathAfter.size();
+//		for(int i=size-1; i>=0; i--) {
+//			ControlNode cNode = pathAfter.get(i);
+//			MatchingGraphPair p = pairMap.get(cNode.getOrder());
+//			if(p!=null) {
+//				pair = p;
+//				break;
+//			}
+//		}
+//		
+//		int cursorBefore = 0;
+//		int cursorAfter = 0;
+//		if(pair!=null) {
+//			cursorBefore = ((IndexTreeNode)pair.getNodeBefore()).getOrder();
+//			cursorAfter = ((IndexTreeNode)pair.getNodeAfter()).getOrder();
+//		}
+//		
+//		
+//		for(ControlNode nodeBefore: pathBefore){
+//			if(nodeBefore.getOrder()<=cursorBefore) {
+//				continue;
+//			}
+//			
+//			if(nodeBefore.getAppearOrder() > 1){
+//				boolean flag = canFindMatchingNode(nodeBefore, pathAfter);
+//				if(!flag){
+//					return false;
+//				}
+//			}
+//		}
+//		
+//		for(ControlNode nodeAfter: pathAfter){
+//			if(nodeAfter.getOrder()<=cursorAfter) {
+//				continue;
+//			}
+//			
+//			if(nodeAfter.getAppearOrder() > 1){
+//				boolean flag = canFindMatchingNode(nodeAfter, pathBefore);
+//				if(!flag){
+//					return false;
+//				}
+//			}
+//		}
+//		
+//		
+//		return true;
 	}
 	
-	private boolean canFindMatchingNode(ControlNode node, List<ControlNode> path) {
+	private boolean canFindMatchingNode(IndexTreeNode node, List<IndexTreeNode> path) {
 		Map<BreakPoint, Boolean> map = new HashMap<>();
-		for(ControlNode thatNode: path){
+		for(IndexTreeNode thatNode: path){
 			BreakPoint point = thatNode.getBreakPoint();
 			Boolean flag = map.get(point);
 			if(flag==null){

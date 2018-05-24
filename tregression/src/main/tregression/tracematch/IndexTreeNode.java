@@ -2,6 +2,7 @@ package tregression.tracematch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -12,19 +13,71 @@ import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
 import microbat.util.JavaUtil;
+import tregression.separatesnapshots.DiffMatcher;
 
 public class IndexTreeNode implements GraphNode {
 
+	/**
+	 * IndexTreeNode is a wrapper for TraceNode. However, it cannot wrap relations of a TraceNode,
+	 * e.g., invoke parent, loop parent, ..., etc. Therefore, if we need to get the invoke/loop
+	 * parent of an IndexTreeNode, we may need to link back to its TraceNode. 
+	 * 
+	 * The problem is when we get the invoke parent of a TraceNode, how do we know its IndexTreeNode?
+	 * A naive way is to create a new IndexTreeNode object, which wastes a great amout of memory. 
+	 * 
+	 * To this end, we keep a global linkMap to track a TraceNode to its IndexTreeNode to save the memory.
+	 */
+	private Map<TraceNode, IndexTreeNode> linkMap;
 	
-	public IndexTreeNode(TraceNode node){
+	private int appearOrder = -1;
+	
+	public IndexTreeNode(TraceNode node, Map<TraceNode, IndexTreeNode> map){
 		this.node = node;
+		this.linkMap = map;
+	}
+	
+	@Override
+	public String toString() {
+		int order = node.getOrder();
+		String file = node.getBreakPoint().getClassCanonicalName();
+		file = file.substring(file.lastIndexOf(".")+1, file.length());
+		int lineNumber = node.getBreakPoint().getLineNumber();
+		
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("[");
+		buffer.append("file: " + file + ", ");
+		buffer.append("line: " + lineNumber + ", ");
+		buffer.append("time: " + appearOrder + ", ");
+		buffer.append("node order: " + order + "]");
+		
+		return buffer.toString();
+	}
+	
+	public boolean isMatchableWith(IndexTreeNode thatNode, DiffMatcher diffMatcher){
+		BreakPoint thisPoint = node.getBreakPoint();
+		BreakPoint thatPoint = thatNode.getBreakPoint();
+		
+		if(this.appearOrder==thatNode.getAppearOrder()){
+			if(diffMatcher.isMatch(thisPoint, thatPoint)){
+				return true;				
+			}
+		}
+		
+		return false;
+	}
+	
+	public IndexTreeNode fetchIndexTreeNode(TraceNode traceNode){
+		IndexTreeNode iNode = linkMap.get(traceNode);
+		if(iNode == null){
+			iNode = new IndexTreeNode(traceNode, linkMap);
+			linkMap.put(traceNode, iNode);
+		}
+		
+		return iNode;
 	}
 	
 	private TraceNode node;
 	
-	public String toString(){
-		return node.toString();
-	}
 	
 	public int getLineNumber(){
 		return node.getLineNumber();
@@ -35,7 +88,7 @@ public class IndexTreeNode implements GraphNode {
 		List<TraceNode> invocationChildren = node.getInvocationChildren();
 		List<IndexTreeNode> children = new ArrayList<>();
 		for(TraceNode invocationChild: invocationChildren){
-			IndexTreeNode child = new IndexTreeNode(invocationChild);
+			IndexTreeNode child = fetchIndexTreeNode(invocationChild);
 			children.add(child);
 		}
 		return children;
@@ -46,29 +99,33 @@ public class IndexTreeNode implements GraphNode {
 		TraceNode invocationParent = node.getInvocationParent();
 		
 		List<IndexTreeNode> parents = new ArrayList<>();
-		parents.add(new IndexTreeNode(invocationParent));
+		parents.add(fetchIndexTreeNode(invocationParent));
 		
 		return parents;
 	}
 	
 	private IndexTreeNode getIndexParent(){
+		
 		TraceNode invocationParent = node.getInvocationParent();
 		TraceNode controlDominator = node.getControlDominator();
 		
+		IndexTreeNode parent = null;
 		if(invocationParent==null && controlDominator==null){
 			return null;
 		}
 		else if(invocationParent==null && controlDominator!=null){
-			return new IndexTreeNode(controlDominator);
+			parent = fetchIndexTreeNode(controlDominator);
 		}
 		else if(invocationParent!=null && controlDominator==null){
-			return new IndexTreeNode(invocationParent);
+			parent = fetchIndexTreeNode(invocationParent);
 		}
 		else{
 			TraceNode largerNode = (invocationParent.getOrder() > controlDominator.getOrder())?
 					invocationParent : controlDominator;
-			return new IndexTreeNode(largerNode);
+			parent = fetchIndexTreeNode(largerNode);
 		}
+		
+		return parent;
 	}
 	
 	private int order=-1;
@@ -79,8 +136,8 @@ public class IndexTreeNode implements GraphNode {
 		return this.order;
 	}
 	
-	private List<ControlNode> controlPath;
-	public List<ControlNode> getControlPath(){
+	private List<IndexTreeNode> controlPath;
+	public List<IndexTreeNode> getControlPath(){
 		if(controlPath!=null){
 			return controlPath;
 		}
@@ -95,7 +152,7 @@ public class IndexTreeNode implements GraphNode {
 			parent = parent.getIndexParent();
 		}
 		
-		List<ControlNode> controlNodeList = new ArrayList<>();
+		List<IndexTreeNode> controlNodeList = new ArrayList<>();
 		Map<BreakPoint, Integer> map = new HashMap<>();
 		for(int i=path.size()-1; i>=0; i--){
 			IndexTreeNode node = path.get(i);
@@ -109,8 +166,10 @@ public class IndexTreeNode implements GraphNode {
 			map.put(point, appearingTime);
 			//int appearingTime = calculateAppearingTime(controlNodeList, node);
 			
-			ControlNode controlNode = new ControlNode(node, appearingTime);
-			controlNodeList.add(controlNode);
+			node.setAppearOrder(appearingTime);
+			if(appearingTime>1){
+				controlNodeList.add(node);				
+			}
 		}
 		
 		this.controlPath = controlNodeList;
@@ -131,18 +190,6 @@ public class IndexTreeNode implements GraphNode {
 		
 		
 		return p.getLoopScope().containLocation(point);
-	}
-
-	private int calculateAppearingTime(List<ControlNode> controlNodeList, IndexTreeNode node) {
-		
-		int count = 0;
-		for(ControlNode cNode: controlNodeList){
-			if(cNode.getItNode().getBreakPoint().equals(node.getBreakPoint())){
-				count++;
-			}
-		}
-		
-		return count+1;
 	}
 
 	private boolean hasSameInvocationParent(IndexTreeNode indexTreeNode, IndexTreeNode parent) {
@@ -197,6 +244,22 @@ public class IndexTreeNode implements GraphNode {
 
 	public void setTraceNode(TraceNode node) {
 		this.node = node;
+	}
+
+	public Map<TraceNode, IndexTreeNode> getLinkMap() {
+		return linkMap;
+	}
+
+	public void setLinkMap(Map<TraceNode, IndexTreeNode> linkMap) {
+		this.linkMap = linkMap;
+	}
+
+	public int getAppearOrder() {
+		return appearOrder;
+	}
+
+	public void setAppearOrder(int appearOrder) {
+		this.appearOrder = appearOrder;
 	}
 
 }
