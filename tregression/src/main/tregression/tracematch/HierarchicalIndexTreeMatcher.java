@@ -73,9 +73,19 @@ public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 		
 		Map<Integer, MatchingGraphPair> pairMap = new HashMap<>();
 		
+		Map<BreakPoint, List<IndexTreeNode>> buckets = new HashMap<>();
+		for(IndexTreeNode afterNode: treeAfter){
+			List<IndexTreeNode> list = buckets.get(afterNode.getBreakPoint());
+			if(list == null){
+				list = new ArrayList<>();
+			}
+			list.add(afterNode);
+			buckets.put(afterNode.getBreakPoint(), list);
+		}
+		
 		List<MatchingGraphPair> pairs = new ArrayList<>();
 		for(IndexTreeNode nodeBefore: treeBefore){
-			List<IndexTreeNode> nodeAfterList = filterByMatchedLocation(nodeBefore, treeAfter);
+			List<IndexTreeNode> nodeAfterList = filterByMatchedLocation(nodeBefore, buckets);
 			IndexTreeNode matchedNodeAfter = findMostSimilarNode(nodeBefore, nodeAfterList, pairMap);
 			if(null != matchedNodeAfter){
 				MatchingGraphPair pair = new MatchingGraphPair(nodeBefore, matchedNodeAfter);
@@ -93,24 +103,17 @@ public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 		}
 	}
 
-	private List<IndexTreeNode> filterByMatchedLocation(IndexTreeNode nodeBefore, List<IndexTreeNode> treeAfter) {
+	private List<IndexTreeNode> filterByMatchedLocation(IndexTreeNode nodeBefore, Map<BreakPoint, List<IndexTreeNode>> buckets) {
 		List<IndexTreeNode> list = new ArrayList<>();
 		BreakPoint beforePoint = nodeBefore.getBreakPoint();
 		
-		Map<BreakPoint, Boolean> map = new HashMap<>();
-		for(IndexTreeNode node: treeAfter){
-			BreakPoint afterPoint = node.getBreakPoint();
-			
-			Boolean isMatch = map.get(afterPoint);
-			if(isMatch==null){
-				isMatch = diffMatcher.isMatch(beforePoint, afterPoint);
-				map.put(afterPoint, isMatch);
-			}
-			
+		for(BreakPoint afterPoint: buckets.keySet()){
+			boolean isMatch = diffMatcher.isMatch(beforePoint, afterPoint);
 			if(isMatch){
-				list.add(node);
+				list.addAll(buckets.get(afterPoint));
 			}
 		}
+		
 		return list;
 	}
 

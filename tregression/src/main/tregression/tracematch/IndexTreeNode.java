@@ -141,7 +141,6 @@ public class IndexTreeNode implements GraphNode {
 		if(controlPath!=null){
 			return controlPath;
 		}
-		System.currentTimeMillis();
 		List<IndexTreeNode> path = new ArrayList<>();
 		IndexTreeNode parent = this.getIndexParent();
 		
