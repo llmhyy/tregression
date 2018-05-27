@@ -141,9 +141,9 @@ public class IndexTreeNode implements GraphNode {
 		if(controlPath!=null){
 			return controlPath;
 		}
+		
 		List<IndexTreeNode> path = new ArrayList<>();
 		IndexTreeNode parent = this.getIndexParent();
-		
 		while(parent != null && hasSameInvocationParent(this, parent)){
 			if(isLoopControlBy(parent)){
 				path.add(parent);				
@@ -185,10 +185,11 @@ public class IndexTreeNode implements GraphNode {
 			cu.accept(lhParser);
 			
 			p.setLoopScope(lhParser.extractScope());
+			
 		}
 		
 		
-		return p.getLoopScope().containLocation(point);
+		return p.getLoopScope().isLoop() && p.getLoopScope().containLocation(point);
 	}
 
 	private boolean hasSameInvocationParent(IndexTreeNode indexTreeNode, IndexTreeNode parent) {
