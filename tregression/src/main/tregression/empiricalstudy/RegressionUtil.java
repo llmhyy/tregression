@@ -26,6 +26,7 @@ import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.util.PrimitiveUtils;
 import sav.common.core.utils.SignatureUtils;
 import sav.strategies.dto.AppJavaClassPath;
 
@@ -177,8 +178,9 @@ public class RegressionUtil {
 			Instruction ins = handle.getInstruction();
 			
 			if(isForReadWriteVariable(ins)){
-				String className = parseClassName(ins, method, cGen);
-				if(className != null){
+				String className = parseClassName(ins, method, cGen);				
+				if(className != null && !PrimitiveUtils.isPrimitiveType(className)){
+					className = className.replace("[]", "");
 					if(className.equals("java.lang.Object") || className.equals("java.lang.String")){
 						continue;
 					}
@@ -186,6 +188,10 @@ public class RegressionUtil {
 					if(SignatureUtils.isSignature(className)){
 						className = SignatureUtils.signatureToName(className);
 						className = className.replace("[]", "");
+					}
+					
+					if(PrimitiveUtils.isPrimitiveType(className)){
+						continue;
 					}
 					
 					appendSuperClass(className, appPath, collectedIncludedClasses);
@@ -219,6 +225,10 @@ public class RegressionUtil {
 				if(SignatureUtils.isSignature(className)){
 					className = SignatureUtils.signatureToName(className);
 					className = className.replace("[]", "");
+				}
+				
+				if(PrimitiveUtils.isPrimitiveType(className)){
+					continue;
 				}
 				
 				appendSuperClass(className, appPath, collectedIncludedClasses);
