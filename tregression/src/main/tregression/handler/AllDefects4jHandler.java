@@ -49,7 +49,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
 				int[] bugNum = {26, 133, 65, 106, 38, 27};
 				
-				String fileName = "defects4j0.old.xlsx";
+//				String fileName = "defects4j0.old.xlsx";
+				String fileName = "benchmark" + File.separator + "ben.xlsx";
 				Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
 				try {
 					map = new TrialReader().readXLSX(fileName);
@@ -95,10 +96,10 @@ public class AllDefects4jHandler extends AbstractHandler {
 									continue;
 								}
 								
-								String deadEndType = t.getDeadEndType();
-								if(deadEndType==null || !(deadEndType.equals("control") || deadEndType.equals("data"))){
-									continue;
-								}
+//								String deadEndType = t.getDeadEndType();
+//								if(deadEndType==null || !(deadEndType.equals("control") || deadEndType.equals("data"))){
+//									continue;
+//								}
 								
 //							String exception = t.getException();
 //							if(exception==null || !exception.contains("over long")){

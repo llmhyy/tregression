@@ -61,8 +61,8 @@ public class TrialReader {
 							trial.setException(exception);
 							break;
 						case 19:
-							String deadEndType = cell.getStringCellValue();
-							trial.setDeadEndType(deadEndType);
+//							String deadEndType = cell.getStringCellValue();
+//							trial.setDeadEndType(deadEndType);
 							break;
 						}
 					}
