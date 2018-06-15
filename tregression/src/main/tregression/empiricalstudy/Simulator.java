@@ -60,18 +60,16 @@ public class Simulator  {
 	
 	protected TraceNode findObservedFault(TraceNode node, Trace buggyTrace, Trace correctTrace){
 		StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-		boolean everInvokedByTearDownMethod = previousNodeInvokedByTearDown(node);
+		TraceNode firstTearDownNode = firstPreviousNodeInvokedByTearDown(node);
+		if(firstTearDownNode==null){
+			return node;
+		}
+		node = firstTearDownNode.getStepInPrevious();
+//		System.currentTimeMillis();
+		
 		while(node != null) {
 			StepChangeType changeType = checker.getType(node, true, pairList, matcher);
-			if (everInvokedByTearDownMethod && isInvokedByTearDownMethod(node)) {
-				node = node.getStepInPrevious();
-				continue;
-			}
-			else if(everInvokedByTearDownMethod && previousNodeInvokedByTearDown(node)){
-				node = node.getStepInPrevious();
-				continue;
-			}
-			else if(changeType.getType()==StepChangeType.CTL) {
+			if(changeType.getType()==StepChangeType.CTL) {
 				TraceNode cDom = node.getInvocationMethodOrDominator();
 				if(cDom==null){
 					if(node.isException()) {
@@ -106,31 +104,38 @@ public class Simulator  {
 		return null;
 	}
 	
-	private boolean previousNodeInvokedByTearDown(TraceNode node) {
+	private TraceNode firstPreviousNodeInvokedByTearDown(TraceNode node) {
 		TraceNode prev = node.getStepInPrevious();
 		if(prev==null) {
-			return false;
+			return null;
 		}
+		
+		TraceNode returnNode = null;
 		
 		boolean isInvoked = isInvokedByTearDownMethod(prev);
 		if(isInvoked){
-			return true;
+			returnNode = prev;
 		}
 		
-		while(!isInvoked){
+		while(prev != null){
 			prev = prev.getStepInPrevious();
 			if(prev==null){
-				return false;
+				return null;
 			}
 			
 			isInvoked = isInvokedByTearDownMethod(prev);
 			if(isInvoked){
-				return true;
+				if(returnNode==null){
+					returnNode = prev;
+				}
+				else if(prev.getOrder()<returnNode.getOrder()){
+					returnNode = prev;					
+				}
 			}
 		}
 		
 		
-		return false;
+		return returnNode;
 	}
 
 	private boolean isInvokedByTearDownMethod(TraceNode node) {
