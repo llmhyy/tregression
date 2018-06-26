@@ -76,6 +76,7 @@ public class TraceCollector0 {
 //		}
 		
 		Trace trace = info.getTrace();
+		trace.constructLoopParentRelation();
 		trace.setSourceVersion(isBuggy);
 		
 		RunningResult rs = new RunningResult(trace, null, null, precheckInfo, appClassPath);

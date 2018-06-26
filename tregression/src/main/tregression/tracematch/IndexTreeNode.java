@@ -85,7 +85,8 @@ public class IndexTreeNode implements GraphNode {
 	
 	@Override
 	public List<? extends GraphNode> getChildren() {
-		List<TraceNode> invocationChildren = node.getInvocationChildren();
+//		List<TraceNode> invocationChildren = node.getInvocationChildren();
+		List<TraceNode> invocationChildren = node.getAbstractChildren();
 		List<IndexTreeNode> children = new ArrayList<>();
 		for(TraceNode invocationChild: invocationChildren){
 			IndexTreeNode child = fetchIndexTreeNode(invocationChild);
@@ -96,7 +97,8 @@ public class IndexTreeNode implements GraphNode {
 
 	@Override
 	public List<? extends GraphNode> getParents() {
-		TraceNode invocationParent = node.getInvocationParent();
+//		TraceNode invocationParent = node.getInvocationParent();
+		TraceNode invocationParent = node.getAbstractionParent();
 		
 		List<IndexTreeNode> parents = new ArrayList<>();
 		parents.add(fetchIndexTreeNode(invocationParent));
