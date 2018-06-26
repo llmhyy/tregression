@@ -1,6 +1,8 @@
 package tregression.tracematch;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +116,12 @@ public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 			}
 		}
 		
+		Collections.sort(list, new Comparator<IndexTreeNode>(){
+			@Override
+			public int compare(IndexTreeNode o1, IndexTreeNode o2) {
+				return o1.getOrder() - o2.getOrder();
+			}
+		});
 		return list;
 	}
 
