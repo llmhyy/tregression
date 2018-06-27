@@ -82,7 +82,7 @@ public class TrialGenerator0 {
 			}
 			
 			for (TestCase tc : tcList) {
-				System.out.println("working on test case " + tc.testClass + "#" + tc.testMethod);
+				System.out.println("#####working on test case " + tc.testClass + "#" + tc.testMethod);
 				workingTC = tc;
 
 				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
