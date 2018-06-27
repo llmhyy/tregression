@@ -352,27 +352,27 @@ public class TrialGenerator {
 			Trace buggyTrace) {
 		if(config.projectName.equals("Chart")&&config.bugID==6){
 			TraceNode node = buggyTrace.getExecutionList().get(297);
-			simulator.setObservedFault(node);
+			simulator.addObservedFault(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==78){
 			TraceNode node = buggyTrace.getExecutionList().get(640);
-			simulator.setObservedFault(node);
+			simulator.addObservedFault(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==40){
 			TraceNode node = buggyTrace.getExecutionList().get(11268);
-			simulator.setObservedFault(node);
+			simulator.addObservedFault(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==49){
 			TraceNode node = buggyTrace.getExecutionList().get(449);
-			simulator.setObservedFault(node);
+			simulator.addObservedFault(node);
 		}
 		
 		if(config.projectName.equals("Math")&&config.bugID==1){
 			TraceNode node = buggyTrace.getExecutionList().get(1478);
-			simulator.setObservedFault(node);
+			simulator.addObservedFault(node);
 		}
 	}
 

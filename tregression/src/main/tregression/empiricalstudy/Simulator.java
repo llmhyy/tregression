@@ -35,7 +35,7 @@ public class Simulator  {
 
 	protected PairList pairList;
 	protected DiffMatcher matcher;
-	private TraceNode observedFault;
+	private List<TraceNode> observedFaultList = new ArrayList<>();
 	
 	private boolean useSliceBreaker;
 	private boolean enableRandom;
@@ -64,7 +64,6 @@ public class Simulator  {
 		if(firstTearDownNode!=null){
 			node = firstTearDownNode.getStepInPrevious();
 		}
-//		System.currentTimeMillis();
 		
 		while(node != null) {
 			StepChangeType changeType = checker.getType(node, true, pairList, matcher);
@@ -169,12 +168,31 @@ public class Simulator  {
 		this.pairList = pairList;
 		this.matcher = matcher;
 		TraceNode initialStep = buggyTrace.getLatestNode();
-		observedFault = findObservedFault(initialStep, buggyTrace, correctTrace);
+		TraceNode lastObservableFault = findObservedFault(initialStep, buggyTrace, correctTrace);
+		
+		if(lastObservableFault!=null){
+			observedFaultList.add(lastObservableFault);
+
+			StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+			TraceNode node = lastObservableFault.getStepOverPrevious();
+			
+			int times = 5;
+			while(observedFaultList.size() < times && node!= null){
+				
+				StepChangeType changeType = checker.getType(node, true, pairList, matcher);
+				if(changeType.getType()!=StepChangeType.IDT){
+					observedFaultList.add(node);
+				}
+				
+				node = node.getStepOverPrevious();
+			}
+		}
 	}
 
 	public List<EmpiricalTrial> detectMutatedBug(Trace buggyTrace, Trace correctTrace, DiffMatcher matcher,
 			int optionSearchLimit) throws SimulationFailException {
-		if (observedFault != null) {
+		List<EmpiricalTrial> trials = null;
+		for (TraceNode observedFault: observedFaultList) {
 			RootCauseFinder finder = new RootCauseFinder();
 			
 			long start = System.currentTimeMillis();
@@ -182,7 +200,6 @@ public class Simulator  {
 			long end = System.currentTimeMillis();
 			int checkTime = (int) (end-start);
 
-			List<EmpiricalTrial> trials = null;
 			System.out.println("use slice breaker: " + useSliceBreaker);
 			if(useSliceBreaker) {
 				trials = startSimulationWithCachedState(observedFault, buggyTrace, correctTrace, getPairList(), matcher, finder);
@@ -192,15 +209,23 @@ public class Simulator  {
 			}
 			
 			if(trials!=null) {
+				boolean rootcauseFind = false;
 				for(EmpiricalTrial trial: trials) {
+					if(!rootcauseFind && trial.getRootcauseNode()!=null){
+						rootcauseFind = true;
+					}
 					trial.setSimulationTime(checkTime);
 				}
+				
+				if(rootcauseFind){
+					observedFaultList.clear();
+					observedFaultList.add(observedFault);
+					return trials;
+				}
 			}
-			
-			return trials;
 		}
 
-		return null;
+		return trials;
 	}
 
 	private List<EmpiricalTrial> startSimulationWithCachedState(TraceNode observedFaultNode, Trace buggyTrace, Trace correctTrace,
@@ -932,11 +957,16 @@ public class Simulator  {
 	}
 
 	public TraceNode getObservedFault() {
-		return observedFault;
+		if(this.observedFaultList.isEmpty()){
+			return null;
+		}
+		
+		int size = this.observedFaultList.size();
+		return this.observedFaultList.get(size-1);
 	}
 
-	public void setObservedFault(TraceNode observedFault) {
-		this.observedFault = observedFault;
+	public void addObservedFault(TraceNode observedFault) {
+		this.observedFaultList.add(observedFault);
 	}
 
 
