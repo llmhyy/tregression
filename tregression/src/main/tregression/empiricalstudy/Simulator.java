@@ -61,6 +61,7 @@ public class Simulator  {
 	protected TraceNode findObservedFault(TraceNode node, Trace buggyTrace, Trace correctTrace){
 		StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 		TraceNode firstTearDownNode = firstPreviousNodeInvokedByTearDown(node);
+		System.currentTimeMillis();
 		if(firstTearDownNode!=null){
 			node = firstTearDownNode.getStepInPrevious();
 		}
@@ -129,6 +130,10 @@ public class Simulator  {
 				else if(prev.getOrder()<returnNode.getOrder()){
 					returnNode = prev;					
 				}
+			}
+			else{
+				returnNode = prev;
+				break;
 			}
 		}
 		
