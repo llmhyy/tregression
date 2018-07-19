@@ -91,7 +91,13 @@ public class StepChangeTypeChecker {
 	private List<Pair<VarValue, VarValue>> checkWrongVariable(boolean isOnBefore,
 			TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
 		List<Pair<VarValue, VarValue>> wrongVariableList = new ArrayList<>();
+		int count = 0;
 		for(VarValue readVar: thisStep.getReadVariables()){
+			count++;
+			if(count>100){
+				break;
+			}
+			
 			VarMatch varMatch = canbeMatched(isOnBefore, readVar, thisStep, thatStep, pairList, matcher);
 //			System.currentTimeMillis();
 			if(varMatch.canBeMatched && !varMatch.sameContent){
