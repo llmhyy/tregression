@@ -1,6 +1,8 @@
 package tregression.views;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
@@ -655,6 +657,16 @@ public class StepDetailUI {
 	}
 	
 	private TraceNode currentNode;
+
+	private void sortVars(List<VarValue> vars){
+		List<VarValue> readVars = vars;
+		Collections.sort(readVars, new Comparator<VarValue>() {
+			@Override
+			public int compare(VarValue o1, VarValue o2) {
+				return o1.getVarName().compareTo(o2.getVarName());
+			}
+		});
+	}
 	
 	public void refresh(TraceNode node, StepChangeType changeType){
 		this.currentNode = node;
@@ -662,6 +674,9 @@ public class StepDetailUI {
 		if(node != null){
 			//BreakPointValue thisState = node.getProgramState();
 			//createStateContent(thisState);
+			sortVars(node.getWrittenVariables());
+			sortVars(node.getReadVariables());
+			
 			createWrittenVariableContent(node.getWrittenVariables(), changeType);
 			createReadVariableContect(node.getReadVariables(), changeType);	
 		}
