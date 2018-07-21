@@ -173,7 +173,9 @@ public class RootCauseFinder {
 			if(changeType.getType()==StepChangeType.SRC){
 				//TODO
 				causalityGraph.addRoot(resultNode);
-				break;
+				if(resultNode.isOnBefore()){
+					break;					
+				}
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
 				for(Pair<VarValue, VarValue> pair: changeType.getWrongVariableList()){

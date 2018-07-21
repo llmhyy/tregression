@@ -83,7 +83,19 @@ public class CausalityGraph {
 			return;
 		}
 		
+		CausalityNode rootOnBuggyTrace = null;
 		for(CausalityNode root: roots){
+			if(root.isOnBefore()){
+				rootOnBuggyTrace = root;
+				break;
+			}
+		}
+		
+		for(CausalityNode root: roots){
+			if(rootOnBuggyTrace!=null && !root.isOnBefore()){
+				continue;
+			}
+			
 			guidance.put(root, null);
 			Set<VisitedResult> visitedSet = new HashSet<>();
 			visitedSet.add(new VisitedResult(root, null));
