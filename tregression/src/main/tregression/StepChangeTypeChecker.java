@@ -345,6 +345,27 @@ public class StepChangeTypeChecker {
 			}
 		}
 	}
+	
+	private VarValue findReadParentVariable(ReferenceValue parent, TraceNode step) {
+		for(VarValue readVar: step.getReadVariables()){
+			if(readVar.getAliasVarID()==null){
+				continue;
+			}
+			
+			if(readVar.getAliasVarID().equals(parent.getVarID())){
+				return readVar;
+			}
+			else{
+				String simpleReadVarID = Variable.truncateSimpleID(readVar.getAliasVarID());
+				String simpleVarID = Variable.truncateSimpleID(parent.getVarID());
+				if(simpleReadVarID.equals(simpleVarID)){
+					return readVar;
+				}
+			}
+		}
+		
+		return null;
+	}
 
 	private List<VarValue> findSynonymousVarList(TraceNode thisStep, TraceNode thatStep, VarValue thisVar,
 			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
@@ -359,26 +380,27 @@ public class StepChangeTypeChecker {
 				if(thisIndex!=null && thatIndex!=null && thisIndex.equals(thatIndex)){
 					ReferenceValue thisParent = (ReferenceValue)thisVar.getParents().get(0);
 					ReferenceValue thatParent = (ReferenceValue)readVar.getParents().get(0);
-					String thisParentID = Variable.truncateSimpleID(thisParent.getVarID());
-					String thatParentID = Variable.truncateSimpleID(thatParent.getVarID());
-					TraceNode thisDom = thisStep.getTrace().findLastestNodeDefiningVariable(
-							thisParentID, thisStep.getOrder());
-					TraceNode thatDom = thatStep.getTrace().findLastestNodeDefiningVariable(
-							thatParentID, thatStep.getOrder());
 					
-					boolean isReferenceValueMatch = pairList.isPair(thisDom, thatDom, isOnBeforeTrace);
-					
-//					int thisOrder = (thisDom==null) ? 0 : thisDom.getOrder();
-//					int thatOrder = (thatDom==null) ? 0 : thatDom.getOrder();
-//					thisParent.setVarID(thisParentID+":"+thisOrder);
-//					thatParent.setVarID(thatParentID+":"+thatOrder);
-//					
-//					boolean isReferenceValueMatch = isReferenceValueMatch(thisParent, thatParent, thisDom, thatDom, 
-//							isOnBeforeTrace, pairList, matcher);
-					
-					if(isReferenceValueMatch){
+					VarValue thisReadParent = findReadParentVariable(thisParent, thisStep);
+					VarValue thatReadParent = findReadParentVariable(thatParent, thatStep);
+					System.currentTimeMillis();
+					if(thisReadParent!=null && thatReadParent!=null){
+						if(thisReadParent.getVarName().equals(thatReadParent.getVarName())){
+							synonymousList.add(readVar);
+						}
+					}
+					else{
+						String thisParentID = Variable.truncateSimpleID(thisParent.getVarID());
+						String thatParentID = Variable.truncateSimpleID(thatParent.getVarID());
+						TraceNode thisDom = thisStep.getTrace().findLastestNodeDefiningVariable(
+								thisParentID, thisStep.getOrder());
+						TraceNode thatDom = thatStep.getTrace().findLastestNodeDefiningVariable(
+								thatParentID, thatStep.getOrder());
 						
-						synonymousList.add(readVar);
+						boolean isReferenceValueMatch = pairList.isPair(thisDom, thatDom, isOnBeforeTrace);
+						if(isReferenceValueMatch){
+							synonymousList.add(readVar);
+						}
 					}
 				}
 				
