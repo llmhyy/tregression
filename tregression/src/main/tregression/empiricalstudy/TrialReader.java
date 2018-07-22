@@ -48,19 +48,19 @@ public class TrialReader {
 							String id = cell.getStringCellValue();
 							trial.setBugID(id);
 							break;
-						case 4:
+						case 5:
 							int rootcaseNode = (int) cell.getNumericCellValue();
 							trial.setRootcauseNode(rootcaseNode);
 							break;
-						case 14:
+						case 15:
 							String debugType = cell.getStringCellValue();
 							trial.setDebugType(debugType);
 							break;
-						case 17:
+						case 18:
 							String exception = cell.getStringCellValue();
 							trial.setException(exception);
 							break;
-						case 19:
+						case 20:
 //							String deadEndType = cell.getStringCellValue();
 //							trial.setDeadEndType(deadEndType);
 							break;
