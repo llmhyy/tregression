@@ -19,10 +19,8 @@ import microbat.model.trace.Trace;
 import microbat.preference.MicrobatPreference;
 import microbat.util.Settings;
 import sav.common.core.SavException;
-import sav.commons.TestConfiguration;
 import sav.strategies.dto.AppJavaClassPath;
 
-@SuppressWarnings("deprecation")
 public class TraceModelConstructor {
 	/**
 	 * Take care of project name, buggy class name, buggy line number, ...
