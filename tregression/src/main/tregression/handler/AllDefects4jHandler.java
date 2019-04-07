@@ -54,7 +54,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 				Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
 				try {
 					map = new TrialReader().readXLSX(fileName);
-				} catch (IOException e1) {
+				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
 				
@@ -126,25 +126,25 @@ public class AllDefects4jHandler extends AbstractHandler {
 								recorder = new TrialRecorder();
 								defects4jFile = recorder.export(trials, projects[i], j);
 								
-								for(EmpiricalTrial t: trials){
-									
-									if(!t.getDeadEndRecordList().isEmpty()){
-										Repository.clearCache();
-										DeadEndRecord record = t.getDeadEndRecordList().get(0);
-//									DED datas = new TrainingDataTransfer().transfer(record, t.getBuggyTrace());
-										DED datas = record.getTransformedData(t.getBuggyTrace());
-										setTestCase(datas, t.getTestcase());						
-										try {
-//										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
-											
-											if(!t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
-												new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projects[i], String.valueOf(j));											
-											}
-										} catch (NumberFormatException | IOException e) {
-											e.printStackTrace();
-										}
-									}
-								}
+//								for(EmpiricalTrial t: trials){
+//									
+//									if(!t.getDeadEndRecordList().isEmpty()){
+//										Repository.clearCache();
+//										DeadEndRecord record = t.getDeadEndRecordList().get(0);
+////									DED datas = new TrainingDataTransfer().transfer(record, t.getBuggyTrace());
+//										DED datas = record.getTransformedData(t.getBuggyTrace());
+//										setTestCase(datas, t.getTestcase());						
+//										try {
+////										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
+//											
+//											if(!t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
+//												new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projects[i], String.valueOf(j));											
+//											}
+//										} catch (NumberFormatException | IOException e) {
+//											e.printStackTrace();
+//										}
+//									}
+//								}
 							} catch (Exception e) {
 								e.printStackTrace();
 							}

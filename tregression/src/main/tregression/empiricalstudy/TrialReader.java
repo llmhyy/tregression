@@ -17,7 +17,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class TrialReader {
 	@SuppressWarnings("resource")
-	public Map<ReadEmpiricalTrial, ReadEmpiricalTrial> readXLSX(String fileName) throws IOException {
+	public Map<ReadEmpiricalTrial, ReadEmpiricalTrial> readXLSX(String fileName) throws Exception {
 		Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
 		File file = new File(fileName);
 		if(file.exists()) {

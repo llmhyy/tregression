@@ -52,7 +52,7 @@ public class RetrieveAllDefect4jRegressionsHandler extends RegressionRetrieveHan
 		Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
 		try {
 			map = new TrialReader().readXLSX(fileName);
-		} catch (IOException e1) {
+		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 	
