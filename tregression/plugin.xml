@@ -162,7 +162,7 @@
             </command>
             <command
                   commandId="tregression.command.retrieveRegression"
-                  icon="icons/before.ico"
+                  icon="icons/recover.png"
                   label="Recover Trace"
                   style="push">
             </command>
