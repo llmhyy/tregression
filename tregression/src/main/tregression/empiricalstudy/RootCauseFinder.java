@@ -182,7 +182,7 @@ public class RootCauseFinder {
 					VarValue readVar = (stepW.isOnBefore)? pair.a : pair.b;
 					trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 					
-					TraceNode dataDom = trace.findDataDominator(step, readVar); 
+					TraceNode dataDom = trace.findDataDependency(step, readVar); 
 					addWorkNode(workList, dataDom, stepW.isOnBefore);
 					addCausality(dataDom, stepW.isOnBefore, causalityGraph, resultNode, readVar);
 					
@@ -195,7 +195,7 @@ public class RootCauseFinder {
 					VarValue matchedVar = MatchStepFinder.findMatchVariable(readVar, matchedStep);
 					
 					if(matchedVar != null) {
-						TraceNode otherDataDom = trace.findDataDominator(matchedStep, matchedVar);
+						TraceNode otherDataDom = trace.findDataDependency(matchedStep, matchedVar);
 						addWorkNode(workList, otherDataDom, !stepW.isOnBefore);	
 						addCausality(otherDataDom, !stepW.isOnBefore, causalityGraph, cNode, matchedVar);
 					}

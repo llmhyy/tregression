@@ -280,12 +280,9 @@ public class TrialGenerator0 {
 				simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
 				if(rootcauseFinder.getRealRootCaseList().isEmpty()){
 					trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
-					if(buggyTrace.isMultiThread() || correctTrace.isMultiThread()){
-						trial.setMultiThread(true);
-						StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(), 
-								new UserFeedback(UserFeedback.UNCLEAR), simulator.getObservedFault(), DebugState.UNCLEAR);
-						trial.getCheckList().add(tuple);
-					}
+					StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(), 
+							new UserFeedback(UserFeedback.UNCLEAR), simulator.getObservedFault(), DebugState.UNCLEAR);
+					trial.getCheckList().add(tuple);
 					
 					return trial;
 				}
@@ -365,12 +362,9 @@ public class TrialGenerator0 {
 		rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
 		if(rootcauseFinder.getRealRootCaseList().isEmpty()){
 			EmpiricalTrial trial = EmpiricalTrial.createDumpTrial("cannot find real root cause");
-			if(buggyTrace.isMultiThread() || correctTrace.isMultiThread()){
-				trial.setMultiThread(true);
-				StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(), 
-						new UserFeedback(UserFeedback.UNCLEAR), simulator.getObservedFault(), DebugState.UNCLEAR);
-				trial.getCheckList().add(tuple);
-			}
+			StepOperationTuple tuple = new StepOperationTuple(simulator.getObservedFault(), 
+					new UserFeedback(UserFeedback.UNCLEAR), simulator.getObservedFault(), DebugState.UNCLEAR);
+			trial.getCheckList().add(tuple);
 			
 			return trial;
 		}

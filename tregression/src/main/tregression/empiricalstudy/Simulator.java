@@ -302,7 +302,7 @@ public class Simulator  {
 		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
 		rootCauseFinder.setRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
 		
-		boolean isMultiThread = buggyTrace.isMultiThread() || correctTrace.isMultiThread();
+		boolean isMultiThread = false;
 		
 		long startTime = System.currentTimeMillis();
 		
@@ -341,7 +341,7 @@ public class Simulator  {
 				StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 				checkingList.add(operation);
 				
-				TraceNode dataDom = buggyTrace.findDataDominator(currentNode, readVar);
+				TraceNode dataDom = buggyTrace.findDataDependency(currentNode, readVar);
 				
 				currentNode = dataDom;
 			} else if (changeType.getType() == StepChangeType.CTL) {
@@ -459,7 +459,7 @@ public class Simulator  {
 		TraceNode rootcauseNode = rootCauseFinder.retrieveRootCause(pairList, matcher, buggyTrace, correctTrace);
 		rootCauseFinder.setRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
 		
-		boolean isMultiThread = buggyTrace.isMultiThread() || correctTrace.isMultiThread();
+		boolean isMultiThread = false;
 		
 		long startTime = System.currentTimeMillis();
 		
@@ -522,7 +522,7 @@ public class Simulator  {
 				StepOperationTuple operation = generateDataFeedback(currentNode, changeType, readVar);
 				checkingList.add(operation);
 				
-				TraceNode dataDom = buggyTrace.findDataDominator(currentNode, readVar);
+				TraceNode dataDom = buggyTrace.findDataDependency(currentNode, readVar);
 				
 				currentNode = dataDom;
 			} else if (changeType.getType() == StepChangeType.CTL) {

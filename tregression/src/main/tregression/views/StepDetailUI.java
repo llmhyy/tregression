@@ -104,7 +104,7 @@ public class StepDetailUI {
 						Object obj = objList[0];
 						if(obj instanceof VarValue) {
 							VarValue readVar = (VarValue)obj;
-							suspiciousNode = trace.findDataDominator(currentNode, readVar);
+							suspiciousNode = trace.findDataDependency(currentNode, readVar);
 						}
 					}
 				}
@@ -205,8 +205,8 @@ public class StepDetailUI {
 				value = (VarValue) obj;
 				String varID = value.getVarID();
 
-				if (!interestedVariables.contains(varID)) {
-					interestedVariables.add(varID, trace.getCheckTime());
+				if (!interestedVariables.contains(value)) {
+					interestedVariables.add(trace.getCheckTime(), value);
 
 					ChosenVariableOption option = feedback.getOption();
 					if (option == null) {
@@ -226,7 +226,7 @@ public class StepDetailUI {
 					String cuName = currentNode.getBreakPoint().getDeclaringCompilationUnitName();
 					TempVariableInfo.cu = JavaUtil.findCompilationUnitInProject(cuName, traceView.getTrace().getAppJavaClassPath());
 				} else {
-					interestedVariables.remove(varID);
+					interestedVariables.remove(value);
 				}
 
 				setChecks(writtenVariableTreeViewer, RW);
@@ -255,8 +255,7 @@ public class StepDetailUI {
 			}
 
 			if (currentNode != null) {
-				String varID = value.getVarID();
-				if (interestedVariables.contains(varID)) {
+				if (interestedVariables.contains(value)) {
 					return true;
 				}
 			}
@@ -642,9 +641,9 @@ public class StepDetailUI {
 		}
 		
 		VarValue ev = (VarValue)element;
-		String varID = ev.getVarID();
+//		String varID = ev.getVarID();
 		
-		if(interestedVariables.contains(varID)){
+		if(interestedVariables.contains(ev)){
 			item.setChecked(true);
 		}
 		else{

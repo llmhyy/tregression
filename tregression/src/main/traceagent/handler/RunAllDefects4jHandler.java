@@ -23,6 +23,7 @@ import experiment.utils.report.rules.TextComparisonRule;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.codeanalysis.runtime.RunningInformation;
+import microbat.codeanalysis.runtime.StepLimitException;
 import microbat.preference.AnalysisScopePreference;
 import microbat.util.MicroBatUtil;
 import sav.common.core.utils.SingleTimer;
@@ -137,7 +138,12 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		InstrumentationExecutor executor = new InstrumentationExecutor(appClassPath, traceDir, traceName, includeLibs,
 				excludeLibs);
 		
-		RunningInformation info = executor.run();
+		RunningInformation info = null;
+		try {
+			info = executor.run();
+		} catch (StepLimitException e) {
+			e.printStackTrace();
+		}
 		PreCheckInformation precheckInfo = executor.getPrecheckInfo();
 		return new TraceTrial(workingDir, precheckInfo, info, timer.getExecutionTime(), isBuggy);
 	}

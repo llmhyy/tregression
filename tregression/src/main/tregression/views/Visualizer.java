@@ -15,13 +15,13 @@ public class Visualizer {
 			@Override
 			public void run() {
 				CorrectTraceView correctView = TregressionViews.getCorrectTraceView();
-				correctView.setTrace(correctTrace);
+				correctView.setMainTrace(correctTrace);
 				correctView.updateData();
 				correctView.setPairList(pairList);
 				correctView.setDiffMatcher(diffMatcher);
 
 				BuggyTraceView buggyView = TregressionViews.getBuggyTraceView();
-				buggyView.setTrace(killingMutatantTrace);
+				buggyView.setMainTrace(killingMutatantTrace);
 				buggyView.updateData();
 				buggyView.setPairList(pairList);
 				buggyView.setDiffMatcher(diffMatcher);

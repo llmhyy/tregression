@@ -9,12 +9,12 @@ import java.util.List;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import microbat.sql.TraceRetriever;
+import microbat.sql.MysqlTraceRetriever;
 import tregression.empiricalstudy.Regression;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 
-public class RegressionRetriever extends TraceRetriever {
+public class RegressionRetriever extends MysqlTraceRetriever {
 	
 	public Regression retriveRegression(String projectName, String bugID) throws SQLException{
 		Connection conn = null;
@@ -42,8 +42,8 @@ public class RegressionRetriever extends TraceRetriever {
 		Regression regression = new Regression(buggyTrace, correctTrace, new PairList(pairList));
 		Object[] traceInfo = loadTraceInfo(buggyTraceId, conn, closables);
 		regression.setTestCase((String)traceInfo[0], (String)traceInfo[1]);
-		buggyTrace.setMultiThread((boolean) traceInfo[2]);
-		correctTrace.setMultiThread((boolean) traceInfo[2]);
+//		buggyTrace.setMultiThread((boolean) traceInfo[2]);
+//		correctTrace.setMultiThread((boolean) traceInfo[2]);
 		return regression;
 	}
 	

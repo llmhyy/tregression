@@ -156,8 +156,8 @@ public class StepChangeTypeChecker {
 		for(VarValue thatVar: synonymVarList){
 			matchedVar = thatVar;
 			
-			TraceNode thisDom = thisTrace.findDataDominator(thisStep, thisVar);
-			TraceNode thatDom = thatTrace.findDataDominator(thatStep, thatVar);
+			TraceNode thisDom = thisTrace.findDataDependency(thisStep, thisVar);
+			TraceNode thatDom = thatTrace.findDataDependency(thatStep, thatVar);
 			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
 				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
 						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
@@ -392,9 +392,9 @@ public class StepChangeTypeChecker {
 					else{
 						String thisParentID = Variable.truncateSimpleID(thisParent.getVarID());
 						String thatParentID = Variable.truncateSimpleID(thatParent.getVarID());
-						TraceNode thisDom = thisStep.getTrace().findLastestNodeDefiningVariable(
+						TraceNode thisDom = thisStep.getTrace().findLatestNodeDefiningVariable(
 								thisParentID, thisStep.getOrder());
-						TraceNode thatDom = thatStep.getTrace().findLastestNodeDefiningVariable(
+						TraceNode thatDom = thatStep.getTrace().findLatestNodeDefiningVariable(
 								thatParentID, thatStep.getOrder());
 						
 						boolean isReferenceValueMatch = pairList.isPair(thisDom, thatDom, isOnBeforeTrace);

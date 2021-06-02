@@ -5,6 +5,7 @@ import java.util.List;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.codeanalysis.runtime.RunningInformation;
+import microbat.codeanalysis.runtime.StepLimitException;
 import microbat.model.trace.Trace;
 import microbat.util.MicroBatUtil;
 import sav.strategies.dto.AppJavaClassPath;
@@ -33,7 +34,12 @@ public class TraceCollector0 {
 		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath,
 				traceDir, traceName, includeLibs, excludeLibs);
 		
-		RunningInformation info = exectuor.run();
+		RunningInformation info = null;
+		try {
+			info = exectuor.run();
+		} catch (StepLimitException e) {
+			e.printStackTrace();
+		}
 		
 		PreCheckInformation precheckInfo = exectuor.getPrecheckInfo();
 		System.out.println("There are " + precheckInfo.getStepNum() + " steps in this trace");
@@ -75,7 +81,7 @@ public class TraceCollector0 {
 //			return rs;
 //		}
 		
-		Trace trace = info.getTrace();
+		Trace trace = info.getMainTrace();
 		trace.constructLoopParentRelation();
 		trace.setSourceVersion(isBuggy);
 		
