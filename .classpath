@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="tregression_script/src"/>
+	<classpathentry kind="src" path="tregression/src/main"/>
+	<classpathentry kind="lib" path="tregression_script/lib/poi-3.11-20141221.jar"/>
+	<classpathentry kind="lib" path="tregression_script/lib/poi-ooxml-3.11-20141221.jar"/>
+	<classpathentry kind="lib" path="tregression_script/lib/poi-ooxml-schemas-3.11-20141221.jar"/>
+	<classpathentry kind="lib" path="tregression_script/lib/xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="lib" path="tregression/lib/poi-3.11-20141221.jar"/>
+	<classpathentry kind="lib" path="tregression/lib/poi-ooxml-3.11-20141221.jar"/>
+	<classpathentry kind="lib" path="tregression/lib/poi-ooxml-schemas-3.11-20141221.jar"/>
+	<classpathentry kind="lib" path="tregression/lib/xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="output" path="tregression/bin"/>
+</classpath>
