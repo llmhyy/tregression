@@ -94,9 +94,9 @@ public class StepChangeType {
 		List<VarValue> referenceList = new ArrayList<>();
 		for(Pair<VarValue, VarValue> pair: wrongVariableList){
 			
-			VarValue var = pair.a;
+			VarValue var = pair.first();
 			if(!isOnBefore){
-				var = pair.b;
+				var = pair.second();
 			}
 			
 			String varID = var.getVarID();
@@ -132,7 +132,7 @@ public class StepChangeType {
 		}
 		
 		Pair<VarValue, VarValue> pair = wrongVariableList.get(0);
-		return isOnBefore? pair.a : pair.b;
+		return isOnBefore? pair.first() : pair.second();
 	}
 
 }

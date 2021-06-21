@@ -179,7 +179,7 @@ public class RootCauseFinder {
 			}
 			else if(changeType.getType()==StepChangeType.DAT){
 				for(Pair<VarValue, VarValue> pair: changeType.getWrongVariableList()){
-					VarValue readVar = (stepW.isOnBefore)? pair.a : pair.b;
+					VarValue readVar = (stepW.isOnBefore)? pair.first() : pair.second();
 					trace = getCorrespondingTrace(stepW.isOnBefore, buggyTrace, correctTrace);
 					
 					TraceNode dataDom = trace.findDataDependency(step, readVar); 

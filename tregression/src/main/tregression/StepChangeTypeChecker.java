@@ -102,11 +102,11 @@ public class StepChangeTypeChecker {
 //			System.currentTimeMillis();
 			if(varMatch.canBeMatched && !varMatch.sameContent){
 				if(isOnBefore){
-					Pair<VarValue, VarValue> pair = new Pair<VarValue, VarValue>(readVar, varMatch.matchedVariable);
+					Pair<VarValue, VarValue> pair = Pair.of(readVar, varMatch.matchedVariable);
 					wrongVariableList.add(pair);
 				}
 				else{
-					Pair<VarValue, VarValue> pair = new Pair<VarValue, VarValue>(varMatch.matchedVariable, readVar);
+					Pair<VarValue, VarValue> pair = Pair.of(varMatch.matchedVariable, readVar);
 					wrongVariableList.add(pair);
 				}
 			}
