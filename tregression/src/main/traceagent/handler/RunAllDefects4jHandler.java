@@ -24,6 +24,7 @@ import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.codeanalysis.runtime.RunningInformation;
 import microbat.codeanalysis.runtime.StepLimitException;
+import microbat.instrumentation.output.RunningInfo;
 import microbat.preference.AnalysisScopePreference;
 import microbat.util.MicroBatUtil;
 import sav.common.core.utils.SingleTimer;
@@ -138,7 +139,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		InstrumentationExecutor executor = new InstrumentationExecutor(appClassPath, traceDir, traceName, includeLibs,
 				excludeLibs);
 		
-		RunningInformation info = null;
+		RunningInfo info = null;
 		try {
 			info = executor.run();
 		} catch (StepLimitException e) {
