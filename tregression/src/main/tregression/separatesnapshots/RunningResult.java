@@ -4,7 +4,7 @@ import java.util.List;
 
 import microbat.codeanalysis.runtime.ExecutionStatementCollector;
 import microbat.codeanalysis.runtime.PreCheckInformation;
-import microbat.codeanalysis.runtime.RunningInformation;
+import microbat.instrumentation.output.RunningInfo;
 import microbat.model.BreakPoint;
 import microbat.model.trace.Trace;
 import sav.strategies.dto.AppJavaClassPath;
@@ -17,7 +17,7 @@ public class RunningResult {
 	private AppJavaClassPath appClassPath;
 	
 	private PreCheckInformation precheckInfo;
-	private RunningInformation runningInfo;
+	private RunningInfo runningInfo;
 	
 	private int failureType = TrialGenerator.NORMAL;
 
@@ -88,11 +88,11 @@ public class RunningResult {
 		this.precheckInfo = precheckInfo;
 	}
 
-	public RunningInformation getRunningInfo() {
+	public RunningInfo getRunningInfo() {
 		return runningInfo;
 	}
 
-	public void setRunningInfo(RunningInformation runningInfo) {
+	public void setRunningInfo(RunningInfo runningInfo) {
 		this.runningInfo = runningInfo;
 	}
 

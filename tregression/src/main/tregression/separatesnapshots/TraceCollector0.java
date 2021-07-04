@@ -4,7 +4,7 @@ import java.util.List;
 
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
-import microbat.codeanalysis.runtime.RunningInformation;
+import microbat.instrumentation.output.RunningInfo;
 import microbat.codeanalysis.runtime.StepLimitException;
 import microbat.model.trace.Trace;
 import microbat.util.MicroBatUtil;
@@ -34,7 +34,7 @@ public class TraceCollector0 {
 		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath,
 				traceDir, traceName, includeLibs, excludeLibs);
 		
-		RunningInformation info = null;
+		RunningInfo info = null;
 		try {
 			info = exectuor.run();
 		} catch (StepLimitException e) {

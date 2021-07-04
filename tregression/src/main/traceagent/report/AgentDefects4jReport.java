@@ -12,7 +12,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
 import microbat.codeanalysis.runtime.PreCheckInformation;
-import microbat.codeanalysis.runtime.RunningInformation;
+import microbat.instrumentation.output.RunningInfo;
 import sav.common.core.utils.StringUtils;
 import traceagent.report.BugCaseTrial.TraceTrial;
 import traceagent.report.excel.AbstractExcelWriter;
@@ -58,7 +58,7 @@ public class AgentDefects4jReport extends AbstractExcelWriter {
 			addCell(row, LOADED_CLASSES, precheck.getLoadedClasses().size());
 			addCell(row, PRECHECK_STEP_NUM, precheck.getStepNum());
 		}
-		RunningInformation runningInfo = traceTrial.getRunningInfo();
+		RunningInfo runningInfo = traceTrial.getRunningInfo();
 		if (runningInfo != null) {
 			addCell(row, RUN_STEP_NUM, runningInfo.getCollectedSteps());
 			addCell(row, PROGRAM_MSG, runningInfo.getProgramMsg());
