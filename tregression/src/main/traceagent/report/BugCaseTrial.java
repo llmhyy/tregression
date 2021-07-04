@@ -5,6 +5,7 @@ package traceagent.report;
 
 import microbat.codeanalysis.runtime.PreCheckInformation;
 import microbat.codeanalysis.runtime.RunningInformation;
+import microbat.instrumentation.output.RunningInfo;
 import tregression.empiricalstudy.TestCase;
 
 /**
@@ -63,12 +64,12 @@ public class BugCaseTrial {
 
 	public static class TraceTrial {
 		private PreCheckInformation precheckInfo;
-		private RunningInformation runningInfo;
+		private RunningInfo runningInfo;
 		private long executionTime;
 		private String workingDir;
 		private boolean isBuggy;
 
-		public TraceTrial(String workingDir, PreCheckInformation precheckInfo, RunningInformation runningInfo,
+		public TraceTrial(String workingDir, PreCheckInformation precheckInfo, RunningInfo runningInfo,
 				long executionTime, boolean isBuggy) {
 			this.precheckInfo = precheckInfo;
 			this.runningInfo = runningInfo;
@@ -85,11 +86,11 @@ public class BugCaseTrial {
 			this.precheckInfo = precheckInfo;
 		}
 
-		public RunningInformation getRunningInfo() {
+		public RunningInfo getRunningInfo() {
 			return runningInfo;
 		}
 
-		public void setRunningInfo(RunningInformation runningInfo) {
+		public void setRunningInfo(RunningInfo runningInfo) {
 			this.runningInfo = runningInfo;
 		}
 
