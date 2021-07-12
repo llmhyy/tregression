@@ -9,6 +9,5 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/microbat_instrumentator"/>
-	<classpathentry kind="lib" path="C:/Program Files/Java/jdk1.8.0_291/lib/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
