@@ -16,6 +16,7 @@ import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
@@ -336,7 +337,7 @@ public class TrialGenerator {
 		public void run() {
 			try {
 				new RegressionRecorder().record(trial, buggyTrace, correctTrace, pairList, config.projectName, 
-						String.valueOf(config.bugID));
+						config.regressionID);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}	
@@ -347,33 +348,36 @@ public class TrialGenerator {
 
 	private void addAdditionalObservedFault(Simulator simulator, Defects4jProjectConfig config,
 			Trace buggyTrace) {
-		if(config.projectName.equals("Chart")&&config.bugID==6){
+		
+		int bugID = Integer.valueOf(config.regressionID);
+		
+		if(config.projectName.equals("Chart")&&bugID==6){
 			TraceNode node = buggyTrace.getExecutionList().get(297);
 			simulator.addObservedFault(node);
 		}
 		
-		if(config.projectName.equals("Math")&&config.bugID==78){
+		if(config.projectName.equals("Math")&&bugID==78){
 			TraceNode node = buggyTrace.getExecutionList().get(640);
 			simulator.addObservedFault(node);
 		}
 		
-		if(config.projectName.equals("Math")&&config.bugID==40){
+		if(config.projectName.equals("Math")&&bugID==40){
 			TraceNode node = buggyTrace.getExecutionList().get(11268);
 			simulator.addObservedFault(node);
 		}
 		
-		if(config.projectName.equals("Math")&&config.bugID==49){
+		if(config.projectName.equals("Math")&&bugID==49){
 			TraceNode node = buggyTrace.getExecutionList().get(449);
 			simulator.addObservedFault(node);
 		}
 		
-		if(config.projectName.equals("Math")&&config.bugID==1){
+		if(config.projectName.equals("Math")&&bugID==1){
 			TraceNode node = buggyTrace.getExecutionList().get(1478);
 			simulator.addObservedFault(node);
 		}
 	}
 
 	public List<TestCase> retrieveD4jFailingTestCase(String buggyVersionPath) throws IOException {
-		return Defects4jProjectConfig.retrieveD4jFailingTestCase(buggyVersionPath);
+		return Defects4jProjectConfig.retrieveFailingTestCase(buggyVersionPath);
 	}
 }

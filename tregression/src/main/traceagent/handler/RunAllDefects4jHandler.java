@@ -22,7 +22,6 @@ import experiment.utils.report.ExperimentReportComparisonReporter;
 import experiment.utils.report.rules.TextComparisonRule;
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
-import microbat.codeanalysis.runtime.RunningInformation;
 import microbat.codeanalysis.runtime.StepLimitException;
 import microbat.instrumentation.output.RunningInfo;
 import microbat.preference.AnalysisScopePreference;
@@ -32,8 +31,8 @@ import sav.strategies.dto.AppJavaClassPath;
 import traceagent.report.AgentDefects4jReport;
 import traceagent.report.BugCaseTrial;
 import traceagent.report.BugCaseTrial.TraceTrial;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.handler.PathConfiguration;
 import tregression.separatesnapshots.AppClassPathInitializer;
 
@@ -87,7 +86,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 					return;
 				}
 				System.out.println("working on the " + j + "th bug of " + project + " project.");
-				Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(project, j);
+				Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getConfig(project, String.valueOf(j));
 				try {
 					runSingleBug(d4jConfig, report, null, filter, monitor);
 				} catch (Exception e) {
@@ -101,11 +100,11 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 			TestcaseFilter filter, IProgressMonitor monitor)
 			throws IOException {
 		String projectName = config.projectName;
-		String bugID = String.valueOf(config.bugID);
+		String bugID = config.regressionID;
 		String buggyPath = PathConfiguration.getBuggyPath(projectName, bugID);
 		String fixPath = PathConfiguration.getCorrectPath(projectName, bugID);
 		if (tcs == null) {
-			tcs = Defects4jProjectConfig.retrieveD4jFailingTestCase(buggyPath);
+			tcs = Defects4jProjectConfig.retrieveFailingTestCase(buggyPath);
 		}
 		List<String> includeLibs = AnalysisScopePreference.getIncludedLibList();
 		List<String> excludeLibs = AnalysisScopePreference.getExcludedLibList();
@@ -134,7 +133,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		SingleTimer timer = SingleTimer.start(String.format("run %s test", isBuggy ? "buggy" : "correct"));
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);
 		
-		String traceDir = MicroBatUtil.generateTraceDir(config.projectName, String.valueOf(config.bugID));
+		String traceDir = MicroBatUtil.generateTraceDir(config.projectName, config.regressionID);
 		String traceName = isBuggy ? "bug" : "fix";
 		InstrumentationExecutor executor = new InstrumentationExecutor(appClassPath, traceDir, traceName, includeLibs,
 				excludeLibs);

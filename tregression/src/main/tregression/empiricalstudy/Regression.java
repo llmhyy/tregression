@@ -10,6 +10,7 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.preference.AnalysisScopePreference;
 import sav.strategies.dto.AppJavaClassPath;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.model.PairList;
 import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.TraceCollector0;

@@ -4,14 +4,14 @@ import java.util.List;
 
 import microbat.codeanalysis.runtime.InstrumentationExecutor;
 import microbat.codeanalysis.runtime.PreCheckInformation;
-import microbat.instrumentation.output.RunningInfo;
 import microbat.codeanalysis.runtime.StepLimitException;
+import microbat.instrumentation.output.RunningInfo;
 import microbat.model.trace.Trace;
 import microbat.util.MicroBatUtil;
 import sav.strategies.dto.AppJavaClassPath;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator0;
+import tregression.empiricalstudy.config.ProjectConfig;
 
 public class TraceCollector0 {
 	private boolean isBuggy;
@@ -21,7 +21,7 @@ public class TraceCollector0 {
 	}
 	
 	public RunningResult run(String workingDir, TestCase tc, 
-			Defects4jProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread, 
+			ProjectConfig config, boolean isRunInTestCaseMode, boolean allowMultiThread, 
 			List<String> includeLibs, List<String> excludeLibs){
 		
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);
@@ -29,7 +29,7 @@ public class TraceCollector0 {
 			appClassPath.setLaunchClass(appClassPath.getOptionalTestClass());
 		}
 		
-		String traceDir = MicroBatUtil.generateTraceDir(config.projectName, String.valueOf(config.bugID));
+		String traceDir = MicroBatUtil.generateTraceDir(config.projectName, config.regressionID);
 		String traceName = isBuggy ? "bug" : "fix";
 		InstrumentationExecutor exectuor = new InstrumentationExecutor(appClassPath,
 				traceDir, traceName, includeLibs, excludeLibs);

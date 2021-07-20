@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/main"/>
+	<classpathentry exported="true" kind="lib" path="lib/plexus-utils-3.2.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/maven-model-3.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.11-20141221.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.11-20141221.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.11-20141221.jar"/>

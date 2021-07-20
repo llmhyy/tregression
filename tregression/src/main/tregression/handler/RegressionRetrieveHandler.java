@@ -28,13 +28,13 @@ import tregression.SimulationFailException;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.Regression;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.Simulator;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
 import tregression.model.PairList;
@@ -140,7 +140,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		String buggyPath = PathConfiguration.getBuggyPath(projectName, bugId);
 		String fixPath = PathConfiguration.getCorrectPath(projectName, bugId);
 
-		Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(bugId));
+		Defects4jProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugId);
 
 		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
 				fixPath);
@@ -252,7 +252,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 
 	private Regression retrieveRegression(Defects4jProjectConfig config, String buggyPath, String fixPath) {
 		String projectName = config.projectName;
-		String bugId = String.valueOf(config.bugID);
+		String bugId = config.regressionID;
 		ExecTraceFileReader execTraceReader = new ExecTraceFileReader();
 		String buggyExec = InstrumentationExecutor
 				.generateTraceFilePath(MicroBatUtil.generateTraceDir(projectName, bugId), "bug");

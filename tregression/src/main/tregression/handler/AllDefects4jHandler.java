@@ -1,13 +1,11 @@
 package tregression.handler;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.bcel.Repository;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -20,18 +18,16 @@ import experiment.utils.report.ExperimentReportComparisonReporter;
 import experiment.utils.report.rules.SimulatorComparisonRule;
 import experiment.utils.report.rules.TextComparisonRule;
 import microbat.Activator;
-import sav.common.core.utils.FileUtils;
+import sav.common.core.Pair;
 import sav.common.core.utils.SingleTimer;
-import tregression.empiricalstudy.DeadEndCSVWriter;
-import tregression.empiricalstudy.DeadEndRecord;
-import tregression.empiricalstudy.DeadEndReporter;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.ReadEmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.TrialReader;
 import tregression.empiricalstudy.TrialRecorder;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
 import tregression.preference.TregressionPreference;
@@ -117,7 +113,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							TrialGenerator generator = new TrialGenerator();
 							TrialGenerator0 generator0 = new TrialGenerator0();
 							
-							Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getD4JConfig(projects[i], j);
+							ProjectConfig d4jConfig = Defects4jProjectConfig.getConfig(projects[i], String.valueOf(j));
 							List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
 									false, false, false, 3, false, true, d4jConfig, null);
 							

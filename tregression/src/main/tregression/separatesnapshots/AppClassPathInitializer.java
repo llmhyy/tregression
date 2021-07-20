@@ -6,14 +6,15 @@ import java.util.List;
 
 import microbat.util.MicroBatUtil;
 import sav.strategies.dto.AppJavaClassPath;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
+import tregression.empiricalstudy.config.MavenProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.junit.TestCaseAnalyzer;
 
 public class AppClassPathInitializer {
 	
 	
-	public static AppJavaClassPath initialize(String workingDir, TestCase testCase, Defects4jProjectConfig config){
+	public static AppJavaClassPath initialize(String workingDir, TestCase testCase, ProjectConfig config){
 		AppJavaClassPath appClassPath = new AppJavaClassPath();
 		
 		String testTargetPath = workingDir + File.separator + config.bytecodeTestFolder;
@@ -63,6 +64,13 @@ public class AppClassPathInitializer {
 			String relativePath = config.additionalSourceFolder.get(i);
 			String path = workingDir + File.separator + relativePath;
 			appClassPath.getAdditionalSourceFolders().add(path);
+		}
+		
+		if(config instanceof MavenProjectConfig) {
+			List<String> mavenDependencies = MavenProjectConfig.getMavenDependencies(workingDir);
+			for(String path: mavenDependencies) {
+				appClassPath.addClasspath(path);
+			}
 		}
 		
 		MicroBatUtil.setSystemJars(appClassPath);

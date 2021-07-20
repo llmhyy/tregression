@@ -14,13 +14,15 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import microbat.model.trace.Trace;
+import sav.common.core.Pair;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.TrialRecorder;
+import tregression.empiricalstudy.config.ConfigFactory;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
 import tregression.preference.TregressionPreference;
@@ -47,7 +49,17 @@ public class SeparateVersionHandler extends AbstractHandler{
 				String testcase = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE);
 				
 				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
-				Defects4jProjectConfig config = Defects4jProjectConfig.getD4JConfig(projectName, Integer.valueOf(id));
+				
+				ProjectConfig config = ConfigFactory.createConfig(projectName, id, buggyPath, fixPath);
+				
+				if(config == null) {
+					try {
+						throw new Exception("cannot parse the configuration of the project " + projectName + " with id " + id);						
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return Status.CANCEL_STATUS;
+				}
 				
 				List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
 						false, false, false, 3, true, true, config, testcase);

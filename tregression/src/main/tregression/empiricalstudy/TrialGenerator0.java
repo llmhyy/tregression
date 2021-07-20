@@ -1,8 +1,6 @@
 package tregression.empiricalstudy;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,6 +16,8 @@ import microbat.util.Settings;
 import sav.common.core.utils.SingleTimer;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.io.RegressionRecorder;
 import tregression.model.PairList;
@@ -69,7 +69,7 @@ public class TrialGenerator0 {
 
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, boolean useSliceBreaker,
 			boolean enableRandom, int breakLimit, boolean requireVisualization, 
-			boolean allowMultiThread, Defects4jProjectConfig config, String testcase) {
+			boolean allowMultiThread, ProjectConfig config, String testcase) {
 		SingleTimer timer = SingleTimer.start("generateTrial");
 		List<TestCase> tcList;
 		EmpiricalTrial trial = null;
@@ -174,7 +174,7 @@ public class TrialGenerator0 {
 	}
 	
 	private EmpiricalTrial analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
-			TestCase tc, Defects4jProjectConfig config, boolean requireVisualization, 
+			TestCase tc, ProjectConfig config, boolean requireVisualization, 
 			boolean isRunInTestCaseMode, boolean useSliceBreaker, boolean enableRandom, int breakLimit) throws SimulationFailException {
 		TraceCollector0 buggyCollector = new TraceCollector0(true);
 		TraceCollector0 correctCollector = new TraceCollector0(false);
@@ -427,7 +427,7 @@ public class TrialGenerator0 {
 		public void run() {
 			try {
 				new RegressionRecorder().record(trial, buggyTrace, correctTrace, pairList, config.projectName, 
-						String.valueOf(config.bugID));
+						config.regressionID);
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}	
@@ -437,6 +437,6 @@ public class TrialGenerator0 {
 	}
 
 	public List<TestCase> retrieveD4jFailingTestCase(String buggyVersionPath) throws IOException {
-		return Defects4jProjectConfig.retrieveD4jFailingTestCase(buggyVersionPath);
+		return Defects4jProjectConfig.retrieveFailingTestCase(buggyVersionPath);
 	}
 }

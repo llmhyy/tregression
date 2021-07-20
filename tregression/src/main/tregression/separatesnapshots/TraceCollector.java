@@ -9,9 +9,9 @@ import microbat.model.trace.Trace;
 import microbat.util.MicroBatUtil;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.TraceModelConstructor;
-import tregression.empiricalstudy.Defects4jProjectConfig;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
 
 public class TraceCollector {
 	
