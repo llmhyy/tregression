@@ -10,12 +10,12 @@ import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.Statement;
 
 import microbat.model.BreakPoint;
 import microbat.model.ClassLocation;
@@ -257,10 +257,22 @@ public class DiffMatcher {
 	}
 
 	public void matchCode(){
-		List<String> diffContent = getRawDiffContent();
+		List<String> diffContent = getRawDiffContent(sourceFolderName);
 		diffContent.add("diff end");
 		List<FilePairWithDiff> fileDiffs = new DiffParser().parseDiff(diffContent, sourceFolderName);
+		
+		List<String> testDiffContent = getRawDiffContent(testFolderName);
+		testDiffContent.add("diff end");
+		List<FilePairWithDiff> testFileDiffs = new DiffParser().parseDiff(testDiffContent, testFolderName);
 
+		fileDiffs.addAll(testFileDiffs);
+		Iterator<FilePairWithDiff> iter = fileDiffs.iterator();
+		while(iter.hasNext()) {
+			FilePairWithDiff diff = iter.next();
+			if(diff.getSourceFile() == null)
+				iter.remove();
+		}
+		
 		for(FilePairWithDiff fileDiff: fileDiffs){
 			HashMap<Integer, List<Integer>> sourceToTargetMap = new HashMap<>();
 			HashMap<Integer, List<Integer>> targetToSourceMap = new HashMap<>();
@@ -275,9 +287,9 @@ public class DiffMatcher {
 		this.fileDiffList = fileDiffs;
 	}
 
-	protected List<String> getRawDiffContent() {
-		String buggySourcePath = buggyPath + File.separator + sourceFolderName;
-		String fixSourcePath = fixPath + File.separator + sourceFolderName;
+	protected List<String> getRawDiffContent(String folderName) {
+		String buggySourcePath = buggyPath + File.separator + folderName;
+		String fixSourcePath = fixPath + File.separator + folderName;
 		return getRawDiffContent(buggySourcePath, fixSourcePath);
 	}
 
@@ -303,6 +315,9 @@ public class DiffMatcher {
 	
 	private void constructMapping(FilePairWithDiff fileDiff, HashMap<Integer, List<Integer>> sourceToTargetMap,
 			HashMap<Integer, List<Integer>> targetToSourceMap) {
+		
+		if(fileDiff.getSourceFile() == null) return;
+		
 		int sourceLineCursor = 1;
 		int targetLineCursor = 1;
 		

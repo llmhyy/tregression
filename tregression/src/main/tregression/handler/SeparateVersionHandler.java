@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import microbat.model.trace.Trace;
-import sav.common.core.Pair;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
