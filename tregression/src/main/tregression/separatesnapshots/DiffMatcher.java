@@ -128,13 +128,25 @@ public class DiffMatcher {
 				}
 			}
 			
-			ASTNode parent = node.getParent();
+			ASTNode parent = null;
+			if(node instanceof CompilationUnit) {
+				parent = node;
+			}
+			else {
+				parent = node.getParent();				
+			}
 			int nodeStartLine = cu.getLineNumber(parent.getStartPosition());
 			int nodeEndLine = cu.getLineNumber(parent.getStartPosition()+parent.getLength());
+			if(nodeEndLine == -1) {
+				nodeEndLine = cu.getLineNumber(parent.getStartPosition()+parent.getLength() - 1);
+			}
 			
 			if(!(parent instanceof Expression) ){
 				nodeStartLine = cu.getLineNumber(node.getStartPosition());
 				nodeEndLine = cu.getLineNumber(node.getStartPosition()+node.getLength());
+				if(nodeEndLine == -1) {
+					nodeEndLine = cu.getLineNumber(parent.getStartPosition()+parent.getLength() - 1);
+				}
 			}
 			
 			if(!(node instanceof Expression)){
