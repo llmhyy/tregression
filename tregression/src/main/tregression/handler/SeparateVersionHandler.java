@@ -67,6 +67,10 @@ public class SeparateVersionHandler extends AbstractHandler{
 				List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
 						false, false, false, 3, true, true, config, testcase);
 				
+				if(trials.size() != 0) {
+					PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();					
+				}
+				
 				System.out.println("all the trials");
 				for(int i=0; i<trials.size(); i++) {
 					System.out.println("Trial " + (i+1));

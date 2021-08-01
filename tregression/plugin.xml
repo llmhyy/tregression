@@ -14,6 +14,11 @@
              name="Run Regression for Test Case">
        </command>
        <command
+             defaultHandler="tregression.handler.PlayRegressionLocalizationHandler"
+             id="tregression.command.localizationPlayer"
+             name="Play The Process of Regression Localization">
+       </command>
+       <command
              defaultHandler="tregression.handler.EvaluationAllHandler"
              id="tregression.command.evaluateAll"
              name="Run Regression for All">
@@ -164,6 +169,12 @@
                   commandId="tregression.command.retrieveRegression"
                   icon="icons/recover.png"
                   label="Recover Trace"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.command.localizationPlayer"
+                  icon="icons/play.png"
+                  label="Show Regression Localization"
                   style="push">
             </command>
          </toolbar>
