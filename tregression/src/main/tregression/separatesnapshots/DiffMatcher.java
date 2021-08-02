@@ -187,7 +187,11 @@ public class DiffMatcher {
 		
 		String[] cmds = cmdList.toArray(new String[0]);
 		try {
-			Process proc = Runtime.getRuntime().exec(cmds, new String[]{});
+			ProcessBuilder pb = new ProcessBuilder(cmds);
+			pb.redirectErrorStream(true); // merge stdout and stderr
+			Process proc = pb.start();
+			
+//			Process proc = Runtime.getRuntime().exec(cmds, new String[]{});
 			
 			InputStream stdin = proc.getInputStream();
 			InputStreamReader isr = new InputStreamReader(stdin);
@@ -198,6 +202,8 @@ public class DiffMatcher {
 			while ( (line = br.readLine()) != null)
 				diffContent.add(line);
 
+			stdin.close();
+			
 			return diffContent;
 		} catch (IOException e) {
 			e.printStackTrace();
