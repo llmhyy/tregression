@@ -11,7 +11,7 @@ import microbat.Activator;
 import microbat.preference.MicrobatPreference;
 import tregression.empiricalstudy.TestCase;
 
-public class ProjectConfig {
+public abstract class ProjectConfig {
 	
 	public String javaHome = Activator.getDefault().getPreferenceStore().getString(MicrobatPreference.JAVA7HOME_PATH);
 	public List<String> additionalSourceFolder = new ArrayList<>();
@@ -24,6 +24,7 @@ public class ProjectConfig {
 	
 	public String projectName;
 	public String regressionID;
+	private List<String> dependencies = null;
 	
 	public ProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
 			String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
@@ -57,4 +58,10 @@ public class ProjectConfig {
 
 		return list;
 	}
+	
+	public List<String> getDependencies(){
+		return this.dependencies;
+	}
+	
+	protected abstract void retrieveDependencies();
 }
