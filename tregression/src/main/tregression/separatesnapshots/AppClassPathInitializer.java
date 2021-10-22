@@ -66,13 +66,9 @@ public class AppClassPathInitializer {
 			appClassPath.getAdditionalSourceFolders().add(path);
 		}
 		
-		if(config instanceof MavenProjectConfig) {
-			List<String> mavenDependencies = MavenProjectConfig.getMavenDependencies(workingDir);
-			for(String path: mavenDependencies) {
-				appClassPath.addClasspath(path);
-			}
-		}
-		
+		List<String> dependencies = config.getDependencies();
+		for (String path : dependencies)
+			appClassPath.addClasspath(path);
 		MicroBatUtil.setSystemJars(appClassPath);
 		
 		/**
