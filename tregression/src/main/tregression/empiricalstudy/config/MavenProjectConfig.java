@@ -2,27 +2,34 @@ package tregression.empiricalstudy.config;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.SystemUtils;
+import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 
 public class MavenProjectConfig extends ProjectConfig {
 
 	public final static String M2AFFIX = ".m2" + File.separator + "repository";
+	private Model model;
 
-	public MavenProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
-			String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
+	private MavenProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
+			String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID, Model model) {
 		super(srcTestFolder, srcSourceFolder, bytecodeTestFolder, bytecodeSourceFolder, buildFolder, projectName,
 				regressionID);
+		this.model = model;
 	}
 
 	public static boolean check(String path) {
-
 		File f = new File(path);
 		if (f.exists() && f.isDirectory()) {
 			for (String file : f.list()) {
@@ -31,57 +38,63 @@ public class MavenProjectConfig extends ProjectConfig {
 				}
 			}
 		}
-
 		return false;
 	}
 
 
-	public static ProjectConfig getConfig(String projectName, String regressionID) {
-		return new MavenProjectConfig("src"+File.separator+"test"+File.separator+"java", 
-				"src"+File.separator+"main"+File.separator+"java", 
-				"target"+File.separator+"test-classes", 
-				"target"+File.separator+"classes", 
-				"target", 
-				projectName, 
-				regressionID);
+	public static ProjectConfig getConfig(File pom, String projectName, String regressionID) {
+		MavenXpp3Reader mavenReader = new MavenXpp3Reader();
+		Model model;
+		try {
+			model = mavenReader.read(new FileReader(pom));
+		} catch (IOException | XmlPullParserException e) {
+			System.out.println("Probelm parsing poim.xml. Exiting");
+			return null;
+		}
+		Build build = model.getBuild();
+		String temp;
+		String testSrc = (temp = build.getTestSourceDirectory()) == null ?
+				"src/test/java" : temp;
+		String mainSrc = (temp = build.getSourceDirectory()) == null ?
+				"src/main/java" : temp;
+		String testOut = (temp = build.getTestOutputDirectory()) == null ?
+				"target/test-classes" : temp;
+		String mainOut = (temp = build.getOutputDirectory()) == null ?
+				"target/classes" : temp;
+		String work = (temp = build.getDirectory()) == null ? "target" : temp;
+		return new MavenProjectConfig(testSrc, mainSrc, testOut, mainOut,
+									  work, projectName, regressionID, model);
 	}
 	
-	public static List<String> getMavenDependencies(String path){
-		String pomPath = path + File.separator + "pom.xml";
-		File pomFile = new File(pomPath);
-
-		try {
-			List<String> dependencies = readAllDependency(pomFile);
-			
-			return dependencies;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return new ArrayList<String>();
-	}
-
-	@SuppressWarnings("unchecked")
-	public static List<String> readAllDependency(File pom) throws Exception {
-		MavenXpp3Reader mavenReader = new MavenXpp3Reader();
-		Model pomModel = mavenReader.read(new FileReader(pom));
-		List<Dependency> dependencies = pomModel.getDependencies();
-		List<String> result = new ArrayList<>();
-		String usrHomePath = getUserHomePath();
-		for (Dependency dependency : dependencies) {
-			StringBuilder sb = new StringBuilder(usrHomePath);
-			sb.append(File.separator).append(M2AFFIX).append(File.separator)
-					.append(dependency.getGroupId().replace(".", File.separator)).append(File.separator)
-					.append(dependency.getArtifactId()).append(File.separator).append(dependency.getVersion())
-					.append(File.separator).append(dependency.getArtifactId()).append("-")
-					.append(dependency.getVersion()).append(".").append(dependency.getType());
-			result.add(sb.toString());
-		}
-		return result;
-	}
-
 	private static String getUserHomePath() {
 		return SystemUtils.getUserHome().toString();
+	}
+	
+	private String stripMavenVar(String var) {
+		return var.substring(2, var.length()-1);
+	}
+	
+	protected void retrieveDependencies() {
+		Properties properties = this.model.getProperties();
+		List<Dependency> dependencies = this.model.getDependencies();
+		this.dependencies = new ArrayList<>();
+		String userHome = getUserHomePath();
+		Pattern pattern = Pattern.compile("\\$\\{[a-zA-Z0-9.]+\\}");
+		for (Dependency d : dependencies) {
+			StringBuilder sb = new StringBuilder(userHome);
+			sb.append(File.separator).append(M2AFFIX).append(File.separator)
+			  .append(d.getGroupId().replace(".", File.separator)).append(File.separator)
+			  .append(d.getArtifactId()).append(File.separator).append(d.getVersion())
+			  .append(File.separator).append(d.getArtifactId()).append("-")
+			  .append(d.getVersion()).append(".").append(d.getType());
+			String s = sb.toString();
+			Matcher m = pattern.matcher(s);
+			while(m.find()) {
+				String var = m.group();
+				s = s.replace(var, properties.getProperty(stripMavenVar(var)));
+			}
+			this.dependencies.add(s);
+		}
 	}
 
 }
