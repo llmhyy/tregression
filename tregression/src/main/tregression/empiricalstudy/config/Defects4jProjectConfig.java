@@ -73,4 +73,7 @@ public class Defects4jProjectConfig extends ProjectConfig{
 		return config;
 	}
 	
+	protected void retrieveDependencies() {
+		this.dependencies = new ArrayList<String>();
+	}
 }

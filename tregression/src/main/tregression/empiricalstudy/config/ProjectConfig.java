@@ -24,7 +24,7 @@ public abstract class ProjectConfig {
 	
 	public String projectName;
 	public String regressionID;
-	private List<String> dependencies = null;
+	protected List<String> dependencies = null;
 	
 	public ProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
 			String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
@@ -60,6 +60,8 @@ public abstract class ProjectConfig {
 	}
 	
 	public List<String> getDependencies(){
+		if (this.dependencies == null)
+				this.retrieveDependencies();
 		return this.dependencies;
 	}
 	
