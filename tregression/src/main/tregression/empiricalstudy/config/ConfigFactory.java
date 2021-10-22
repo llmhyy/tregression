@@ -1,20 +1,18 @@
 package tregression.empiricalstudy.config;
 
+import java.io.File;
+
 public class ConfigFactory {
-	public static ProjectConfig createConfig(String projectName, String regressionID, String buggyPath, String fixPath) {
+	public static ProjectConfig createConfig(String projectName, String regressionID, String path) {
 		if(isDefects4JProject(projectName)) {
 			ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, regressionID);
 			return config;
 		}
-		else{
-			boolean isBuggyMavenProject = MavenProjectConfig.check(buggyPath);
-			boolean isFixMavenProject = MavenProjectConfig.check(fixPath);
-			if(isBuggyMavenProject && isFixMavenProject) {
-				return MavenProjectConfig.getConfig(projectName, regressionID);
-			}
-			
-		}
 		
+		if (MavenProjectConfig.check(path)) {
+			File pom = new File(path + File.separator + "pom.xml");
+			return MavenProjectConfig.getConfig(pom, projectName, regressionID);
+		}
 		return null;
 	}
 
