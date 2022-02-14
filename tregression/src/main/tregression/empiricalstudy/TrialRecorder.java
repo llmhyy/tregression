@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.apache.poi.ss.usermodel.Row;
@@ -28,14 +29,14 @@ public class TrialRecorder {
 	private String excelFolder = "";
 	
 	public TrialRecorder() throws IOException{
-		this("defects4j", "");
+		this("defects4j", System.getProperty("java.io.tmpdir"));
 	}
 	
 	public TrialRecorder(String initFileName, String excelFolder) throws IOException {
 		String fileTitle = initFileName;
 		fileName = fileTitle + filePage + ".xlsx";
 		this.excelFolder = excelFolder;
-		file = new File(excelFolder + fileName);
+		file = new File(Paths.get(excelFolder, fileName).toString());
 		
 		while(file.exists()){
 			InputStream excelFileToRead = new FileInputStream(file);
