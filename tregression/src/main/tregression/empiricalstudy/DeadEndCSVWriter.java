@@ -3,6 +3,7 @@ package tregression.empiricalstudy;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 
 import tregression.empiricalstudy.training.ControlDeadEndData;
@@ -14,7 +15,7 @@ public class DeadEndCSVWriter {
 	public static String FIELD = "field";
 	public static String ARRAY = "array";
 	public static String CONTROL = "control";
-	private String csvFolder = "";
+	private String csvFolder = System.getProperty("java.io.tmpdir");
 	
 	private String fileSuffix = "";
 	

@@ -215,7 +215,6 @@ public class TrialGenerator0 {
 					useSliceBreaker, enableRandom, breakLimit);
 			return trial;
 		} else {
-			
 			int trialLimit = 10;
 			int trialNum = 0;
 			boolean isDataFlowComplete = false;
