@@ -19,14 +19,16 @@ public class FilePairWithDiff {
 	private String targetFile;
 	
 	private String sourceFolderName;
+	private String targetFolderName;
 	
 	private List<DiffChunk> chunks = new ArrayList<>();
 
-	public FilePairWithDiff(String sourceFile, String targetFile, String sourceFolderName) {
+	public FilePairWithDiff(String sourceFile, String targetFile, String sourceFolderName, String targetFolderName) {
 		super();
 		this.sourceFile = sourceFile;
 		this.targetFile = targetFile;
 		this.setSourceFolderName(sourceFolderName);
+		this.setTargetFolderName(targetFolderName);
 	}
 
 	public FilePairWithDiff(){}
@@ -36,10 +38,13 @@ public class FilePairWithDiff {
 	}
 	
 	public String getTargetDeclaringCompilationUnit(){
-		return getDeclaringCompilationUnit(targetFile, getSourceFolderName());
+		return getDeclaringCompilationUnit(targetFile, getTargetFolderName());
 	}
 	
 	public String getDeclaringCompilationUnit(String path, String sourceFolderName){
+		if (!path.contains(".java")) {
+			return "";
+		}
 		String path0 = path.substring(path.indexOf(sourceFolderName)+sourceFolderName.length()+1, path.indexOf(".java"));
 		String qualifier = path0.replace(File.separatorChar, '.');
 		
@@ -96,6 +101,14 @@ public class FilePairWithDiff {
 
 	public void setSourceFolderName(String sourceFolderName) {
 		this.sourceFolderName = sourceFolderName;
+	}
+	
+	public String getTargetFolderName() {
+		return targetFolderName;
+	}
+	
+	public void setTargetFolderName(String targetFolderName) {
+		this.targetFolderName = targetFolderName;
 	}
 	
 	

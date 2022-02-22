@@ -53,9 +53,10 @@ public class SeparateVersionHandler extends AbstractHandler{
 				
 				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 				
-				ProjectConfig config = ConfigFactory.createConfig(projectName, id, buggyPath, fixPath);
+				ProjectConfig buggyConfig = ConfigFactory.createConfig(projectName, id, buggyPath);
+				ProjectConfig fixedConfig = ConfigFactory.createConfig(projectName, id, fixPath);
 				
-				if(config == null) {
+				if(buggyConfig == null || fixedConfig == null) {
 					try {
 						throw new Exception("cannot parse the configuration of the project " + projectName + " with id " + id);						
 					} catch (Exception e) {
@@ -65,7 +66,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				}
 				
 				List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
-						false, false, false, 3, true, true, config, testcase);
+						false, false, false, 3, true, true, buggyConfig, fixedConfig, testcase);
 				
 				if(trials.size() != 0) {
 					PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();					

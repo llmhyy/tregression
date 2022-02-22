@@ -35,6 +35,7 @@ import tregression.empiricalstudy.Simulator;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
 import tregression.model.PairList;
@@ -141,9 +142,9 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		String fixPath = PathConfiguration.getCorrectPath(projectName, bugId);
 
 		Defects4jProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugId);
-
-		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
-				fixPath);
+		
+		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, 
+				config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
 		diffMatcher.matchCode();
 
 		List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);

@@ -69,7 +69,7 @@ public class TrialGenerator0 {
 
 	public List<EmpiricalTrial> generateTrials(String buggyPath, String fixPath, boolean isReuse, boolean useSliceBreaker,
 			boolean enableRandom, int breakLimit, boolean requireVisualization, 
-			boolean allowMultiThread, ProjectConfig config, String testcase) {
+			boolean allowMultiThread, ProjectConfig buggyConfig, ProjectConfig fixedConfig, String testcase) {
 		SingleTimer timer = SingleTimer.start("generateTrial");
 		List<TestCase> tcList;
 		EmpiricalTrial trial = null;
@@ -86,7 +86,7 @@ public class TrialGenerator0 {
 				workingTC = tc;
 
 				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
-						tc, config, requireVisualization, true, useSliceBreaker, enableRandom, breakLimit);
+						tc, buggyConfig, fixedConfig,  requireVisualization, true, useSliceBreaker, enableRandom, breakLimit);
 				if(!trial.isDump()){
 					break;					
 				}
@@ -123,16 +123,16 @@ public class TrialGenerator0 {
 	}
 
 	private List<EmpiricalTrial> runMainMethodVersion(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread,
-			boolean requireVisualization, Defects4jProjectConfig config, TestCase tc) throws SimulationFailException {
+			boolean requireVisualization, Defects4jProjectConfig buggyConfig, Defects4jProjectConfig fixedConfig, TestCase tc) throws SimulationFailException {
 		List<EmpiricalTrial> trials;
-		generateMainMethod(buggyPath, tc, config);
-		recompileD4J(buggyPath, config);
-		generateMainMethod(fixPath, tc, config);
-		recompileD4J(fixPath, config);
+		generateMainMethod(buggyPath, tc, buggyConfig);
+		recompileD4J(buggyPath, buggyConfig);
+		generateMainMethod(fixPath, tc, fixedConfig);
+		recompileD4J(fixPath, fixedConfig);
 		
 		trials = new ArrayList<>();
 		EmpiricalTrial trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread, 
-				tc, config, requireVisualization, false, false, false, -1);
+				tc, buggyConfig, fixedConfig, requireVisualization, false, false, false, -1);
 		trials.add(trial);
 		return trials;
 	}
@@ -174,7 +174,7 @@ public class TrialGenerator0 {
 	}
 	
 	private EmpiricalTrial analyzeTestCase(String buggyPath, String fixPath, boolean isReuse, boolean allowMultiThread, 
-			TestCase tc, ProjectConfig config, boolean requireVisualization, 
+			TestCase tc, ProjectConfig buggyConfig, ProjectConfig fixedConfig, boolean requireVisualization, 
 			boolean isRunInTestCaseMode, boolean useSliceBreaker, boolean enableRandom, int breakLimit) throws SimulationFailException {
 		TraceCollector0 buggyCollector = new TraceCollector0(true);
 		TraceCollector0 correctCollector = new TraceCollector0(false);
@@ -227,7 +227,7 @@ public class TrialGenerator0 {
 				
 				Settings.compilationUnitMap.clear();
 				Settings.iCompilationUnitMap.clear();
-				buggyRS = buggyCollector.run(buggyPath, tc, config, isRunInTestCaseMode, 
+				buggyRS = buggyCollector.run(buggyPath, tc, buggyConfig, isRunInTestCaseMode, 
 						allowMultiThread, includedClassNames, excludedClassNames);
 				if (buggyRS.getRunningType() != NORMAL) {
 					trial = EmpiricalTrial.createDumpTrial(getProblemType(buggyRS.getRunningType()));
@@ -236,7 +236,7 @@ public class TrialGenerator0 {
 
 				Settings.compilationUnitMap.clear();
 				Settings.iCompilationUnitMap.clear();
-				correctRs = correctCollector.run(fixPath, tc, config, isRunInTestCaseMode, 
+				correctRs = correctCollector.run(fixPath, tc, fixedConfig, isRunInTestCaseMode, 
 						allowMultiThread, includedClassNames, excludedClassNames);
 				if (correctRs.getRunningType() != NORMAL) {
 					trial = EmpiricalTrial.createDumpTrial(getProblemType(correctRs.getRunningType()));
@@ -250,7 +250,8 @@ public class TrialGenerator0 {
 					System.out.println("start matching trace..., buggy trace length: " + buggyRS.getRunningTrace().size()
 							+ ", correct trace length: " + correctRs.getRunningTrace().size());
 					time1 = System.currentTimeMillis();
-					diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
+					// TODO: Fixed buggy and fixed diff matcher
+					diffMatcher = new DiffMatcher(buggyConfig.srcSourceFolder, buggyConfig.srcTestFolder, fixedConfig.srcSourceFolder, fixedConfig.srcTestFolder, buggyPath, fixPath);
 					diffMatcher.matchCode();
 
 					ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();

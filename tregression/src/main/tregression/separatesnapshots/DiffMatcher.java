@@ -29,18 +29,22 @@ import tregression.separatesnapshots.diff.LineChange;
 
 public class DiffMatcher {
 	
-	private String sourceFolderName;
-	private String testFolderName;
+	private String buggySourceFolderName;
+	private String buggyTestFolderName;
+	private String fixedSourceFolder;
+	private String fixedTestFolder;
 	
 	private String buggyPath;
 	private String fixPath;
 	
 	protected List<FilePairWithDiff> fileDiffList;
 	
-	public DiffMatcher(String sourceFolderName, String testFolderName, String buggyPath, String fixPath) {
+	public DiffMatcher(String buggySourceFolderName, String buggyTestFolderName, String fixedSourceFolder, String fixedTestFolder, String buggyPath, String fixPath) {
 		super();
-		this.sourceFolderName = sourceFolderName;
-		this.testFolderName = testFolderName;
+		this.buggySourceFolderName = buggySourceFolderName;
+		this.buggyTestFolderName = buggyTestFolderName;
+		this.fixedSourceFolder = fixedSourceFolder;
+		this.fixedTestFolder = fixedTestFolder;
 		this.buggyPath = buggyPath;
 		this.fixPath = fixPath;
 	}
@@ -275,13 +279,13 @@ public class DiffMatcher {
 	}
 
 	public void matchCode(){
-		List<String> diffContent = getRawDiffContent(sourceFolderName);
+		List<String> diffContent = getRDiffContent(buggySourceFolderName, fixedSourceFolder);
 		diffContent.add("diff end");
-		List<FilePairWithDiff> fileDiffs = new DiffParser().parseDiff(diffContent, sourceFolderName);
+		List<FilePairWithDiff> fileDiffs = new DiffParser().parseDiff(diffContent, buggySourceFolderName, fixedSourceFolder);
 		
-		List<String> testDiffContent = getRawDiffContent(testFolderName);
+		List<String> testDiffContent = getRDiffContent(buggyTestFolderName, fixedTestFolder);
 		testDiffContent.add("diff end");
-		List<FilePairWithDiff> testFileDiffs = new DiffParser().parseDiff(testDiffContent, testFolderName);
+		List<FilePairWithDiff> testFileDiffs = new DiffParser().parseDiff(testDiffContent, buggySourceFolderName, fixedSourceFolder);
 
 		fileDiffs.addAll(testFileDiffs);
 		Iterator<FilePairWithDiff> iter = fileDiffs.iterator();
@@ -305,9 +309,9 @@ public class DiffMatcher {
 		this.fileDiffList = fileDiffs;
 	}
 
-	protected List<String> getRawDiffContent(String folderName) {
-		String buggySourcePath = buggyPath + File.separator + folderName;
-		String fixSourcePath = fixPath + File.separator + folderName;
+	protected List<String> getRDiffContent(String buggyFolderName, String fixedFolderName) {
+		String buggySourcePath = buggyPath + File.separator + buggyFolderName;
+		String fixSourcePath = fixPath + File.separator + fixedFolderName;
 		return getRawDiffContent(buggySourcePath, fixSourcePath);
 	}
 
@@ -479,15 +483,15 @@ public class DiffMatcher {
 	}
 	
 	public String getSourceFolderName(){
-		return this.sourceFolderName;
+		return this.buggySourceFolderName;
 	}
 
 	public String getTestFolderName() {
-		return testFolderName;
+		return buggyTestFolderName;
 	}
 
 	public void setTestFolderName(String testFolderName) {
-		this.testFolderName = testFolderName;
+		this.buggyTestFolderName = testFolderName;
 	}
 
 	public FilePairWithDiff findDiffByTargetFile(BreakPoint tarPoint) {

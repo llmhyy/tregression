@@ -48,22 +48,23 @@ public class MavenProjectConfig extends ProjectConfig {
 		try {
 			model = mavenReader.read(new FileReader(pom));
 		} catch (IOException | XmlPullParserException e) {
-			System.out.println("Probelm parsing poim.xml. Exiting");
+			System.out.println("Probelm parsing pom.xml. Exiting");
 			return null;
 		}
 		Build build = model.getBuild();
 		String temp;
 		String testSrc = (temp = build.getTestSourceDirectory()) == null ?
-				"src/test/java" : temp;
+				"src" + File.separator + "test" + File.separator +"java" : temp;
 		String mainSrc = (temp = build.getSourceDirectory()) == null ?
-				"src/main/java" : temp;
+				"src" + File.separator + "main" + File.separator + "java" : temp;
 		String testOut = (temp = build.getTestOutputDirectory()) == null ?
-				"target/test-classes" : temp;
+				"target" + File.separator + "test-classes" : temp;
 		String mainOut = (temp = build.getOutputDirectory()) == null ?
-				"target/classes" : temp;
+				"target" + File.separator + "classes" : temp;
 		String work = (temp = build.getDirectory()) == null ? "target" : temp;
-		return new MavenProjectConfig(testSrc, mainSrc, testOut, mainOut,
-									  work, projectName, regressionID, model);
+		MavenProjectConfig config = new MavenProjectConfig(testSrc, mainSrc, testOut, mainOut,
+				  work, projectName, regressionID, model); 
+		return config;
 	}
 	
 	private static String getUserHomePath() {

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiffParser {
-	public List<FilePairWithDiff> parseDiff(List<String> diffContent, String sourceFolderName){
+	public List<FilePairWithDiff> parseDiff(List<String> diffContent, String sourceFolderName, String targetFolderName){
 		List<FilePairWithDiff> fileDiffList = new ArrayList<>();
 		FilePairWithDiff fileDiff = null;
 		
@@ -16,6 +16,7 @@ public class DiffParser {
 				}
 				fileDiff = new FilePairWithDiff();
 				fileDiff.setSourceFolderName(sourceFolderName);
+				fileDiff.setTargetFolderName(targetFolderName);
 			}
 			else if(line.startsWith("---")){
 				String osName = System.getProperty("os.name");
