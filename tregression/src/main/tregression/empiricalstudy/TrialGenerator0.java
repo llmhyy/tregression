@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import microbat.baseline.encoders.ProbabilityEncoder;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.preference.AnalysisScopePreference;
@@ -15,6 +16,7 @@ import microbat.recommendation.UserFeedback;
 import microbat.util.Settings;
 import sav.common.core.utils.SingleTimer;
 import sav.strategies.dto.AppJavaClassPath;
+import tregression.baseline.BaselineSimulator;
 import tregression.SimulationFailException;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
@@ -273,8 +275,24 @@ public class TrialGenerator0 {
 					visualizer.visualize(buggyTrace, correctTrace, pairList, diffMatcher);
 				}
 				
+				
 				RootCauseFinder rootcauseFinder = new RootCauseFinder();
 				rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
+				
+				// Insert baseline here
+				boolean baseline = false;
+				if (baseline) {
+					boolean rootCauseFound;
+					TraceNode node;
+					ProbabilityEncoder pe = new ProbabilityEncoder(buggyTrace);
+					BaselineSimulator baselineSim = new BaselineSimulator(buggyTrace, pairList);
+					do {
+						pe.encode();
+						node = pe.getMostErroneousNode();
+						rootCauseFound = baselineSim.feedback(node);
+					} while(!rootCauseFound);
+					System.out.println("Error statement: " + node.getOrder());
+				}
 				
 				Simulator simulator = new Simulator(useSliceBreaker, enableRandom, breakLimit);
 				simulator.prepare(buggyTrace, correctTrace, pairList, diffMatcher);
