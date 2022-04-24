@@ -7,6 +7,8 @@ A demo video is here.
 
 [![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/Uu8z3ONwRqs/0.jpg)](https://www.youtube.com/watch?v=Uu8z3ONwRqs)
 
+Audience can also check https://youtu.be/Mte08XIETlU to appl autonamous debugging with Tregression.
+
 # Citation
 If you need to reference our technique, please use the following citations:
 
