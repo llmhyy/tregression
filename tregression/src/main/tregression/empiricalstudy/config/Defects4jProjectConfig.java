@@ -1,6 +1,9 @@
 package tregression.empiricalstudy.config;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,5 +78,28 @@ public class Defects4jProjectConfig extends ProjectConfig{
 	
 	protected void retrieveDependencies() {
 		this.dependencies = new ArrayList<String>();
+	}
+	
+	public static Defects4jProjectConfig getConfig(String projectDirectory, String projectName, String regressionId) {
+		Defects4jProjectConfig config = null;
+		TregressionProperties prop = new TregressionProperties();
+		try {
+			FileInputStream input = new FileInputStream(projectDirectory + File.separator + "tregression.properties");
+			prop.load(input);
+		} catch (FileNotFoundException e) {
+			System.out.println("Properties file not found. Exiting");
+			return config;
+		} catch (IOException e) {
+			System.out.println("Properties file corrupted. Exiting");
+			return config;
+		}
+		
+		String buildDirectory = prop.getProperty("bin_test").split("/")[0];
+		config = new Defects4jProjectConfig(prop.getProperty("src_test"),
+											prop.getProperty("src_class"),
+											prop.getProperty("bin_test"),
+											prop.getProperty("bin_class"),
+											buildDirectory, projectName, regressionId);
+		return config;
 	}
 }

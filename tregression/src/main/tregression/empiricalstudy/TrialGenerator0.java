@@ -280,18 +280,19 @@ public class TrialGenerator0 {
 				rootcauseFinder.setRootCauseBasedOnDefects4J(pairList, diffMatcher, buggyTrace, correctTrace);
 				
 				// Insert baseline here
-				boolean baseline = false;
+				boolean baseline = true;
 				if (baseline) {
-					boolean rootCauseFound;
+					boolean rootCauseFound = true;
 					TraceNode node;
 					ProbabilityEncoder pe = new ProbabilityEncoder(buggyTrace);
+					pe.setup();
 					BaselineSimulator baselineSim = new BaselineSimulator(buggyTrace, pairList);
 					do {
 						pe.encode();
-						node = pe.getMostErroneousNode();
-						rootCauseFound = baselineSim.feedback(node);
+//						node = pe.getMostErroneousNode();
+//						rootCauseFound = baselineSim.feedback(node);
 					} while(!rootCauseFound);
-					System.out.println("Error statement: " + node.getOrder());
+//					System.out.println("Error statement: " + node.getOrder());
 				}
 				
 				Simulator simulator = new Simulator(useSliceBreaker, enableRandom, breakLimit);
