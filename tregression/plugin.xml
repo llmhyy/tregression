@@ -53,6 +53,16 @@
              id="traceagent.command.runSingleDefects4jBugs"
              name="Run Single Defect4j Bug">
        </command>
+       <command
+             defaultHandler="tregression.handler.AutoFeedbackHandler"
+             id="tregression.autofeedback"
+             name="Auto Debug">
+       </command>
+       <command
+             defaultHandler="tregression.handler.DataCollectionHandler"
+             id="tregression.collectdata"
+             name="Collect Data">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -175,6 +185,17 @@
                   commandId="tregression.command.localizationPlayer"
                   icon="icons/play.png"
                   label="Show Regression Localization"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.autofeedback"
+                  icon="icons/play.png"
+                  label="Auto Debug"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.collectdata"
+                  icon="icons/after.ico"
                   style="push">
             </command>
          </toolbar>

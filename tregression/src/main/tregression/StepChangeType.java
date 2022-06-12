@@ -14,10 +14,10 @@ import tregression.empiricalstudy.CausalityNode;
 import tregression.empiricalstudy.RootCauseFinder;
 
 public class StepChangeType {
-	public static int IDT = 0;
-	public static int SRC = 1;
-	public static int DAT = 2;
-	public static int CTL = 3;
+	public static final int IDT = 0;
+	public static final int SRC = 1;
+	public static final int DAT = 2;
+	public static final int CTL = 3;
 	
 	private int type;
 	private TraceNode matchingStep;

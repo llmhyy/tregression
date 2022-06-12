@@ -7,14 +7,17 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import microbat.Activator;
+import tregression.autofeedback.AutoFeedbackMethods;
 
 public class TregressionPreference extends PreferencePage implements IWorkbenchPreferencePage {
 
@@ -26,6 +29,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private Text bugIDText;
 	private Text testCaseText;
 	private Text defects4jFileText;
+	private Combo autoFeedbackCombo;
 	
 //	private String defaultBuggyProjectPath;
 //	private String defaultCorrectProjectPath;
@@ -44,7 +48,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	public static final String BUG_ID = "bug_id";
 	public static final String TEST_CASE = "test_case";
 	public static final String DEFECTS4J_FILE = "defects4j_file";
+	public static final String AUTO_FEEDBACK_METHOD = "autoFeedbackMethod";
 	
+	private int defaultAutoFeedbackMethod = AutoFeedbackMethods.RANDOM.ordinal();
 	
 	public TregressionPreference() {
 	}
@@ -100,6 +106,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		defects4jFileText = new Text(compo, SWT.NONE);
 		defects4jFileText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
 		defects4jFileText.setText(this.defaultDefects4jFile);
+
+		this.createAutoFeedbackSettingGroup(compo);
 		return compo;
 	}
 
@@ -111,13 +119,41 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		preferences.put(BUG_ID, this.bugIDText.getText());
 		preferences.put(TEST_CASE, this.testCaseText.getText());
 		preferences.put(DEFECTS4J_FILE, this.defects4jFileText.getText());
+		preferences.put(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		
 		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(BUG_ID, this.bugIDText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(TEST_CASE, this.testCaseText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(DEFECTS4J_FILE, this.defects4jFileText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		
 		return true;
+	}
+	
+	private void createAutoFeedbackSettingGroup(Composite parent) {
+		Group autoFeedbackGroup = new Group(parent, SWT.NONE);
+		autoFeedbackGroup.setText("Auto Feedback Methods");
+		
+		GridData autoFeedbackGroupData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		autoFeedbackGroupData.horizontalSpan = 3;
+		autoFeedbackGroup.setLayoutData(autoFeedbackGroupData);
+		
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 3;
+		
+		autoFeedbackGroup.setLayout(layout);
+		
+		Label methodLabel = new Label(autoFeedbackGroup, SWT.NONE);
+		methodLabel.setText("Method: ");
+		
+		AutoFeedbackMethods[] methods = AutoFeedbackMethods.values();
+		String[] methodsName = new String[methods.length];
+		for(int i=0; i<methods.length; i++) {
+			methodsName[i] = methods[i].name();
+		}
+		this.autoFeedbackCombo = new Combo(autoFeedbackGroup, SWT.DROP_DOWN);
+		this.autoFeedbackCombo.setItems(methodsName);
+		this.autoFeedbackCombo.select(this.defaultAutoFeedbackMethod);
 	}
 }
