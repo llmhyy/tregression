@@ -159,12 +159,21 @@ public class CompareEditor extends EditorPart {
 	}
 
 	private void adjustTextForSelectedNode(TraceNode node, StyledText text, List<StyleRange> ranges) {
-		int topLine = node.getLineNumber()-15;
-		topLine = (topLine<1) ? 1 : topLine;
+		int topIndex = text.getTopIndex();
+		int bottomIndex = getPartiallyVisibleBottomIndex(text);
+		int numLinesDisplayed = Math.max(bottomIndex - topIndex, 1);
+		int topLine = node.getLineNumber() - numLinesDisplayed / 2 - 1;
+		topLine = (topLine < 2) ? 1 : topLine;
 		text.setTopIndex(topLine);
 		
 		StyleRange selectedRange = selectedLineStyle(text, node.getLineNumber()); 
 		ranges.add(selectedRange);
+	}
+	
+	private int getPartiallyVisibleBottomIndex(StyledText text) {
+		int clientAreaHeight = text.getClientArea().height;
+		int lastVisiblePixel = clientAreaHeight - 1;
+		return text.getLineIndex(lastVisiblePixel);
 	}
 	
 	public StyledText generateText(SashForm sashForm, String path, DiffMatcher matcher, final boolean isSource){
