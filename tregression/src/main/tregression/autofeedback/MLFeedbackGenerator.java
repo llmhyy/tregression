@@ -1,7 +1,10 @@
 package tregression.autofeedback;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -20,26 +23,30 @@ public final class MLFeedbackGenerator extends FeedbackGenerator {
 	private ModelClient client;
 	
 	/**
-	 * It stores all the previous trace nodes.
+	 * It stores all the previous trace nodes. If the queue is full, then the least recent element will be removed.
 	 */
-	private List<NodeFeedbackPair> correctnessRecords;
+	private Queue<NodeFeedbackPair> correctnessRecords;
 	
 	/**
-	 * It only stores the record of data incorrect and control incorrect
+	 * It only stores the record of data incorrect and control incorrect. If the queue is full, then the least recent element will be removed.
 	 */
-	private List<NodeFeedbackPair> incorrectnessRecords;
+	private Queue<NodeFeedbackPair> incorrectnessRecords;
 
 	/**
 	 * If the certainty of the classification is within the range [50 - uncertaintyRange, 50 + uncertaintyRange]
 	 * The the classification is considered to be uncertain.
 	 */
-	private final float uncertaintyRange = (float) 0.02;
+	private final float uncertaintyRange = (float) 0.0;
+	/**
+	 * Maximum number of record to be stored.
+	 */
+	private final int maxRecordSize = 50;
 	
 	public MLFeedbackGenerator(Trace trace, AutoFeedbackMethods method) {
 		super(trace, method);
 		this.client = new ModelClient();
-		this.correctnessRecords = new ArrayList<>();
-		this.incorrectnessRecords = new ArrayList<>();
+		this.correctnessRecords = new LinkedList<>();
+		this.incorrectnessRecords = new LinkedList<>();
 	}
 
 	@Override
@@ -54,7 +61,7 @@ public final class MLFeedbackGenerator extends FeedbackGenerator {
 		UserFeedback finalFeedback = new UserFeedback();
 		
 		// First classify is the node correct or wrong by voting
-		List<UserFeedback> votingFeedbacks = this.collectCorrectVotingFeedbacks(node);
+		List<UserFeedback> votingFeedbacks = this.collectVotingFeedbacks(node, this.correctnessRecords, ModelClient.MODEL_1);
 		UserFeedback electedFeedback = this.getElectedFeedback(votingFeedbacks);
 		
 		if (electedFeedback.getFeedbackType() == UserFeedback.UNCLEAR) {
@@ -64,7 +71,13 @@ public final class MLFeedbackGenerator extends FeedbackGenerator {
 		} else {
 			// Now the step is classified to be Incorrect
 			// Decide is it Data Incorrect or Control Incorrect
-			votingFeedbacks = this.collectIncorrectVotingFeedbacks(node);
+			
+			if (this.incorrectnessRecords.isEmpty()) {
+				UserFeedback feedback = new UserFeedback(UserFeedback.UNCLEAR);
+				return feedback;
+			}
+			
+			votingFeedbacks = this.collectVotingFeedbacks(node, this.incorrectnessRecords, ModelClient.MODEL_2);
 			electedFeedback = this.getElectedFeedback(votingFeedbacks);
 			if (electedFeedback.getFeedbackType() == UserFeedback.UNCLEAR) {
 				return electedFeedback;
@@ -89,58 +102,37 @@ public final class MLFeedbackGenerator extends FeedbackGenerator {
 	/**
 	 * Get all the voting feedback for the given node to be Correct or Wrong
 	 * @param node Target trace node
+	 * @param pairs List of records
+	 * @param model Message to indicate which model to use
 	 * @return List of voting feedbacks
 	 */
-	private List<UserFeedback> collectCorrectVotingFeedbacks(TraceNode node) {
+	private List<UserFeedback> collectVotingFeedbacks(final TraceNode node, final Queue<NodeFeedbackPair> pairs, String model) {
 		List<UserFeedback> votingFeedbacks = new ArrayList<>();
 		StepVectorizer stepVectorizer = new StepVectorizer(this.trace);
-		
-		for (NodeFeedbackPair pair : this.correctnessRecords) {
+		String target_vec = stepVectorizer.vectorize(node.getOrder()).convertToCSV();
+		String[] ref_vecs = new String[pairs.size()];
+		int idx = 0;
+		for (NodeFeedbackPair pair : pairs) {
 			TraceNode ref_node = pair.getNode();
+			ref_vecs[idx++] = stepVectorizer.vectorize(ref_node.getOrder()).convertToCSV();
+		}
+		
+		float[] results = this.client.requestClassification(target_vec, ref_vecs, model);
+		idx = 0;
+		for (NodeFeedbackPair pair : pairs) {
+			float result = results[idx];
 			UserFeedback candidateFeedback = new UserFeedback();
-			
-			String target_vec = stepVectorizer.vectorize(node.getOrder()).convertToCSV();
-			String ref_vec = stepVectorizer.vectorize(ref_node.getOrder()).convertToCSV();
-			
-			float result = this.client.requestCorrectClassification(target_vec, ref_vec);
 			if (result >= 0.5 + this.uncertaintyRange) {
 				candidateFeedback.setFeedbackType(pair.getFeedback().getFeedbackType());
 			} else {
 				candidateFeedback.setFeedbackType(UserFeedback.UNCLEAR);
 			}
 			votingFeedbacks.add(candidateFeedback);
-			System.out.println(result);
+			idx++;
 		}
 		return votingFeedbacks;
 	}
-	
-	/**
-	 * Get all the voting feedback for the give node to be Data Incorrect or Control Incorrect
-	 * @param node Target trace node
-	 * @return List of voting feedbacks
-	 */
-	private List<UserFeedback> collectIncorrectVotingFeedbacks(TraceNode node) {
-		List<UserFeedback> votingFeedbacks = new ArrayList<>();
-		StepVectorizer stepVectorizer = new StepVectorizer(this.trace);
-		
-		for (NodeFeedbackPair pair : this.incorrectnessRecords) {
-			TraceNode ref_node = pair.getNode();
-			UserFeedback candidateFeedback = new UserFeedback();
-			
-			String target_vec = stepVectorizer.vectorize(node.getOrder()).convertToCSV();
-			String ref_vec = stepVectorizer.vectorize(ref_node.getOrder()).convertToCSV();
-			
-			float result = this.client.requestIncorrectClassification(target_vec, ref_vec);
-			if (result >= 0.5 + this.uncertaintyRange) {
-				candidateFeedback.setFeedbackType(pair.getFeedback().getFeedbackType());
-			} else {
-				candidateFeedback.setFeedbackType(UserFeedback.UNCLEAR);
-			}
-			votingFeedbacks.add(candidateFeedback);
-			System.out.println(result);
-		}
-		return votingFeedbacks;
-	}
+
 	/**
 	 * From a list of feedback, get the majority feedback.
 	 * Unclear feedback is ignored as long as there are at least one clear feedback
@@ -201,6 +193,14 @@ public final class MLFeedbackGenerator extends FeedbackGenerator {
 		if (pair.getFeedback().getFeedbackType() == UserFeedback.WRONG_PATH ||
 			pair.getFeedback().getFeedbackType() == UserFeedback.WRONG_PATH) {
 			this.incorrectnessRecords.add(pair);
+		}
+		
+		if (this.correctnessRecords.size() > this.maxRecordSize) {
+			this.correctnessRecords.remove();
+		}
+		
+		if (this.incorrectnessRecords.size() > this.maxRecordSize) {
+			this.incorrectnessRecords.remove();
 		}
 	}
 	

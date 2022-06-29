@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Model Client is used to communicate with the pre-trained model in the Python server using Socket.
@@ -31,10 +32,19 @@ public class ModelClient {
 	/**
 	 * Default sleeping time
 	 */
-	private final static int SLEEP_TIME = 500;
-	
-	private final static String MODEL_1 = "1";
-	private final static String MODEL_2 = "2";
+	private final static int SLEEP_TIME = 50;
+	/**
+	 * Message to use model 1, which classify Correct or Wrong
+	 */
+	public final static String MODEL_1 = "1";
+	/**
+	 * Message to use model 2, which classify Data Incorrect or Control Incorrect
+	 */
+	public final static String MODEL_2 = "2";
+	/**
+	 * Delimiter for joining reference step vector sequence
+	 */
+	private final static String delimiter  = "&";
 	
 	private Socket socket;
 	private DataInputStream reader;
@@ -55,28 +65,20 @@ public class ModelClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 	
 	/**
 	 * Classify the target vector to be correct or wrong
 	 * @param input_vec Traget step vector
-	 * @param ref_vec Refeerence step vector
-	 * @return 1 if server return Correct or else return 0. If error occur, -1 will be returned
+	 * @param ref_vec Refeerence step vector array
+	 * @param model message for which model to use. Must be MODEL_1 or MODEL_2
+	 * @return reusable score
 	 */
-	public float requestCorrectClassification(String input_vec, String ref_vec) {
+	public float[] requestClassification(String input_vec, String[] ref_vecs, String model) {
 		byte[] input_bytes = input_vec.getBytes(StandardCharsets.UTF_8);
-		byte[] ref_bytes = ref_vec.getBytes(StandardCharsets.UTF_8);
-		byte[] model_data = ModelClient.MODEL_1.getBytes(StandardCharsets.UTF_8);
-	
-		return this.request(model_data, input_bytes, ref_bytes);
-	}
-	
-	public float requestIncorrectClassification(String input_vec, String ref_vec) {
-		byte[] input_bytes = input_vec.getBytes(StandardCharsets.UTF_8);
-		byte[] ref_bytes = ref_vec.getBytes(StandardCharsets.UTF_8);
-		byte[] model_data = ModelClient.MODEL_2.getBytes(StandardCharsets.UTF_8);
-	
+		String joined_vec = String.join(ModelClient.delimiter, ref_vecs);
+		byte[] ref_bytes = joined_vec.getBytes(StandardCharsets.UTF_8);
+		byte[] model_data = model.getBytes(StandardCharsets.UTF_8);
 		return this.request(model_data, input_bytes, ref_bytes);
 	}
 	
@@ -93,9 +95,9 @@ public class ModelClient {
 	 * Send two given input to the server and return the response
 	 * @param input1 The first bytes input
 	 * @param input2 The second bytes input
-	 * @return 1 if server return True or else 0. If error occur, then -1 will be return.
+	 * @return model result
 	 */
-	private float request(byte[] model_data, byte[] input1, byte[] input2) {
+	private float[] request(byte[] model_data, byte[] input1, byte[] input2) {
 		try {
 			this.writer.write(model_data);
 			Thread.sleep(ModelClient.SLEEP_TIME);
@@ -103,10 +105,15 @@ public class ModelClient {
 			Thread.sleep(ModelClient.SLEEP_TIME); // Sleep for a while to ensure two input is properly send
 			this.writer.write(input2);
 			
-			byte[] response = new byte[1024];
+			byte[] response = new byte[8192];
 			this.reader.read(response);
-			float result = Float.parseFloat(new String(response, StandardCharsets.UTF_8));
-			return result;
+			String response_string = new String(response, StandardCharsets.UTF_8);
+			String[] score_sequence = response_string.split(ModelClient.delimiter);
+			float[] scores = new float[score_sequence.length];
+			for (int i=0; i<score_sequence.length; ++i) {
+				scores[i] = Float.parseFloat(score_sequence[i]);
+			}
+			return scores;
 		} catch (IOException e) {
 			System.out.println("Error: Fail to send or receive data from model server.");
 			e.printStackTrace();
@@ -114,6 +121,6 @@ public class ModelClient {
 			System.out.println("Faile to sleep");
 			e.printStackTrace();
 		}
-		return -1;
+		return null;
 	}
 }

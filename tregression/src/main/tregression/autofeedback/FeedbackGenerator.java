@@ -99,6 +99,13 @@ public abstract class FeedbackGenerator {
 		return this.selectedMethod;
 	}
 	
+	/**
+	 * Request human feedback as ground truth. By now, this method will extract the feedback from tregression
+	 * @param node	Target node
+	 * @param buggyView	Tregression buggy view
+	 * @param correctView Tregression correct view
+	 * @return Ground Truth feedback
+	 */
 	public UserFeedback requestUserFeedback(TraceNode node, BuggyTraceView buggyView, CorrectTraceView correctView) {
 
 		if (PlayRegressionLocalizationHandler.finder == null) {

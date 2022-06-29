@@ -1,5 +1,6 @@
 package tregression.autofeedback;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import microbat.baseline.encoders.ProbabilityEncoder;
@@ -8,6 +9,8 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
+import tregression.empiricalstudy.RootCauseFinder;
+import tregression.empiricalstudy.RootCauseNode;
 
 public final class BaselineFeedbackGenerator extends FeedbackGenerator {
 
@@ -77,5 +80,33 @@ public final class BaselineFeedbackGenerator extends FeedbackGenerator {
 	public TraceNode getErrorNode() {
 		this.encoder.encode();
 		return this.encoder.getMostErroneousNode();
+	}
+	
+	/**
+	 * Get the first deviation node from buggy trace.
+	 * @param finder Root cause finder from PlayRegressionLocalizationHandler
+	 * @return First deviation node. Can be null when error occur
+	 */
+	private TraceNode getFirstDeviationNode(RootCauseFinder finder) {
+		
+		if (finder == null) {
+			System.out.println("BaselineFeedbackGenerator.getFirstDeviationNode Error: finder is null");
+			return null;
+		}
+		
+		List<RootCauseNode> deviationPoints = finder.getRealRootCaseList();
+		if (deviationPoints.isEmpty()) {
+			System.out.println("BaselineFeedbackGenerator.getFirstDeviationNode Error: getRealRootCaseList is empty");
+			return null;
+		}
+		
+		TraceNode firstDeviationNode = deviationPoints.get(0).getRoot();
+		for (RootCauseNode deviationNode : deviationPoints) {
+			if (deviationNode.getRoot().getOrder() < firstDeviationNode.getOrder()) {
+				firstDeviationNode = deviationNode.getRoot();
+			}
+		}
+		
+		return firstDeviationNode;
 	}
 }

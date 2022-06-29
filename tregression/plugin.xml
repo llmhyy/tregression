@@ -63,6 +63,11 @@
              id="tregression.collectdata"
              name="Collect Data">
        </command>
+       <command
+             defaultHandler="tregression.handler.TestingHandler"
+             id="tregression.testingTregression"
+             name="Testing Tregression">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -196,6 +201,11 @@
             <command
                   commandId="tregression.collectdata"
                   icon="icons/after.ico"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.testingTregression"
+                  icon="icons/question_mark.png"
                   style="push">
             </command>
          </toolbar>

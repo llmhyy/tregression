@@ -25,11 +25,6 @@ public class AccMeasurement {
 	 */
 	private int bugID;
 	
-//	/**
-//	 * Different in root cause step order between the debugging result and the ground truth
-//	 */
-//	private int rootCauseOrderError;
-	
 	/**
 	 * Number of user feedback needed
 	 */
@@ -68,17 +63,39 @@ public class AccMeasurement {
 	 * Accuracy for wrong variable prediction
 	 */
 	private double varAcc;
+	/**
+	 * Accuracy of feedback prediction, without considering the wrong variable prediction
+	 */
+	private double overallTypeAcc;
+	/**
+	 * Accuracy of feedback prediction 
+	 */
+	private double overallAcc;
 
+	public AccMeasurement(String projectName, int bugID) {
+		this.projectName = projectName;
+		this.bugID = bugID;
+		this.noOfFeedbackNeeded = 0;
+		this.precisionCorrect = AccMeasurement.NaN;
+		this.recallCorrect = AccMeasurement.NaN;
+		this.precisionDI = AccMeasurement.NaN;
+		this.recallDI = AccMeasurement.NaN;
+		this.precisionCI = AccMeasurement.NaN;
+		this.recallCI = AccMeasurement.NaN;
+		this.varAcc = AccMeasurement.NaN;
+		this.overallAcc = AccMeasurement.NaN;
+		this.overallAcc = AccMeasurement.NaN;
+	}
+	
 	public AccMeasurement(String projectName, int bugID,
-//						  int rootCauseOrderError, 
 						  int noOfFeedbackNeeded,
 						  double precisionCorrect, double recallCorrect,
 						  double precisionDI, double recallDI,
 						  double precisionCI, double recallCI,
-						  double varAcc) {
+						  double varAcc,
+						  double overallTypeAcc, double overallAcc) {
 		this.projectName = projectName;
 		this.bugID = bugID;
-//		this.rootCauseOrderError = rootCauseOrderError;
 		this.noOfFeedbackNeeded = noOfFeedbackNeeded;
 		this.precisionCorrect = precisionCorrect;
 		this.recallCorrect = recallCorrect;
@@ -87,15 +104,13 @@ public class AccMeasurement {
 		this.precisionCI = precisionCI;
 		this.recallCI = recallCI;
 		this.varAcc = varAcc;
+		this.overallAcc = overallTypeAcc;
+		this.overallAcc = overallAcc;
 	}
 	
-	public AccMeasurement(String projectName, int bugID, 
-//						  int rootCauseOrderError, 
-						  int noOfFeedbackNeeded,
-						  List<NodeFeedbackPair> predicted, List<NodeFeedbackPair> ref) {
+	public AccMeasurement(String projectName, int bugID, int noOfFeedbackNeeded, List<NodeFeedbackPair> predicted, List<NodeFeedbackPair> ref) {
 		this.projectName = projectName;
 		this.bugID = bugID;
-//		this.rootCauseOrderError = rootCauseOrderError;
 		this.noOfFeedbackNeeded = noOfFeedbackNeeded;
 		
 		this.precisionCorrect = this.calPrecision(predicted, ref, UserFeedback.CORRECT);
@@ -108,6 +123,9 @@ public class AccMeasurement {
 		this.recallCI = this.calRecall(predicted, ref, UserFeedback.WRONG_PATH);
 		
 		this.varAcc = this.calVarAcc(predicted, ref);
+		
+		this.overallTypeAcc = this.calOverallTypeAcc(predicted, ref);
+		this.overallAcc = this.calOverallAcc(predicted, ref);
 	}
 	
 	public static AccMeasurement parseAccMeasurement(String csvString) {
@@ -129,11 +147,15 @@ public class AccMeasurement {
 		
 		double varAcc = Double.parseDouble(tokens.get(9));
 		
+		double overallTypeAcc = Double.parseDouble(tokens.get(10));
+		double overallAcc = Double.parseDouble(tokens.get(11));
+		
 		return new AccMeasurement(projectName, bugID, noOfFeedbackNeeded, 
 				                  precisionCorrect, recallCorrect,
 				                  precisionDI, recallDI,
 				                  precisionCI, recallCI,
-				                  varAcc);
+				                  varAcc,
+				                  overallTypeAcc, overallAcc);
 	}
 	
 	/**
@@ -263,9 +285,99 @@ public class AccMeasurement {
 		return (double) validPredictionCount / totalPredictionCount; // Cast to double first to avoid rounding
 	}
 	
-//	public int getRootCauseOrderError() {
-//		return this.rootCauseOrderError;
-//	}
+	public double calOverallTypeAcc(final List<NodeFeedbackPair> predictions, final List<NodeFeedbackPair> refs) {
+		if (predictions.size() != refs.size()) {
+			return AccMeasurement.NaN;
+		}
+		
+		int validFeedbackCount = 0;
+		int totalFeedbackCount = predictions.size();
+		if (totalFeedbackCount == 0) {
+			return AccMeasurement.NaN;
+		}
+		
+		for (int i=0; i<predictions.size(); ++i) {
+			NodeFeedbackPair prediction = predictions.get(i);
+			NodeFeedbackPair ref = refs.get(i);
+			
+			if (prediction.getFeedback().getFeedbackType() == ref.getFeedback().getFeedbackType()) {
+				validFeedbackCount++;
+			}
+		}
+		
+		return (double) validFeedbackCount / totalFeedbackCount;
+	}
+	
+	public double calOverallAcc(final List<NodeFeedbackPair> predictions, final List<NodeFeedbackPair> refs) {
+		if (predictions.size() != refs.size()) {
+			return AccMeasurement.NaN;
+		}
+		
+		int validFeedbackCount = 0;
+		int totalFeedbackCount = predictions.size();
+		if (totalFeedbackCount == 0) {
+			return AccMeasurement.NaN;
+		}
+		
+		for (int i=0; i<predictions.size(); ++i) {
+			NodeFeedbackPair prediction = predictions.get(i);
+			NodeFeedbackPair ref = refs.get(i);
+			
+			if (prediction.getFeedback() == ref.getFeedback()) {
+				validFeedbackCount++;
+			}
+		}
+		
+		return (double) validFeedbackCount / totalFeedbackCount;
+	}
+	
+	public void setnoOfFeedbackNeeded(int noOfFeedbackNeeded) {
+		this.noOfFeedbackNeeded = noOfFeedbackNeeded;
+	}
+	
+	public void setPrecisionCorrect(double precisionCorrect) {
+		this.precisionCorrect = precisionCorrect;
+	}
+	
+	public void setRecallCorrect(double recallCorrect) {
+		this.recallCorrect = recallCorrect;
+	}
+	
+	public void setPrecisionDI(double precisionDI) {
+		this.precisionDI = precisionDI;
+	}
+	
+	public void setRecallDI(double recallDI) {
+		this.recallDI = recallDI;
+	}
+	
+	public void setPrecisionCI(double precisionCI) {
+		this.precisionCI = precisionCI;
+	}
+	
+	public void setRecallCI(double recallCI) {
+		this.recallCI = recallCI;
+	}
+	
+	public void setVarAcc(double varAcc) {
+		this.varAcc = varAcc;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+	
+	public void setBugID(int bugID) {
+		this.bugID = bugID;
+	}
+	
+	public void setOverallTypeAcc(double overallTypeAcc) {
+		this.overallTypeAcc = overallTypeAcc;
+	}
+	
+	public void setOverallAcc(double overallAcc) {
+		this.overallAcc = overallAcc;
+	}
 	
 	public int getnoOfFeedbackNeeded() {
 		return this.noOfFeedbackNeeded;
@@ -307,6 +419,14 @@ public class AccMeasurement {
 		return this.bugID;
 	}
 	
+	public double getOverallTypeAcc() {
+		return this.overallTypeAcc;
+	}
+	
+	public double getOverallAcc() {
+		return this.overallAcc;
+	}
+	
 	/**
 	 * Export the measurements to csv format.
 	 * Format: projectName,bugID,Number of feedback needed, 
@@ -325,13 +445,14 @@ public class AccMeasurement {
 			   this.recallDI + "," +
 			   this.precisionCI + "," +
 			   this.recallCI + "," +
-			   this.varAcc;
+			   this.varAcc + "," + 
+			   this.overallTypeAcc + "," +
+			   this.overallAcc;
 	}
 	
 	@Override
 	public String toString() {
 		return this.projectName + ":" + this.bugID + " " +
-//			   "rootCauseOrderError: " + this.rootCauseOrderError +
 			   "no. of feedback needed: " + this.noOfFeedbackNeeded + 
 			   " Correct precision: " + this.precisionCorrect +
 			   " Correct recall: " + this.recallCorrect + 
@@ -339,7 +460,9 @@ public class AccMeasurement {
 			   " Data Incorrect recall: " + this.recallDI + 
 			   " Control Incorrect precision: " + this.precisionCI +
 			   " Control Incorrect recall: " + this.recallCI +
-			   " Wrong Variable Prediction Accuracy: " + this.varAcc;
+			   " Wrong Variable Prediction Accuracy: " + this.varAcc +
+			   " Overall Type Accuracy: " + this.overallTypeAcc + 
+			   " Overall Accuracy: " + this.overallAcc;
 	}
 	
 	private void printWrongMatchingError(int predictOrder, int refOrder) {

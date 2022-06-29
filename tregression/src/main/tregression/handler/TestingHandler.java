@@ -1,7 +1,6 @@
 package tregression.handler;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -14,18 +13,23 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import microbat.Activator;
-import microbat.preference.MicrobatPreference;
+import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
+import microbat.stepvectorizer.StepVectorizer;
 import microbat.util.JavaUtil;
+import microbat.Activator;
 import tregression.autofeedback.AutoFeedbackMethods;
+import tregression.autofeedback.BaselineFeedbackGenerator;
+import tregression.autofeedback.FeedbackGenerator;
 import tregression.autofeedbackevaluation.AccMeasurement;
 import tregression.autofeedbackevaluation.AutoDebugEvaluator;
-import tregression.autofeedbackevaluation.AvgAccMeasurement;
+import tregression.empiricalstudy.RootCauseFinder;
+import tregression.empiricalstudy.RootCauseNode;
 import tregression.preference.TregressionPreference;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
 
-public class AutoFeedbackHandler extends AbstractHandler {
+public class TestingHandler extends AbstractHandler {
 
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
@@ -34,43 +38,30 @@ public class AutoFeedbackHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
 		JavaUtil.sourceFile2CUMap.clear();
-		
-		Job job = new Job("Do evaluation") {
+		Job job = new Job("Testing Tregression") {
+
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				setup();
 				
-//				String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-//				String bugID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-				System.out.println("Start debugging");
-				String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-				int bugCount = 26;
+				if (buggyView == null && correctView == null ) {
+					System.out.println("buggyView or correctView is null");
+					return null;
+				}
 				
-				AutoDebugEvaluator evaluator = new AutoDebugEvaluator(getMethod());
+				AutoFeedbackMethods method = AutoFeedbackMethods.BASELINE;
+				AutoDebugEvaluator evaluator = new AutoDebugEvaluator(method);
 				evaluator.setup(getProjectName(), getBugID());
 				AccMeasurement measurement = evaluator.evaluate(getProjectName(), Integer.parseInt(getBugID()));
-				System.out.println(measurement);
-				
-//				AutoDebugEvaluator evaluator = new AutoDebugEvaluator(getMethod());
-//				evaluator.evaulateAll(projectPath, bugCount);
-//				
-//				String folder = "C:\\Users\\arkwa\\Documents\\NUS\\Dissertation\\Measurements";
-//				String fileName = AutoDebugEvaluator.genFileName(projectPath, getMethod());
-//				
-//				Path path = Paths.get(folder, fileName);
-//				evaluator.exportCSV(path);
-//				AvgAccMeasurement avgMeasurement = evaluator.getAvgMeasurement();
-//				System.out.println(avgMeasurement);
-
+				System.out.println(measurement);		
 				return Status.OK_STATUS;
 			}
 		};
-		
 		job.schedule();
-		
 		return null;
 	}
 	
-	private void updateTraceView() {
+	private void setup() {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {

@@ -16,6 +16,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.Activator;
+import microbat.baseline.encoders.ProbabilityEncoder;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -30,7 +31,9 @@ import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseFinder;
+import tregression.empiricalstudy.RootCauseNode;
 import tregression.empiricalstudy.TrialGenerator0;
+import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.training.DED;
@@ -43,12 +46,16 @@ import tregression.views.CorrectTraceView;
 
 public class AutoDebugEvaluator {
 	
-	// private static TraceNode rootCause = null;
-	
 	// Simulate debug process
 	private AutoFeedbackMethods method;
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
+	
+	/**
+	 * Factor that bound the maximum allowable iteration for baseline.
+	 * For example, if the given trace with length 100, then allowable iteration will be 100 * factor
+	 */
+	private final double maxBaselineItrFactor = 0.5; 
 	
 	/**
 	 * List of accuracy measurement of debugging of all bug report
@@ -96,12 +103,17 @@ public class AutoDebugEvaluator {
 		
 		for (int bugID=1; bugID<=bugCount; bugID++) {
 			
+			if (bugID != 12) {
+				continue;
+			}
+			System.out.println("Evaluating bug id: " + bugID);
 			try {
 				
 				String bugIDString = String.valueOf(bugID);
 				this.setup(projectName, bugIDString);
 				
 				if(this.checkSetUp()) {
+					
 					AccMeasurement measurement = this.evaluate(projectName, bugID);
 					this.measurements.add(measurement);
 				} else {
@@ -117,8 +129,6 @@ public class AutoDebugEvaluator {
 				System.out.println("Error occur in bugID: " + bugID);
 				e.printStackTrace();
 			}
-			
-			break;
 		}
 	}
 	
@@ -128,27 +138,71 @@ public class AutoDebugEvaluator {
 	 */
 	public AccMeasurement evaluate(String projectName, int bugID) {
 		int noOfFeedbackNeeded = 0;
-		
 		Trace buggyTrace = this.buggyView.getTrace();
 		
-		List<NodeFeedbackPair> predictions = this.predictFeedbacks(buggyTrace);
-		List<NodeFeedbackPair> refs = this.getRefFeedbacks(this.buggyView, this.correctView);
-		
-		// Count number of human feedback needed
-		for (NodeFeedbackPair prediction : predictions) {
-			if(prediction.getFeedback().getFeedbackType() == UserFeedback.UNCLEAR) {
-				noOfFeedbackNeeded++;
+		if (this.method == AutoFeedbackMethods.BASELINE) {
+			noOfFeedbackNeeded = this.evaluateBaseline(buggyTrace);
+			AccMeasurement measurement = new AccMeasurement(projectName, bugID);
+			measurement.setnoOfFeedbackNeeded(noOfFeedbackNeeded);
+			return measurement;
+		} else {
+			List<NodeFeedbackPair> predictions = this.predictFeedbacks(buggyTrace);
+			List<NodeFeedbackPair> refs = this.getRefFeedbacks(this.buggyView, this.correctView);
+			
+			// Count number of human feedback needed
+			for (NodeFeedbackPair prediction : predictions) {
+				if(prediction.getFeedback().getFeedbackType() == UserFeedback.UNCLEAR) {
+					noOfFeedbackNeeded++;
+				}
 			}
+			
+			AccMeasurement measurement = new AccMeasurement(projectName, bugID, noOfFeedbackNeeded, predictions, refs);
+			return measurement;
 		}
 		
-		AccMeasurement measurement = new AccMeasurement(projectName, bugID, noOfFeedbackNeeded, predictions, refs);
-		return measurement;
+	}
+	
+	/**
+	 * Evaluate the baseline performance
+	 * @param buggyTrace Buggy trace
+	 * @return Number of user feedback needed to reach the root cause
+	 */
+	private int evaluateBaseline(Trace buggyTrace) {
+		
+		final int maxItr = (int) (buggyTrace.size() * this.maxBaselineItrFactor);
+		int noOfFeedbackNeeded = 0;
+		
+		ProbabilityEncoder encoder = new ProbabilityEncoder(buggyTrace);
+		encoder.setup();
+		
+		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, this.correctView.getTrace());
+		TraceNode ref = this.getFirstDeviationNode(PlayRegressionLocalizationHandler.finder);
+
+		while(noOfFeedbackNeeded < maxItr) {
+			encoder.encode();
+			
+			TraceNode result = encoder.getMostErroneousNode();
+			System.out.println("Ground Truth: " + ref.getOrder() + ", Predication: " + result.getOrder());
+			
+			// Case that baseline find out the root cause
+			if (result.getLineNumber() == ref.getLineNumber()) {
+				break;
+			}
+			
+			StepChangeType type = typeChecker.getType(result, true, this.buggyView.getPairList(), this.buggyView.getDiffMatcher());
+			UserFeedback feedback = this.typeToFeedback(type, result, true, PlayRegressionLocalizationHandler.finder);
+			encoder.updateProbability(result, feedback);
+			
+			noOfFeedbackNeeded++;
+		}
+		
+		return noOfFeedbackNeeded;
 	}
 	
 	public List<AccMeasurement> getMeasurements() {
 		return this.measurements;
 	}
-	
+
 	/**
 	 * After evaluating all the bug in project, this function calculate the average value of all measurement.
 	 * Note that the average result is store into the same AccMeasurement Object for convenience. Note that this AccMeasurement
@@ -159,6 +213,11 @@ public class AutoDebugEvaluator {
 		return new AvgAccMeasurement(this.measurements);
 	}
 	
+	/**
+	 * Predict feedback of all the trace node in the given buggy trace
+	 * @param buggyTrace Target buggy trace
+	 * @return List of node feedback pair
+	 */
 	private List<NodeFeedbackPair> predictFeedbacks(Trace buggyTrace) {
 		List<NodeFeedbackPair> prediction = new ArrayList<>();
 		
@@ -169,6 +228,7 @@ public class AutoDebugEvaluator {
 		FeedbackGenerator generator = FeedbackGenerator.getFeedbackGenerator(buggyTrace, this.method);
 		generator.setVerbal(false); // Don't print out debug message
 		for (TraceNode node : executionList) {
+			System.out.println("Predicting feedback on node " + node.getOrder());
 			UserFeedback predictedFeedback = generator.giveFeedback(node);
 			if (predictedFeedback.getFeedbackType() == UserFeedback.UNCLEAR) {
 				generator.requestUserFeedback(node, buggyView, correctView);
@@ -179,6 +239,12 @@ public class AutoDebugEvaluator {
 		return prediction;
 	}
 	
+	/**
+	 * Get the ground truth feedback of all trace node
+	 * @param buggyView Tregression buggy view
+	 * @param correctView Tregression correct view
+	 * @return List of ground truth node feedback pair
+	 */
 	private List<NodeFeedbackPair> getRefFeedbacks(BuggyTraceView buggyView, CorrectTraceView correctView) {
 		List<NodeFeedbackPair> refFeedbacks = new ArrayList<>();
 		
@@ -330,6 +396,7 @@ public class AutoDebugEvaluator {
 	}
 	
 	private void updateTraceView() {
+		
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
@@ -383,17 +450,31 @@ public class AutoDebugEvaluator {
 		return feedback;
 	}
 	
-//	/**
-//	 * Calculate the error in step order of simulated result and ground truth root cause
-//	 * @param result Simulated result trace node
-//	 * @param ref Ground truth root cause trace node
-//	 * @return Different in step order
-//	 */
-//	private int calOrderError(TraceNode result, TraceNode ref) {
-//		return Math.abs(result.getOrder() - ref.getOrder());
-//	}
-//	
-//	public static void setRootCause(TraceNode inputRootCause) {
-//		rootCause = inputRootCause;
-//	}
+	/**
+	 * Get the first deviation node from buggy trace.
+	 * @param finder Root cause finder from PlayRegressionLocalizationHandler
+	 * @return First deviation node. Can be null when error occur
+	 */
+	private TraceNode getFirstDeviationNode(RootCauseFinder finder) {
+		
+		if (finder == null) {
+			System.out.println("BaselineFeedbackGenerator.getFirstDeviationNode Error: finder is null");
+			return null;
+		}
+		
+		List<RootCauseNode> deviationPoints = finder.getRealRootCaseList();
+		if (deviationPoints.isEmpty()) {
+			System.out.println("BaselineFeedbackGenerator.getFirstDeviationNode Error: getRealRootCaseList is empty");
+			return null;
+		}
+		
+		TraceNode firstDeviationNode = deviationPoints.get(0).getRoot();
+		for (RootCauseNode deviationNode : deviationPoints) {
+			if (deviationNode.getRoot().getOrder() < firstDeviationNode.getOrder()) {
+				firstDeviationNode = deviationNode.getRoot();
+			}
+		}
+		
+		return firstDeviationNode;
+	}
 }

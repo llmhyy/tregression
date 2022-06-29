@@ -57,6 +57,15 @@ public class AvgAccMeasurement {
 	 */
 	private double varAcc;
 	
+	/**
+	 * Average accuracy of feedback prediction, without considering the wrong variable prediction
+	 */
+	private double overallTypeAcc;
+	/**
+	 * Average accuracy of feedback prediction 
+	 */
+	private double overallAcc;
+	
 	public AvgAccMeasurement(List<AccMeasurement> measurements) {
 		
 		if (measurements.isEmpty()) {
@@ -81,6 +90,8 @@ public class AvgAccMeasurement {
 			double totalPrecisionCI = 0.0;
 			double totalRecallCI = 0.0;
 			double totalVarAcc = 0.0;
+			double totalOverallTypeAcc = 0.0;
+			double totalOverallAcc = 0.0;
 			
 			// Average number of feedback needed
 			for (AccMeasurement measurement : measurements) {
@@ -158,6 +169,26 @@ public class AvgAccMeasurement {
 				}
 			}
 			this.varAcc = size == 0 ? AccMeasurement.NaN : totalVarAcc / size;
+			
+			// Overall type accuracy
+			size = 0;
+			for (AccMeasurement measurement : measurements) {
+				if (measurement.getOverallTypeAcc() != AccMeasurement.NaN) {
+					totalOverallTypeAcc += measurement.getOverallTypeAcc();
+					size++;
+				}
+			}
+			this.overallTypeAcc = size == 0 ? AccMeasurement.NaN : totalOverallTypeAcc / size;
+			
+			// Overall accuracy
+			size = 0;
+			for (AccMeasurement measurement : measurements) {
+				if (measurement.getOverallAcc() != AccMeasurement.NaN) {
+					totalOverallAcc += measurement.getOverallAcc();
+					size++;
+				}
+			}
+			this.overallAcc = size == 0 ? AccMeasurement.NaN : totalOverallAcc / size;
 		}
 	}
 	
@@ -208,6 +239,8 @@ public class AvgAccMeasurement {
 			   " Avg. Data Incorrect recall: " + this.recallDI + 
 			   " Avg. Control Incorrect precision: " + this.precisionCI +
 			   " Avg. Control Incorrect recall: " + this.recallCI +
-			   " Avg. Wrong Variable Prediction Accuracy: " + this.varAcc;
+			   " Avg. Wrong Variable Prediction Accuracy: " + this.varAcc +
+			   " Avg. Overall Type Accuracy: " + this.overallTypeAcc +
+			   " Avg. Overall Accuracy: " + this.overallAcc;
 	}
 }
