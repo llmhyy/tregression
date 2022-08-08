@@ -262,12 +262,10 @@ public class TrialGenerator0 {
 
 					cachedDiffMatcher = diffMatcher;
 					cachedPairList = pairList;
-					System.out.println("Test");
 					tracediff.separatesnapshots.DiffMatcher diffMatcher1 = new tracediff.separatesnapshots.DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
 					diffMatcher1.matchCode();
 					tracediff.tracematch.ControlPathBasedTraceMatcher traceMatcher1 = new tracediff.tracematch.ControlPathBasedTraceMatcher();
 					tracediff.model.PairList pairList1 = traceMatcher1.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(), diffMatcher1);
-					System.out.println("Hello world1");
 				}
 				
 				Trace buggyTrace = buggyRS.getRunningTrace();
