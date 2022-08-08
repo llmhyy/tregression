@@ -2,7 +2,7 @@ package tregression;
 
 import java.util.Comparator;
 
-import tregression.model.TraceNodePair;
+import tracediff.model.TraceNodePair;
 
 public class TraceNodePairReverseOrderComparator implements Comparator<TraceNodePair>{
 

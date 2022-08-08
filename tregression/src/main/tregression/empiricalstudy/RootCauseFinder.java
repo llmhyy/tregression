@@ -20,6 +20,7 @@ import tregression.StepChangeTypeChecker;
 import tracediff.model.PairList;
 import tracediff.model.TraceNodePair;
 import tracediff.separatesnapshots.DiffMatcher;
+import tracediff.empiricalstudy.MatchStepFinder;
 
 /**
  * This class implement the alignment slicing and mending algorithm.
