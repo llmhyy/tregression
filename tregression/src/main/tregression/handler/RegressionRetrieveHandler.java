@@ -37,12 +37,12 @@ import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
-import tregression.model.PairList;
+import tracediff.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.AppClassPathInitializer;
-import tregression.separatesnapshots.DiffMatcher;
-import tregression.tracematch.ControlPathBasedTraceMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
+import tracediff.tracematch.ControlPathBasedTraceMatcher;
 import tregression.views.Visualizer;
 
 public class RegressionRetrieveHandler extends AbstractHandler {

@@ -13,8 +13,8 @@ import microbat.Activator;
 import microbat.model.trace.TraceNode;
 import microbat.views.ImageUI;
 import microbat.views.TraceView;
-import tregression.model.PairList;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.model.PairList;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public abstract class TregressionTraceView extends TraceView {
 	protected PairList pairList;

@@ -11,7 +11,7 @@ import microbat.algorithm.graphdiff.MatchingGraphPair;
 import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class HierarchicalIndexTreeMatcher extends IndexTreeMatcher {
 	

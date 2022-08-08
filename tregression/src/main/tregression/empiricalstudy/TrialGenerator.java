@@ -22,13 +22,13 @@ import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
 import tregression.empiricalstudy.training.TrainingDataTransfer;
 import tregression.io.RegressionRecorder;
-import tregression.model.PairList;
+import tracediff.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.AppClassPathInitializer;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.RunningResult;
 import tregression.separatesnapshots.TraceCollector;
-import tregression.tracematch.ControlPathBasedTraceMatcher;
+import tracediff.tracematch.ControlPathBasedTraceMatcher;
 import tregression.views.Visualizer;
 
 public class TrialGenerator {
@@ -235,7 +235,6 @@ public class TrialGenerator {
 				time1 = System.currentTimeMillis();
 				diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
 				diffMatcher.matchCode();
-
 				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
 				pairList = traceMatcher.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(),
 						diffMatcher);

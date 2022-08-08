@@ -17,9 +17,9 @@ import microbat.model.value.VarValue;
 import sav.common.core.Pair;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
+import tracediff.separatesnapshots.DiffMatcher;
 
 /**
  * This class implement the alignment slicing and mending algorithm.

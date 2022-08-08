@@ -17,7 +17,7 @@ import microbat.model.BreakPoint;
 import microbat.model.value.GraphNode;
 import microbat.util.JavaUtil;
 import microbat.util.MinimumASTNodeFinder;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public abstract class IndexTreeMatcher implements Matcher{
 

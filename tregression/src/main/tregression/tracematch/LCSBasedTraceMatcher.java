@@ -8,11 +8,11 @@ import microbat.algorithm.graphdiff.GraphDiff;
 import microbat.algorithm.graphdiff.HierarchyGraphDiffer;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import tregression.TraceNodePairReverseOrderComparator;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
+import tracediff.TraceNodePairReverseOrderComparator;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
 import tregression.model.TraceNodeWrapper;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 import tregression.util.TraceNodeComprehensiveSimilarityComparator;
 
 public class LCSBasedTraceMatcher {

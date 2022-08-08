@@ -10,10 +10,10 @@ import microbat.algorithm.graphdiff.GraphDiff;
 import microbat.algorithm.graphdiff.HierarchyGraphDiffer;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import tregression.TraceNodePairReverseOrderComparator;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.TraceNodePairReverseOrderComparator;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class ControlPathBasedTraceMatcher{
 

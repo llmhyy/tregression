@@ -19,10 +19,10 @@ import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.recommendation.BreakerRecommender;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.TrainingDataTransfer;
-import tregression.model.PairList;
+import tracediff.model.PairList;
 import tregression.model.StepOperationTuple;
-import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.model.TraceNodePair;
+import tracediff.separatesnapshots.DiffMatcher;
 
 /**
  * This class is for empirical study. I will check (1) whether and when a

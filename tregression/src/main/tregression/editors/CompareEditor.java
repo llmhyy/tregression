@@ -43,12 +43,12 @@ import org.eclipse.ui.part.EditorPart;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.views.TraceView;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
-import tregression.separatesnapshots.diff.DiffChunk;
-import tregression.separatesnapshots.diff.FilePairWithDiff;
-import tregression.separatesnapshots.diff.LineChange;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
+import tracediff.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.diff.DiffChunk;
+import tracediff.separatesnapshots.diff.FilePairWithDiff;
+import tracediff.separatesnapshots.diff.LineChange;
 import tregression.views.TregressionViews;
 
 public class CompareEditor extends EditorPart {

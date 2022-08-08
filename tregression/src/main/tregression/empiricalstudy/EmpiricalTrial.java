@@ -6,9 +6,9 @@ import java.util.List;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import tregression.empiricalstudy.training.DeadEndData;
-import tregression.model.PairList;
+import tracediff.model.PairList;
 import tregression.model.StepOperationTuple;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class EmpiricalTrial {
 	public static final int FIND_BUG = 0;

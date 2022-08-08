@@ -8,7 +8,7 @@ import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.solutionpattern.PatternDetector;
 import tregression.empiricalstudy.solutionpattern.SolutionPattern;
-import tregression.model.TraceNodePair;
+import tracediff.model.TraceNodePair;
 
 public class MissEvaluedCondition extends PatternDetector {
 

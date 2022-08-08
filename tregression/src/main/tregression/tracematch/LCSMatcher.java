@@ -7,10 +7,10 @@ import microbat.algorithm.graphdiff.Matcher;
 import microbat.algorithm.graphdiff.MatchingGraphPair;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
 import tregression.model.TraceNodeWrapper;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 import tregression.util.DiffUtil;
 import tregression.util.TraceNodeSimilarityComparator;
 

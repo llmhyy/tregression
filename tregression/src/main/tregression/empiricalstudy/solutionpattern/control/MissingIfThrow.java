@@ -9,10 +9,10 @@ import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseNode;
 import tregression.empiricalstudy.solutionpattern.PatternDetector;
 import tregression.empiricalstudy.solutionpattern.SolutionPattern;
-import tregression.separatesnapshots.DiffMatcher;
-import tregression.separatesnapshots.diff.DiffChunk;
-import tregression.separatesnapshots.diff.FilePairWithDiff;
-import tregression.separatesnapshots.diff.LineChange;
+import tracediff.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.diff.DiffChunk;
+import tracediff.separatesnapshots.diff.FilePairWithDiff;
+import tracediff.separatesnapshots.diff.LineChange;
 
 public class MissingIfThrow extends PatternDetector {
 

@@ -14,9 +14,9 @@ import microbat.model.variable.VirtualVar;
 import microbat.util.PrimitiveUtils;
 import sav.common.core.Pair;
 import tregression.empiricalstudy.MatchStepFinder;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class StepChangeTypeChecker {
 	

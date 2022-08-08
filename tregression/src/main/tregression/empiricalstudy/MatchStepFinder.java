@@ -2,8 +2,8 @@ package tregression.empiricalstudy;
 
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
 
 public class MatchStepFinder {
 	public static TraceNode findMatchedStep(boolean isOnBeforeTrace, TraceNode step, PairList pairList){

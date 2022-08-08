@@ -5,8 +5,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 
 import microbat.model.trace.TraceNode;
-import tregression.model.PairList;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.model.PairList;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class CompareTextEditorInput implements IEditorInput {
 
@@ -19,13 +19,13 @@ public class CompareTextEditorInput implements IEditorInput {
 	private DiffMatcher matcher;
 
 	public CompareTextEditorInput(TraceNode selectedNode, PairList pairList, String sourceFilePath,
-			String targetFilePath, DiffMatcher matcher) {
+			String targetFilePath, DiffMatcher diffMatcher) {
 		super();
 		this.setSelectedNode(selectedNode);
 		this.setPairList(pairList);
 		this.sourceFilePath = sourceFilePath;
 		this.targetFilePath = targetFilePath;
-		this.matcher = matcher;
+		this.matcher = diffMatcher;
 	}
 	
 	@Override

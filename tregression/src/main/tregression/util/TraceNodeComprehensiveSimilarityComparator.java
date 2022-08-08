@@ -1,7 +1,7 @@
 package tregression.util;
 
 import microbat.model.trace.TraceNode;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class TraceNodeComprehensiveSimilarityComparator implements TraceNodeSimilarityComparator {
 

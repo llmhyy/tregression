@@ -17,10 +17,10 @@ import microbat.model.trace.TraceNode;
 import tregression.editors.CompareEditor;
 import tregression.editors.CompareTextEditorInput;
 import tregression.empiricalstudy.RootCauseFinder;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
-import tregression.separatesnapshots.diff.FilePairWithDiff;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
+import tracediff.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.diff.FilePairWithDiff;
 
 public class BuggyTraceView extends TregressionTraceView {
 	

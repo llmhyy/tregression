@@ -3,8 +3,8 @@ package tregression.util;
 import java.util.List;
 
 import microbat.model.trace.TraceNode;
-import tregression.model.PairList;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.model.PairList;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class TraceNodeStructureSimilarityComparator implements TraceNodeSimilarityComparator{
 	

@@ -13,7 +13,7 @@ import microbat.model.BreakPoint;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.GraphNode;
 import microbat.util.JavaUtil;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class IndexTreeNode implements GraphNode {
 

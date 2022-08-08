@@ -5,9 +5,9 @@ import java.util.List;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
+import tracediff.separatesnapshots.DiffMatcher;
 
 public class DiffUtil {
 //	/**

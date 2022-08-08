@@ -13,8 +13,8 @@ import microbat.sql.TraceRecorder;
 import sav.common.core.SavRtException;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.DeadEndRecord;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
 
 public class RegressionRecorder extends TraceRecorder {
 	

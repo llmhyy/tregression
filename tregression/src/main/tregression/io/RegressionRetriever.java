@@ -11,8 +11,8 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.sql.MysqlTraceRetriever;
 import tregression.empiricalstudy.Regression;
-import tregression.model.PairList;
-import tregression.model.TraceNodePair;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
 
 public class RegressionRetriever extends MysqlTraceRetriever {
 	

@@ -43,7 +43,7 @@ import sav.strategies.mutanbug.MutationResult;
 import tregression.TraceModelConstructor;
 import tregression.io.ExcelReporter;
 import tregression.io.IgnoredTestCaseFiles;
-import tregression.model.PairList;
+import tracediff.model.PairList;
 import tregression.model.Trial;
 import tregression.tracematch.LCSBasedTraceMatcher;
 

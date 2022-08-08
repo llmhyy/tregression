@@ -20,13 +20,13 @@ import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.io.RegressionRecorder;
-import tregression.model.PairList;
+import tracediff.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.separatesnapshots.AppClassPathInitializer;
-import tregression.separatesnapshots.DiffMatcher;
+import tracediff.separatesnapshots.DiffMatcher;
 import tregression.separatesnapshots.RunningResult;
 import tregression.separatesnapshots.TraceCollector0;
-import tregression.tracematch.ControlPathBasedTraceMatcher;
+import tracediff.tracematch.ControlPathBasedTraceMatcher;
 import tregression.views.Visualizer;
 
 public class TrialGenerator0 {
@@ -262,6 +262,12 @@ public class TrialGenerator0 {
 
 					cachedDiffMatcher = diffMatcher;
 					cachedPairList = pairList;
+					System.out.println("Test");
+					tracediff.separatesnapshots.DiffMatcher diffMatcher1 = new tracediff.separatesnapshots.DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath, fixPath);
+					diffMatcher1.matchCode();
+					tracediff.tracematch.ControlPathBasedTraceMatcher traceMatcher1 = new tracediff.tracematch.ControlPathBasedTraceMatcher();
+					tracediff.model.PairList pairList1 = traceMatcher1.matchTraceNodePair(buggyRS.getRunningTrace(), correctRs.getRunningTrace(), diffMatcher1);
+					System.out.println("Hello world1");
 				}
 				
 				Trace buggyTrace = buggyRS.getRunningTrace();
