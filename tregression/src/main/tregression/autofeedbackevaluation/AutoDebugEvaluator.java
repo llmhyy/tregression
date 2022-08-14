@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.Activator;
+import microbat.baseline.encoders.NodeFeedbackPair;
 import microbat.baseline.encoders.ProbabilityEncoder;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -26,7 +28,6 @@ import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.autofeedback.AutoFeedbackMethods;
 import tregression.autofeedback.FeedbackGenerator;
-import tregression.autofeedback.NodeFeedbackPair;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -55,7 +56,7 @@ public class AutoDebugEvaluator {
 	 * Factor that bound the maximum allowable iteration for baseline.
 	 * For example, if the given trace with length 100, then allowable iteration will be 100 * factor
 	 */
-	private final double maxBaselineItrFactor = 0.5; 
+	private final double maxBaselineItrFactor = 0.75; 
 	
 	/**
 	 * List of accuracy measurement of debugging of all bug report
@@ -177,23 +178,82 @@ public class AutoDebugEvaluator {
 		
 		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, this.correctView.getTrace());
 		TraceNode ref = this.getFirstDeviationNode(PlayRegressionLocalizationHandler.finder);
-
+		
+		int startPointer = encoder.getSlicedExecutionList().get(0).getOrder();
+		List<Integer> branchOrders = new ArrayList<>();
+		for (TraceNode node : encoder.getSlicedExecutionList()) {
+			if (node.isBranch()) {
+				branchOrders.add(node.getOrder());
+			}
+		}
+		Collections.reverse(branchOrders);
+		
+		List<Integer> visitedNodeOrder = new ArrayList<>();
 		while(noOfFeedbackNeeded < maxItr) {
+			System.out.println("---------------------------------- " + noOfFeedbackNeeded + " iteration");
 			encoder.encode();
 			
 			TraceNode result = encoder.getMostErroneousNode();
-			System.out.println("Ground Truth: " + ref.getOrder() + ", Predication: " + result.getOrder());
+			
+			final TraceNode resultFinal = result;
+			
+			Display.getDefault().asyncExec(new Runnable() {
+			    @Override
+			    public void run() {
+					Trace buggyTrace = buggyView.getTrace();
+//					Trace correctTrace = correctView.getTrace();
+					buggyView.jumpToNode(buggyTrace, resultFinal.getOrder(), true); 
+					
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+			    }
+			});
+			
+			System.out.println("Ground Truth: " + 27 + ", Prediction: " + result.getOrder());
+			
+			for (TraceNode node : encoder.getSlicedExecutionList()) {
+				System.out.println("Node: " + node.getOrder() + " have prob = " + node.getProbability());
+				for (VarValue readVar : node.getReadVariables()) {
+					System.out.println("readVar: " + readVar.getVarName() + " have prob = " + readVar.getProbability());
+				}
+				for (VarValue writeVar : node.getWrittenVariables()) {
+					System.out.println("writeVar: " + writeVar.getVarName() + " have prob = " + writeVar.getProbability());
+				}
+			}
 			
 			// Case that baseline find out the root cause
-			if (result.getLineNumber() == ref.getLineNumber()) {
+			if (result.getOrder() == 27) {
 				break;
+			}
+			
+			if (visitedNodeOrder.contains(result.getOrder())) {
+				
+				if (!branchOrders.isEmpty()) {
+					startPointer = branchOrders.get(0);
+					branchOrders.remove(0);
+				} else {
+					encoder.getSlicedExecutionList().get(0).getOrder();
+					while (visitedNodeOrder.contains(startPointer)) {
+						startPointer++;
+					}
+				}
+				
+				result = buggyTrace.getTraceNode(startPointer);
+				System.out.println("Node is visited. Now change to Node: " + result.getOrder());
 			}
 			
 			StepChangeType type = typeChecker.getType(result, true, this.buggyView.getPairList(), this.buggyView.getDiffMatcher());
 			UserFeedback feedback = this.typeToFeedback(type, result, true, PlayRegressionLocalizationHandler.finder);
-			encoder.updateProbability(result, feedback);
-			
+			System.out.println("Feedback for node: " + result.getOrder() + " is " + feedback);
+			NodeFeedbackPair pair = new NodeFeedbackPair(result, feedback);
+			ProbabilityEncoder.addFeedback(pair);
+
 			noOfFeedbackNeeded++;
+			
+			visitedNodeOrder.add(result.getOrder());
 		}
 		
 		return noOfFeedbackNeeded;

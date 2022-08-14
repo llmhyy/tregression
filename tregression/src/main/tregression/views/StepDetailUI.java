@@ -378,6 +378,12 @@ public class StepDetailUI {
 						return id + (" aliasID:" + aliasVarID);
 					}
 					return id;
+				
+				case 4:
+					// Added by David
+					// For debugging baseline
+					double prob = varValue.getProbability();
+					return String.format("%.2f", prob);
 				}
 			}
 
@@ -471,6 +477,13 @@ public class StepDetailUI {
 		idColumn.setAlignment(SWT.LEFT);
 		idColumn.setText("ID");
 		idColumn.setWidth(200);
+		
+		// Added by David
+		// For debugging baseline
+		TreeColumn probColumn = new TreeColumn(tree, SWT.LEFT);
+		probColumn.setAlignment(SWT.LEFT);
+		probColumn.setText("Probability");
+		probColumn.setWidth(150);
 
 		CheckboxTreeViewer viewer = new CheckboxTreeViewer(tree);
 		createContextMenu(viewer);

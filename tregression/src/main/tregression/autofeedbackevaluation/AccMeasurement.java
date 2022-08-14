@@ -3,8 +3,8 @@ package tregression.autofeedbackevaluation;
 import java.util.Arrays;
 import java.util.List;
 
+import microbat.baseline.encoders.NodeFeedbackPair;
 import microbat.recommendation.UserFeedback;
-import tregression.autofeedback.NodeFeedbackPair;
 
 /**
  * AccMeasurement is used to store the evaluation result of debugging

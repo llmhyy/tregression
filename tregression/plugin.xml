@@ -68,6 +68,11 @@
              id="tregression.testingTregression"
              name="Testing Tregression">
        </command>
+       <command
+             defaultHandler="tregression.handler.MutationBaselineHandler"
+             id="tregression.baselineOnMutation"
+             name="Run Baseline On Mutation Project">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -206,6 +211,11 @@
             <command
                   commandId="tregression.testingTregression"
                   icon="icons/question_mark.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.baselineOnMutation"
+                  icon="icons/property.png"
                   style="push">
             </command>
          </toolbar>

@@ -40,6 +40,7 @@ public class FilePairWithDiff {
 	}
 	
 	public String getDeclaringCompilationUnit(String path, String sourceFolderName){
+
 		String path0 = path.substring(path.indexOf(sourceFolderName)+sourceFolderName.length()+1, path.indexOf(".java"));
 		String qualifier = path0.replace(File.separatorChar, '.');
 		
