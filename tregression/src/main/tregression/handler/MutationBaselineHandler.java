@@ -91,10 +91,15 @@ public class MutationBaselineHandler extends AbstractHandler {
 				
 				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				final int testCaesID = Integer.parseInt(testCaseID_str);
-
-				for (int testCaseIdx = testCaesID; testCaseIdx<testCaseIdx+10; testCaseIdx++) {
-					
+				
+				
+				for (int testCaseIdx = testCaesID; testCaseIdx<testCaesID+10; testCaseIdx++) {
+					System.out.println("Working on it");
+					String errorMsg = null;
 					if (ignoreIdxes.contains(testCaseIdx)) {
+						errorMsg = "test case ignored";
+						recorder.exportCSV(testCaseIdx, errorMsg);
+
 						continue;
 					}
 						
@@ -108,6 +113,8 @@ public class MutationBaselineHandler extends AbstractHandler {
 					} catch (RuntimeException e) {
 						System.out.println("Skipping " + testCaseIdx + " because startMutationFramework throw runtime error");
 						e.printStackTrace();
+						errorMsg = e.getMessage();
+						recorder.exportCSV(testCaseIdx, errorMsg);
 						continue;
 					}
 						
@@ -138,8 +145,17 @@ public class MutationBaselineHandler extends AbstractHandler {
 					 * Skip the test case if the root cause / input or output variables
 					 * cannot be found
 					 */
-					if (result.getRootCauses().isEmpty() || result.getTestIOs().isEmpty()) {
-						System.out.println("Skipping test case: " + testCaseIdx);
+					if (result.getRootCauses().isEmpty()) {
+						System.out.println("Skipping test case because no root cause: " + testCaseIdx);
+						errorMsg = "No root cause";
+						recorder.exportCSV(testCaseIdx, errorMsg);
+						continue;
+					}
+					
+					if (result.getTestIOs().isEmpty()) {
+						System.out.println("Skipping test case because no IO: " + testCaseIdx);
+						errorMsg = "No IO";
+						recorder.exportCSV(testCaseIdx, errorMsg);
 						continue;
 					}
 					
@@ -313,10 +329,15 @@ public class MutationBaselineHandler extends AbstractHandler {
 		
 		public void exportCSV(final int testCaseID, final String testCaseName, final int traceLen, final int noOfFeedbackNeeded, final boolean rootCauseFound) {
 			Path path = Paths.get(Recorder.path_str);
-			this.exportCSV(testCaseID, path, testCaseName, traceLen, noOfFeedbackNeeded, rootCauseFound);
+			this.exportCSV(testCaseID, path, testCaseName, traceLen, noOfFeedbackNeeded, rootCauseFound, null);
 		}
 		
-		public void exportCSV(final int testCaseID, final Path path, final String testCaseName, final int traceLen, final int noOfFeedbackNeeded, final boolean rootCauseFound) {
+		public void exportCSV(final int testCaseID, final String message) {
+			Path path = Paths.get(Recorder.path_str);
+			this.exportCSV(testCaseID, path, " ", -1, -1, false, message);
+		}
+		
+		public void exportCSV(final int testCaseID, final Path path, final String testCaseName, final int traceLen, final int noOfFeedbackNeeded, final boolean rootCauseFound, final String message) {
 			try {
 				File file = path.toFile();
 				
@@ -342,6 +363,11 @@ public class MutationBaselineHandler extends AbstractHandler {
 				
 				strBuilder.append(rootCauseFound);
 				strBuilder.append(Recorder.DILIMITER);
+				
+				if (message != null) {
+					strBuilder.append(message);
+					strBuilder.append(Recorder.DILIMITER);
+				}
 				
 				strBuilder.append("\n");
 				
