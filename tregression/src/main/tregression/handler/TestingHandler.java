@@ -39,6 +39,7 @@ import tregression.StepChangeTypeChecker;
 import tregression.autofeedback.AutoFeedbackMethods;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.RootCauseNode;
+import tregression.empiricalstudy.Simulator;
 import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
@@ -50,6 +51,8 @@ public class TestingHandler extends AbstractHandler {
 
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
+	
+	private final int maxMutationLimit = 10;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -79,8 +82,23 @@ public class TestingHandler extends AbstractHandler {
 				System.out.println("testing on test case id: " + testCaesID);
 				TestCase testCase = mutationFramework.getTestCases().get(testCaesID);
 				mutationFramework.setTestCase(testCase);
+				mutationFramework.setMaxNumberOfMutations(1);
 				
-				MutationResult result = mutationFramework.startMutationFramework();
+				MutationResult result = null;
+				boolean testCaseFailed = false;
+				for (int count=0; count<maxMutationLimit; count++) {
+					mutationFramework.setSeed(1);
+					result = mutationFramework.startMutationFramework();
+					if (!result.mutatedTestCasePassed()) {
+						testCaseFailed = true;
+						break;
+					}
+				}
+				
+				if (!testCaseFailed) {
+					System.out.println("Cannot fail the test case after mutation");
+					return null;
+				}
 				
 				Project mutatedProject = result.getMutatedProject();
 				Project originalProject = result.getOriginalProject();
@@ -127,7 +145,10 @@ public class TestingHandler extends AbstractHandler {
 				
 				// Set up input and output variables
 				List<VarValue> inputs = result.getTestIOs().get(result.getTestIOs().size()-1).getInputs();
-				List<VarValue> outputs = result.getTestIOs().get(result.getTestIOs().size()-1).getOutputs();
+				VarValue output = result.getTestIOs().get(result.getTestIOs().size()-1).getOutput();
+				
+				List<VarValue> outputs = new ArrayList<>();
+				outputs.add(output);
 				
 				for (VarValue inputVar : inputs) {
 					System.out.println("Input: " + inputVar.getVarID());
@@ -140,6 +161,7 @@ public class TestingHandler extends AbstractHandler {
 				encoder.setInputVars(inputs);
 				encoder.setOutputVars(outputs);
 				encoder.setup();
+				
 				// Set up visited trace node order which users have already give the feedback
 				List<Integer> visitedNodeOrder = new ArrayList<>();
 				int startPointer = encoder.getSlicedExecutionList().get(0).getOrder();
@@ -148,6 +170,10 @@ public class TestingHandler extends AbstractHandler {
 				StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 				RootCauseFinder finder = new RootCauseFinder();
 				finder.setRootCauseBasedOnDefects4J(pairListTregression, matcher, buggyTrace, correctTrace);
+				
+				Simulator simulator = new Simulator(false, false, 3);
+				simulator.prepare(buggyTrace, correctTrace, pairListTregression, matcher);
+				finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairListTregression, matcher);
 				
 				while (noOfFeedbacks <= maxItr) {
 					System.out.println("---------------------------------- " + noOfFeedbacks + " iteration");
@@ -179,7 +205,7 @@ public class TestingHandler extends AbstractHandler {
 					
 					// Collect feedback from correct trace
 					StepChangeType type = typeChecker.getType(nextInspectingNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
-					UserFeedback feedback = typeToFeedback(type, nextInspectingNode, true, PlayRegressionLocalizationHandler.finder);
+					UserFeedback feedback = typeToFeedback(type, nextInspectingNode, true, finder);
 					System.out.println("Feedback for node: " + nextInspectingNode.getOrder() + " is " + feedback);
 					
 					// Add feedback information into probability encoder
