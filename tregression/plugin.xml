@@ -73,6 +73,16 @@
              id="tregression.baselineOnMutation"
              name="Run Baseline On Mutation Project">
        </command>
+       <command
+             defaultHandler="tregression.handler.MutationHandler"
+             id="tregression.mutate"
+             name="Mutate Target Project">
+       </command>
+       <command
+             defaultHandler="tregression.handler.BaselineHandler"
+             id="tregression.baseline"
+             name="Run Baseline">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -209,13 +219,23 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.testingTregression"
-                  icon="icons/question_mark.png"
+                  commandId="tregression.mutate"
+                  icon="icons/cross_mark.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.baseline"
+                  icon="icons/recover.png"
                   style="push">
             </command>
             <command
                   commandId="tregression.baselineOnMutation"
                   icon="icons/property.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.testingTregression"
+                  icon="icons/question_mark.png"
                   style="push">
             </command>
          </toolbar>

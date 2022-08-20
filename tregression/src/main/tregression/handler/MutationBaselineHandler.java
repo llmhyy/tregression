@@ -242,11 +242,13 @@ public class MutationBaselineHandler extends AbstractHandler {
 						
 						// If baseline cannot find the root cause, we need to find a node to ask for feedback
 						TraceNode nextInspectingNode = prediction;
+						int nextOrder = startPointer;
 						if (visitedNodeOrder.contains(nextInspectingNode.getOrder())) {
-							while (visitedNodeOrder.contains(startPointer)) {
+							while (visitedNodeOrder.contains(nextOrder)) {
 								startPointer++;
+								nextOrder = encoder.getSlicedExecutionList().get(startPointer).getOrder();
 							}
-							nextInspectingNode = buggyTrace.getTraceNode(startPointer);
+							nextInspectingNode = buggyTrace.getTraceNode(nextOrder);
 						}
 //						System.out.println("Asking feedback for node: " + nextInspectingNode.getOrder());
 						
