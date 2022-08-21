@@ -68,7 +68,7 @@ public class StepDetailUI {
 	public UserInterestedVariables interestedVariables = new UserInterestedVariables();
 	
 	private UserFeedback feedback = new UserFeedback();
-
+	
 	class FeedbackSubmitListener implements MouseListener{
 		public void mouseUp(MouseEvent e) {}
 		public void mouseDoubleClick(MouseEvent e) {}
@@ -393,8 +393,10 @@ public class StepDetailUI {
 	}
 
 	//private CheckboxTreeViewer stateTreeViewer;
-	private CheckboxTreeViewer writtenVariableTreeViewer;
-	private CheckboxTreeViewer readVariableTreeViewer;
+	// Modified by David
+	// Change private to protected so that they can be used in StepDetailIOUI
+	protected CheckboxTreeViewer writtenVariableTreeViewer;
+	protected CheckboxTreeViewer readVariableTreeViewer;
 
 	private ITreeViewerListener treeListener;
 	private TregressionTraceView traceView;
@@ -579,12 +581,14 @@ public class StepDetailUI {
 		return comp;
 	}
 	
-	private Button dataButton;
-	private Button controlButton;
+	// Modified by David
+	// Change private to protected so that StepDetailIOUI can use them
+	protected Button dataButton;
+	protected Button controlButton;
 	
-	
-	
-	private void createSlicingGroup(Composite panel) {
+	// Modified by David
+	// Change private to protected so that StepDetailIOUI can use it
+	protected void createSlicingGroup(Composite panel) {
 		Group slicingGroup = new Group(panel, SWT.NONE);
 		GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
 		data.minimumHeight = 35;
