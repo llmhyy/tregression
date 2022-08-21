@@ -95,6 +95,8 @@ public class MutationHandler extends AbstractHandler {
 				Project originalProject = result.getOriginalProject();
 				
 				final Trace buggyTrace = result.getMutatedTrace();
+				buggyTrace.setSourceVersion(true);
+				
 				final Trace correctTrace = result.getOriginalTrace();
 				
 				// Convert tracediff.PairList to tregression.PairList
