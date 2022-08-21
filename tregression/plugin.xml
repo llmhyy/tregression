@@ -83,6 +83,11 @@
              id="tregression.baseline"
              name="Run Baseline">
        </command>
+       <command
+             defaultHandler="tregression.handler.RegressionBugHandler"
+             id="tregression.regressionbug"
+             name="Run Regression4j Bug">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -236,6 +241,11 @@
             <command
                   commandId="tregression.testingTregression"
                   icon="icons/question_mark.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.regressionbug"
+                  icon="icons/screenshot.png"
                   style="push">
             </command>
          </toolbar>

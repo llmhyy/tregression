@@ -25,6 +25,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import jmutation.execution.ProjectExecutor;
+import jmutation.model.ExecutionResult;
 import jmutation.model.MicrobatConfig;
 import jmutation.model.PrecheckExecutionResult;
 import jmutation.model.Project;
@@ -32,8 +33,10 @@ import jmutation.model.ProjectConfig;
 import jmutation.model.TestCase;
 import jmutation.model.ast.JdtMethodRetriever;
 import jmutation.parser.ProjectParser;
+import microbat.Activator;
 import microbat.model.trace.Trace;
 import microbat.util.JavaUtil;
+import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
@@ -50,30 +53,44 @@ public class RegressionBugHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-				final String srcFolderPath = "src\\main\\java";
-				final String testFolderPath = "src\\main\\test";
+				final String pathSeperator = "\\";
 				
-				final String projectPath = "C:\\Users\\arkwa\\Documents\\NUS\\Dissertation\\Regression4j\\univocity_univocity-parsers";
-				final String bugID = "1";
+				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
+				final String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
+				final String bugID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+				final String testCaseName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE);
 				
-				final String dropinPath = "C:\\Users\\arkwa\\git\\tregression\\tregression\\lib\\";
-//				final String dropinPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\lib";
-				final String projectName = "univocity_univocity-parsers";
-				final String buggyPath = "C:\\Users\\arkwa\\Documents\\NUS\\Dissertation\\Regression4j\\univocity_univocity-parsers\\1\\ric";
-				final String correctPath = "C:\\Users\\arkwa\\Documents\\NUS\\Dissertation\\Regression4j\\univocity_univocity-parsers\\1\\rfc";
+				final String buggyPath = projectPath + pathSeperator + projectName + pathSeperator + bugID + pathSeperator + "ric";
+				final String correctPath = projectPath + pathSeperator + projectName + pathSeperator + bugID + pathSeperator + "rfc";
 				
-				final String testcase = "";
+				final String dropinPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\lib";
 				
 				final String microbatConfigPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json";
 				ProjectConfig config_bug = new ProjectConfig(buggyPath, dropinPath);
 				Project project_bug = config_bug.getProject();
 				List<TestCase> testCases = project_bug.getTestCases();
-				List<TestCase> failingTCs = new ArrayList<>();
 				
 				MicrobatConfig microbatConfig = MicrobatConfig.parse(microbatConfigPath, projectPath);
 				
-				ProjectExecutor projectExecutor = new ProjectExecutor(microbatConfig, config_bug);
-				PrecheckExecutionResult precheckExecutionResult = projectExecutor.execPrecheck(testCases.get(0));
+				for (TestCase testCase : testCases) {
+					
+					if (testCase.qualifiedName().equals(testCaseName)) {
+						ProjectExecutor projectExecutor = new ProjectExecutor(microbatConfig, config_bug);
+						ExecutionResult result = projectExecutor.exec(testCase);
+						
+					}
+//					ProjectExecutor projectExecutor = new ProjectExecutor(microbatConfig, config_bug);
+//					PrecheckExecutionResult precheckExecutionResult = projectExecutor.execPrecheck(testCase);
+//					if (precheckExecutionResult.isOverLong()) {
+//						throw new RuntimeException("TestCase trace is over long: " + precheckExecutionResult.getTotalSteps() + "/" + microbatConfig.getStepLimit());
+//					}
+//					System.out.println("Normal precheck done");
+//					
+//					ExecutionResult result = projectExecutor.exec(testCase);
+//					if (!result.isSuccessful()) {
+						
+//					}
+				}
 				
 				return Status.OK_STATUS;
 			}
@@ -82,72 +99,72 @@ public class RegressionBugHandler extends AbstractHandler {
 		return null;
 	}
 	
-	/**
-     * Returns a list of methods from the String representation of a file.
-     * @param codeContent file content as String
-     * @return List of methods
-     */
-    public List<TestCase> getAllMethod(String codeContent) {
-        // code taken from regminer
-        List<TestCase> methods = new ArrayList<>();
-        JdtMethodRetriever retriever = new JdtMethodRetriever();
-        CompilationUnit unit = parseCompilationUnit(codeContent);
-        unit.accept(retriever);
-        List<MethodDeclaration> methodNodes = retriever.getMethods();
-        PackageDeclaration packageDeclaration = unit.getPackage();
-        String className;
-        if (packageDeclaration == null) {
-            className = retriever.getClassName();
-        } else {
-            className = unit.getPackage().getName() + "." + retriever.getClassName();
-        }
-        for (MethodDeclaration node : methodNodes) {
-            if (!(node.getParent().getParent() instanceof CompilationUnit) ){
-                continue;
-            }
-            if (isIgnoredMethod(node) || !isTestMethod(node)) {
-                // skip nodes with @Ignore annotation
-                // skip nodes without @Test annotation
-                continue;
-            }
-
-            String simpleName = node.getName().toString();
-            StringJoiner sj = new StringJoiner(",", simpleName + "(", ")");
-            node.parameters().stream().forEach(param -> sj.add(param.toString()));
-            String signature = sj.toString();
-
-            int startLine = unit.getLineNumber(node.getStartPosition()) - 1;
-            int endLine = unit.getLineNumber(node.getStartPosition() + node.getLength()) - 1;
-            methods.add(new TestCase(signature, startLine, endLine, simpleName, className, node));
-        }
-        return methods;
-    }
-    
-    private static boolean isIgnoredMethod(MethodDeclaration node) {
-        return matchAnnotation(node, "@Ignore");
-    }
-
-    private static boolean isTestMethod(MethodDeclaration node) {
-        return matchAnnotation(node, "@Test");
-    }
-    
-    private static boolean matchAnnotation(MethodDeclaration node, String annotation) {
-        return node.modifiers().stream().filter(mod -> mod instanceof Annotation).anyMatch(an -> an.toString().equals(annotation));
-    }
-    
-    public static CompilationUnit parseCompilationUnit(String fileContent) {
-
-        ASTParser parser = ASTParser.newParser(AST.getJLSLatest()); // handles JDK 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6
-        parser.setSource(fileContent.toCharArray());
-        parser.setResolveBindings(true);
-        // In order to parse 1.6 code, some compiler options need to be set to 1.6
-        Map<String, String> options = JavaCore.getOptions();
-        JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
-        parser.setCompilerOptions(options);
-
-        CompilationUnit result = (CompilationUnit) parser.createAST(null);
-        return result;
-    }
+//	/**
+//     * Returns a list of methods from the String representation of a file.
+//     * @param codeContent file content as String
+//     * @return List of methods
+//     */
+//    public List<TestCase> getAllMethod(String codeContent) {
+//        // code taken from regminer
+//        List<TestCase> methods = new ArrayList<>();
+//        JdtMethodRetriever retriever = new JdtMethodRetriever();
+//        CompilationUnit unit = parseCompilationUnit(codeContent);
+//        unit.accept(retriever);
+//        List<MethodDeclaration> methodNodes = retriever.getMethods();
+//        PackageDeclaration packageDeclaration = unit.getPackage();
+//        String className;
+//        if (packageDeclaration == null) {
+//            className = retriever.getClassName();
+//        } else {
+//            className = unit.getPackage().getName() + "." + retriever.getClassName();
+//        }
+//        for (MethodDeclaration node : methodNodes) {
+//            if (!(node.getParent().getParent() instanceof CompilationUnit) ){
+//                continue;
+//            }
+//            if (isIgnoredMethod(node) || !isTestMethod(node)) {
+//                // skip nodes with @Ignore annotation
+//                // skip nodes without @Test annotation
+//                continue;
+//            }
+//
+//            String simpleName = node.getName().toString();
+//            StringJoiner sj = new StringJoiner(",", simpleName + "(", ")");
+//            node.parameters().stream().forEach(param -> sj.add(param.toString()));
+//            String signature = sj.toString();
+//
+//            int startLine = unit.getLineNumber(node.getStartPosition()) - 1;
+//            int endLine = unit.getLineNumber(node.getStartPosition() + node.getLength()) - 1;
+//            methods.add(new TestCase(signature, startLine, endLine, simpleName, className, node));
+//        }
+//        return methods;
+//    }
+//    
+//    private static boolean isIgnoredMethod(MethodDeclaration node) {
+//        return matchAnnotation(node, "@Ignore");
+//    }
+//
+//    private static boolean isTestMethod(MethodDeclaration node) {
+//        return matchAnnotation(node, "@Test");
+//    }
+//    
+//    private static boolean matchAnnotation(MethodDeclaration node, String annotation) {
+//        return node.modifiers().stream().filter(mod -> mod instanceof Annotation).anyMatch(an -> an.toString().equals(annotation));
+//    }
+//    
+//    public static CompilationUnit parseCompilationUnit(String fileContent) {
+//
+//        ASTParser parser = ASTParser.newParser(AST.getJLSLatest()); // handles JDK 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6
+//        parser.setSource(fileContent.toCharArray());
+//        parser.setResolveBindings(true);
+//        // In order to parse 1.6 code, some compiler options need to be set to 1.6
+//        Map<String, String> options = JavaCore.getOptions();
+//        JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);
+//        parser.setCompilerOptions(options);
+//
+//        CompilationUnit result = (CompilationUnit) parser.createAST(null);
+//        return result;
+//    }
 	
 	private void setup() {
 		Display.getDefault().syncExec(new Runnable() {
