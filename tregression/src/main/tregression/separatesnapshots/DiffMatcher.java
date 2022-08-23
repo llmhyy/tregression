@@ -246,6 +246,10 @@ public class DiffMatcher {
 	
 	public FilePairWithDiff findDiffByTargetFile(String targetFile){
 		for(FilePairWithDiff diff: this.fileDiffList){
+			// Modified by David
+			if (diff.getTargetFile() == null) {
+				continue;
+			}
 			if(diff.getTargetFile().equals(targetFile)){
 				return diff;
 			}
@@ -256,6 +260,10 @@ public class DiffMatcher {
 	
 	public FilePairWithDiff findDiffBySourceFile(String sourceFile){
 		for(FilePairWithDiff diff: this.fileDiffList){
+			// Modified by David
+			if (diff.getSourceFile() == null) {
+				continue;
+			}
 			if(diff.getSourceFile().equals(sourceFile)){
 				return diff;
 			}
@@ -266,6 +274,14 @@ public class DiffMatcher {
 
 	public FilePairWithDiff findDiffBySourceFile(BreakPoint srcPoint) {
 		for(FilePairWithDiff diff: this.fileDiffList){
+			if (diff.getSourceFile() == null) {
+				continue;
+			}
+			
+			if (!diff.getSourceFile().endsWith(".java")) {
+				continue;
+			}
+			
 			if(diff.getSourceDeclaringCompilationUnit().equals(srcPoint.getDeclaringCompilationUnitName())){
 				return diff;
 			}
@@ -325,6 +341,9 @@ public class DiffMatcher {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// Modified by David
 			e.printStackTrace();
 		}
 		
@@ -497,6 +516,15 @@ public class DiffMatcher {
 
 	public FilePairWithDiff findDiffByTargetFile(BreakPoint tarPoint) {
 		for(FilePairWithDiff diff: this.fileDiffList){
+			// Modified by David
+			if (diff.getTargetFile() == null) {
+				continue;
+			}
+			
+			if (!diff.getTargetFile().endsWith(".java")) {
+				continue;
+			}
+			
 			if(diff.getTargetDeclaringCompilationUnit().equals(tarPoint.getDeclaringCompilationUnitName())){
 				return diff;
 			}

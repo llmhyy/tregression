@@ -19,28 +19,52 @@ public class DiffParser {
 			}
 			else if(line.startsWith("---")){
 				String osName = System.getProperty("os.name");
-				String sourceFile;
-				if(osName.contains("Win")){
-					sourceFile = line.substring(line.indexOf("a/")+2, line.length()-1);
+				// Modified by David
+//				String sourceFile;
+//				if(osName.contains("Win")){
+//					sourceFile = line.substring(line.indexOf("a/")+2, line.length()-1);
+//				}
+//				else{
+//					sourceFile = line.substring(line.indexOf("a/")+1, line.length());
+//				}
+//				sourceFile = sourceFile.replace("/", File.separator);
+//				sourceFile = sourceFile.replace("\\\\", File.separator);
+				String sourceFile = null;
+				if (!line.contains("/dev/null")) {
+					if(osName.contains("Win")){
+						sourceFile = line.substring(line.indexOf("a/")+2, line.length()-1);
+					}
+					else{
+						sourceFile = line.substring(line.indexOf("a/")+1, line.length());
+					}
+					sourceFile = sourceFile.replace("/", File.separator);
+					sourceFile = sourceFile.replace("\\\\", File.separator);
 				}
-				else{
-					sourceFile = line.substring(line.indexOf("a/")+1, line.length());
-				}
-				sourceFile = sourceFile.replace("/", File.separator);
-				sourceFile = sourceFile.replace("\\\\", File.separator);
 				fileDiff.setSourceFile(sourceFile);
 			}
 			else if(line.startsWith("+++")){
 				String osName = System.getProperty("os.name");
-				String targetFile;
-				if(osName.contains("Win")){
-					targetFile = line.substring(line.indexOf("b/")+2, line.length()-1);
+				// Modified by David
+//				String targetFile;
+//				if(osName.contains("Win")){
+//					targetFile = line.substring(line.indexOf("b/")+2, line.length()-1);
+//				}
+//				else{
+//					targetFile = line.substring(line.indexOf("b/")+1, line.length());
+//				}
+//				targetFile = targetFile.replace("/", File.separator);
+//				targetFile = targetFile.replace("\\\\", File.separator);
+				String targetFile = null;
+				if (!line.contains("/dev/null")) {
+					if(osName.contains("Win")){
+						targetFile = line.substring(line.indexOf("b/")+2, line.length()-1);
+					}
+					else{
+						targetFile = line.substring(line.indexOf("b/")+1, line.length());
+					}
+					targetFile = targetFile.replace("/", File.separator);
+					targetFile = targetFile.replace("\\\\", File.separator);
 				}
-				else{
-					targetFile = line.substring(line.indexOf("b/")+1, line.length());
-				}
-				targetFile = targetFile.replace("/", File.separator);
-				targetFile = targetFile.replace("\\\\", File.separator);
 				fileDiff.setTargetFile(targetFile);
 			}
 			else if(line.startsWith("@@")){
