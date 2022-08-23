@@ -36,6 +36,9 @@ import jmutation.parser.ProjectParser;
 import microbat.Activator;
 import microbat.model.trace.Trace;
 import microbat.util.JavaUtil;
+import tracediff.TraceDiff;
+import tracediff.model.PairList;
+import tracediff.model.TraceNodePair;
 import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
@@ -53,6 +56,8 @@ public class RegressionBugHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
+				setup();
+				
 				final String pathSeperator = "\\";
 				
 				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
@@ -64,33 +69,53 @@ public class RegressionBugHandler extends AbstractHandler {
 				final String correctPath = projectPath + pathSeperator + projectName + pathSeperator + bugID + pathSeperator + "rfc";
 				
 				final String dropinPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\lib";
-				
 				final String microbatConfigPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json";
-				ProjectConfig config_bug = new ProjectConfig(buggyPath, dropinPath);
-				Project project_bug = config_bug.getProject();
-				List<TestCase> testCases = project_bug.getTestCases();
+				
+				final String srcFolderPath = "src\\main\\java";
+				final String testFolderPath = "src\\test\\java";
 				
 				MicrobatConfig microbatConfig = MicrobatConfig.parse(microbatConfigPath, projectPath);
 				
-				for (TestCase testCase : testCases) {
-					
+				ProjectConfig buggyConfig = new ProjectConfig(buggyPath, dropinPath);
+				Project buggyProject = buggyConfig.getProject();
+				
+				ProjectConfig correctConfig = new ProjectConfig(correctPath, dropinPath);
+				Project correctProject = correctConfig.getProject();
+				
+				TestCase targetTestCase = null;
+				for (TestCase testCase : buggyProject.getTestCases()) {
 					if (testCase.qualifiedName().equals(testCaseName)) {
-						ProjectExecutor projectExecutor = new ProjectExecutor(microbatConfig, config_bug);
-						ExecutionResult result = projectExecutor.exec(testCase);
-						
+						targetTestCase = testCase;
+						break;
 					}
-//					ProjectExecutor projectExecutor = new ProjectExecutor(microbatConfig, config_bug);
-//					PrecheckExecutionResult precheckExecutionResult = projectExecutor.execPrecheck(testCase);
-//					if (precheckExecutionResult.isOverLong()) {
-//						throw new RuntimeException("TestCase trace is over long: " + precheckExecutionResult.getTotalSteps() + "/" + microbatConfig.getStepLimit());
-//					}
-//					System.out.println("Normal precheck done");
-//					
-//					ExecutionResult result = projectExecutor.exec(testCase);
-//					if (!result.isSuccessful()) {
-						
-//					}
 				}
+				
+				ProjectExecutor buggyProjExe = new ProjectExecutor(microbatConfig, buggyConfig);
+				ExecutionResult buggyResult = buggyProjExe.exec(targetTestCase);
+				
+				ProjectExecutor correctProjExe = new ProjectExecutor(microbatConfig, correctConfig);
+				ExecutionResult correctResult = correctProjExe.exec(targetTestCase);
+				
+				Trace buggyTrace = buggyResult.getTrace();
+				buggyTrace.setSourceVersion(true);
+				
+				Trace correctTrace = correctResult.getTrace();
+				
+				PairList pairList = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
+	                    buggyProject.getRoot().getAbsolutePath(), correctProject.getRoot().getAbsolutePath(),
+	                    buggyTrace, correctTrace);
+				List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
+				for (TraceNodePair pair : pairList.getPairList()) {
+					pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
+				}
+				final tregression.model.PairList pairListTregression = new tregression.model.PairList(pairLTregression);
+				
+				// Set up the diffMatcher
+				final DiffMatcher matcher = new DiffMatcher(srcFolderPath, testFolderPath, buggyProject.getRoot().getAbsolutePath(), correctProject.getRoot().getAbsolutePath());
+				matcher.matchCode();
+				
+				// Update view
+				updateView(buggyTrace, correctTrace, pairListTregression, matcher);
 				
 				return Status.OK_STATUS;
 			}

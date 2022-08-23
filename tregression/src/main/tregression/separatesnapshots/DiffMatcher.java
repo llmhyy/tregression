@@ -360,6 +360,7 @@ public class DiffMatcher {
 				else if(line.getType()==LineChange.REMOVE){
 					int successiveRemoveLines = findSuccessiveRemoveLines(chunk, line.getIndex());
 					System.currentTimeMillis();
+					
 					boolean followByAdd = checkFollowByAdd(chunk, line.getIndex(), successiveRemoveLines);
 					
 					if(followByAdd){
@@ -415,7 +416,11 @@ public class DiffMatcher {
 
 	private boolean checkFollowByAdd(DiffChunk chunk, int startIndex, int successiveRemoveLines) {
 		int index = startIndex+successiveRemoveLines;
-		if(index <= chunk.getChangeList().size()){
+		// Modified by David
+		// It may cause index out of bound error
+		
+//		if(index <= chunk.getChangeList().size()){
+		if(index < chunk.getChangeList().size()){
 			return chunk.getChangeList().get(index).getType()==LineChange.ADD;
 		}
 		
