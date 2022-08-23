@@ -52,7 +52,7 @@ public class MutationHandler extends AbstractHandler {
 				
 				// Setup parameter
 				final String srcFolderPath = "src\\main\\java";
-				final String testFolderPath = "src\\main\\test";
+				final String testFolderPath = "src\\test\\java";
 				final String projectPath = "C:/Users/arkwa/git/java-mutation-framework/sample/math_70";
 				final String dropInDir = "C:/Users/arkwa/git/java-mutation-framework/lib";
 				final String microbatConfigPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json";
@@ -69,7 +69,7 @@ public class MutationHandler extends AbstractHandler {
 				mutationFramework.setProjectPath(projectPath);
 				mutationFramework.setDropInsDir(dropInDir);
 				mutationFramework.setMicrobatConfigPath(microbatConfigPath);
-				mutationFramework.setMaxNumberOfMutations(1);
+				mutationFramework.setMaxNumberOfMutations(maxMutation);
 				
 				TestCase testCase = mutationFramework.getTestCases().get(testCaesID);
 				mutationFramework.setTestCase(testCase);

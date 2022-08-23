@@ -246,6 +246,10 @@ public class DiffMatcher {
 	
 	public FilePairWithDiff findDiffByTargetFile(String targetFile){
 		for(FilePairWithDiff diff: this.fileDiffList){
+			// Modified by David
+			if (diff.getTargetFile() == null) {
+				continue;
+			}
 			if(diff.getTargetFile().equals(targetFile)){
 				return diff;
 			}
@@ -256,6 +260,10 @@ public class DiffMatcher {
 	
 	public FilePairWithDiff findDiffBySourceFile(String sourceFile){
 		for(FilePairWithDiff diff: this.fileDiffList){
+			// Modified by David
+			if (diff.getSourceFile() == null) {
+				continue;
+			}
 			if(diff.getSourceFile().equals(sourceFile)){
 				return diff;
 			}
@@ -266,6 +274,14 @@ public class DiffMatcher {
 
 	public FilePairWithDiff findDiffBySourceFile(BreakPoint srcPoint) {
 		for(FilePairWithDiff diff: this.fileDiffList){
+			if (diff.getSourceFile() == null) {
+				continue;
+			}
+			
+			if (!diff.getSourceFile().endsWith(".java")) {
+				continue;
+			}
+			
 			if(diff.getSourceDeclaringCompilationUnit().equals(srcPoint.getDeclaringCompilationUnitName())){
 				return diff;
 			}
@@ -326,6 +342,9 @@ public class DiffMatcher {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// Modified by David
+			e.printStackTrace();
 		}
 		
 		return -1;
@@ -360,6 +379,7 @@ public class DiffMatcher {
 				else if(line.getType()==LineChange.REMOVE){
 					int successiveRemoveLines = findSuccessiveRemoveLines(chunk, line.getIndex());
 					System.currentTimeMillis();
+					
 					boolean followByAdd = checkFollowByAdd(chunk, line.getIndex(), successiveRemoveLines);
 					
 					if(followByAdd){
@@ -415,7 +435,11 @@ public class DiffMatcher {
 
 	private boolean checkFollowByAdd(DiffChunk chunk, int startIndex, int successiveRemoveLines) {
 		int index = startIndex+successiveRemoveLines;
-		if(index <= chunk.getChangeList().size()){
+		// Modified by David
+		// It may cause index out of bound error
+		
+//		if(index <= chunk.getChangeList().size()){
+		if(index < chunk.getChangeList().size()){
 			return chunk.getChangeList().get(index).getType()==LineChange.ADD;
 		}
 		
@@ -492,6 +516,15 @@ public class DiffMatcher {
 
 	public FilePairWithDiff findDiffByTargetFile(BreakPoint tarPoint) {
 		for(FilePairWithDiff diff: this.fileDiffList){
+			// Modified by David
+			if (diff.getTargetFile() == null) {
+				continue;
+			}
+			
+			if (!diff.getTargetFile().endsWith(".java")) {
+				continue;
+			}
+			
 			if(diff.getTargetDeclaringCompilationUnit().equals(tarPoint.getDeclaringCompilationUnitName())){
 				return diff;
 			}

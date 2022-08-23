@@ -106,8 +106,13 @@ public class BaselineHandler extends AbstractHandler {
 						break;
 					}
 					
-					int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
-					TraceNode nextNode = buggyTrace.getTraceNode(nextNodeOrder);
+					boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
+					TraceNode nextNode = prediction;
+					if (isVisitedNode) {
+						int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
+						nextNode = buggyTrace.getTraceNode(nextNodeOrder);
+					}
+					
 					System.out.println("Asking feedback for node: " + nextNode.getOrder());
 					
 					// Collect feedback from correct trace
@@ -120,7 +125,7 @@ public class BaselineHandler extends AbstractHandler {
 					ProbabilityEncoder.addFeedback(pair);
 					
 					noOfFeedbacks += 1;
-					askingAgent.addVisistedNodeOrder(nextNodeOrder);
+					askingAgent.addVisistedNodeOrder(nextNode.getOrder());
 				}
 				
 				BaselineHandler.clearData();
@@ -286,6 +291,10 @@ public class BaselineHandler extends AbstractHandler {
 				nodeOrder = this.executionList.get(++this.startPointer).getOrder();
 			}
 			return nodeOrder;
+		}
+		
+		public boolean isVisitedNode(TraceNode node) {
+			return this.visitedNodeOrder.contains(node.getOrder());
 		}
 	}
 

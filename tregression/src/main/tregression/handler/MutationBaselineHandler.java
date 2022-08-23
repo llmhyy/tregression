@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -76,7 +78,7 @@ public class MutationBaselineHandler extends AbstractHandler {
 				
 				// Setup parameter
 				final String srcFolderPath = "src\\main\\java";
-				final String testFolderPath = "src\\main\\test";
+				final String testFolderPath = "src\\test\\java";
 				
 				// Mutation framework will mutate the target project
 				MutationFramework mutationFramework = new MutationFramework();
@@ -96,7 +98,7 @@ public class MutationBaselineHandler extends AbstractHandler {
 				final int testCaesID = Integer.parseInt(testCaseID_str);
 				
 				
-				for (int testCaseIdx = testCaesID; testCaseIdx<testCaesID+10; testCaseIdx++) {
+				for (int testCaseIdx = testCaesID; testCaseIdx<testCaesID+50; testCaseIdx++) {
 					System.out.println("Working on it");
 					String errorMsg = null;
 					if (ignoreIdxes.contains(testCaseIdx)) {
@@ -207,10 +209,8 @@ public class MutationBaselineHandler extends AbstractHandler {
 					encoder.setOutputVars(outputs);
 					encoder.setup();
 					
-					// Set up visited trace node order which users have already give the feedback
-					List<Integer> visitedNodeOrder = new ArrayList<>();
-					int startPointer = encoder.getSlicedExecutionList().get(0).getOrder();
-					
+					AskingAgent askingAgent = new AskingAgent(encoder.getSlicedExecutionList());
+
 					// Set up type checker and root cause finder for feedback
 					StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 					RootCauseFinder finder = new RootCauseFinder();
@@ -241,29 +241,26 @@ public class MutationBaselineHandler extends AbstractHandler {
 							break;
 						}
 						
-						// If baseline cannot find the root cause, we need to find a node to ask for feedback
-						TraceNode nextInspectingNode = prediction;
-						int nextOrder = startPointer;
-						if (visitedNodeOrder.contains(nextInspectingNode.getOrder())) {
-							while (visitedNodeOrder.contains(nextOrder)) {
-								startPointer++;
-								nextOrder = encoder.getSlicedExecutionList().get(startPointer).getOrder();
-							}
-							nextInspectingNode = buggyTrace.getTraceNode(nextOrder);
+						boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
+						TraceNode nextNode = prediction;
+						if (isVisitedNode) {
+							int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
+							nextNode = buggyTrace.getTraceNode(nextNodeOrder);
 						}
+						
 //						System.out.println("Asking feedback for node: " + nextInspectingNode.getOrder());
 						
 						// Collect feedback from correct trace
-						StepChangeType type = typeChecker.getType(nextInspectingNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
-						UserFeedback feedback = typeToFeedback(type, nextInspectingNode, true, finder);
+						StepChangeType type = typeChecker.getType(nextNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
+						UserFeedback feedback = typeToFeedback(type, nextNode, true, finder);
 //						System.out.println("Feedback for node: " + nextInspectingNode.getOrder() + " is " + feedback);
 						
 						// Add feedback information into probability encoder
-						NodeFeedbackPair pair = new NodeFeedbackPair(nextInspectingNode, feedback);
+						NodeFeedbackPair pair = new NodeFeedbackPair(nextNode, feedback);
 						ProbabilityEncoder.addFeedback(pair);
 						
 						noOfFeedbacks += 1;
-						visitedNodeOrder.add(nextInspectingNode.getOrder());
+						askingAgent.addVisistedNodeOrder(nextNode.getOrder());
 					}
 					
 					// Record the result into text file
@@ -404,6 +401,36 @@ public class MutationBaselineHandler extends AbstractHandler {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+	
+	private class AskingAgent {
+		
+		private final List<TraceNode> executionList;
+		private Set<Integer> visitedNodeOrder;
+		
+		private int startPointer;
+		
+		public AskingAgent(List<TraceNode> executionList) {
+			this.executionList = executionList;
+			this.visitedNodeOrder = new HashSet<>();
+			this.startPointer = 0;
+		}
+		
+		public void addVisistedNodeOrder(final int order) {
+			this.visitedNodeOrder.add(order);
+		}
+		
+		public int getNodeOrderToBeAsked() {
+			int nodeOrder = this.executionList.get(startPointer).getOrder();
+			while(this.visitedNodeOrder.contains(nodeOrder)) {
+				nodeOrder = this.executionList.get(++this.startPointer).getOrder();
+			}
+			return nodeOrder;
+		}
+		
+		public boolean isVisitedNode(TraceNode node) {
+			return this.visitedNodeOrder.contains(node.getOrder());
 		}
 	}
 }
