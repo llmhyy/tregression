@@ -90,10 +90,15 @@ public class RegressionBugHandler extends AbstractHandler {
 					}
 				}
 				
-				ProjectExecutor buggyProjExe = new ProjectExecutor(microbatConfig, buggyConfig);
+				
+		ProjectExecutor buggyProjExe = new ProjectExecutor(microbatConfig, buggyConfig);
+				PrecheckExecutionResult buggyPrecheck = buggyProjExe.execPrecheck(targetTestCase);
+				System.out.println("Buggy Trace Precheck: " + buggyPrecheck.getTotalSteps());
 				ExecutionResult buggyResult = buggyProjExe.exec(targetTestCase);
 				
 				ProjectExecutor correctProjExe = new ProjectExecutor(microbatConfig, correctConfig);
+				PrecheckExecutionResult correctPrecheck = correctProjExe.execPrecheck(targetTestCase);
+				System.out.println("Correct Trace Precheck: " + correctPrecheck.getTotalSteps());
 				ExecutionResult correctResult = correctProjExe.exec(targetTestCase);
 				
 				Trace buggyTrace = buggyResult.getTrace();
