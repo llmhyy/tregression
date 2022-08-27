@@ -14,16 +14,19 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import baseline.MutationAgent;
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
 import jmutation.model.Project;
 import jmutation.model.TestCase;
-import jmutation.model.TestIO;
 import microbat.Activator;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.util.JavaUtil;
+import testio.TestIOFramework;
+import testio.model.IOModel;
+import testio.model.TestIO;
 import tracediff.TraceDiff;
 import tracediff.model.PairList;
 import tracediff.model.TraceNodePair;
@@ -37,7 +40,6 @@ public class MutationHandler extends AbstractHandler {
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
 	
-	private final int maxMutationLimit = 10;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -49,97 +51,117 @@ public class MutationHandler extends AbstractHandler {
 				
 				// Access the buggy view and correct view
 				setup();
-				
-				// Setup parameter
-				final String srcFolderPath = "src\\main\\java";
-				final String testFolderPath = "src\\test\\java";
+//				
+//				// Setup parameter
+//				final String srcFolderPath = "src\\main\\java";
+//				final String testFolderPath = "src\\test\\java";
 				final String projectPath = "C:/Users/arkwa/git/java-mutation-framework/sample/math_70";
 				final String dropInDir = "C:/Users/arkwa/git/java-mutation-framework/lib";
 				final String microbatConfigPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json";
-				
-				final int maxMutation = 1;
-				
-				// Get the test case id from preference
+////				
+//				final int maxMutation = 1;
+//				final int maxMutationLimit = 5;
+//				// Get the test case id from preference
 				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				final int testCaesID = Integer.parseInt(testCaseID_str);
-				System.out.println("testing on test case id: " + testCaesID);
+//				System.out.println("testing on test case id: " + testCaesID);
+//				
+//				// Mutation framework will mutate the target project
+//				MutationFramework mutationFramework = new MutationFramework();
+//				mutationFramework.setProjectPath(projectPath);
+//				mutationFramework.setDropInsDir(dropInDir);
+//				mutationFramework.setMicrobatConfigPath(microbatConfigPath);
+//				mutationFramework.setMaxNumberOfMutations(maxMutation);
+//				
+//				TestCase testCase = mutationFramework.getTestCases().get(testCaesID);
+//				mutationFramework.setTestCase(testCase);
+//				
+//				// Mutate project until it fail the test case
+//				MutationResult result = null;
+//				boolean testCaseFailed = false;
+//				for (int count=0; count<maxMutationLimit; count++) {
+//					mutationFramework.setSeed(1);
+//					result = mutationFramework.startMutationFramework();
+//					if (!result.mutatedTestCasePassed()) {
+//						testCaseFailed = true;
+//						break;
+//					}
+//				}
+//				
+//				if (!testCaseFailed) {
+//					System.out.println("Cannot fail the test case after mutation");
+//					return null;
+//				}
+//				
+//				Project mutatedProject = result.getMutatedProject();
+//				Project originalProject = result.getOriginalProject();
+//				
+//				final Trace buggyTrace = result.getMutatedTrace();
+//				buggyTrace.setSourceVersion(true);
+//				
+//				final Trace correctTrace = result.getOriginalTrace();
+//				
+//				// Convert tracediff.PairList to tregression.PairList
+//				PairList pairList = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
+//	                    mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath(),
+//	                    result.getMutatedTrace(), result.getOriginalTrace());
+//				List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
+//				for (TraceNodePair pair : pairList.getPairList()) {
+//					pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
+//				}
+//				final tregression.model.PairList pairListTregression = new tregression.model.PairList(pairLTregression);
+//				
+//				// Set up the diffMatcher
+//				final DiffMatcher matcher = new DiffMatcher(srcFolderPath, testFolderPath, mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath());
+//				matcher.matchCode();
+//				
+//				// Update view
+//				updateView(buggyTrace, correctTrace, pairListTregression, matcher);
+//				
+//				// Send paramters to BaselineHandler
+//				List<TraceNode> rootCauses = result.getRootCauses();
+//				if (rootCauses.isEmpty()) {
+//					throw new RuntimeException("Root cause is not found");
+//				}
+//				BaselineHandler.setRootCause(rootCauses.get(rootCauses.size()-1));
+//				
+//				TestIOFramework testIOFramework = new TestIOFramework();
+//				TestIO testIO = testIOFramework.getBuggyTestIOs(result.getOriginalResult(),
+//						result.getOriginalResultWithAssertions(),
+//						result.getMutatedResult(),
+//						result.getMutatedResultWithAssertions(), originalProject.getRoot(),
+//	                    mutatedProject.getRoot(), pairList, result.getTestClass(),
+//	                    result.getTestSimpleName());
+//				
+//				if (testIO.getInputs().isEmpty() || testIO.getOutput() == null) {
+//					throw new RuntimeException("No IO");
+//				}
+//				
+//				List<VarValue> inputs = new ArrayList<>();
+//				for (IOModel model : testIO.getInputs()) {
+//					inputs.add(model.getValue());
+//				}
 				
-				// Mutation framework will mutate the target project
-				MutationFramework mutationFramework = new MutationFramework();
-				mutationFramework.setProjectPath(projectPath);
-				mutationFramework.setDropInsDir(dropInDir);
-				mutationFramework.setMicrobatConfigPath(microbatConfigPath);
-				mutationFramework.setMaxNumberOfMutations(maxMutation);
+//				List<VarValue> inputs = testIOs.get(testIOs.size()-1).getInputs();
+//				List<VarValue> outputs = new ArrayList<>();
+//				outputs.add(testIO.getOutput());
 				
-				TestCase testCase = mutationFramework.getTestCases().get(testCaesID);
-				mutationFramework.setTestCase(testCase);
+				MutationAgent mutationAgent = new MutationAgent(projectPath, dropInDir, microbatConfigPath);
+				mutationAgent.setTestCaseID(testCaesID);
+				mutationAgent.startMutation();
 				
-				// Mutate project until it fail the test case
-				MutationResult result = null;
-				boolean testCaseFailed = false;
-				for (int count=0; count<maxMutationLimit; count++) {
-					mutationFramework.setSeed(1);
-					result = mutationFramework.startMutationFramework();
-					if (!result.mutatedTestCasePassed()) {
-						testCaseFailed = true;
-						break;
-					}
-				}
+				updateView(mutationAgent.getBuggyTrace(), mutationAgent.getCorrectTrace(), mutationAgent.getPairList(), mutationAgent.getMatcher());
 				
-				if (!testCaseFailed) {
-					System.out.println("Cannot fail the test case after mutation");
-					return null;
-				}
+				BaselineHandler.setInputs(mutationAgent.getInputs());
+				BaselineHandler.setOutputs(mutationAgent.getOutputs());
+				BaselineHandler.setRootCause(mutationAgent.getRootCause().get(0));
+				BaselineHandler.setMutatedProPath(mutationAgent.getMutatedProjPath());
+				BaselineHandler.setOriginalProPath(mutationAgent.getOriginalProjPath());
 				
-				Project mutatedProject = result.getMutatedProject();
-				Project originalProject = result.getOriginalProject();
-				
-				final Trace buggyTrace = result.getMutatedTrace();
-				buggyTrace.setSourceVersion(true);
-				
-				final Trace correctTrace = result.getOriginalTrace();
-				
-				// Convert tracediff.PairList to tregression.PairList
-				PairList pairList = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
-	                    mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath(),
-	                    result.getMutatedTrace(), result.getOriginalTrace());
-				List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
-				for (TraceNodePair pair : pairList.getPairList()) {
-					pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
-				}
-				final tregression.model.PairList pairListTregression = new tregression.model.PairList(pairLTregression);
-				
-				// Set up the diffMatcher
-				final DiffMatcher matcher = new DiffMatcher(srcFolderPath, testFolderPath, mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath());
-				matcher.matchCode();
-				
-				// Update view
-				updateView(buggyTrace, correctTrace, pairListTregression, matcher);
-				
-				// Send paramters to BaselineHandler
-				List<TraceNode> rootCauses = result.getRootCauses();
-				if (rootCauses.isEmpty()) {
-					throw new RuntimeException("Root cause is not found");
-				}
-				BaselineHandler.setRootCause(rootCauses.get(rootCauses.size()-1));
-				
-				List<TestIO> testIOs = result.getTestIOs();
-				if (testIOs.isEmpty()) {
-					throw new RuntimeException("IO is not found");
-				}
-				List<VarValue> inputs = testIOs.get(testIOs.size()-1).getInputs();
-				List<VarValue> outputs = new ArrayList<>();
-				outputs.add(testIOs.get(testIOs.size()-1).getOutput());
-				BaselineHandler.setInputs(inputs);
-				BaselineHandler.setOutputs(outputs);
-				
-				BaselineHandler.setMutatedProPath(mutatedProject.getRoot().getAbsolutePath());
-				BaselineHandler.setOriginalProPath(originalProject.getRoot().getAbsolutePath());
-				
-				for (VarValue input : inputs) {
+				for (VarValue input : mutationAgent.getInputs()) {
 					System.out.println("Detected Inputs: " + input.getVarID());
 				}
-				for (VarValue output : outputs) {
+				for (VarValue output : mutationAgent.getOutputs()) {
 					System.out.println("Detected Outputs: " + output.getVarID());
 				}
 				return Status.OK_STATUS;

@@ -21,11 +21,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import baseline.AskingAgent;
+import baseline.MutationAgent;
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
 import jmutation.model.Project;
 import jmutation.model.TestCase;
-import jmutation.model.TestIO;
 import microbat.Activator;
 import microbat.baseline.encoders.NodeFeedbackPair;
 import microbat.baseline.encoders.ProbabilityEncoder;
@@ -35,13 +36,16 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
+import testio.TestIOFramework;
+import testio.model.IOModel;
+import testio.model.TestIO;
 import tracediff.TraceDiff;
-import tracediff.model.PairList;
 import tracediff.model.TraceNodePair;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.Simulator;
+import tregression.model.PairList;
 import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
@@ -76,126 +80,231 @@ public class MutationBaselineHandler extends AbstractHandler {
 				// Access the buggy view and correct view
 				setup();
 				
-				// Setup parameter
-				final String srcFolderPath = "src\\main\\java";
-				final String testFolderPath = "src\\test\\java";
-				
-				// Mutation framework will mutate the target project
-				MutationFramework mutationFramework = new MutationFramework();
-
-				mutationFramework.setProjectPath("C:/Users/arkwa/git/java-mutation-framework/sample/math_70");
-				mutationFramework.setDropInsDir("C:/Users/arkwa/git/java-mutation-framework/lib");
-				mutationFramework.setMicrobatConfigPath("C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json");
-
-				// Set up the recorder
-				
-				Recorder recorder = new Recorder();
-				
-				List<Integer> ignoreIdxes = new ArrayList<>();
-				ignoreIdxes.add(13);
-				
-				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-				final int testCaesID = Integer.parseInt(testCaseID_str);
-				
-				
-				for (int testCaseIdx = testCaesID; testCaseIdx<testCaesID+50; testCaseIdx++) {
-					System.out.println("Working on it");
-					String errorMsg = null;
-					if (ignoreIdxes.contains(testCaseIdx)) {
-						errorMsg = "test case ignored";
-						recorder.exportCSV(testCaseIdx, errorMsg);
-
-						continue;
-					}
-						
-					TestCase testCase = mutationFramework.getTestCases().get(testCaseIdx);
-					System.out.println("--------------- " + testCaseIdx + " test case");
-					mutationFramework.setTestCase(testCase);
-					mutationFramework.setMaxNumberOfMutations(1);
+//				// Setup parameter
+//				final String srcFolderPath = "src\\main\\java";
+//				final String testFolderPath = "src\\test\\java";
+//				
+//				// Mutation framework will mutate the target project
+//				MutationFramework mutationFramework = new MutationFramework();
+//
+//				mutationFramework.setProjectPath("C:/Users/arkwa/git/java-mutation-framework/sample/math_70");
+//				mutationFramework.setDropInsDir("C:/Users/arkwa/git/java-mutation-framework/lib");
+//				mutationFramework.setMicrobatConfigPath("C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json");
+//
+//				// Set up the recorder
+//				
+//				Recorder recorder = new Recorder();
+//				
+//				List<Integer> ignoreIdxes = new ArrayList<>();
+//				ignoreIdxes.add(13);
+//				
+//				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+//				final int testCaesID = Integer.parseInt(testCaseID_str);
+//				
+//				
+//				for (int testCaseIdx = testCaesID; testCaseIdx<testCaesID+50; testCaseIdx++) {
+//					System.out.println("Working on it");
+//					String errorMsg = null;
+//					if (ignoreIdxes.contains(testCaseIdx)) {
+//						errorMsg = "test case ignored";
+//						recorder.exportCSV(testCaseIdx, errorMsg);
+//
+//						continue;
+//					}
+//						
+//					TestCase testCase = mutationFramework.getTestCases().get(testCaseIdx);
+//					System.out.println("--------------- " + testCaseIdx + " test case");
+//					mutationFramework.setTestCase(testCase);
+//					mutationFramework.setMaxNumberOfMutations(1);
+//					
+//					MutationResult result = null;
+//					try {
+//						boolean testCaseFailed = false;
+//						for (int count=0; count<maxMutationLimit; count++) {
+//							mutationFramework.setSeed(1);
+//							result = mutationFramework.startMutationFramework();
+//							if (!result.mutatedTestCasePassed()) {
+//								testCaseFailed = true;
+//								break;
+//							}
+//						}
+//						
+//						if (!testCaseFailed) {
+//							errorMsg = "Test do not failed";
+//							recorder.exportCSV(testCaseIdx, errorMsg);
+//							throw new RuntimeException(errorMsg);
+//						}
+//					} catch (RuntimeException e) {
+//						System.out.println("Skipping " + testCaseIdx + " because startMutationFramework throw runtime error");
+//						e.printStackTrace();
+//						errorMsg = e.getMessage();
+//						recorder.exportCSV(testCaseIdx, errorMsg);
+//						continue;
+//					}
+//						
+//					Project mutatedProject = result.getMutatedProject();
+//					Project originalProject = result.getOriginalProject();
+//					
+//					final Trace buggyTrace = result.getMutatedTrace();
+//					buggyTrace.setSourceVersion(true);
+//					final Trace correctTrace = result.getOriginalTrace();
+//					
+//					// Convert tracediff.PairList to tregression.PairList
+//					PairList pairList = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
+//		                    mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath(),
+//		                    result.getMutatedTrace(), result.getOriginalTrace());
+//					List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
+//					for (TraceNodePair pair : pairList.getPairList()) {
+//						pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
+//					}
+//					final tregression.model.PairList pairListTregression = new tregression.model.PairList(pairLTregression);
+//					
+//					// Set up the diffMatcher
+//					final DiffMatcher matcher = new DiffMatcher(srcFolderPath, testFolderPath, mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath());
+//					matcher.matchCode();
+//					
+//					// Update view
+//					updateView(buggyTrace, correctTrace, pairListTregression, matcher);
+//					
+//					/*
+//					 * Skip the test case if the root cause / input or output variables
+//					 * cannot be found
+//					 */
+//					if (result.getRootCauses().isEmpty()) {
+//						System.out.println("Skipping test case because no root cause: " + testCaseIdx);
+//						errorMsg = "No root cause";
+//						recorder.exportCSV(testCaseIdx, errorMsg);
+//						continue;
+//					}
+//					
+//					TestIOFramework testIOFramework = new TestIOFramework();
+//					TestIO testIO = testIOFramework.getBuggyTestIOs(result.getOriginalResult(),
+//							result.getOriginalResultWithAssertions(),
+//							result.getMutatedResult(),
+//							result.getMutatedResultWithAssertions(), originalProject.getRoot(),
+//		                    mutatedProject.getRoot(), pairList, result.getTestClass(),
+//		                    result.getTestSimpleName());
+//					
+//					if (testIO.getInputs().isEmpty() || testIO.getOutput() == null) {
+//						System.out.println("Skipping test case because no IO: " + testCaseIdx);
+//						errorMsg = "No IO";
+//						recorder.exportCSV(testCaseIdx, errorMsg);
+//						continue;
+//					}
+//					
+//					// Get the ground truth root cause
+//					List<TraceNode> rootCauses = result.getRootCauses();
+//					TraceNode rootCause = rootCauses.get(rootCauses.size()-1);
+					final String projectPath = "C:/Users/arkwa/git/java-mutation-framework/sample/math_70";
+					final String dropInDir = "C:/Users/arkwa/git/java-mutation-framework/lib";
+					final String microbatConfigPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json";
 					
-					MutationResult result = null;
-					try {
-						boolean testCaseFailed = false;
-						for (int count=0; count<maxMutationLimit; count++) {
-							mutationFramework.setSeed(1);
-							result = mutationFramework.startMutationFramework();
-							if (!result.mutatedTestCasePassed()) {
-								testCaseFailed = true;
+					String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+					final int startID = Integer.parseInt(testCaseID_str);
+					final int amount = 10;
+					
+					Recorder recorder = new Recorder();
+					
+					MutationAgent mutationAgent = new MutationAgent(projectPath, dropInDir, microbatConfigPath);
+					for (int testCaseID=startID; testCaseID<startID+amount; testCaseID++) {
+						mutationAgent.setTestCaseID(testCaseID);
+						mutationAgent.startMutation();
+						
+						Trace buggyTrace = mutationAgent.getBuggyTrace();
+						Trace correctTrace = mutationAgent.getCorrectTrace();
+						PairList pairList = mutationAgent.getPairList();
+						DiffMatcher matcher = mutationAgent.getMatcher();
+						
+						final TraceNode rootCause = mutationAgent.getRootCause().get(0);
+						
+						updateView(buggyTrace, correctTrace, pairList, matcher);
+						
+						int noOfFeedbacks = 0;
+						final int maxItr = Math.min( (int) (buggyTrace.size() * maxItrFactor), 20);
+						
+						ProbabilityEncoder encoder = new ProbabilityEncoder(buggyTrace);
+						encoder.setInputVars(mutationAgent.getInputs());
+						encoder.setOutputVars(mutationAgent.getOutputs());
+						encoder.setup();
+						
+						AskingAgent askingAgent = new AskingAgent(encoder.getSlicedExecutionList());
+						
+						// Set up type checker and root cause finder for feedback
+						StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+						RootCauseFinder finder = new RootCauseFinder();
+						finder.setRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
+						
+						Simulator simulator = new Simulator(false, false, 3);
+						simulator.prepare(buggyTrace, correctTrace, pairList, matcher);
+						finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairList, matcher);
+						
+						boolean rootCauseFound = false;
+						while (noOfFeedbacks <= maxItr) {
+//							System.out.println("---------------------------------- " + noOfFeedbacks + " iteration");
+							
+							// Make sure that the python server is available before calling this function
+							encoder.encode();
+							
+							// Predicted root cause
+							TraceNode prediction = encoder.getMostErroneousNode();
+							
+							// Visualize the prediction
+							jumpToNode(prediction);
+							
+							System.out.println("Ground Truth: " + rootCause.getOrder() + ", Prediction: " + prediction.getOrder());
+							if (prediction.getOrder() == rootCause.getOrder()) {
+								// Baseline have found the root cause !
+								rootCauseFound = true;
 								break;
 							}
+							
+							boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
+							TraceNode nextNode = prediction;
+							if (isVisitedNode) {
+								int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
+								nextNode = buggyTrace.getTraceNode(nextNodeOrder);
+							}
+							
+//							System.out.println("Asking feedback for node: " + nextInspectingNode.getOrder());
+							
+							// Collect feedback from correct trace
+							StepChangeType type = typeChecker.getType(nextNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
+							UserFeedback feedback = typeToFeedback(type, nextNode, true, finder);
+//							System.out.println("Feedback for node: " + nextInspectingNode.getOrder() + " is " + feedback);
+							
+							// Add feedback information into probability encoder
+							NodeFeedbackPair pair = new NodeFeedbackPair(nextNode, feedback);
+							ProbabilityEncoder.addFeedback(pair);
+							
+							noOfFeedbacks += 1;
+							askingAgent.addVisistedNodeOrder(nextNode.getOrder());
 						}
 						
-						if (!testCaseFailed) {
-							errorMsg = "Test do not failed";
-							recorder.exportCSV(testCaseIdx, errorMsg);
-							throw new RuntimeException(errorMsg);
-						}
-					} catch (RuntimeException e) {
-						System.out.println("Skipping " + testCaseIdx + " because startMutationFramework throw runtime error");
-						e.printStackTrace();
-						errorMsg = e.getMessage();
-						recorder.exportCSV(testCaseIdx, errorMsg);
-						continue;
+						// Record the result into text file
+						recorder.exportCSV(testCaseID, mutationAgent.getTestCase().signature, buggyTrace.getExecutionList().size(), noOfFeedbacks, rootCauseFound);
+
 					}
-						
-					Project mutatedProject = result.getMutatedProject();
-					Project originalProject = result.getOriginalProject();
-					
-					final Trace buggyTrace = result.getMutatedTrace();
-					buggyTrace.setSourceVersion(true);
-					final Trace correctTrace = result.getOriginalTrace();
-					
-					// Convert tracediff.PairList to tregression.PairList
-					PairList pairList = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
-		                    mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath(),
-		                    result.getMutatedTrace(), result.getOriginalTrace());
-					List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
-					for (TraceNodePair pair : pairList.getPairList()) {
-						pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
-					}
-					final tregression.model.PairList pairListTregression = new tregression.model.PairList(pairLTregression);
-					
-					// Set up the diffMatcher
-					final DiffMatcher matcher = new DiffMatcher(srcFolderPath, testFolderPath, mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath());
-					matcher.matchCode();
-					
-					// Update view
-					updateView(buggyTrace, correctTrace, pairListTregression, matcher);
-					
-					/*
-					 * Skip the test case if the root cause / input or output variables
-					 * cannot be found
-					 */
-					if (result.getRootCauses().isEmpty()) {
-						System.out.println("Skipping test case because no root cause: " + testCaseIdx);
-						errorMsg = "No root cause";
-						recorder.exportCSV(testCaseIdx, errorMsg);
-						continue;
-					}
-					
-					if (result.getTestIOs().isEmpty()) {
-						System.out.println("Skipping test case because no IO: " + testCaseIdx);
-						errorMsg = "No IO";
-						recorder.exportCSV(testCaseIdx, errorMsg);
-						continue;
-					}
-					
-					// Get the ground truth root cause
-					List<TraceNode> rootCauses = result.getRootCauses();
-					TraceNode rootCause = rootCauses.get(rootCauses.size()-1);
 					
 					// Start debugging 
-					final int maxItr = Math.min( (int) (buggyTrace.size() * maxItrFactor), 20);
-					int noOfFeedbacks = 0;
 					
-					ProbabilityEncoder encoder = new ProbabilityEncoder(buggyTrace);
 					
-					// Set up input and output variables
-					List<VarValue> inputs = result.getTestIOs().get(result.getTestIOs().size()-1).getInputs();
-					VarValue output = result.getTestIOs().get(result.getTestIOs().size()-1).getOutput();
 					
-					List<VarValue> outputs = new ArrayList<>();
-					outputs.add(output);
+					
+					
+//					 Set up input and output variables
+//					List<VarValue> inputs = new ArrayList<>();
+//					for (IOModel model : testIO.getInputs()) {
+//						inputs.add(model.getValue());
+//					}
+//					
+//					List<VarValue> outputs = new ArrayList<>();
+//					outputs.add(testIO.getOutput());
+					
+//					List<VarValue> inputs = result.getTestIOs().get(result.getTestIOs().size()-1).getInputs();
+//					VarValue output = result.getTestIOs().get(result.getTestIOs().size()-1).getOutput();
+//					
+//					List<VarValue> outputs = new ArrayList<>();
+//					outputs.add(output);
 					
 //					for (VarValue inputVar : inputs) {
 //						System.out.println("Input: " + inputVar.getVarID());
@@ -204,68 +313,68 @@ public class MutationBaselineHandler extends AbstractHandler {
 //					for (VarValue outputVar : outputs) {
 //						System.out.println("Output: " + outputVar.getVarID());
 //					}
-					
-					encoder.setInputVars(inputs);
-					encoder.setOutputVars(outputs);
-					encoder.setup();
-					
-					AskingAgent askingAgent = new AskingAgent(encoder.getSlicedExecutionList());
-
-					// Set up type checker and root cause finder for feedback
-					StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-					RootCauseFinder finder = new RootCauseFinder();
-					finder.setRootCauseBasedOnDefects4J(pairListTregression, matcher, buggyTrace, correctTrace);
-					
-					Simulator simulator = new Simulator(false, false, 3);
-					simulator.prepare(buggyTrace, correctTrace, pairListTregression, matcher);
-					finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairListTregression, matcher);
-					
-					
-					boolean rootCauseFound = false;
-					while (noOfFeedbacks <= maxItr) {
-//						System.out.println("---------------------------------- " + noOfFeedbacks + " iteration");
-						
-						// Make sure that the python server is available before calling this function
-						encoder.encode();
-						
-						// Predicted root cause
-						TraceNode prediction = encoder.getMostErroneousNode();
-						
-						// Visualize the prediction
-						jumpToNode(prediction);
-						
-						System.out.println("Ground Truth: " + rootCause.getOrder() + ", Prediction: " + prediction.getOrder());
-						if (prediction.getOrder() == rootCause.getOrder()) {
-							// Baseline have found the root cause !
-							rootCauseFound = true;
-							break;
-						}
-						
-						boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
-						TraceNode nextNode = prediction;
-						if (isVisitedNode) {
-							int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
-							nextNode = buggyTrace.getTraceNode(nextNodeOrder);
-						}
-						
-//						System.out.println("Asking feedback for node: " + nextInspectingNode.getOrder());
-						
-						// Collect feedback from correct trace
-						StepChangeType type = typeChecker.getType(nextNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
-						UserFeedback feedback = typeToFeedback(type, nextNode, true, finder);
-//						System.out.println("Feedback for node: " + nextInspectingNode.getOrder() + " is " + feedback);
-						
-						// Add feedback information into probability encoder
-						NodeFeedbackPair pair = new NodeFeedbackPair(nextNode, feedback);
-						ProbabilityEncoder.addFeedback(pair);
-						
-						noOfFeedbacks += 1;
-						askingAgent.addVisistedNodeOrder(nextNode.getOrder());
-					}
-					
-					// Record the result into text file
-					recorder.exportCSV(testCaseIdx, testCase.signature, buggyTrace.getExecutionList().size(), noOfFeedbacks, rootCauseFound);
-				}
+//					
+//					encoder.setInputVars(inputs);
+//					encoder.setOutputVars(outputs);
+//					encoder.setup();
+//					
+//					AskingAgent askingAgent = new AskingAgent(encoder.getSlicedExecutionList());
+//
+//					// Set up type checker and root cause finder for feedback
+//					StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+//					RootCauseFinder finder = new RootCauseFinder();
+//					finder.setRootCauseBasedOnDefects4J(pairListTregression, matcher, buggyTrace, correctTrace);
+//					
+//					Simulator simulator = new Simulator(false, false, 3);
+//					simulator.prepare(buggyTrace, correctTrace, pairListTregression, matcher);
+//					finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairListTregression, matcher);
+//					
+//					
+//					boolean rootCauseFound = false;
+//					while (noOfFeedbacks <= maxItr) {
+////						System.out.println("---------------------------------- " + noOfFeedbacks + " iteration");
+//						
+//						// Make sure that the python server is available before calling this function
+//						encoder.encode();
+//						
+//						// Predicted root cause
+//						TraceNode prediction = encoder.getMostErroneousNode();
+//						
+//						// Visualize the prediction
+//						jumpToNode(prediction);
+//						
+//						System.out.println("Ground Truth: " + rootCause.getOrder() + ", Prediction: " + prediction.getOrder());
+//						if (prediction.getOrder() == rootCause.getOrder()) {
+//							// Baseline have found the root cause !
+//							rootCauseFound = true;
+//							break;
+//						}
+//						
+//						boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
+//						TraceNode nextNode = prediction;
+//						if (isVisitedNode) {
+//							int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
+//							nextNode = buggyTrace.getTraceNode(nextNodeOrder);
+//						}
+//						
+////						System.out.println("Asking feedback for node: " + nextInspectingNode.getOrder());
+//						
+//						// Collect feedback from correct trace
+//						StepChangeType type = typeChecker.getType(nextNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
+//						UserFeedback feedback = typeToFeedback(type, nextNode, true, finder);
+////						System.out.println("Feedback for node: " + nextInspectingNode.getOrder() + " is " + feedback);
+//						
+//						// Add feedback information into probability encoder
+//						NodeFeedbackPair pair = new NodeFeedbackPair(nextNode, feedback);
+//						ProbabilityEncoder.addFeedback(pair);
+//						
+//						noOfFeedbacks += 1;
+//						askingAgent.addVisistedNodeOrder(nextNode.getOrder());
+//					}
+//					
+//					// Record the result into text file
+//					recorder.exportCSV(testCaseIdx, testCase.signature, buggyTrace.getExecutionList().size(), noOfFeedbacks, rootCauseFound);
+//				}
 				
 				return Status.OK_STATUS;
 			}
@@ -401,36 +510,6 @@ public class MutationBaselineHandler extends AbstractHandler {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
-	}
-	
-	private class AskingAgent {
-		
-		private final List<TraceNode> executionList;
-		private Set<Integer> visitedNodeOrder;
-		
-		private int startPointer;
-		
-		public AskingAgent(List<TraceNode> executionList) {
-			this.executionList = executionList;
-			this.visitedNodeOrder = new HashSet<>();
-			this.startPointer = 0;
-		}
-		
-		public void addVisistedNodeOrder(final int order) {
-			this.visitedNodeOrder.add(order);
-		}
-		
-		public int getNodeOrderToBeAsked() {
-			int nodeOrder = this.executionList.get(startPointer).getOrder();
-			while(this.visitedNodeOrder.contains(nodeOrder)) {
-				nodeOrder = this.executionList.get(++this.startPointer).getOrder();
-			}
-			return nodeOrder;
-		}
-		
-		public boolean isVisitedNode(TraceNode node) {
-			return this.visitedNodeOrder.contains(node.getOrder());
 		}
 	}
 }
