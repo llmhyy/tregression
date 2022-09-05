@@ -114,26 +114,26 @@ public class BaselineHandler extends AbstractHandler {
 					
 					if (BaselineHandler.rootCause.contains(prediction)) {
 						// Baseline have found the root cause !
-						System.out.println("---------------------------------");
-						System.out.println("Debug Report: Test Case " + testCaseID);
-						System.out.println("---------------------------------");
-						System.out.println("Root Cause is found");
-						System.out.println("Total Trace Length: " + buggyView.getTrace().getExecutionList().size());
-						System.out.println("Sliced Trace Length: " + encoder.getSlicedExecutionList().size());
-						System.out.println("Mutation Count: " + BaselineHandler.mutaitonCount);
-						System.out.println("Number of Feedback: " + noOfFeedbacks);
-						long endTime = System.currentTimeMillis();
-						System.out.println("Time needed: " + Math.floorDiv(endTime - startTime, 1000) + "s");
-						System.out.println("---------------------------------");
+						printReport(encoder.getSlicedExecutionList().size(), noOfFeedbacks, startTime);
 						break;
 					}
 					
-					boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
-					TraceNode nextNode = prediction;
-					if (isVisitedNode) {
-						int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
-						nextNode = buggyTrace.getTraceNode(nextNodeOrder);
+//					boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
+//					TraceNode nextNode = prediction;
+//					if (isVisitedNode) {
+//						int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
+//						nextNode = buggyTrace.getTraceNode(nextNodeOrder);
+//					}
+					
+					int nextNodeOrder = askingAgent.getNodeOrderToBeAsked(prediction);
+					
+					if (nextNodeOrder == -1) {
+						System.out.println("Cannot find root cause after visiting all node");
+						printReport(encoder.getSlicedExecutionList().size(), noOfFeedbacks, startTime);
+						break;
 					}
+					
+					TraceNode nextNode = buggyTrace.getTraceNode(nextNodeOrder);
 					
 					System.out.println("Asking feedback for node: " + nextNode.getOrder());
 					
@@ -147,7 +147,6 @@ public class BaselineHandler extends AbstractHandler {
 					ProbabilityEncoder.addFeedback(pair);
 					
 					noOfFeedbacks += 1;
-					askingAgent.addVisistedNodeOrder(nextNode.getOrder());
 				}
 				
 				BaselineHandler.clearData();
@@ -158,6 +157,20 @@ public class BaselineHandler extends AbstractHandler {
 		
 		job.schedule();
 		return null;
+	}
+	
+	private void printReport(final int slicedTraceLen, final int noOfFeedbacks, final long startTime) {
+		System.out.println("---------------------------------");
+		System.out.println("Debug Report: Test Case " + testCaseID);
+		System.out.println("---------------------------------");
+		System.out.println("Root Cause is found");
+		System.out.println("Total Trace Length: " + buggyView.getTrace().getExecutionList().size());
+		System.out.println("Sliced Trace Length: " + slicedTraceLen);
+		System.out.println("Mutation Count: " + BaselineHandler.mutaitonCount);
+		System.out.println("Number of Feedback: " + noOfFeedbacks);
+		long endTime = System.currentTimeMillis();
+		System.out.println("Time needed: " + Math.floorDiv(endTime - startTime, 1000) + "s");
+		System.out.println("---------------------------------");
 	}
 	
 	private UserFeedback typeToFeedback(StepChangeType type, TraceNode node, boolean isOnBefore, RootCauseFinder finder) {
@@ -208,11 +221,15 @@ public class BaselineHandler extends AbstractHandler {
 	}
 	
 	private boolean isReady() {
+		if (BaselineHandler.inputs == null || BaselineHandler.outputs == null || BaselineHandler.rootCause == null) {
+			return false;
+		}
+		
 		return 	BaselineHandler.MUTATED_PROJECT_PATH != null &&
 				BaselineHandler.ORIGINAL_PROJECT_PATH != null &&
-				BaselineHandler.rootCause != null &&
-				BaselineHandler.inputs != null &&
-				BaselineHandler.outputs != null &&
+				!BaselineHandler.rootCause.isEmpty() &&
+				!BaselineHandler.inputs.isEmpty() &&
+				!BaselineHandler.outputs.isEmpty() &&
 				this.buggyView != null &&
 				this.correctView != null;
 	}

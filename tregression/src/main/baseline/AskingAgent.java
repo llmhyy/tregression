@@ -12,6 +12,8 @@ public class AskingAgent {
 	
 	private int startPointer;
 	
+	private static final int NAN = -1;
+	
 	public AskingAgent(List<TraceNode> executionList) {
 		this.executionList = executionList;
 		this.visitedNodeOrder = new HashSet<>();
@@ -22,15 +24,68 @@ public class AskingAgent {
 		this.visitedNodeOrder.add(order);
 	}
 	
-	public int getNodeOrderToBeAsked() {
-		int nodeOrder = this.executionList.get(startPointer).getOrder();
-		while(this.visitedNodeOrder.contains(nodeOrder)) {
-			nodeOrder = this.executionList.get(++this.startPointer).getOrder();
+	public void addVisistedNode(TraceNode node) {
+		this.addVisistedNodeOrder(node.getOrder());
+	}
+	
+	/**
+	 * When the baseline recommend a repeated node, this
+	 * function return the new node to be asked for feedback
+	 * 
+	 * Strategy: If the node is not visited, return that node. If the
+	 * node is visited, return the control dominator if exist. If the
+	 * control dominator does not exist, return the next execution
+	 * node. If there are no more execution node, then return -1
+	 * 
+	 * @param node Error Node
+	 * @return Order of next asking node
+	 */
+	public int getNodeOrderToBeAsked(TraceNode node) {
+		
+		// Recommend this node if the node is not visited before
+		if (!this.isVisitedNode(node)) {
+			this.addVisistedNode(node);
+			return node.getOrder();
 		}
+
+		// Check control dominator
+		TraceNode controlDominator = node.getControlDominator();
+		if (controlDominator != null) {
+			if (!this.isVisitedNode(node)) {
+				this.addVisistedNode(controlDominator);
+				return controlDominator.getOrder();
+			}
+		}
+		
+		if (this.isAllNodeVisisted()) {
+			return AskingAgent.NAN;
+		}
+		
+		// Get the order of next node to be asked
+		int nodeOrder = this.executionList.get(startPointer).getOrder();
+		while(this.isVisitedOrder(nodeOrder)) {
+			
+			if (this.isAllNodeVisisted()) {
+				return AskingAgent.NAN;
+			}
+			
+			nodeOrder = this.executionList.get(this.startPointer).getOrder();
+			this.startPointer++;
+		}
+		
+		this.addVisistedNodeOrder(nodeOrder);
 		return nodeOrder;
 	}
 	
+	private boolean isAllNodeVisisted() {
+		return this.startPointer >= this.executionList.size();
+	}
+	
 	public boolean isVisitedNode(TraceNode node) {
-		return this.visitedNodeOrder.contains(node.getOrder());
+		return this.isVisitedOrder(node.getOrder());
+	}
+	
+	public boolean isVisitedOrder(final int order) {
+		return this.visitedNodeOrder.contains(order);
 	}
 }
