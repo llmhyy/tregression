@@ -17,7 +17,6 @@ import org.eclipse.ui.PlatformUI;
 import baseline.MutationAgent;
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
-import jmutation.model.Project;
 import jmutation.model.TestCase;
 import microbat.Activator;
 import microbat.model.trace.Trace;
@@ -55,10 +54,10 @@ public class MutationHandler extends AbstractHandler {
 //				// Setup parameter
 //				final String srcFolderPath = "src\\main\\java";
 //				final String testFolderPath = "src\\test\\java";
-				final String projectPath = "C:/Users/arkwa/git/java-mutation-framework/sample/math_70";
-				final String dropInDir = "C:/Users/arkwa/git/java-mutation-framework/lib";
-				final String microbatConfigPath = "C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json";
-////				
+				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
+				final String dropInDir = "C:\\Users\\arkwa\\git\\trace-manager\\java-mutation-framework\\lib";
+				final String microbatConfigPath = "C:\\Users\\arkwa\\git\\trace-manager\\java-mutation-framework\\sampleMicrobatConfig.json";
+				
 //				final int maxMutation = 1;
 //				final int maxMutationLimit = 5;
 //				// Get the test case id from preference
@@ -154,9 +153,11 @@ public class MutationHandler extends AbstractHandler {
 				
 				BaselineHandler.setInputs(mutationAgent.getInputs());
 				BaselineHandler.setOutputs(mutationAgent.getOutputs());
-				BaselineHandler.setRootCause(mutationAgent.getRootCause().get(0));
+				BaselineHandler.setRootCause(mutationAgent.getRootCause());
 				BaselineHandler.setMutatedProPath(mutationAgent.getMutatedProjPath());
 				BaselineHandler.setOriginalProPath(mutationAgent.getOriginalProjPath());
+				BaselineHandler.setMutationCount(mutationAgent.getMutationCount());
+				BaselineHandler.setTestCaseID(testCaesID);
 				
 				for (VarValue input : mutationAgent.getInputs()) {
 					System.out.println("Detected Inputs: " + input.getVarID());

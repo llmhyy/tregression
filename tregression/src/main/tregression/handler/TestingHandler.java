@@ -18,7 +18,6 @@ import org.eclipse.ui.PlatformUI;
 
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
-import jmutation.model.Project;
 import jmutation.model.TestCase;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;

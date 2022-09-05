@@ -25,7 +25,6 @@ import baseline.AskingAgent;
 import baseline.MutationAgent;
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
-import jmutation.model.Project;
 import jmutation.model.TestCase;
 import microbat.Activator;
 import microbat.baseline.encoders.NodeFeedbackPair;

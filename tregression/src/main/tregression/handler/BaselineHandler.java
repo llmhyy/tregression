@@ -42,10 +42,13 @@ public class BaselineHandler extends AbstractHandler {
 	public static String MUTATED_PROJECT_PATH = null;
 	public static String ORIGINAL_PROJECT_PATH = null;
 	
-	public static TraceNode rootCause = null;
+	public static List<TraceNode> rootCause = null;
 	
 	public static List<VarValue> inputs = null;
 	public static List<VarValue> outputs = null;
+	
+	public static int mutaitonCount = -1;
+	public static int testCaseID = -1;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -88,6 +91,8 @@ public class BaselineHandler extends AbstractHandler {
 				finder.setRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
 				finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairList, matcher);
 				
+				long startTime = System.currentTimeMillis();
+				
 				while (noOfFeedbacks <= maxItr) {
 					System.out.println("---------------------------------- " + noOfFeedbacks + " iteration");
 					
@@ -101,9 +106,25 @@ public class BaselineHandler extends AbstractHandler {
 					jumpToNode(prediction);
 					
 					// Check is root cause is correct
-					System.out.println("Ground Truth: " + rootCause.getOrder() + ", Prediction: " + prediction.getOrder());
-					if (prediction.getOrder() == rootCause.getOrder()) {
+					String rootCauseIDStr = "";
+					for (TraceNode rootCause : BaselineHandler.rootCause) {
+						rootCauseIDStr += rootCause.getOrder() + ",";
+					}
+					System.out.println("Ground Truth: " + rootCauseIDStr + " Prediction: " + prediction.getOrder());
+					
+					if (BaselineHandler.rootCause.contains(prediction)) {
 						// Baseline have found the root cause !
+						System.out.println("---------------------------------");
+						System.out.println("Debug Report: Test Case " + testCaseID);
+						System.out.println("---------------------------------");
+						System.out.println("Root Cause is found");
+						System.out.println("Total Trace Length: " + buggyView.getTrace().getExecutionList().size());
+						System.out.println("Sliced Trace Length: " + encoder.getSlicedExecutionList().size());
+						System.out.println("Mutation Count: " + BaselineHandler.mutaitonCount);
+						System.out.println("Number of Feedback: " + noOfFeedbacks);
+						long endTime = System.currentTimeMillis();
+						System.out.println("Time needed: " + Math.floorDiv(endTime - startTime, 1000) + "s");
+						System.out.println("---------------------------------");
 						break;
 					}
 					
@@ -196,6 +217,10 @@ public class BaselineHandler extends AbstractHandler {
 				this.correctView != null;
 	}
 	
+	public static void setTestCaseID(int testCaseID) {
+		BaselineHandler.testCaseID = testCaseID;
+	}
+	
 	public static void setMutatedProPath(String path) {
 		BaselineHandler.MUTATED_PROJECT_PATH = path;
 	}
@@ -204,7 +229,7 @@ public class BaselineHandler extends AbstractHandler {
 		BaselineHandler.ORIGINAL_PROJECT_PATH = path;
 	}
 	
-	public static void setRootCause(TraceNode rootCause) {
+	public static void setRootCause(List<TraceNode> rootCause) {
 		BaselineHandler.rootCause = rootCause;
 	}
 	
@@ -226,6 +251,10 @@ public class BaselineHandler extends AbstractHandler {
 		}
 		
 		System.out.println("BaselineHandler: Clear IO");
+	}
+	
+	public static void setMutationCount(int count) {
+		BaselineHandler.mutaitonCount = count;
 	}
 	
 	public static void addInputs(List<VarValue> inputs) {
@@ -268,5 +297,6 @@ public class BaselineHandler extends AbstractHandler {
 		BaselineHandler.inputs = null;
 		BaselineHandler.outputs = null;
 	}
+	
 
 }

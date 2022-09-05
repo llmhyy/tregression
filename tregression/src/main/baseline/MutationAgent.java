@@ -5,8 +5,8 @@ import java.util.List;
 
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
-import jmutation.model.Project;
 import jmutation.model.TestCase;
+import jmutation.model.project.Project;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -21,11 +21,14 @@ import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.model.PairList;
 import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.DiffMatcher;
+import tregression.tracematch.ControlPathBasedTraceMatcher;
 
 public class MutationAgent {
 
 	private final int maxMutationLimit = 10;
 	private final int maxMutation = 1;
+	
+	private int mutationCount = 0;
 	
 	private final String srcFolderPath = "src\\main\\java";
 	private final String testFolderPath = "src\\test\\java";
@@ -46,6 +49,7 @@ public class MutationAgent {
 	private List<VarValue> outputs = new ArrayList<>();
 	
 	private int testCaseID = -1;
+	private int seed = 1;
 	
 	public MutationAgent(String projectPath, String dropInDir, String microbatConfigPath) {
 		this.projectPath = projectPath;
@@ -74,8 +78,9 @@ public class MutationAgent {
 		// Mutate project until it fail the test case
 		MutationResult result = null;
 		boolean testCaseFailed = false;
-		for (int count=0; count<maxMutationLimit; count++) {
-			mutationFramework.setSeed(1);
+		for (int i=0; i<maxMutationLimit; i++) {
+			this.mutationCount++;
+			mutationFramework.setSeed(this.seed);
 			result = mutationFramework.startMutationFramework();
 			if (!result.mutatedTestCasePassed()) {
 				testCaseFailed = true;
@@ -86,8 +91,7 @@ public class MutationAgent {
 		if (!testCaseFailed) {
 			throw new RuntimeException(this.genErrorMsg("Cannot fail the test case"));
 		}
-		
-		
+
 		Project mutatedProject = result.getMutatedProject();
 		Project originalProject = result.getOriginalProject();
 		
@@ -113,19 +117,22 @@ public class MutationAgent {
 		this.buggyTrace.setAppJavaClassPath(buggyApp);
 		this.correctTrace.setAppJavaClassPath(correctApp);
 		
-		// Convert tracediff.PairList to tregression.PairList
-		tracediff.model.PairList pairList = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
-                mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath(),
-                result.getMutatedTrace(), result.getOriginalTrace());
-		List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
-		for (TraceNodePair pair : pairList.getPairList()) {
-			pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
-		}
-		this.pairList = new PairList(pairLTregression);
-		
 		// Set up the diffMatcher
 		this.matcher = new DiffMatcher(srcFolderPath, testFolderPath, mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath());
 		this.matcher.matchCode();
+		
+		// Convert tracediff.PairList to tregression.PairList
+		tracediff.model.PairList pairList_traceDiff = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
+                mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath(),
+                result.getMutatedTrace(), result.getOriginalTrace());
+//		List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
+//		for (TraceNodePair pair : pairList.getPairList()) {
+//			pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
+//		}
+//		this.pairList = new PairList(pairLTregression);
+		
+		ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+		this.pairList = traceMatcher.matchTraceNodePair(this.buggyTrace, this.correctTrace, this.matcher);
 		
 		this.rootCauses = result.getRootCauses();
 		
@@ -134,18 +141,25 @@ public class MutationAgent {
 				result.getOriginalResultWithAssertions(),
 				result.getMutatedResult(),
 				result.getMutatedResultWithAssertions(), originalProject.getRoot(),
-                mutatedProject.getRoot(), pairList, result.getTestClass(),
+                mutatedProject.getRoot(), pairList_traceDiff, result.getTestClass(),
                 result.getTestSimpleName());
 		
-		if (testIO.getInputs().isEmpty() || testIO.getOutput() == null) {
-			throw new RuntimeException(this.genErrorMsg("No IO"));
+		if (testIO == null) {
+//			throw new RuntimeException(this.genErrorMsg("testIO is null"));
+		} else {
+			if (testIO.getInputs().isEmpty() || testIO.getOutput() == null) {
+//				throw new RuntimeException(this.genErrorMsg("No IO"));
+			}
+			for (IOModel model : testIO.getInputs()) {
+				this.inputs.add(model.getValue());
+			}
+			
+			this.outputs.add(testIO.getOutput().getValue());
 		}
-		
-		for (IOModel model : testIO.getInputs()) {
-			this.inputs.add(model.getValue());
-		}
-		
-		this.outputs.add(testIO.getOutput());
+	}
+	
+	public void setSeed(int seed) {
+		this.seed = seed;
 	}
 	
 	public Trace getBuggyTrace() {
@@ -204,6 +218,8 @@ public class MutationAgent {
 		this.rootCauses.clear();
 		this.inputs.clear();
 		this.outputs.clear();
+		
+		this.mutationCount = 0;
 	}
 	
 	public void setTestCaseID(int testCaseID) {
@@ -212,5 +228,9 @@ public class MutationAgent {
 	
 	public String genErrorMsg(final String msg) {
 		return "MutationAgent: " + msg;
+	}
+	
+	public int getMutationCount() {
+		return this.mutationCount;
 	}
 }
