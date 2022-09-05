@@ -54,174 +54,22 @@ public class TestingHandler extends AbstractHandler {
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-//		
-//		JavaUtil.sourceFile2CUMap.clear();
-//		Job job = new Job("Testing Tregression") {
-//
-//			@Override
-//			protected IStatus run(IProgressMonitor monitor) {
-//				// Access the buggy view and correct view
-//				setup();
-//				
-//				// Setup parameter
-//				final String srcFolderPath = "src\\main\\java";
-//				final String testFolderPath = "src\\main\\test";
-//				
-//				// Mutation framework will mutate the target project
-//				MutationFramework mutationFramework = new MutationFramework();
-//
-//				mutationFramework.setProjectPath("C:/Users/arkwa/git/java-mutation-framework/sample/math_70");
-//				mutationFramework.setDropInsDir("C:/Users/arkwa/git/java-mutation-framework/lib");
-//				mutationFramework.setMicrobatConfigPath("C:\\Users\\arkwa\\git\\java-mutation-framework\\sampleMicrobatConfig.json");
-//				
-//				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-//				final int testCaesID = Integer.parseInt(testCaseID_str);
-//				
-//				System.out.println("testing on test case id: " + testCaesID);
-//				TestCase testCase = mutationFramework.getTestCases().get(testCaesID);
-//				mutationFramework.setTestCase(testCase);
-//				mutationFramework.setMaxNumberOfMutations(1);
-//				
-//				MutationResult result = null;
-//				boolean testCaseFailed = false;
-//				for (int count=0; count<maxMutationLimit; count++) {
-//					mutationFramework.setSeed(1);
-//					result = mutationFramework.startMutationFramework();
-//					if (!result.mutatedTestCasePassed()) {
-//						testCaseFailed = true;
-//						break;
-//					}
-//				}
-//				
-//				if (!testCaseFailed) {
-//					System.out.println("Cannot fail the test case after mutation");
-//					return null;
-//				}
-//				
-//				Project mutatedProject = result.getMutatedProject();
-//				Project originalProject = result.getOriginalProject();
-//				
-//				final Trace buggyTrace = result.getMutatedTrace();
-//				buggyTrace.setSourceVersion(true);
-//				final Trace correctTrace = result.getOriginalTrace();
-//				
-//				// Convert tracediff.PairList to tregression.PairList
-//				PairList pairList = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
-//	                    mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath(),
-//	                    result.getMutatedTrace(), result.getOriginalTrace());
-//				List<tregression.model.TraceNodePair> pairLTregression = new ArrayList<>();
-//				for (TraceNodePair pair : pairList.getPairList()) {
-//					pairLTregression.add(new tregression.model.TraceNodePair(pair.getBeforeNode(), pair.getAfterNode()));
-//				}
-//				final tregression.model.PairList pairListTregression = new tregression.model.PairList(pairLTregression);
-//				
-//				// Set up the diffMatcher
-//				final DiffMatcher matcher = new DiffMatcher(srcFolderPath, testFolderPath, mutatedProject.getRoot().getAbsolutePath(), originalProject.getRoot().getAbsolutePath());
-//				matcher.matchCode();
-//				
-//				// Update view
-//				updateView(buggyTrace, correctTrace, pairListTregression, matcher);
-//				
-//				if (result.getRootCauses().isEmpty()) {
-//					System.out.println("Skip because root cause is empty: " + testCaesID);
-//					return null;
-//				}
-//				
-//				if (result.getTestIOs().isEmpty()) {
-//					System.out.println("Skep because IO is empty: " + testCaesID);
-//					return null;
-//				}
-//				
-//				// Get the ground truth root cause
-//				List<TraceNode> rootCauses = result.getRootCauses();
-//				TraceNode rootCause = rootCauses.get(rootCauses.size()-1);
-//				
-//				// Start debugging 
-//				final int maxItr = Math.min((int) (buggyTrace.size() * 0.75), 20);
-//				int noOfFeedbacks = 0;
-//				
-//				ProbabilityEncoder encoder = new ProbabilityEncoder(buggyTrace);
-//				
-//				// Set up input and output variables
-//				List<VarValue> inputs = result.getTestIOs().get(result.getTestIOs().size()-1).getInputs();
-//				VarValue output = result.getTestIOs().get(result.getTestIOs().size()-1).getOutput();
-//				
-//				List<VarValue> outputs = new ArrayList<>();
-//				outputs.add(output);
-//				
-//				for (VarValue inputVar : inputs) {
-//					System.out.println("Input: " + inputVar.getVarID());
-//				}
-//				
-//				for (VarValue outputVar : outputs) {
-//					System.out.println("Output: " + outputVar.getVarID());
-//				}
-//				
-//				encoder.setInputVars(inputs);
-//				encoder.setOutputVars(outputs);
-//				encoder.setup();
-//				
-//				// Set up visited trace node order which users have already give the feedback
-//				List<Integer> visitedNodeOrder = new ArrayList<>();
-//				int startPointer = encoder.getSlicedExecutionList().get(0).getOrder();
-//				
-//				// Set up type checker and root cause finder for feedback
-//				StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-//				RootCauseFinder finder = new RootCauseFinder();
-//				finder.setRootCauseBasedOnDefects4J(pairListTregression, matcher, buggyTrace, correctTrace);
-//				
-//				Simulator simulator = new Simulator(false, false, 3);
-//				simulator.prepare(buggyTrace, correctTrace, pairListTregression, matcher);
-//				finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairListTregression, matcher);
-//				
-//				while (noOfFeedbacks <= maxItr) {
-//					System.out.println("---------------------------------- " + noOfFeedbacks + " iteration");
-//					
-//					// Make sure that the python server is available before calling this function
-//					encoder.encode();
-//					
-//					// Predicted root cause
-//					TraceNode prediction = encoder.getMostErroneousNode();
-//					
-//					// Visualize the prediction
-//					jumpToNode(prediction);
-//					
-//					System.out.println("Ground Truth: " + rootCause.getOrder() + ", Prediction: " + prediction.getOrder());
-//					if (prediction.getOrder() == rootCause.getOrder()) {
-//						// Baseline have found the root cause !
-//						break;
-//					}
-//					
-//					// If baseline cannot find the root cause, we need to find a node to ask for feedback
-//					TraceNode nextInspectingNode = prediction;
-//					int nextOrder = startPointer;
-//					if (visitedNodeOrder.contains(nextInspectingNode.getOrder())) {
-//						while (visitedNodeOrder.contains(nextOrder)) {
-//							startPointer++;
-//							nextOrder = encoder.getSlicedExecutionList().get(startPointer).getOrder();
-//						}
-//						nextInspectingNode = buggyTrace.getTraceNode(nextOrder);
-//					}
-//					
-//					System.out.println("Asking feedback for node: " + nextInspectingNode.getOrder());
-//					
-//					// Collect feedback from correct trace
-//					StepChangeType type = typeChecker.getType(nextInspectingNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
-//					UserFeedback feedback = typeToFeedback(type, nextInspectingNode, true, finder);
-//					System.out.println("Feedback for node: " + nextInspectingNode.getOrder() + " is " + feedback);
-//					
-//					// Add feedback information into probability encoder
-//					NodeFeedbackPair pair = new NodeFeedbackPair(nextInspectingNode, feedback);
-//					ProbabilityEncoder.addFeedback(pair);
-//					
-//					noOfFeedbacks += 1;
-//					visitedNodeOrder.add(nextInspectingNode.getOrder());
-//				}
-//				
-//				return Status.OK_STATUS;
-//			}
-//		};
-//		job.schedule();
+		
+		JavaUtil.sourceFile2CUMap.clear();
+		Job job = new Job("Testing Tregression") {
+
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				// Access the buggy view and correct view
+				setup();
+				
+				String selection = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.MANUAL_FEEDBACK);
+				System.out.println(selection);
+				
+				return Status.OK_STATUS;
+			}
+		};
+		job.schedule();
 		return null;
 	}
 	

@@ -399,7 +399,7 @@ public class StepDetailUI {
 	protected CheckboxTreeViewer readVariableTreeViewer;
 
 	private ITreeViewerListener treeListener;
-	private TregressionTraceView traceView;
+	protected TregressionTraceView traceView;
 	private boolean isOnBefore;
 	
 	public StepDetailUI(TregressionTraceView view, TraceNode node, boolean isOnBefore){
@@ -672,7 +672,7 @@ public class StepDetailUI {
 		}
 	}
 	
-	private TraceNode currentNode;
+	protected TraceNode currentNode;
 
 	private void sortVars(List<VarValue> vars){
 		List<VarValue> readVars = vars;

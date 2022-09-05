@@ -17,6 +17,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import baseline.AskingAgent;
+import microbat.Activator;
 import microbat.baseline.encoders.NodeFeedbackPair;
 import microbat.baseline.encoders.ProbabilityEncoder;
 import microbat.model.trace.Trace;
@@ -30,6 +31,7 @@ import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.Simulator;
 import tregression.model.PairList;
+import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
@@ -50,6 +52,9 @@ public class BaselineHandler extends AbstractHandler {
 	public static int mutaitonCount = -1;
 	public static int testCaseID = -1;
 	
+	private static UserFeedback manualFeedback = null;
+	private static TraceNode feedbackNode = null;
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
@@ -64,7 +69,9 @@ public class BaselineHandler extends AbstractHandler {
 				if (!isReady()) {
 					throw new RuntimeException("Baseline Handler is not ready");
 				}
-
+				
+				final boolean isManualFeedback = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.MANUAL_FEEDBACK).equals("true");
+				
 				final Trace buggyTrace = buggyView.getTrace();
 				final Trace correctTrace = correctView.getTrace();
 				
@@ -125,26 +132,47 @@ public class BaselineHandler extends AbstractHandler {
 //						nextNode = buggyTrace.getTraceNode(nextNodeOrder);
 //					}
 					
-					int nextNodeOrder = askingAgent.getNodeOrderToBeAsked(prediction);
-					
-					if (nextNodeOrder == -1) {
-						System.out.println("Cannot find root cause after visiting all node");
-						printReport(encoder.getSlicedExecutionList().size(), noOfFeedbacks, startTime);
-						break;
+					NodeFeedbackPair nodeFeedbackPair = null;
+					if (isManualFeedback) {
+						System.out.println("Please give a feedback manually");
+						while (!BaselineHandler.isManualFeedbackReady()) {
+							// Wait for the manual feedback
+						    try {
+						        Thread.sleep(200);
+						     } catch(InterruptedException e) {
+						     }
+						}
+
+						UserFeedback feedback = BaselineHandler.manualFeedback;
+						TraceNode feedbackNode = BaselineHandler.feedbackNode;
+						nodeFeedbackPair = new NodeFeedbackPair(feedbackNode, feedback);
+						BaselineHandler.resetManualFeedback();
+						
+						System.out.println("Feedback Recieved");
+						
+					} else {
+						int nextNodeOrder = askingAgent.getNodeOrderToBeAsked(prediction);
+						
+						if (nextNodeOrder == -1) {
+							System.out.println("Cannot find root cause after visiting all node");
+							printReport(encoder.getSlicedExecutionList().size(), noOfFeedbacks, startTime);
+							break;
+						}
+						
+						TraceNode nextNode = buggyTrace.getTraceNode(nextNodeOrder);
+						
+						System.out.println("Asking feedback for node: " + nextNode.getOrder());
+						
+						// Collect feedback from correct trace
+						StepChangeType type = typeChecker.getType(nextNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
+						UserFeedback feedback = typeToFeedback(type, nextNode, true, finder);
+						System.out.println("Feedback for node: " + nextNode.getOrder() + " is " + feedback);
+						
+						// Add feedback information into probability encoder
+						nodeFeedbackPair = new NodeFeedbackPair(nextNode, feedback);
 					}
 					
-					TraceNode nextNode = buggyTrace.getTraceNode(nextNodeOrder);
-					
-					System.out.println("Asking feedback for node: " + nextNode.getOrder());
-					
-					// Collect feedback from correct trace
-					StepChangeType type = typeChecker.getType(nextNode, true, buggyView.getPairList(), buggyView.getDiffMatcher());
-					UserFeedback feedback = typeToFeedback(type, nextNode, true, finder);
-					System.out.println("Feedback for node: " + nextNode.getOrder() + " is " + feedback);
-					
-					// Add feedback information into probability encoder
-					NodeFeedbackPair pair = new NodeFeedbackPair(nextNode, feedback);
-					ProbabilityEncoder.addFeedback(pair);
+					ProbabilityEncoder.addFeedback(nodeFeedbackPair);
 					
 					noOfFeedbacks += 1;
 				}
@@ -315,5 +343,18 @@ public class BaselineHandler extends AbstractHandler {
 		BaselineHandler.outputs = null;
 	}
 	
+	public static void setManualFeedback(UserFeedback manualFeedback, TraceNode node) {
+		BaselineHandler.manualFeedback = manualFeedback;
+		BaselineHandler.feedbackNode = node;
+	}
+	
+	public static void resetManualFeedback() {
+		BaselineHandler.manualFeedback = null;
+		BaselineHandler.feedbackNode = null;
+	}
+	
+	public static boolean isManualFeedbackReady() {
+		return BaselineHandler.manualFeedback != null && BaselineHandler.feedbackNode != null;
+	}
 
 }

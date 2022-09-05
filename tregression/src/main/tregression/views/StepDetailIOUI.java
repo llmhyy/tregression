@@ -11,9 +11,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.PlatformUI;
 
+import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.recommendation.ChosenVariableOption;
+import microbat.recommendation.UserFeedback;
 import tregression.handler.BaselineHandler;
 
 /**
@@ -25,7 +30,9 @@ import tregression.handler.BaselineHandler;
  *
  */
 public class StepDetailIOUI extends StepDetailUI {
-
+	
+	private Button correctButton;
+	
 	public StepDetailIOUI(TregressionTraceView view, TraceNode node, boolean isOnBefore) {
 		super(view, node, isOnBefore);
 	}
@@ -37,13 +44,16 @@ public class StepDetailIOUI extends StepDetailUI {
 		data.minimumHeight = 35;
 		slicingGroup.setLayoutData(data);
 		
-		GridLayout gl = new GridLayout(3, true);
+		GridLayout gl = new GridLayout(4, true);
 		slicingGroup.setLayout(gl);
+		
+		this.correctButton = new Button(slicingGroup, SWT.RADIO);
+		this.correctButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
+		this.correctButton.setText("correct");
 		
 		dataButton = new Button(slicingGroup, SWT.RADIO);
 		dataButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		dataButton.setText("data ");
-		
 		
 		controlButton = new Button(slicingGroup, SWT.RADIO);
 		controlButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
@@ -74,6 +84,11 @@ public class StepDetailIOUI extends StepDetailUI {
 		showIOButton.setText("IO");
 		showIOButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
 		showIOButton.addMouseListener(new showIOListener());
+		
+		Button manualFeedbackButton = new Button(slicingGroup, SWT.NONE);
+		manualFeedbackButton.setText("Feedback");
+		manualFeedbackButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		manualFeedbackButton.addMouseListener(new manualFeedbackListener());
 	}
 	
 	private class AddInputListener implements MouseListener {
@@ -136,7 +151,52 @@ public class StepDetailIOUI extends StepDetailUI {
 		
 	}
 	
+	private class manualFeedbackListener implements MouseListener {
+
+		@Override
+		public void mouseDoubleClick(MouseEvent e) {}
+
+		@Override
+		public void mouseDown(MouseEvent e) {
+			UserFeedback feedback = new UserFeedback();
+			if (correctButton.getSelection()) {
+				feedback.setFeedbackType(UserFeedback.CORRECT);
+			} else if (controlButton.getSelection()) {
+				feedback.setFeedbackType(UserFeedback.WRONG_PATH);
+			} else {
+				feedback.setFeedbackType(UserFeedback.WRONG_VARIABLE_VALUE);
+				List<VarValue> selectedReadVars = getSelectedReadVars();
+				List<VarValue> selectedWriteVars = getSelectedWriteVars();
+				if (selectedReadVars.isEmpty() && selectedWriteVars.isEmpty()) {
+					throw new RuntimeException("No selected variables");
+				}
+				VarValue selectedReadVar = null;
+				if (!selectedReadVars.isEmpty()) {
+					selectedReadVar = selectedReadVars.get(0);
+				}
+				
+				VarValue selectedWriteVar = null;
+				if (!selectedWriteVars.isEmpty()) {
+					selectedReadVar = selectedWriteVars.get(0);
+				}
+				feedback.setOption(new ChosenVariableOption(selectedReadVar, selectedWriteVar));
+			}
+			BaselineHandler.setManualFeedback(feedback, currentNode);
+		}
+
+		@Override
+		public void mouseUp(MouseEvent e) {	}
+		
+	}
+	
 	private List<VarValue> getSelectedVars() {
+		List<VarValue> vars = new ArrayList<>();
+		vars.addAll(this.getSelectedReadVars());
+		vars.addAll(this.getSelectedWriteVars());
+		return vars;
+	}
+
+	private List<VarValue> getSelectedReadVars() {
 		List<VarValue> vars = new ArrayList<>();
 		
 		Object[] readObjList = this.readVariableTreeViewer.getCheckedElements();
@@ -147,6 +207,11 @@ public class StepDetailIOUI extends StepDetailUI {
 			}
 		}
 		
+		return vars;
+	}
+	
+	private List<VarValue> getSelectedWriteVars() {
+		List<VarValue> vars = new ArrayList<>();
 		Object[] writeObjList = this.writtenVariableTreeViewer.getCheckedElements();
 		for (Object object : writeObjList) {
 			if (object instanceof VarValue) {
@@ -154,8 +219,6 @@ public class StepDetailIOUI extends StepDetailUI {
 				vars.add(output);
 			}
 		}
-		
 		return vars;
 	}
-
 }
