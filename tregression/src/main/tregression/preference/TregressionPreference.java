@@ -32,6 +32,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private Text defects4jFileText;
 	private Combo autoFeedbackCombo;
 	private Button manualFeedbackButton;
+	private Text seedText;
 	
 	
 //	private String defaultBuggyProjectPath;
@@ -43,6 +44,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private String defaultTestCase;
 	private String defaultDefects4jFile;
 	private String defaultManualFeedback;
+	private String defaultSeed;
 	
 //	public static final String BUGGY_PATH = "buggy_path";
 //	public static final String CORRECT_PATH = "correct_path";
@@ -54,6 +56,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	public static final String DEFECTS4J_FILE = "defects4j_file";
 	public static final String AUTO_FEEDBACK_METHOD = "autoFeedbackMethod";
 	public static final String MANUAL_FEEDBACK = "manualFeedback";
+	public static final String SEED = "1";
 
 	private int defaultAutoFeedbackMethod = AutoFeedbackMethods.RANDOM.ordinal();
 	
@@ -76,6 +79,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.defaultTestCase = Activator.getDefault().getPreferenceStore().getString(TEST_CASE);
 		this.defaultDefects4jFile = Activator.getDefault().getPreferenceStore().getString(DEFECTS4J_FILE);
 		this.defaultManualFeedback = Activator.getDefault().getPreferenceStore().getString(MANUAL_FEEDBACK);
+		this.defaultSeed = Activator.getDefault().getPreferenceStore().getString(SEED);
 	}
 
 	@Override
@@ -127,6 +131,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		preferences.put(DEFECTS4J_FILE, this.defects4jFileText.getText());
 		preferences.put(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		preferences.put(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
+		preferences.put(SEED, this.seedText.getText());
 		
 		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
@@ -135,6 +140,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		Activator.getDefault().getPreferenceStore().putValue(DEFECTS4J_FILE, this.defects4jFileText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		Activator.getDefault().getPreferenceStore().putValue(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
+		Activator.getDefault().getPreferenceStore().putValue(SEED, this.seedText.getText());
+
 		
 		return true;
 	}
@@ -171,6 +178,12 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.manualFeedbackButton.setLayoutData(manualFeedbackData);
 		boolean manualFeedbackButtonSelected = this.defaultManualFeedback.equals("true");
 		this.manualFeedbackButton.setSelection(manualFeedbackButtonSelected);
+		
+		Label seedLabel = new Label(autoFeedbackGroup, SWT.NONE);
+		seedLabel.setText("Seed: ");
+		this.seedText = new Text(autoFeedbackGroup, SWT.NONE);
+		this.seedText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		this.seedText.setText(this.defaultSeed);
 		
 	}
 }

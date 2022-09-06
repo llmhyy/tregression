@@ -148,7 +148,9 @@ public class BaselineHandler extends AbstractHandler {
 						nodeFeedbackPair = new NodeFeedbackPair(feedbackNode, feedback);
 						BaselineHandler.resetManualFeedback();
 						
-						System.out.println("Feedback Recieved");
+						System.out.println("Feedback Recieved:");
+						System.out.println("Node: " + feedbackNode.getOrder());
+						System.out.println("Feedback:" + feedback);
 						
 					} else {
 						int nextNodeOrder = askingAgent.getNodeOrderToBeAsked(prediction);

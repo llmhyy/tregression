@@ -63,6 +63,10 @@ public class MutationHandler extends AbstractHandler {
 //				// Get the test case id from preference
 				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				final int testCaesID = Integer.parseInt(testCaseID_str);
+				
+				String seed_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
+				final int seed = Integer.parseInt(seed_str);
+				
 //				System.out.println("testing on test case id: " + testCaesID);
 //				
 //				// Mutation framework will mutate the target project
@@ -147,6 +151,7 @@ public class MutationHandler extends AbstractHandler {
 				
 				MutationAgent mutationAgent = new MutationAgent(projectPath, dropInDir, microbatConfigPath);
 				mutationAgent.setTestCaseID(testCaesID);
+				mutationAgent.setSeed(seed);
 				mutationAgent.startMutation();
 				
 				updateView(mutationAgent.getBuggyTrace(), mutationAgent.getCorrectTrace(), mutationAgent.getPairList(), mutationAgent.getMatcher());
