@@ -66,19 +66,25 @@ public class BaselineHandler extends AbstractHandler {
 				
 				// Call setup before isReady method
 				setup();
+				
+				// Check is all information is ready
 				if (!isReady()) {
 					throw new RuntimeException("Baseline Handler is not ready");
 				}
 				
+				// True if users decide to give feedback manually
 				final boolean isManualFeedback = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.MANUAL_FEEDBACK).equals("true");
 				
+				// Set basic information
 				final Trace buggyTrace = buggyView.getTrace();
 				final Trace correctTrace = correctView.getTrace();
-				
 				final PairList pairList = buggyView.getPairList();
 				final DiffMatcher matcher = buggyView.getDiffMatcher();
 
+				// Maximum feedback that allowed to give
 				final int maxItr = Math.min((int) (buggyTrace.size() * 0.75), 20);
+				
+				// Number of feedback that is given
 				int noOfFeedbacks = 0;
 				
 				// Set up the probability encoder
@@ -87,7 +93,7 @@ public class BaselineHandler extends AbstractHandler {
 				encoder.setOutputVars(BaselineHandler.outputs);
 				encoder.setup();
 				
-				// getSlicedExecutionList should be called after encoder.setup is called
+				// getSlicedExecutionList should be called after encoder.setup() is called
 				AskingAgent askingAgent = new AskingAgent(encoder.getSlicedExecutionList());
 				
 				// Set up type checker and root cause finder for feedback
@@ -125,13 +131,7 @@ public class BaselineHandler extends AbstractHandler {
 						break;
 					}
 					
-//					boolean isVisitedNode = askingAgent.isVisitedNode(prediction);
-//					TraceNode nextNode = prediction;
-//					if (isVisitedNode) {
-//						int nextNodeOrder = askingAgent.getNodeOrderToBeAsked();
-//						nextNode = buggyTrace.getTraceNode(nextNodeOrder);
-//					}
-					
+					// Get the feedback
 					NodeFeedbackPair nodeFeedbackPair = null;
 					if (isManualFeedback) {
 						System.out.println("Please give a feedback manually");
@@ -139,8 +139,7 @@ public class BaselineHandler extends AbstractHandler {
 							// Wait for the manual feedback
 						    try {
 						        Thread.sleep(200);
-						     } catch(InterruptedException e) {
-						     }
+						     } catch(InterruptedException e) {}
 						}
 
 						UserFeedback feedback = BaselineHandler.manualFeedback;
@@ -153,6 +152,9 @@ public class BaselineHandler extends AbstractHandler {
 						System.out.println("Feedback:" + feedback);
 						
 					} else {
+						
+						// Tregression is able to give feedback automatically by
+						// comparing the buggy trace and correct trace
 						int nextNodeOrder = askingAgent.getNodeOrderToBeAsked(prediction);
 						
 						if (nextNodeOrder == -1) {
@@ -174,8 +176,8 @@ public class BaselineHandler extends AbstractHandler {
 						nodeFeedbackPair = new NodeFeedbackPair(nextNode, feedback);
 					}
 					
+					// Add the feedback as new constraint
 					ProbabilityEncoder.addFeedback(nodeFeedbackPair);
-					
 					noOfFeedbacks += 1;
 				}
 				
