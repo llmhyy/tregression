@@ -15,6 +15,7 @@ import org.eclipse.ui.PlatformUI;
 import baseline.MutationAgent;
 import microbat.Activator;
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.util.JavaUtil;
 import tregression.preference.TregressionPreference;
@@ -74,6 +75,13 @@ public class MutationHandler extends AbstractHandler {
 				for (VarValue output : mutationAgent.getOutputs()) {
 					System.out.println("Detected Outputs: " + output.getVarID());
 				}
+				
+				// Print root cause order
+				String rootCauseIDStr = "";
+				for (TraceNode rootCause : BaselineHandler.rootCause) {
+					rootCauseIDStr += rootCause.getOrder() + ",";
+				}
+				System.out.println("Ground Truth: " + rootCauseIDStr);
 				
 				return Status.OK_STATUS;
 			}
