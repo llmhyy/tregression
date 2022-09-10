@@ -53,7 +53,6 @@ public class MutationHandler extends AbstractHandler {
 				// Perform mutation
 				MutationAgent mutationAgent = new MutationAgent(projectPath, dropInDir, microbatConfigPath);
 				mutationAgent.setTestCaseID(testCaesID);
-				mutationAgent.setSeed(seed);
 				mutationAgent.startMutation();
 				
 				// Visualize the mutation result

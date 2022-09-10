@@ -80,9 +80,9 @@ public class MutationAgent {
 		boolean testCaseFailed = false;
 		for (int i=0; i<maxMutationLimit; i++) {
 			this.mutationCount++;
-			mutationFramework.setSeed(this.seed);
+			mutationFramework.autoSeed(1, 100);
 			result = mutationFramework.startMutationFramework();
-			if (!result.mutatedTestCasePassed()) {
+			if (!result.isTestCasePassed()) {
 				testCaseFailed = true;
 				break;
 			}

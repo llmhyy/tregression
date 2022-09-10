@@ -69,9 +69,9 @@
              name="Testing Tregression">
        </command>
        <command
-             defaultHandler="tregression.handler.MutationBaselineHandler"
-             id="tregression.baselineOnMutation"
-             name="Run Baseline On Mutation Project">
+             defaultHandler="tregression.handler.DSDebuggingHandler"
+             id="tregression.dynamicslicing"
+             name="Run Dyanmic Slicing">
        </command>
        <command
              defaultHandler="tregression.handler.MutationHandler"
@@ -229,7 +229,7 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.baselineOnMutation"
+                  commandId="tregression.dynamicslicing"
                   icon="icons/property.png"
                   style="push">
             </command>
