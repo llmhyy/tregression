@@ -66,6 +66,7 @@ public class MutationHandler extends AbstractHandler {
 				BaselineHandler.setOriginalProPath(mutationAgent.getOriginalProjPath());
 				BaselineHandler.setMutationCount(mutationAgent.getMutationCount());
 				BaselineHandler.setTestCaseID(testCaesID);
+				BaselineHandler.setTestCaseMethod(mutationAgent.getTestCase().simpleName);
 				
 				// Print out detected inputs/outputs
 				for (VarValue input : mutationAgent.getInputs()) {

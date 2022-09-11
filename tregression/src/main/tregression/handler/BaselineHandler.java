@@ -51,6 +51,8 @@ public class BaselineHandler extends AbstractHandler {
 	
 	public static int mutaitonCount = -1;
 	public static int testCaseID = -1;
+	public static String testCaseMethod = "";
+	
 	
 	private static UserFeedback manualFeedback = null;
 	private static TraceNode feedbackNode = null;
@@ -355,6 +357,10 @@ public class BaselineHandler extends AbstractHandler {
 	public static void resetManualFeedback() {
 		BaselineHandler.manualFeedback = null;
 		BaselineHandler.feedbackNode = null;
+	}
+	
+	public static void setTestCaseMethod(final String testCaseMethod) {
+		BaselineHandler.testCaseMethod = testCaseMethod;
 	}
 	
 	public static boolean isManualFeedbackReady() {
