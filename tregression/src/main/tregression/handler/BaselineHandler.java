@@ -104,7 +104,7 @@ public class BaselineHandler extends AbstractHandler {
 				simulator.prepare(buggyTrace, correctTrace, pairList, matcher);
 				RootCauseFinder finder = new RootCauseFinder();
 				finder.setRootCauseBasedOnDefects4J(pairList, matcher, buggyTrace, correctTrace);
-				finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairList, matcher);
+//				finder.checkRootCause(simulator.getObservedFault(), buggyTrace, correctTrace, pairList, matcher);
 				
 				long startTime = System.currentTimeMillis();
 				
@@ -195,7 +195,7 @@ public class BaselineHandler extends AbstractHandler {
 	
 	private void printReport(final int slicedTraceLen, final int noOfFeedbacks, final long startTime) {
 		System.out.println("---------------------------------");
-		System.out.println("Debug Report: Test Case " + testCaseID);
+		System.out.println("Debug Report: Test Case " + testCaseID + " Method Name: " + BaselineHandler.testCaseMethod);
 		System.out.println("---------------------------------");
 		System.out.println("Root Cause is found");
 		System.out.println("Total Trace Length: " + buggyView.getTrace().getExecutionList().size());

@@ -78,9 +78,9 @@ public class MutationAgent {
 		// Mutate project until it fail the test case
 		MutationResult result = null;
 		boolean testCaseFailed = false;
-		for (int i=0; i<maxMutationLimit; i++) {
+		for (int i=0; i<100; i++) {
 			this.mutationCount++;
-			mutationFramework.autoSeed(1, 100);
+			mutationFramework.setSeed(i);
 			result = mutationFramework.startMutationFramework();
 			if (!result.isTestCasePassed()) {
 				testCaseFailed = true;

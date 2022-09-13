@@ -83,6 +83,7 @@ public class MutationHandler extends AbstractHandler {
 				}
 				System.out.println("Ground Truth: " + rootCauseIDStr);
 				
+				System.out.println("Mutation Count: " + mutationAgent.getMutationCount());
 				return Status.OK_STATUS;
 			}
 		};
