@@ -1,6 +1,9 @@
 package tregression.handler;
 
 
+import java.util.Collections;
+import java.util.Comparator;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -78,6 +81,12 @@ public class MutationHandler extends AbstractHandler {
 				
 				// Print root cause order
 				String rootCauseIDStr = "";
+				Collections.sort(BaselineHandler.rootCause, new Comparator<TraceNode>() {
+					@Override
+					public int compare(TraceNode node1, TraceNode node2) {
+						return node1.getOrder() - node2.getOrder();
+					}
+				});
 				for (TraceNode rootCause : BaselineHandler.rootCause) {
 					rootCauseIDStr += rootCause.getOrder() + ",";
 				}

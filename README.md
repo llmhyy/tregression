@@ -41,3 +41,102 @@ After import the projects, right-click the tregression project, and choose "Run 
 Second, please switch to Tregression perspective by (Windows >> Perspectives >> Open Operspective >> Other). 
 
 Third, click "Tregression" menu >> Run for Seperate Versions. The tool will automate the regression bug detection.
+
+## Running Mutation on Tregression
+
+Tregression now are able to mutate a originally correct trace into buggy trace that fail on targeted test case
+
+To perform the mutation functionality, please follow the steps:
+
+1. Install [Java Mutation Framework](https://github.com/llmhyy/java-mutation-framework.git). Check is the following folder/file exist in the downloaded project:
+   1. `java-mutation-framework\sample\`
+   2. `java-mutation-framework\sampleMicrobatConfig.json`
+
+   In `java-mutation-framework\sampleMicrobatConfig.json`, you need to verify the java home path. If the path is not valid, please change the path to the  `JAVA 8` folder eg. `C:\\Program Files\\Java\\jdk1.8.0_202`.
+
+   <p align="center">
+   <img src="./images/java_home.png" width="300"/>
+   </p>
+
+   You may also check the `readme` in `java-mutation-framework` for more information
+
+2. There are several setting that you need to change. In the toolbar, go to `Window -> Preference -> Tregression (defect4j)`
+   <p align="center">
+   <img src="./images/Preference.png" width="400"/>
+   </p> 
+
+   - **Repository Path:** It is the absolute path to the testing project. The recommanded testing project are installed within `java-mutation-framework/sample`. In this example, we are using `math_70` as our testing project: `C:\Users\user_name\git\java-mutation-framework\sample\math_70`
+   - **Bug ID:** It represent which test case that is being tested. For example, for `Bug ID = 0`, that mean the first test case is being tested. Make sure that the `Bug ID` does not exceed the number of test cases. In our example, we are testing the first test case so that the input is `0`.
+   - **Give feedback manually:** Check this box if you want to give the feedback manually, which is also the recommanded choice. 
+    
+      If the box is unchecked, then tregression will give the feedback by comparing the buggy trace and correct trace. However, since some of the variable are changed for running the baseline, it is possible that tregression may give wrong feedback.
+
+   - **Seed:** It is the random seed used by `java-mutation-framework`. By default, it is set to be `1`.
+   - **Drop In Folder:** You need to specified the absolute path to drop in folder which is the `lib` folder used by `java-mutation-framework`. You can find the `lib` folder in `java-mutation-framework\\lib`. You need to convert it to absolute path.
+   - **Config Path:** It is the configuration json file for instruementation. Make sure that the `JAVA 8` path is correct inside in the json file. You can find it in `java-mutation-framework\\sampleMicrobatConfig.json`. Again, you need to convert it to absolute path.
+
+3. Click the `Read Cross` button. It will perform the mutation.
+   <p align="center">
+   <img src="./images/single.png" width="400"/>
+   </p>
+
+4. At the end of the mutation, the input and the ouput variables will be automatically detected, which can be used for the belief propagation section.
+
+## Run Belief Propagation on Tregression
+
+Tregression can now debug based on belief propagation technique. For more information about debuggin on belief propagation, please refer to the paper `Debugging with Intelligence via Probabilistic Inference`.
+
+1. It is assumed that [Microbat](https://github.com/llmhyy/microbat.git) is installed
+
+2. Please open `microbat\microbat\BP_Server\BP_Server.ipynb` using jupyter notebook
+
+3. Run every cell in `BP_Server.ipynb`
+
+4. If you are testing belief propagation with mutation framework, after the mutation is done, Tregression will print out the automatically detected input and output variables. If the variable are correctly detected, please skip step 5.
+
+5. Define the input and the output variables:
+
+    - **Define Inputs Variables**
+      1. Navigate to the node that define the input variables. Note that there may be multiple node that define input variables.
+      2. In the `Step Property View`, select the input varaibles and click `Inputs` button.
+      <p align="center">
+      <img src="./images/IO.png" width="400"/>
+      </p>
+
+   - **Define Outputs Variables**
+
+     1. Navigate to the node that define the output variables.
+     2. In the `Step Property View`, select teh output variables and click `Outputs` button
+
+   - **Check Selected IO**
+
+      1. In the `Step Property View`, click the `IO` button. It will print the information of selected inputs and outputs variable in the console
+   - **Clear Selected IO**
+
+      1. If you select a wrong input or output, you need to click the `Clear` button in `Step Property View` to erase all the selected inputs and outputs, then select them again.
+
+6. Click the `Green Go Back` button to perform belief propergation wait for the result.
+
+    <p align="center">
+        <img src="./images/single.png" width="400"/>
+    </p>
+
+7. If the recommanded node is not the root cause, the program will for feedback. You will need to give the feedback manually if you click the `manual feedback` box in the `Tregrssion Preference`.
+   - **Give feedback CORRECT**
+      1. In `Step Porperty View`, check the `correct` button and click the `Feedback` button to submit the feedback.
+      <p align="center">
+      <img src="./images/correct_feedback.png" width="400"/>
+      </p>
+   - **Give feedback WRONG PATH**
+     1. In `Step Porperty View`, check the `control` button and click the `Feedback` button to submit the feedback.
+      <p align="center">
+      <img src="./images/control_feedback.png" width="400"/>
+      </p>
+   - **Give feedback WRONG VARIABLE**
+     1. In `Step Porperty View`, check the `data` button
+     2. Select all the variable that you think is wrong
+     3. Click the `Feedback` button to submit the feedback.
+      <p align="center">
+      <img src="./images/feedback.png" width="400"/>
+      </p>
+8. Repeat the step 7 until the root cause is found. Or, after giving 20 feedbacks, the program will stop and claim that root cause cannot be found. Plase note the it takes time to wait for belief propagation to converge. 

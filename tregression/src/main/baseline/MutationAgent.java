@@ -15,7 +15,6 @@ import testio.TestIOFramework;
 import testio.model.IOModel;
 import testio.model.TestIO;
 import tracediff.TraceDiff;
-import tracediff.model.TraceNodePair;
 import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.model.PairList;
@@ -71,6 +70,7 @@ public class MutationAgent {
 		mutationFramework.setDropInsDir(dropInDir);
 		mutationFramework.setMicrobatConfigPath(microbatConfigPath);
 		mutationFramework.setMaxNumberOfMutations(maxMutation);
+		mutationFramework.toggleStrongMutations(true);
 		
 		this.testCase = mutationFramework.getTestCases().get(this.testCaseID);
 		mutationFramework.setTestCase(testCase);
