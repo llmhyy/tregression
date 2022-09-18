@@ -32,9 +32,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private Text defects4jFileText;
 	private Combo autoFeedbackCombo;
 	private Button manualFeedbackButton;
-	private Text seedText;
-	private Text dropInFolderText;
-	private Text configPathText;
+//	private Text seedText;
+//	private Text dropInFolderText;
+//	private Text configPathText;
 
 	
 //	private String defaultBuggyProjectPath;
@@ -46,9 +46,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private String defaultTestCase;
 	private String defaultDefects4jFile;
 	private String defaultManualFeedback;
-	private String defaultSeed;
-	private String defaultDropInFolder;
-	private String defaultConfigPath;
+//	private String defaultSeed;
+//	private String defaultDropInFolder;
+//	private String defaultConfigPath;
 	
 //	public static final String BUGGY_PATH = "buggy_path";
 //	public static final String CORRECT_PATH = "correct_path";
@@ -60,9 +60,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	public static final String DEFECTS4J_FILE = "defects4j_file";
 	public static final String AUTO_FEEDBACK_METHOD = "autoFeedbackMethod";
 	public static final String MANUAL_FEEDBACK = "manualFeedback";
-	public static final String SEED = "seed";
-	public static final String DROP_IN_FOLDER = "dropInFolder";
-	public static final String CONFIG_PATH = "configPath";
+//	public static final String SEED = "seed";
+//	public static final String DROP_IN_FOLDER = "dropInFolder";
+//	public static final String CONFIG_PATH = "configPath";
 
 	private int defaultAutoFeedbackMethod = AutoFeedbackMethods.RANDOM.ordinal();
 	
@@ -85,9 +85,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.defaultTestCase = Activator.getDefault().getPreferenceStore().getString(TEST_CASE);
 		this.defaultDefects4jFile = Activator.getDefault().getPreferenceStore().getString(DEFECTS4J_FILE);
 		this.defaultManualFeedback = Activator.getDefault().getPreferenceStore().getString(MANUAL_FEEDBACK);
-		this.defaultSeed = Activator.getDefault().getPreferenceStore().getString(SEED);
-		this.defaultDropInFolder = Activator.getDefault().getPreferenceStore().getString(DROP_IN_FOLDER);
-		this.defaultConfigPath = Activator.getDefault().getPreferenceStore().getString(CONFIG_PATH);
+//		this.defaultSeed = Activator.getDefault().getPreferenceStore().getString(SEED);
+//		this.defaultDropInFolder = Activator.getDefault().getPreferenceStore().getString(DROP_IN_FOLDER);
+//		this.defaultConfigPath = Activator.getDefault().getPreferenceStore().getString(CONFIG_PATH);
 	}
 
 	@Override
@@ -139,9 +139,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		preferences.put(DEFECTS4J_FILE, this.defects4jFileText.getText());
 		preferences.put(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		preferences.put(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
-		preferences.put(SEED, this.seedText.getText());
-		preferences.put(DROP_IN_FOLDER, this.dropInFolderText.getText());
-		preferences.put(CONFIG_PATH, this.configPathText.getText());
+//		preferences.put(SEED, this.seedText.getText());
+//		preferences.put(DROP_IN_FOLDER, this.dropInFolderText.getText());
+//		preferences.put(CONFIG_PATH, this.configPathText.getText());
 		
 		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
@@ -150,9 +150,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		Activator.getDefault().getPreferenceStore().putValue(DEFECTS4J_FILE, this.defects4jFileText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		Activator.getDefault().getPreferenceStore().putValue(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
-		Activator.getDefault().getPreferenceStore().putValue(SEED, this.seedText.getText());
-		Activator.getDefault().getPreferenceStore().putValue(DROP_IN_FOLDER, this.dropInFolderText.getText());
-		Activator.getDefault().getPreferenceStore().putValue(CONFIG_PATH, this.configPathText.getText());
+//		Activator.getDefault().getPreferenceStore().putValue(SEED, this.seedText.getText());
+//		Activator.getDefault().getPreferenceStore().putValue(DROP_IN_FOLDER, this.dropInFolderText.getText());
+//		Activator.getDefault().getPreferenceStore().putValue(CONFIG_PATH, this.configPathText.getText());
 
 		
 		return true;
@@ -191,22 +191,22 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		boolean manualFeedbackButtonSelected = this.defaultManualFeedback.equals("true");
 		this.manualFeedbackButton.setSelection(manualFeedbackButtonSelected);
 		
-		Label seedLabel = new Label(autoFeedbackGroup, SWT.NONE);
-		seedLabel.setText("Seed: ");
-		this.seedText = new Text(autoFeedbackGroup, SWT.NONE);
-		this.seedText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-		this.seedText.setText(this.defaultSeed);
-		
-		Label dropInFolderLabel = new Label(autoFeedbackGroup, SWT.NONE);
-		dropInFolderLabel.setText("Drop In Folder: ");
-		this.dropInFolderText = new Text(autoFeedbackGroup, SWT.NONE);
-		this.dropInFolderText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-		this.dropInFolderText.setText(this.defaultDropInFolder);
-		
-		Label configPathLabel = new Label(autoFeedbackGroup, SWT.NONE);
-		configPathLabel.setText("Config Path: ");
-		this.configPathText = new Text(autoFeedbackGroup, SWT.NONE);
-		this.configPathText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-		this.configPathText.setText(this.defaultConfigPath);
+//		Label seedLabel = new Label(autoFeedbackGroup, SWT.NONE);
+//		seedLabel.setText("Seed: ");
+//		this.seedText = new Text(autoFeedbackGroup, SWT.NONE);
+//		this.seedText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+//		this.seedText.setText(this.defaultSeed);
+//		
+//		Label dropInFolderLabel = new Label(autoFeedbackGroup, SWT.NONE);
+//		dropInFolderLabel.setText("Drop In Folder: ");
+//		this.dropInFolderText = new Text(autoFeedbackGroup, SWT.NONE);
+//		this.dropInFolderText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+//		this.dropInFolderText.setText(this.defaultDropInFolder);
+//		
+//		Label configPathLabel = new Label(autoFeedbackGroup, SWT.NONE);
+//		configPathLabel.setText("Config Path: ");
+//		this.configPathText = new Text(autoFeedbackGroup, SWT.NONE);
+//		this.configPathText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+//		this.configPathText.setText(this.defaultConfigPath);
 	}
 }

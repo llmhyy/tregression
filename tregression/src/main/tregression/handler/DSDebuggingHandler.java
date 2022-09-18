@@ -85,15 +85,15 @@ public class DSDebuggingHandler extends AbstractHandler {
 				final int startID = Integer.parseInt(testCaseID_str);
 	
 				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
-				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
-				final String microbatConfigPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CONFIG_PATH);
-
-				String seed_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
-				final int seed = Integer.parseInt(seed_str);
+//				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
+//				final String microbatConfigPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CONFIG_PATH);
+//
+//				String seed_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
+//				final int seed = Integer.parseInt(seed_str);
 				
 				Recorder recorder = new Recorder();
 				
-				MutationAgent mutationAgent = new MutationAgent(projectPath, dropInDir, microbatConfigPath);
+				MutationAgent mutationAgent = new MutationAgent(projectPath);
 				
 				String message = "";
 				
@@ -103,7 +103,7 @@ public class DSDebuggingHandler extends AbstractHandler {
 						
 						// Perform mutation
 						mutationAgent.setTestCaseID(testCaseID);
-						mutationAgent.setSeed(seed);
+//						mutationAgent.setSeed(seed);
 						mutationAgent.startMutation();
 						
 						// Visualize the mutation result

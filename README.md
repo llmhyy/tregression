@@ -48,17 +48,20 @@ Tregression now are able to mutate a originally correct trace into buggy trace t
 
 To perform the mutation functionality, please follow the steps:
 
-1. Install [Java Mutation Framework](https://github.com/llmhyy/java-mutation-framework.git). Check is the following folder/file exist in the downloaded project:
-   1. `java-mutation-framework\sample\`
-   2. `java-mutation-framework\sampleMicrobatConfig.json`
+1. Install `Java Mutation Framework`
 
-   In `java-mutation-framework\sampleMicrobatConfig.json`, you need to verify the java home path. If the path is not valid, please change the path to the  `JAVA 8` folder eg. `C:\\Program Files\\Java\\jdk1.8.0_202`.
+    1. Git clone the [Java Mutation Framework](https://github.com/llmhyy/java-mutation-framework.git).
+
+    2. Inside the `Java Mutation Framework`, run `./scripts/setup.bat`
+
+    3. Enter `%USERPROFILE%\lib\resources\java-mutation-framework\microbatConfig.json` file and modify java_home argument to the path to `Java 8`
 
    <p align="center">
    <img src="./images/java_home.png" width="300"/>
    </p>
 
-   You may also check the `readme` in `java-mutation-framework` for more information
+    You may also check the `readme` in `java-mutation-framework` for more information
+
 
 2. There are several setting that you need to change. In the toolbar, go to `Window -> Preference -> Tregression (defect4j)`
    <p align="center">
@@ -70,10 +73,6 @@ To perform the mutation functionality, please follow the steps:
    - **Give feedback manually:** Check this box if you want to give the feedback manually, which is also the recommanded choice. 
     
       If the box is unchecked, then tregression will give the feedback by comparing the buggy trace and correct trace. However, since some of the variable are changed for running the baseline, it is possible that tregression may give wrong feedback.
-
-   - **Seed:** It is the random seed used by `java-mutation-framework`. By default, it is set to be `1`.
-   - **Drop In Folder:** You need to specified the absolute path to drop in folder which is the `lib` folder used by `java-mutation-framework`. You can find the `lib` folder in `java-mutation-framework\\lib`. You need to convert it to absolute path.
-   - **Config Path:** It is the configuration json file for instruementation. Make sure that the `JAVA 8` path is correct inside in the json file. You can find it in `java-mutation-framework\\sampleMicrobatConfig.json`. Again, you need to convert it to absolute path.
 
 3. Click the `Read Cross` button. It will perform the mutation.
    <p align="center">

@@ -63,8 +63,8 @@ public class TestingHandler extends AbstractHandler {
 				// Access the buggy view and correct view
 				setup();
 				
-				String selection = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
-				System.out.println(selection);
+//				String selection = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
+//				System.out.println(selection);
 				
 				return Status.OK_STATUS;
 			}

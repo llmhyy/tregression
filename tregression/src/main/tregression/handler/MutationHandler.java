@@ -44,17 +44,17 @@ public class MutationHandler extends AbstractHandler {
 		
 				// Setup parameter
 				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
-				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
-				final String microbatConfigPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CONFIG_PATH);
+//				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
+//				final String microbatConfigPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CONFIG_PATH);
 
 				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				final int testCaesID = Integer.parseInt(testCaseID_str);
 				
-				String seed_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
-				final int seed = Integer.parseInt(seed_str);
+//				String seed_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
+//				final int seed = Integer.parseInt(seed_str);
 				
 				// Perform mutation
-				MutationAgent mutationAgent = new MutationAgent(projectPath, dropInDir, microbatConfigPath);
+				MutationAgent mutationAgent = new MutationAgent(projectPath);
 				mutationAgent.setTestCaseID(testCaesID);
 				mutationAgent.startMutation();
 				
