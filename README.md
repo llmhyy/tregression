@@ -54,12 +54,6 @@ To perform the mutation functionality, please follow the steps:
 
     2. Inside the `Java Mutation Framework`, run `./scripts/setup.bat`
 
-    3. Enter `%USERPROFILE%\lib\resources\java-mutation-framework\microbatConfig.json` file and modify java_home argument to the path to `Java 8`
-
-   <p align="center">
-   <img src="./images/java_home.png" width="300"/>
-   </p>
-
     You may also check the `readme` in `java-mutation-framework` for more information
 
 
@@ -74,12 +68,21 @@ To perform the mutation functionality, please follow the steps:
     
       If the box is unchecked, then tregression will give the feedback by comparing the buggy trace and correct trace. However, since some of the variable are changed for running the baseline, it is possible that tregression may give wrong feedback.
 
-3. Click the `Read Cross` button. It will perform the mutation.
+3. It is assumed that [Microbat]() is installed. In the toolbar, go to Window -> Preference -> Microbat Debugging. Set up the following parameters:
+
+      <p align="center">
+   <img src="./images/preference_microbat.png" width="400"/>
+   </p>
+
+   - **Java Home Path:** Absolute path to `JAVA 8`
+   - **Step Limit:** Reasonable step limit. 300000 is recommended.
+
+4. Click the `Read Cross` button. It will perform the mutation.
    <p align="center">
    <img src="./images/single.png" width="400"/>
    </p>
 
-4. At the end of the mutation, the input and the ouput variables will be automatically detected, which can be used for the belief propagation section.
+5. At the end of the mutation, the input and the ouput variables will be automatically detected, which can be used for the belief propagation section.
 
 ## Run Belief Propagation on Tregression
 

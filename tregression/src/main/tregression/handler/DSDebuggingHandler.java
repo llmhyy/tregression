@@ -23,7 +23,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import baseline.AskingAgent;
-import baseline.MutationAgent;
+import baseline.MutationAgent_Tregression;
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
 import jmutation.model.TestCase;
@@ -93,7 +93,7 @@ public class DSDebuggingHandler extends AbstractHandler {
 				
 				Recorder recorder = new Recorder();
 				
-				MutationAgent mutationAgent = new MutationAgent(projectPath);
+				MutationAgent_Tregression mutationAgent = new MutationAgent_Tregression(projectPath);
 				
 				String message = "";
 				
