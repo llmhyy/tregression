@@ -104,7 +104,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		String buggyPath = PathConfiguration.getBuggyPath(projectName, bugID);
 		String fixPath = PathConfiguration.getCorrectPath(projectName, bugID);
 		if (tcs == null) {
-			tcs = Defects4jProjectConfig.retrieveFailingTestCase(buggyPath);
+			tcs = config.retrieveFailingTestCase(buggyPath);
 		}
 		List<String> includeLibs = AnalysisScopePreference.getIncludedLibList();
 		List<String> excludeLibs = AnalysisScopePreference.getExcludedLibList();

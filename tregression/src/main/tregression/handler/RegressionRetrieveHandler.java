@@ -146,7 +146,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 				fixPath);
 		diffMatcher.matchCode();
 
-		List<TestCase> list = new TrialGenerator().retrieveD4jFailingTestCase(buggyPath);
+		List<TestCase> list = config.retrieveFailingTestCase(buggyPath);
 		TestCase tc = list.get(0);
 
 		AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(buggyPath, tc, config);

@@ -1,7 +1,9 @@
 package tregression.empiricalstudy.config;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,8 @@ import org.apache.commons.lang.SystemUtils;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+
+import tregression.empiricalstudy.TestCase;
 
 
 public class MavenProjectConfig extends ProjectConfig {
@@ -83,5 +87,34 @@ public class MavenProjectConfig extends ProjectConfig {
 	private static String getUserHomePath() {
 		return SystemUtils.getUserHome().toString();
 	}
+	
+	@Override
+	public List<TestCase> retrieveFailingTestCase(String buggyVersionPath) throws IOException {
+		/*
+		 * 1. Run mvn test
+		 * 2. Read output
+		 * 3. Parse maven output
+		 * 4. OutputHandler can create list of failing test case?
+		 * 5. 
+		 */
+		String failingFile = buggyVersionPath + File.separator + "failing_tests";
+		File file = new File(failingFile);
 
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+
+		List<TestCase> list = new ArrayList<>();
+		String line = null;
+		while ((line = reader.readLine()) != null) {
+			if (line.startsWith("---")) {
+				String testClass = line.substring(line.indexOf(" ") + 1, line.indexOf("::"));
+				String testMethod = line.substring(line.indexOf("::") + 2, line.length());
+				System.currentTimeMillis();
+				TestCase tc = new TestCase(testClass, testMethod);
+				list.add(tc);
+			}
+		}
+		reader.close();
+
+		return list;
+	}
 }

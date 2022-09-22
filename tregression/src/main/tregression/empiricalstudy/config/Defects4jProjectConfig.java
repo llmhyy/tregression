@@ -1,8 +1,13 @@
 package tregression.empiricalstudy.config;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import tregression.empiricalstudy.TestCase;
 
 public class Defects4jProjectConfig extends ProjectConfig{
 	
@@ -71,6 +76,29 @@ public class Defects4jProjectConfig extends ProjectConfig{
 		}
 		
 		return config;
+	}
+	
+	@Override
+	public List<TestCase> retrieveFailingTestCase(String buggyVersionPath) throws IOException {
+		String failingFile = buggyVersionPath + File.separator + "failing_tests";
+		File file = new File(failingFile);
+
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+
+		List<TestCase> list = new ArrayList<>();
+		String line = null;
+		while ((line = reader.readLine()) != null) {
+			if (line.startsWith("---")) {
+				String testClass = line.substring(line.indexOf(" ") + 1, line.indexOf("::"));
+				String testMethod = line.substring(line.indexOf("::") + 2, line.length());
+				System.currentTimeMillis();
+				TestCase tc = new TestCase(testClass, testMethod);
+				list.add(tc);
+			}
+		}
+		reader.close();
+
+		return list;
 	}
 	
 }
