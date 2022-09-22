@@ -47,17 +47,8 @@ Third, click "Tregression" menu >> Run for Seperate Versions. The tool will auto
 Tregression now are able to mutate a originally correct trace into buggy trace that fail on targeted test case
 
 To perform the mutation functionality, please follow the steps:
-
-1. Install `Java Mutation Framework`
-
-    1. Git clone the [Java Mutation Framework](https://github.com/llmhyy/java-mutation-framework.git).
-
-    2. Inside the `Java Mutation Framework`, run `./scripts/setup.bat`
-
-    You may also check the `readme` in `java-mutation-framework` for more information
-
-
-2. There are several setting that you need to change. In the toolbar, go to `Window -> Preference -> Tregression (defect4j)`
+9
+1. There are several setting that you need to change. In the toolbar, go to `Window -> Preference -> Tregression (defect4j)`
    <p align="center">
    <img src="./images/Preference.png" width="400"/>
    </p> 
@@ -68,7 +59,9 @@ To perform the mutation functionality, please follow the steps:
     
       If the box is unchecked, then tregression will give the feedback by comparing the buggy trace and correct trace. However, since some of the variable are changed for running the baseline, it is possible that tregression may give wrong feedback.
 
-3. It is assumed that [Microbat]() is installed. In the toolbar, go to Window -> Preference -> Microbat Debugging. Set up the following parameters:
+   - **Drop In Folder:** It is the absolute path to the folder that store all the required `.jar` files for the mutation. You can find it in `tregression\mutation_dropin`. Please convert it to absolute path.
+
+2. It is assumed that [Microbat]() is installed. In the toolbar, go to Window -> Preference -> Microbat Debugging. Set up the following parameters:
 
       <p align="center">
    <img src="./images/preference_microbat.png" width="400"/>

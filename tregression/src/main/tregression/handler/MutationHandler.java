@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import baseline.MutationAgent_Tregression;
 import microbat.Activator;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -23,6 +22,7 @@ import microbat.model.value.VarValue;
 import microbat.preference.MicrobatPreference;
 import microbat.util.JavaUtil;
 import microbat.util.Settings;
+import mutation.MutationAgent;
 import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
@@ -46,7 +46,7 @@ public class MutationHandler extends AbstractHandler {
 		
 				// Setup parameter
 				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
-//				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
+				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
 //				final String microbatConfigPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CONFIG_PATH);
 
 				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
@@ -59,7 +59,7 @@ public class MutationHandler extends AbstractHandler {
 //				final int seed = Integer.parseInt(seed_str);
 				
 				// Perform mutation
-				MutationAgent_Tregression mutationAgent = new MutationAgent_Tregression(projectPath, java_path, stepLimit);
+				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit, dropInDir);
 				mutationAgent.setTestCaseID(testCaesID);
 				mutationAgent.startMutation();
 				

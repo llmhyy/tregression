@@ -22,25 +22,16 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import baseline.AskingAgent;
-import baseline.MutationAgent_Tregression;
-import jmutation.MutationFramework;
-import jmutation.model.MutationResult;
-import jmutation.model.TestCase;
 import microbat.Activator;
-import microbat.baseline.encoders.NodeFeedbackPair;
-import microbat.baseline.encoders.ProbabilityEncoder;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.preference.MicrobatPreference;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
-import testio.TestIOFramework;
-import testio.model.IOModel;
-import testio.model.TestIO;
-import tracediff.TraceDiff;
-import tracediff.model.TraceNodePair;
+import microbat.util.Settings;
+import mutation.MutationAgent;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.RootCauseFinder;
@@ -85,7 +76,11 @@ public class DSDebuggingHandler extends AbstractHandler {
 				final int startID = Integer.parseInt(testCaseID_str);
 	
 				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
-//				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
+				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
+				
+				final String java_path = Activator.getDefault().getPreferenceStore().getString(MicrobatPreference.JAVA7HOME_PATH);
+				final int stepLimit = Settings.stepLimit;
+				
 //				final String microbatConfigPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CONFIG_PATH);
 //
 //				String seed_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
@@ -93,7 +88,7 @@ public class DSDebuggingHandler extends AbstractHandler {
 				
 				Recorder recorder = new Recorder();
 				
-				MutationAgent_Tregression mutationAgent = new MutationAgent_Tregression(projectPath);
+				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit, dropInDir);
 				
 				String message = "";
 				
@@ -315,47 +310,6 @@ public class DSDebuggingHandler extends AbstractHandler {
 			System.out.println("buggyView or correctView is null");
 		}
 	}
-	
-	
-//	public static boolean isOutputProvided() {
-//		if (DSDebuggingHandler.outputs == null) {
-//			return false;
-//		}
-//		
-//		if (DSDebuggingHandler.outputs.isEmpty()) {
-//			return false;
-//		}
-//		
-//		return true;
-//	}
-	
-//	public static void setRootCauses(List<TraceNode> rootCauses) {
-//		DSDebuggingHandler.rootCauses = rootCauses;
-//	}
-//	
-//	public static void setRootCause(TraceNode rootCause) {
-//		List<TraceNode> rootCauses = new ArrayList<>();
-//		rootCauses.add(rootCause);
-//		DSDebuggingHandler.setRootCauses(rootCauses);
-//	}
-//	
-//	public static void setOutputs(List<VarValue> outputs) {
-//		DSDebuggingHandler.outputs = outputs;
-//	}
-//	
-//	public static void setOutput(VarValue output) {
-//		List<VarValue> outputs = new ArrayList<>();
-//		outputs.add(output);
-//		DSDebuggingHandler.setOutputs(outputs);
-//	}
-//	
-//	public static void setTestCaseID(int testCaseID) {
-//		DSDebuggingHandler.testCaseID = testCaseID;
-//	}
-//	
-//	public static void setTestCaseMethod(String testCaseMethod) {
-//		DSDebuggingHandler.testCaseMethod = testCaseMethod;
-//	}
 	
 	private class Recorder {
 		

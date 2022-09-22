@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import baseline.AskingAgent;
 import microbat.Activator;
 import microbat.baseline.encoders.NodeFeedbackPair;
 import microbat.baseline.encoders.ProbabilityEncoder;
@@ -26,6 +25,7 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
+import mutation.AskingAgent;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.RootCauseFinder;
