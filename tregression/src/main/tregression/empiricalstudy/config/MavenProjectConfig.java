@@ -18,6 +18,11 @@ import tregression.empiricalstudy.TestCase;
 public class MavenProjectConfig extends ProjectConfig {
 
 	public final static String M2AFFIX = ".m2" + File.separator + "repository";
+	protected final static String TEST_DIR = "src" + File.separator+"test" + File.separator + "test";
+	protected final static String SRC_DIR = "src" + File.separator+"test" + File.separator + "java";
+	protected final static String CLASS_DIR = "target";
+	protected final static String SRC_CLASS_DIR = CLASS_DIR + File.separator + "classes";
+	protected final static String TEST_CLASS_DIR = CLASS_DIR + File.separator + "test-classes";
 
 	public MavenProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
 			String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
@@ -41,11 +46,11 @@ public class MavenProjectConfig extends ProjectConfig {
 
 
 	public static ProjectConfig getConfig(String projectName, String regressionID) {
-		return new MavenProjectConfig("src"+File.separator+"test"+File.separator+"java", 
-				"src"+File.separator+"main"+File.separator+"java", 
-				"target"+File.separator+"test-classes", 
-				"target"+File.separator+"classes", 
-				"target", 
+		return new MavenProjectConfig(TEST_DIR, 
+				SRC_DIR, 
+				TEST_CLASS_DIR, 
+				SRC_CLASS_DIR, 
+				CLASS_DIR, 
 				projectName, 
 				regressionID);
 	}
