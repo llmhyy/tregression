@@ -7,6 +7,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -15,12 +16,14 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import microbat.Activator;
+import tregression.constants.Dataset;
 
 public class TregressionPreference extends PreferencePage implements IWorkbenchPreferencePage {
 
 //	private Text buggyProjectPathText;
 //	private Text correctProjectPathText;
 	
+	private Combo datasetCombo;
 	private Text projectPathText;
 	private Text projectNameText;
 	private Text bugIDText;
@@ -30,6 +33,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 //	private String defaultBuggyProjectPath;
 //	private String defaultCorrectProjectPath;
 	
+	private String defaultDatasetName;
 	private String defaultProjectPath;
 	private String defaultProjectName;
 	private String defaultBugID;
@@ -38,7 +42,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	
 //	public static final String BUGGY_PATH = "buggy_path";
 //	public static final String CORRECT_PATH = "correct_path";
-	
+
+	public static final String DATASET_NAME = "dataset_name";
 	public static final String REPO_PATH = "project_path";
 	public static final String PROJECT_NAME = "project_name";
 	public static final String BUG_ID = "bug_id";
@@ -59,6 +64,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 
 	@Override
 	public void init(IWorkbench workbench) {
+		this.defaultDatasetName = Activator.getDefault().getPreferenceStore().getString(DATASET_NAME);
 		this.defaultProjectPath = Activator.getDefault().getPreferenceStore().getString(REPO_PATH);
 		this.defaultProjectName = Activator.getDefault().getPreferenceStore().getString(PROJECT_NAME);
 		this.defaultBugID = Activator.getDefault().getPreferenceStore().getString(BUG_ID);
@@ -70,6 +76,16 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	protected Control createContents(Composite parent) {
 		Composite compo = new Composite(parent, SWT.NONE);
 		compo.setLayout(new GridLayout(2, false));
+		
+		Label projectLabel = new Label(compo, SWT.NONE);
+		projectLabel.setText("Dataset Name: ");
+		
+		datasetCombo = new Combo(compo, SWT.NONE);
+		datasetCombo.setItems(Dataset.DEFECTS4J.getName(), Dataset.REGS4J.getName());
+		datasetCombo.setText(this.defaultDatasetName);
+		
+		GridData comboData = new GridData(SWT.FILL, SWT.LEFT, true, false);
+		datasetCombo.setLayoutData(comboData);
 		
 		Label projectPathLabel = new Label(compo, SWT.NONE);
 		projectPathLabel.setText("Repository Path: ");
@@ -106,12 +122,14 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	@Override
 	public boolean performOk(){
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode("tregression.preference");
+		preferences.put(DATASET_NAME, this.datasetCombo.getText());
 		preferences.put(REPO_PATH, this.projectPathText.getText());
 		preferences.put(PROJECT_NAME, this.projectNameText.getText());
 		preferences.put(BUG_ID, this.bugIDText.getText());
 		preferences.put(TEST_CASE, this.testCaseText.getText());
 		preferences.put(DEFECTS4J_FILE, this.defects4jFileText.getText());
 		
+		Activator.getDefault().getPreferenceStore().putValue(DATASET_NAME, this.datasetCombo.getText());
 		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(BUG_ID, this.bugIDText.getText());
