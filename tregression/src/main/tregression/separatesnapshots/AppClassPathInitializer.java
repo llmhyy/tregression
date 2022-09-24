@@ -67,9 +67,18 @@ public class AppClassPathInitializer {
 		}
 		
 		if(config instanceof MavenProjectConfig) {
+			String[] testFrameworkNames = new String[] {"testng", "junit"};
 			List<String> mavenDependencies = MavenProjectConfig.getMavenDependencies(workingDir);
 			for(String path: mavenDependencies) {
-				appClassPath.addClasspath(path);
+				boolean shouldAddToClassPath = true;
+				for (String testFrameworkName : testFrameworkNames) {
+					// If test framework is included, it may overwrite the ones used in microbat's testrunner, which can prevent it from running the test (if versions are different).
+					if (path.toLowerCase().contains(testFrameworkName)) {
+						shouldAddToClassPath = false;
+						break;
+					}
+				}
+				if (shouldAddToClassPath) appClassPath.addClasspath(path);
 			}
 		}
 		
