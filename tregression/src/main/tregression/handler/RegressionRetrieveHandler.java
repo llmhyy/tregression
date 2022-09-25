@@ -25,6 +25,7 @@ import microbat.util.MicroBatUtil;
 import microbat.util.Settings;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.SimulationFailException;
+import tregression.constants.Dataset;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.DeadEndReporter;
@@ -37,6 +38,8 @@ import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
+import tregression.handler.paths.PathConfiguration;
+import tregression.handler.paths.PathConfigurationFactory;
 import tregression.model.PairList;
 import tregression.model.StepOperationTuple;
 import tregression.preference.TregressionPreference;
@@ -137,8 +140,9 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 	}
 
 	private Result parseResult(String projectName, String bugId) throws IOException {
-		String buggyPath = PathConfiguration.getBuggyPath(projectName, bugId);
-		String fixPath = PathConfiguration.getCorrectPath(projectName, bugId);
+		PathConfiguration pathConfiguration = PathConfigurationFactory.createPathConfiguration(Dataset.DEFECTS4J);
+		String buggyPath = pathConfiguration.getBuggyPath(projectName, bugId);
+		String fixPath = pathConfiguration.getCorrectPath(projectName, bugId);
 
 		Defects4jProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugId);
 

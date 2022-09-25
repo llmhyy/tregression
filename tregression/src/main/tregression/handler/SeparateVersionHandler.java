@@ -11,10 +11,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import microbat.Activator;
 import microbat.model.trace.Trace;
 import microbat.util.JavaUtil;
+import tregression.constants.Dataset;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -25,6 +27,8 @@ import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
+import tregression.handler.paths.PathConfiguration;
+import tregression.handler.paths.PathConfigurationFactory;
 import tregression.preference.TregressionPreference;
 
 public class SeparateVersionHandler extends AbstractHandler{
@@ -40,11 +44,15 @@ public class SeparateVersionHandler extends AbstractHandler{
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-				String bugID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+				IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
+				String projectPath = preferenceStore.getString(TregressionPreference.PROJECT_NAME);
+				String bugID = preferenceStore.getString(TregressionPreference.BUG_ID);
+				String datasetName = preferenceStore.getString(TregressionPreference.DATASET_NAME);
+				Dataset datasetType = Dataset.getDataset(datasetName);
 				
-				String buggyPath = PathConfiguration.getBuggyPath(projectPath, bugID);
-				String fixPath = PathConfiguration.getCorrectPath(projectPath, bugID);
+				PathConfiguration pathConfiguration = PathConfigurationFactory.createPathConfiguration(datasetType);
+				String buggyPath = pathConfiguration.getBuggyPath(projectPath, bugID);
+				String fixPath = pathConfiguration.getCorrectPath(projectPath, bugID);
 				
 				String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
 				String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
@@ -53,7 +61,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				
 				System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 				
-				ProjectConfig config = ConfigFactory.createConfig(projectName, id, buggyPath, fixPath);
+				ProjectConfig config = ConfigFactory.createConfig(projectName, id, buggyPath, fixPath, datasetType);
 				
 				if(config == null) {
 					try {

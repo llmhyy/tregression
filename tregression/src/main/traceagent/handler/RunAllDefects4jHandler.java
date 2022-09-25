@@ -31,9 +31,11 @@ import sav.strategies.dto.AppJavaClassPath;
 import traceagent.report.AgentDefects4jReport;
 import traceagent.report.BugCaseTrial;
 import traceagent.report.BugCaseTrial.TraceTrial;
+import tregression.constants.Dataset;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
-import tregression.handler.PathConfiguration;
+import tregression.handler.paths.PathConfiguration;
+import tregression.handler.paths.PathConfigurationFactory;
 import tregression.separatesnapshots.AppClassPathInitializer;
 
 /**
@@ -101,8 +103,9 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 			throws IOException {
 		String projectName = config.projectName;
 		String bugID = config.regressionID;
-		String buggyPath = PathConfiguration.getBuggyPath(projectName, bugID);
-		String fixPath = PathConfiguration.getCorrectPath(projectName, bugID);
+		PathConfiguration pathConfiguration = PathConfigurationFactory.createPathConfiguration(Dataset.DEFECTS4J);
+		String buggyPath = pathConfiguration.getBuggyPath(projectName, bugID);
+		String fixPath = pathConfiguration.getCorrectPath(projectName, bugID);
 		if (tcs == null) {
 			tcs = config.retrieveFailingTestCase(buggyPath);
 		}

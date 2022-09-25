@@ -8,9 +8,9 @@ import tregression.preference.TregressionPreference;
 
 public abstract class PathConfiguration {
 
-	public StringBuilder getBugPath(String projectName, String bugId){
+	public String getBugPath(String projectName, String bugId){
 		StringBuilder repoPath = new StringBuilder(Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH));
-		return repoPath.append(File.separator + projectName + File.separator + bugId);
+		return repoPath.append(File.separator).append(projectName).append(File.separator).append(bugId).toString();
 	}
 	
 	abstract public String getBuggyPath(String projectName, String bugId);
@@ -27,8 +27,9 @@ public abstract class PathConfiguration {
 	public String getBugId(String path) {
 		String repoPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
 		int repoPathLen = repoPath.length();
-		int endOfProjectName = path.indexOf(File.separator, repoPathLen);
-		int endOfBugId = path.indexOf(File.separator, endOfProjectName);
-		return path.substring(endOfProjectName, endOfBugId);
+		int endOfProjectName = path.indexOf(File.separator, repoPathLen + 1);
+		int startOfBugId = endOfProjectName + 1;
+		int endOfBugId = path.indexOf(File.separator, startOfBugId);
+		return path.substring(startOfBugId, endOfBugId);
 	}
 }
