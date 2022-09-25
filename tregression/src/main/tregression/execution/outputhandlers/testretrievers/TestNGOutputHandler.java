@@ -3,10 +3,8 @@ package tregression.execution.outputhandlers.testretrievers;
 import tregression.empiricalstudy.TestCase;
 
 public class TestNGOutputHandler extends TestRetrieverOutputHandler {
-	
-	@Override
-	public void output(String line) {
-		super.output(line);
+
+	void addTestCase(String line) {
 		if (!line.contains(FAILURE_MSG)) {
 			return;
 		}

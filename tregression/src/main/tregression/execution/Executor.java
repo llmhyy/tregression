@@ -51,7 +51,7 @@ public class Executor {
 		this.outputHandler = outputHandler;
 	}
 
-	protected String exec(String cmd) {
+	public String exec(String cmd) {
 		try {
 			return this.exec(cmd, 0);
 		} catch (TimeoutException e) {
