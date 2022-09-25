@@ -118,7 +118,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				}
 				
 				try {
-					TrialRecorder recorder = new TrialRecorder();
+					TrialRecorder recorder = new TrialRecorder(datasetType);
 					recorder.export(trials, projectName, Integer.valueOf(id));
 					
 				} catch (IOException e) {

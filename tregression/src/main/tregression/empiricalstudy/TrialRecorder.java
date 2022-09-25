@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import tregression.constants.Dataset;
 import tregression.model.StepOperationTuple;
 
 public class TrialRecorder {
@@ -28,8 +29,8 @@ public class TrialRecorder {
 	private String fileName = "defects4j";
 	private String excelFolder = "";
 	
-	public TrialRecorder() throws IOException{
-		this("defects4j", System.getProperty("java.io.tmpdir"));
+	public TrialRecorder(Dataset datasetType) throws IOException{
+		this(datasetType.getName().toLowerCase(), System.getProperty("java.io.tmpdir"));
 	}
 	
 	public TrialRecorder(String initFileName, String excelFolder) throws IOException {

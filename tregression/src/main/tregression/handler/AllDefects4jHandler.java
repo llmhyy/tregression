@@ -20,6 +20,7 @@ import experiment.utils.report.rules.TextComparisonRule;
 import microbat.Activator;
 import sav.common.core.Pair;
 import sav.common.core.utils.SingleTimer;
+import tregression.constants.Dataset;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.ReadEmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
@@ -119,7 +120,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							
 							TrialRecorder recorder;
 							try {
-								recorder = new TrialRecorder();
+								recorder = new TrialRecorder(Dataset.DEFECTS4J);
 								defects4jFile = recorder.export(trials, projects[i], j);
 								
 //								for(EmpiricalTrial t: trials){
