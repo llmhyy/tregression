@@ -49,7 +49,7 @@ import tregression.tracematch.LCSBasedTraceMatcher;
 
 public class TestCaseAnalyzer {
 	
-	public static final String TEST_RUNNER = "microbat.evaluation.junit.MicroBatTestRunner";
+	public static final String TEST_RUNNER = "microbat.evaluation.MicroBatTestRunner";
 	private static final String TMP_DIRECTORY = "C:\\microbat_evaluation_regression\\";
 	
 	public TestCaseAnalyzer(){
