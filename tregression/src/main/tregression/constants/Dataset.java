@@ -4,6 +4,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import microbat.Activator;
+import tregression.preference.TregressionPreference;
+
 public enum Dataset {
 	DEFECTS4J("Defects4J"),
 	REGS4J("Regs4J");
@@ -27,5 +30,10 @@ public enum Dataset {
 	
 	public static Dataset getDataset(String name) {
 		return LOOKUP.get(name);
+	}
+	
+	public static Dataset getTypeFromPref() {
+		String datasetName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DATASET_NAME);
+		return getDataset(datasetName);
 	}
 }
