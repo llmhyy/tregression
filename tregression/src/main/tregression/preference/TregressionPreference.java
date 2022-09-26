@@ -28,7 +28,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private Text projectNameText;
 	private Text bugIDText;
 	private Text testCaseText;
-	private Text defects4jFileText;
+	private Text resultsFileText;
 	
 //	private String defaultBuggyProjectPath;
 //	private String defaultCorrectProjectPath;
@@ -38,7 +38,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private String defaultProjectName;
 	private String defaultBugID;
 	private String defaultTestCase;
-	private String defaultDefects4jFile;
+	private String defaultResultsFile;
 	
 //	public static final String BUGGY_PATH = "buggy_path";
 //	public static final String CORRECT_PATH = "correct_path";
@@ -48,7 +48,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	public static final String PROJECT_NAME = "project_name";
 	public static final String BUG_ID = "bug_id";
 	public static final String TEST_CASE = "test_case";
-	public static final String DEFECTS4J_FILE = "defects4j_file";
+	public static final String RESULTS_FILE = "result_file";
 	
 	
 	public TregressionPreference() {
@@ -69,7 +69,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.defaultProjectName = Activator.getDefault().getPreferenceStore().getString(PROJECT_NAME);
 		this.defaultBugID = Activator.getDefault().getPreferenceStore().getString(BUG_ID);
 		this.defaultTestCase = Activator.getDefault().getPreferenceStore().getString(TEST_CASE);
-		this.defaultDefects4jFile = Activator.getDefault().getPreferenceStore().getString(DEFECTS4J_FILE);
+		this.defaultResultsFile = Activator.getDefault().getPreferenceStore().getString(RESULTS_FILE);
 	}
 
 	@Override
@@ -112,10 +112,10 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		testCaseText.setText(this.defaultTestCase);
 		
 		Label defects4jFileLabel = new Label(compo, SWT.NONE);
-		defects4jFileLabel.setText("Defects4j benchmark: ");
-		defects4jFileText = new Text(compo, SWT.NONE);
-		defects4jFileText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-		defects4jFileText.setText(this.defaultDefects4jFile);
+		defects4jFileLabel.setText("Dataset benchmark: ");
+		resultsFileText = new Text(compo, SWT.NONE);
+		resultsFileText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		resultsFileText.setText(this.defaultResultsFile);
 		return compo;
 	}
 
@@ -127,14 +127,14 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		preferences.put(PROJECT_NAME, this.projectNameText.getText());
 		preferences.put(BUG_ID, this.bugIDText.getText());
 		preferences.put(TEST_CASE, this.testCaseText.getText());
-		preferences.put(DEFECTS4J_FILE, this.defects4jFileText.getText());
+		preferences.put(RESULTS_FILE, this.resultsFileText.getText());
 		
 		Activator.getDefault().getPreferenceStore().putValue(DATASET_NAME, this.datasetCombo.getText());
 		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(BUG_ID, this.bugIDText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(TEST_CASE, this.testCaseText.getText());
-		Activator.getDefault().getPreferenceStore().putValue(DEFECTS4J_FILE, this.defects4jFileText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(RESULTS_FILE, this.resultsFileText.getText());
 		
 		return true;
 	}
