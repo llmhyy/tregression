@@ -29,9 +29,9 @@
              name="Run for Separate Versions">
        </command>
        <command
-             defaultHandler="tregression.handler.AllDefects4jHandler"
-             id="tregression.command.runAllDefects4jProjects"
-             name="Run All Defects4j Projects">
+             defaultHandler="tregression.handler.runall.RunAllInDatasetHandler"
+             id="tregression.command.runAllProjectsInDataset"
+             name="Run All Projects in Dataset">
        </command>
        <command
              defaultHandler="tregression.handler.RegressionRetrieveHandler"
@@ -44,9 +44,9 @@
              name="Retrieve All Defect4j Regressions">
        </command>
        <command
-             defaultHandler="traceagent.handler.RunAllDefects4jHandler"
+             defaultHandler="traceagent.handler.RunAllInDatasetHandler"
              id="traceagent.command.runAllDefects4jBugs"
-             name="Run All Defect4j Bugs">
+             name="Run All Bugs in Dataset">
        </command>
        <command
              defaultHandler="traceagent.handler.RunSingleTestcaseHandler"
@@ -125,8 +125,8 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.command.runAllDefects4jProjects"
-                  label="Run All Defects4j Projects"
+                  commandId="tregression.command.runAllProjectsInDataset"
+                  label="Run All Projects in Dataset"
                   style="push">
             </command>
             <command
