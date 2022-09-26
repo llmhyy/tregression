@@ -140,7 +140,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 	}
 
 	private Result parseResult(String projectName, String bugId) throws IOException {
-		PathConfiguration pathConfiguration = PathConfigurationFactory.createPathConfiguration(Dataset.DEFECTS4J);
+		PathConfiguration pathConfiguration = PathConfigurationFactory.createPathConfiguration(Dataset.getTypeFromPref());
 		String buggyPath = pathConfiguration.getBuggyPath(projectName, bugId);
 		String fixPath = pathConfiguration.getCorrectPath(projectName, bugId);
 

@@ -47,8 +47,7 @@ public class SeparateVersionHandler extends AbstractHandler{
 				IPreferenceStore preferenceStore = Activator.getDefault().getPreferenceStore();
 				String projectPath = preferenceStore.getString(TregressionPreference.PROJECT_NAME);
 				String bugID = preferenceStore.getString(TregressionPreference.BUG_ID);
-				String datasetName = preferenceStore.getString(TregressionPreference.DATASET_NAME);
-				Dataset datasetType = Dataset.getDataset(datasetName);
+				Dataset datasetType = Dataset.getTypeFromPref();
 				
 				PathConfiguration pathConfiguration = PathConfigurationFactory.createPathConfiguration(datasetType);
 				String buggyPath = pathConfiguration.getBuggyPath(projectPath, bugID);
