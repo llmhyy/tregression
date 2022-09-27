@@ -41,8 +41,8 @@ public class AllDefects4jExecutor extends RunAllInDatasetExecutor {
 				int skippedNum = 0;
 				int endNum = 500;
 				
-				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
-				int[] bugNum = {26, 133, 65, 106, 38, 27};
+				String[] projects = Dataset.getProjectNames();
+				int[] bugNum = Dataset.getBugNums();
 				
 //				String fileName = "defects4j0.old.xlsx";
 				String fileName = "benchmark" + File.separator + "ben.xlsx";
