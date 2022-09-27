@@ -39,9 +39,9 @@
              name="Retrieve the Bug from exec file">
        </command>
        <command
-             defaultHandler="tregression.handler.RetrieveAllDefect4jRegressionsHandler"
-             id="tregression.command.retrieveAllDefect4jRegression"
-             name="Retrieve All Defect4j Regressions">
+             defaultHandler="tregression.handler.RetrieveAllDatasetRegressionsHandler"
+             id="tregression.command.retrieveAllDatasetRegression"
+             name="Retrieve All Regressions">
        </command>
        <command
              defaultHandler="traceagent.handler.RunAllInDatasetHandler"
@@ -135,8 +135,8 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.command.retrieveAllDefect4jRegression"
-                  label="Retrieve All Defect4j Regressions"
+                  commandId="tregression.command.retrieveAllDatasetRegression"
+                  label="Retrieve All Regressions"
                   style="push">
             </command>
          </menu>

@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import tregression.constants.Dataset;
 import tregression.empiricalstudy.ReadEmpiricalTrial;
 import tregression.empiricalstudy.TrialReader;
 
@@ -21,7 +22,7 @@ import tregression.empiricalstudy.TrialReader;
  * @author LLT
  *
  */
-public class RetrieveAllDefect4jRegressionsHandler extends RegressionRetrieveHandler  {
+public class RetrieveAllDatasetRegressionsHandler extends RegressionRetrieveHandler  {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -45,10 +46,10 @@ public class RetrieveAllDefect4jRegressionsHandler extends RegressionRetrieveHan
 		int skippedNum = 0;
 		int endNum = 500;
 		
-		String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
-		int[] bugNum = {26, 133, 65, 106, 38, 27};
+		String[] projects = Dataset.getProjectNames();
+		int[] bugNum = Dataset.getBugNums();
 		
-		String fileName = "defects4j0.old.xlsx";
+		String fileName = Dataset.getTypeFromPref().getName().toLowerCase() + "0.old.xlsx"; // defects4j0 or regs4j0 based on tregression preference.
 		Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
 		try {
 			map = new TrialReader().readXLSX(fileName);
