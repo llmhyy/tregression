@@ -11,6 +11,7 @@ import microbat.model.trace.TraceNode;
 import microbat.preference.AnalysisScopePreference;
 import sav.strategies.dto.AppJavaClassPath;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.model.PairList;
 import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.TraceCollector0;
@@ -53,7 +54,7 @@ public class Regression {
 		this.pairList = pairList;
 	}
 
-	public void fillMissingInfo(Defects4jProjectConfig config, String buggyPath, String fixPath) {
+	public void fillMissingInfo(ProjectConfig config, String buggyPath, String fixPath) {
 		fillMissingInfo(buggyTrace, AppClassPathInitializer.initialize(buggyPath, new TestCase(testClass, testMethod), config));
 		fillMissingInfo(correctTrace, AppClassPathInitializer.initialize(fixPath, new TestCase(testClass, testMethod), config));
 	}

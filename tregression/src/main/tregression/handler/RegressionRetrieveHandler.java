@@ -28,14 +28,14 @@ import tregression.SimulationFailException;
 import tregression.constants.Dataset;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
-import tregression.empiricalstudy.DeadEndReporter;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.Regression;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.Simulator;
 import tregression.empiricalstudy.TestCase;
-import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
+import tregression.empiricalstudy.config.Regs4jProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
 import tregression.handler.paths.PathConfiguration;
@@ -131,7 +131,13 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 			record.setTransformedData(datas);
 			try {
 //				new DeadEndReporter().export(datas.getAllData(), Settings.projectName, 2);
-				new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projectName, bugId);
+				String suffix = "";
+				if (Dataset.getTypeFromPref().equals(Dataset.DEFECTS4J)) {
+					suffix = "_d4j";
+				} else {
+					suffix = "_r4j";
+				}
+				new DeadEndCSVWriter(suffix, null).export(datas.getAllData(), projectName, bugId);
 			} catch (NumberFormatException | IOException e) {
 				e.printStackTrace();
 			}
@@ -143,8 +149,14 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		PathConfiguration pathConfiguration = PathConfigurationFactory.createPathConfiguration(Dataset.getTypeFromPref());
 		String buggyPath = pathConfiguration.getBuggyPath(projectName, bugId);
 		String fixPath = pathConfiguration.getCorrectPath(projectName, bugId);
-
-		Defects4jProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugId);
+		
+		Dataset datasetType = Dataset.getTypeFromPref();
+		ProjectConfig config;
+		if (datasetType.equals(Dataset.DEFECTS4J)) {
+			config = Defects4jProjectConfig.getConfig(projectName, bugId);
+		} else {
+			config = Regs4jProjectConfig.getConfig(projectName, bugId);
+		}
 
 		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
 				fixPath);
@@ -189,7 +201,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		return new Result(buggyTrace, correctTrace, pairList, diffMatcher);
 	}
 
-	private void fillingMissingInfo(String buggyPath, String fixPath, Defects4jProjectConfig config,
+	private void fillingMissingInfo(String buggyPath, String fixPath, ProjectConfig config,
 			Regression regression) {
 		for (TraceNode node : regression.getBuggyTrace().getExecutionList()) {
 			BreakPoint point = node.getBreakPoint();
@@ -254,7 +266,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		return trial;
 	}
 
-	private Regression retrieveRegression(Defects4jProjectConfig config, String buggyPath, String fixPath) {
+	private Regression retrieveRegression(ProjectConfig config, String buggyPath, String fixPath) {
 		String projectName = config.projectName;
 		String bugId = config.regressionID;
 		ExecTraceFileReader execTraceReader = new ExecTraceFileReader();
