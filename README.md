@@ -17,11 +17,11 @@ If you need to reference our technique, please use the following citations:
 # Source Code Configuration
 ## Dependency
 The TRegression (i.e., ERASE) project relies on Microbat project to collect execution Trace of Java program. When you are importing tregression project, you need to important Microbat project (https://github.com/llmhyy/microbat) as well. Note that all the projects are Eclipse plugin project. The imported projects are listed as follows:
-- microbat (mirobat)
-- microbat_instrumentator (mirobat)
-- microbat_junit_test (mirobat)
-- mutation (mirobat)
-- sav.commons (mirobat)
+- microbat (microbat)
+- microbat_instrumentator (microbat)
+- microbat_junit_test (microbat)
+- mutation (microbat)
+- sav.commons (microbat)
 - tregression (tregression)
 
 Moreover, this prototype are build on top of Defects4J bugs. We forked Defects4J repository (https://github.com/llmhyy/defects4j) and please checkout the buggy version and fixed version by our script. (https://github.com/llmhyy/defects4j/blob/master/checkout.sh). If you run the script successfully, you can checkout the bug file structure as follows:
@@ -31,7 +31,9 @@ bug_repo
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ 1 (bug_id)<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ 2   <br /> 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ ...<br />
-  
+
+It also supports Regressions4j (https://github.com/SongXueZhi/regs4j) bugs. Please download CLI.sh and CLI.jar from the Regressions4j project. Open and modify Tregressions's scripts/regs4j.sh file as specified inside. Then run regs4j.sh as instructed in the file itself. Similar to Defects4j, it will clone all buggy and fixed versions to your specified directory.
+
 Last, please unzip this file (https://github.com/llmhyy/tregression/blob/master/tregression/dependent_lib/junit_lib.rar) under the dropins directory of your eclipse root folder. It contains all the runtime Java libraries.
 
 ## Running Tregression (ERASE) on Defects4J bugs
