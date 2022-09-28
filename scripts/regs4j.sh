@@ -86,6 +86,12 @@ do
 		echo copying ric to $newPath/ric
 		cp -r $pathToRIC $newPath
 
+        echo compiling rfc
+        mvn test-compile --file $newPath/rfc/pom.xml
+
+        echo compiling ric
+        mvn test-compile --file $newPath/ric/pom.xml
+
         echo "${tests[$((j-1))]}" > $newPath/$testFileName
 	done
 done
