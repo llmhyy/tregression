@@ -76,7 +76,7 @@ do
 		echo path to rfc: $pathToRFC
 		echo path to ric: $pathToRIC
 
-		projectDir=${project/\//-}
+		projectDir=${project/\//_}
 		newPath=$repoDirToPasteTo/$projectDir/$j
 		mkdir -p $newPath
 
