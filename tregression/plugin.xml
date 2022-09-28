@@ -204,7 +204,7 @@
       <page
             class="tregression.preference.TregressionPreference"
             id="tregression.preference"
-            name="Tregression (Defects4j)">
+            name="Tregression">
       </page>
    </extension>
 
