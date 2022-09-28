@@ -7,9 +7,7 @@
 
 # ====================== Configuration =====================
 # Change the paths below to your system's
-repoDirToPasteTo='Users/bchenghi/Desktop/reg4j'
-windowsBase='C:/'
-unixBase='/mnt/c/'
+repoDirToPasteTo='/media/sf_VBox-Shared/reg4j'
 reverse=0
 # ==========================================================
 
@@ -79,7 +77,7 @@ do
 		echo path to ric: $pathToRIC
 
 		projectDir=${project/\//-}
-		newPath=$unixBase$repoDirToPasteTo/$projectDir/$j
+		newPath=$repoDirToPasteTo/$projectDir/$j
 		mkdir -p $newPath
 
 		echo copying rfc to $newPath/rfc
