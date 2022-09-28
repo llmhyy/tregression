@@ -45,13 +45,13 @@
        </command>
        <command
              defaultHandler="traceagent.handler.RunAllInDatasetHandler"
-             id="traceagent.command.runAllDefects4jBugs"
+             id="traceagent.command.runAllDatasetBugs"
              name="Run All Bugs in Dataset">
        </command>
        <command
              defaultHandler="traceagent.handler.RunSingleTestcaseHandler"
-             id="traceagent.command.runSingleDefects4jBugs"
-             name="Run Single Defect4j Bug">
+             id="traceagent.command.runSingleBug"
+             name="Run Single Bug">
        </command>
  </extension>	
  <extension
@@ -143,12 +143,12 @@
          <menu
                label="Trace Agent">
             <command
-                  commandId="traceagent.command.runAllDefects4jBugs"
-                  label="Run All Defects4j"
+                  commandId="traceagent.command.runAllDatasetBugs"
+                  label="Run All"
                   style="push">
             </command>
             <command
-                  commandId="traceagent.command.runSingleDefects4jBugs"
+                  commandId="traceagent.command.runSingleBug"
                   label="Run Single Testcase"
                   style="push">
             </command>
