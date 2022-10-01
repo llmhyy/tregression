@@ -8,7 +8,7 @@ import java.util.List;
 import experiment.utils.report.excel.ExcelUtils;
 import sav.common.core.utils.StringUtils;
 import traceagent.handler.TestcaseFilter.IFilter;
-import traceagent.report.AgentDefects4jHeaders;
+import traceagent.report.AgentDatasetHeaders;
 
 public class SucceededCasesFilter implements IFilter {
 	private static final String SEPARATOR = "_";
@@ -19,10 +19,10 @@ public class SucceededCasesFilter implements IFilter {
 			tcs = Collections.emptyList();
 		} else {
 			tcs = ExcelUtils.collectKeys(excelFile, "testcase", 
-					Arrays.asList(AgentDefects4jHeaders.PROJECT_NAME.name(),
-							AgentDefects4jHeaders.BUG_ID.name(),
-							AgentDefects4jHeaders.TEST_CASE.name(),
-							AgentDefects4jHeaders.IS_BUG_TRACE.name()),
+					Arrays.asList(AgentDatasetHeaders.PROJECT_NAME.name(),
+							AgentDatasetHeaders.BUG_ID.name(),
+							AgentDatasetHeaders.TEST_CASE.name(),
+							AgentDatasetHeaders.IS_BUG_TRACE.name()),
 					SEPARATOR);
 		}
 	}

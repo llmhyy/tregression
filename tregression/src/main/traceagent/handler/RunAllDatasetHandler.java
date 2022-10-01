@@ -28,12 +28,14 @@ import microbat.preference.AnalysisScopePreference;
 import microbat.util.MicroBatUtil;
 import sav.common.core.utils.SingleTimer;
 import sav.strategies.dto.AppJavaClassPath;
-import traceagent.report.AgentDefects4jReport;
+import traceagent.report.AgentDatasetReport;
 import traceagent.report.BugCaseTrial;
 import traceagent.report.BugCaseTrial.TraceTrial;
 import tregression.constants.Dataset;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
+import tregression.empiricalstudy.config.Regs4jProjectConfig;
 import tregression.handler.paths.PathConfiguration;
 import tregression.handler.paths.PathConfigurationFactory;
 import tregression.separatesnapshots.AppClassPathInitializer;
@@ -42,27 +44,28 @@ import tregression.separatesnapshots.AppClassPathInitializer;
  * @author LLT
  *
  */
-public class RunAllDefects4jHandler  extends AbstractHandler {
+public class RunAllDatasetHandler  extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		String datasetName = Dataset.getTypeFromPref().getName();
 		Job job = new Job("Run Trace Agent On Defects4j") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				String reportFile = "Agent_Defect4j.xlsx";
+				String reportFile = "Agent_" + datasetName + ".xlsx";
 				try {
 					runAll(reportFile, monitor);
 					System.out.println("Complete!");
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
-					String oldDefects4jFile = "Agent_Defect4j_benchmark.xlsx";
+					String oldFile = "Agent_" + datasetName + "_benchmark.xlsx";
 					File newReport = new File(reportFile);
-					if (newReport != null && newReport.exists() && oldDefects4jFile != null
-							&& new File(oldDefects4jFile).exists()) {
+					if (newReport != null && newReport.exists() && oldFile != null
+							&& new File(oldFile).exists()) {
 						Map<String, List<String>> keys = new HashMap<String, List<String>>();
 						keys.put("testcase", Arrays.asList("PROJECT_NAME", "BUG_ID", "TEST_CASE", "IS_BUG_TRACE"));
-						ExperimentReportComparisonReporter.reportChange("Agent_Defect4j_compare.xlsx", oldDefects4jFile, newReport.getAbsolutePath(),
+						ExperimentReportComparisonReporter.reportChange("Agent_" + datasetName + "_compare.xlsx", oldFile, newReport.getAbsolutePath(),
 								Arrays.asList(new TextComparisonRule(null)), keys);
 					}
 				}
@@ -74,9 +77,9 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 	}
 
 	protected void runAll(String reportFile, IProgressMonitor monitor) throws Exception {
-		String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
-		int[] bugNum = {26, 133, 65, 106, 38, 27};
-		AgentDefects4jReport report = new AgentDefects4jReport(new File(reportFile));
+		String[] projects = Dataset.getProjectNames();
+		int[] bugNum = Dataset.getBugNums();
+		AgentDatasetReport report = new AgentDatasetReport(new File(reportFile));
 		TestcaseFilter filter = new TestcaseFilter(false); 
 		for (int i = 0; i < projects.length; i++) {
 			String project = projects[i];
@@ -88,9 +91,14 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 					return;
 				}
 				System.out.println("working on the " + j + "th bug of " + project + " project.");
-				Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getConfig(project, String.valueOf(j));
+				ProjectConfig projectConfig;
+				if (Dataset.getTypeFromPref().equals(Dataset.DEFECTS4J)) {
+					projectConfig = Defects4jProjectConfig.getConfig(project, String.valueOf(j));
+				} else {
+					projectConfig = Regs4jProjectConfig.getConfig(project, String.valueOf(j));
+				}
 				try {
-					runSingleBug(d4jConfig, report, null, filter, monitor);
+					runSingleBug(projectConfig, report, null, filter, monitor);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -98,7 +106,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		}
 	}
 
-	void runSingleBug(Defects4jProjectConfig config, AgentDefects4jReport report, List<TestCase> tcs,
+	void runSingleBug(ProjectConfig config, AgentDatasetReport report, List<TestCase> tcs,
 			TestcaseFilter filter, IProgressMonitor monitor)
 			throws IOException {
 		String projectName = config.projectName;
@@ -131,7 +139,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		}
 	}
 	
-	public TraceTrial run(String workingDir, TestCase tc, Defects4jProjectConfig config, List<String> includeLibs,
+	public TraceTrial run(String workingDir, TestCase tc, ProjectConfig config, List<String> includeLibs,
 			List<String> excludeLibs, boolean isBuggy) {
 		SingleTimer timer = SingleTimer.start(String.format("run %s test", isBuggy ? "buggy" : "correct"));
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);

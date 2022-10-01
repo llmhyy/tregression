@@ -3,7 +3,7 @@
  */
 package traceagent.report;
 
-import static traceagent.report.AgentDefects4jHeaders.*;
+import static traceagent.report.AgentDatasetHeaders.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,14 +21,14 @@ import traceagent.report.excel.AbstractExcelWriter;
  * @author LLT
  *
  */
-public class AgentDefects4jReport extends AbstractExcelWriter {
+public class AgentDatasetReport extends AbstractExcelWriter {
 
-	public AgentDefects4jReport(File file) throws Exception {
+	public AgentDatasetReport(File file) throws Exception {
 		super(file);
 	}
 
 	public void record(BugCaseTrial trial) throws IOException {
-		Sheet sheet = getSheet("testcase", AgentDefects4jHeaders.values(), 0);
+		Sheet sheet = getSheet("testcase", AgentDatasetHeaders.values(), 0);
 		int rowNum = sheet.getLastRowNum() + 1;
 		if (trial.getBugTrace() != null) {
 			Row row = sheet.createRow(rowNum++);

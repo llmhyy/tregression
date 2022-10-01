@@ -9,7 +9,7 @@ import traceagent.report.excel.ExcelHeader;
  * @author LLT
  *
  */
-public enum AgentDefects4jHeaders implements ExcelHeader {
+public enum AgentDatasetHeaders implements ExcelHeader {
 	PROJECT_NAME,
 	BUG_ID,
 	TEST_CASE,

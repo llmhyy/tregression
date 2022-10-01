@@ -16,16 +16,19 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import sav.common.core.utils.StringUtils;
-import traceagent.report.AgentDefects4jReport;
+import traceagent.report.AgentDatasetReport;
+import tregression.constants.Dataset;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
+import tregression.empiricalstudy.config.Regs4jProjectConfig;
 import tregression.preference.TregressionPreference;
 
 /**
  * @author LLT
  *
  */
-public class RunSingleTestcaseHandler extends RunAllDefects4jHandler {
+public class RunSingleTestcaseHandler extends RunAllDatasetHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -43,10 +46,14 @@ public class RunSingleTestcaseHandler extends RunAllDefects4jHandler {
 						tcs = Arrays.asList(new TestCase(testcase));
 					}
 					System.out.println("working on the " + id + "th bug of " + projectName + " project.");
-					Defects4jProjectConfig config = Defects4jProjectConfig.getConfig(projectName,
-							id);
-					AgentDefects4jReport report = new AgentDefects4jReport(new File("Agent_Defect4j_tc.xlsx"));
-					runSingleBug(config, report, tcs, new TestcaseFilter(false), monitor);
+					ProjectConfig projectConfig;
+					if (Dataset.getTypeFromPref().equals(Dataset.DEFECTS4J)) {
+						projectConfig = Defects4jProjectConfig.getConfig(projectName, String.valueOf(j));
+					} else {
+						projectConfig = Regs4jProjectConfig.getConfig(projectName, String.valueOf(j));
+					}
+					AgentDatasetReport report = new AgentDatasetReport(new File("Agent_Defect4j_tc.xlsx"));
+					runSingleBug(projectConfig, report, tcs, new TestcaseFilter(false), monitor);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
