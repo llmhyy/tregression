@@ -1,6 +1,7 @@
 package tregression.handler;
 
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -46,27 +47,29 @@ public class MutationHandler extends AbstractHandler {
 		
 				// Setup parameter
 				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
-				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
-//				final String microbatConfigPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.CONFIG_PATH);
-
+				
 				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				final int testCaesID = Integer.parseInt(testCaseID_str);
 				
 				final String java_path = Activator.getDefault().getPreferenceStore().getString(MicrobatPreference.JAVA7HOME_PATH);
 				final int stepLimit = Settings.stepLimit;
 				
-//				String seed_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
-//				final int seed = Integer.parseInt(seed_str);
-				
 				// Perform mutation
-				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit, dropInDir);
+				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit);
 				mutationAgent.setTestCaseID(testCaesID);
+				try {
+					mutationAgent.setup();
+				} catch (IOException e) {
+					System.out.println("Fail to setup the mutation agent");
+					return Status.OK_STATUS;
+				}
+				
 				mutationAgent.startMutation();
 				
 				// Visualize the mutation result
 				updateView(mutationAgent.getBuggyTrace(), mutationAgent.getCorrectTrace(), mutationAgent.getPairList(), mutationAgent.getMatcher());
 				
-				// Pase mutation result to the BaselineHandler
+				// Pass mutation result to the BaselineHandler
 				BaselineHandler.setInputs(mutationAgent.getInputs());
 				BaselineHandler.setOutputs(mutationAgent.getOutputs());
 				BaselineHandler.setRootCause(mutationAgent.getRootCause());

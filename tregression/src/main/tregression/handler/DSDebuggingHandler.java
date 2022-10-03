@@ -58,6 +58,8 @@ public class DSDebuggingHandler extends AbstractHandler {
 	
 	final private double maxFactor = 0.5;
 	
+	final private int sleepTime = 2000;
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
@@ -92,13 +94,12 @@ public class DSDebuggingHandler extends AbstractHandler {
 				
 				String message = "";
 				
-				for (int testCaseID = startID; testCaseID < startID + 10; testCaseID++) {
+				for (int testCaseID = startID; testCaseID < startID + 1; testCaseID++) {
 					
 					try {
 						
 						// Perform mutation
 						mutationAgent.setTestCaseID(testCaseID);
-//						mutationAgent.setSeed(seed);
 						mutationAgent.startMutation();
 						
 						// Visualize the mutation result
@@ -113,6 +114,11 @@ public class DSDebuggingHandler extends AbstractHandler {
 						
 						List<TraceNode> rootCauses = mutationAgent.getRootCause();
 						List<VarValue> outputs = mutationAgent.getOutputs();
+						
+						String rootCauses_str = "";
+						for (TraceNode node : rootCauses) {
+							rootCauses_str += "," + node.getOrder();
+						}
 						
 						StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 						
@@ -151,11 +157,12 @@ public class DSDebuggingHandler extends AbstractHandler {
 									rootCauseFound = false;
 									break;
 								}
+								jumpToNode(nextNode);
 							}
 						}
 						
 						recorder.exportCSV(testCaseID, mutationAgent.getTestCase().simpleName, buggyTrace.size(), slicingCount, rootCauseFound);
-						printReport(testCaseID, mutationAgent.getTestCase().simpleName);
+						printReport(testCaseID, mutationAgent.getTestCase().simpleName, rootCauses_str);
 					
 					} catch (Exception e) {
 						message =e.toString();
@@ -174,9 +181,10 @@ public class DSDebuggingHandler extends AbstractHandler {
 		return null;
 	}
 	
-	private void printReport(final int testCaseID, final String testCaseMethod) {
+	private void printReport(final int testCaseID, final String testCaseMethod, final String rootCauseIDs) {
 		System.out.println("-----------------------------------");
 		System.out.println("Test Case: " + testCaseID + "," + testCaseMethod);
+		System.out.println("Root Cause: " + rootCauseIDs);
 		System.out.println("Feedback Count: " + this.slicingCount);
 		System.out.println("-----------------------------------");
 	}
@@ -249,7 +257,7 @@ public class DSDebuggingHandler extends AbstractHandler {
 				Trace buggyTrace = buggyView.getTrace();
 				buggyView.jumpToNode(buggyTrace, targetNode.getOrder(), true);
 				try {
-					Thread.sleep(50);
+					Thread.sleep(sleepTime);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

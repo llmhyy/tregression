@@ -1,5 +1,7 @@
 package mutation;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,55 +28,84 @@ import tregression.separatesnapshots.DiffMatcher;
 import tregression.tracematch.ControlPathBasedTraceMatcher;
 
 /**
- * MutationAgent_Tregression is the extended version
- * MutationAgent in Microbat. It not only mutate the
- * trace, it will also construct a pair list and the
- * DiffMatcher between the correct trace and buggy
- * trace.
+ * MutationAgent will make use of MutationFramework to mutation
+ * the code and fail the targeted test case.
+ * 
  * @author David
  *
  */
 public class MutationAgent {
 	
+	/**
+	 * Number of time allowed for mutation framework attempt to fail the test case
+	 */
 	protected final int maxMutationLimit = 10;
-	protected final int maxMutation = 1;
 	
+	/**
+	 * Maximum allowed amount of changes in the source code
+	 */
+	protected final int maxChanges = 1;
+	
+	/**
+	 * Number of attempt that mutation framework needed to fail the test case
+	 */
 	protected int mutationCount = 0;
 	
+	// Configuration for mutation framework
 	protected final String srcFolderPath = "src\\main\\java";
 	protected final String testFolderPath = "src\\test\\java";
-	
 	protected final String projectPath;
 	protected final String java_path;
 	protected final int stepLimit;
-	protected final String dropInFolder;
+	protected int seed = 1;
+	protected MutationFramework mutationFramework = null;
 	
+	// Target Test Case
+	protected int testCaseID = -1;
+	protected String testCaseClass = null;
+	protected String testCaseMethodName = null;		
+	
+	// Output of the mutation
 	protected Trace buggyTrace = null;
+	protected Trace correctTrace = null;
 	protected String mutatedProjPath = null;
 	protected String originalProjPath = null;
 	protected TestCase testCase = null;
-	
-	protected List<TraceNode> rootCauses = new ArrayList<>();
-	
-	protected int testCaseID = -1;
-	protected String testCaseClass = null;
-	protected String testCaseMethodName = null;
-	protected int seed = 1;
-	
-	protected Trace correctTrace = null;
 	protected PairList pairList = null;
 	protected DiffMatcher matcher = null;
 	
+	protected List<TraceNode> rootCauses = new ArrayList<>();
 	protected List<VarValue> inputs = new ArrayList<>();
 	protected List<VarValue> outputs = new ArrayList<>();
 	
-	public MutationAgent(String projectPath, String java_path, int stepLimit, String dropInFolder) {
+	public MutationAgent(String projectPath, String java_path, int stepLimit) {
 		this.projectPath = projectPath;
 		this.java_path = java_path;
 		this.stepLimit = stepLimit;
-		this.dropInFolder = dropInFolder;
 	}
 	
+	/**
+	 * Setup the configuration for mutation framework
+	 */
+	public void setup() throws IOException{
+		
+		this.reset();
+		
+		MutationFramework mutationFramework = new MutationFramework();
+		mutationFramework.setMaxNumberOfMutations(this.maxChanges);
+		mutationFramework.toggleStrongMutations(true);
+		mutationFramework.extractResources();
+		mutationFramework.setDropInsDir(MutationFramework.DEFAULT_RESOURCES_PATH + File.separator + "lib");
+		
+		MicrobatConfig microbatConfig = MicrobatConfig.defaultConfig();
+		microbatConfig = microbatConfig.setJavaHome(this.java_path);
+		microbatConfig = microbatConfig.setStepLimit(this.stepLimit);
+		mutationFramework.setMicrobatConfig(microbatConfig);
+		mutationFramework.setProjectPath(this.projectPath);
+		
+		this.mutationFramework = mutationFramework;
+	}
+
 	public void startMutation() {
 		
 		if (!isReady()) {
@@ -82,19 +113,6 @@ public class MutationAgent {
 		}
 		
 		System.out.println("Mutating Test Case " + this.testCaseID);
-		this.reset();
-		
-		// Set up the mutation framework
-		MutationFramework mutationFramework = new MutationFramework();
-		mutationFramework.setMaxNumberOfMutations(this.maxMutation);
-		mutationFramework.toggleStrongMutations(true);
-		mutationFramework.setDropInsDir(dropInFolder);
-		
-		MicrobatConfig microbatConfig = MicrobatConfig.defaultConfig();
-		microbatConfig = microbatConfig.setJavaHome(this.java_path);
-		microbatConfig = microbatConfig.setStepLimit(this.stepLimit);
-		mutationFramework.setMicrobatConfig(microbatConfig);
-		mutationFramework.setProjectPath(this.projectPath);
 		if (this.testCaseID>=0) {
 			this.testCase = mutationFramework.getTestCases().get(this.testCaseID);
 		} else {
@@ -157,9 +175,9 @@ public class MutationAgent {
 		this.matcher.matchCode();
 		
 		// Convert tracediff.PairList to tregression.PairList
-		tracediff.model.PairList pairList_traceDiff = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
-				this.mutatedProjPath, this.originalProjPath,
-                result.getMutatedTrace(), result.getOriginalTrace());
+//		tracediff.model.PairList pairList_traceDiff = TraceDiff.getTraceAlignment(srcFolderPath, testFolderPath,
+//				this.mutatedProjPath, this.originalProjPath,
+//                result.getMutatedTrace(), result.getOriginalTrace());
 
 		
 		ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
@@ -169,15 +187,15 @@ public class MutationAgent {
 		
 //		TestIOFramework testIOFramework = new TestIOFramework();
 //		TestIO testIO = testIOFramework.getBuggyTestIOs(
-//				super.result.getOriginalResult(),
-//				super.result.getOriginalResultWithAssertions(),
-//				super.result.getMutatedResult(),
-//				super.result.getMutatedResultWithAssertions(),
-//				super.result.getOriginalProject().getRoot(),
-//                super.result.getMutatedProject().getRoot(), 
+//				result.getOriginalResult(),
+//				result.getOriginalResultWithAssertions(),
+//				result.getMutatedResult(),
+//				result.getMutatedResultWithAssertions(),
+//				result.getOriginalProject().getRoot(),
+//                result.getMutatedProject().getRoot(), 
 //                pairList_traceDiff, 
-//                super.result.getTestClass(),
-//                super.result.getTestSimpleName());
+//                result.getTestClass(),
+//                result.getTestSimpleName());
 //		
 //		if (testIO != null) {
 //			for (IOModel model : testIO.getInputs()) {
@@ -212,6 +230,8 @@ public class MutationAgent {
 		
 		this.inputs.clear();
 		this.outputs.clear();
+		
+		this.mutationFramework = null;
 	}
 	
 	public List<VarValue> getInputs() {
@@ -252,8 +272,22 @@ public class MutationAgent {
 		return this.testCase;
 	}
 	
-	public boolean isReady() {
-		return this.testCaseID>=0 || (this.testCaseClass != null && this.testCaseMethodName != null);
+	/**
+	 * Check is the Mutation Framework ready to mutate the code.
+	 * @return True if it is ready.
+	 */
+	public boolean isReady() {	
+		// Check is the test case provided
+		if (this.testCaseID < 0 && (this.testCaseClass == null || this.testCaseMethodName == null)) {
+			throw new RuntimeException("Targeted Test Case is not provided.");
+		}
+		
+		// Check is the mutation framework correctly set up
+		if (this.mutationFramework == null) {
+			throw new RuntimeException("Mutation Framework is not set up.");
+		}
+		
+		return true;
 	}
 	
 	public void setTestCaseID(int testCaseID) {
