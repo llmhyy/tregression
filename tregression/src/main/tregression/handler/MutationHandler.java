@@ -2,6 +2,7 @@ package tregression.handler;
 
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -46,7 +47,9 @@ public class MutationHandler extends AbstractHandler {
 				setup();
 		
 				// Setup parameter
-				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
+				final String projectRepo = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
+				final String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
+				final String projectPath = Paths.get(projectRepo, projectName).toString();
 				
 				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				final int testCaesID = Integer.parseInt(testCaseID_str);
