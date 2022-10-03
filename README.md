@@ -53,11 +53,9 @@ To perform the mutation functionality, please follow the steps:
    <img src="./images/Preference.png" width="400"/>
    </p> 
 
-   - **Repository Path:** It is the absolute path to the testing project. The recommanded testing project are installed within `java-mutation-framework/sample`. In this example, we are using `math_70` as our testing project: `C:\Users\user_name\git\java-mutation-framework\sample\math_70`
+   - **Repository Path:** It is the absolute path to the testing project. The recommanded testing project are installed within `java-mutation-framework/sample`. In this example, we are using `math_70` as our testing project: `C:\Users\user_name\git\java-mutation-framework\sample`
+   - **Project Name:** It is the name of the project. In this example, we are using `math_70`
    - **Bug ID:** It represent which test case that is being tested. For example, for `Bug ID = 0`, that mean the first test case is being tested. Make sure that the `Bug ID` does not exceed the number of test cases. In our example, we are testing the first test case so that the input is `0`.
-   - **Give feedback manually:** Check this box if you want to give the feedback manually, which is also the recommanded choice. 
-    
-      If the box is unchecked, then tregression will give the feedback by comparing the buggy trace and correct trace. However, since some of the variable are changed for running the baseline, it is possible that tregression may give wrong feedback.
 
    - **Drop In Folder:** It is the absolute path to the folder that store all the required `.jar` files for the mutation. You can find it in `tregression\mutation_dropin`. Please convert it to absolute path.
 
@@ -87,9 +85,19 @@ Tregression can now debug based on belief propagation technique. For more inform
 
 3. Run every cell in `BP_Server.ipynb`
 
-4. If you are testing belief propagation with mutation framework, after the mutation is done, Tregression will print out the automatically detected input and output variables. If the variable are correctly detected, please skip step 5.
+4. In the Tregression Preference, you may want to check the `Give feedback manually` box.
 
-5. Define the input and the output variables:
+   **Give feedback manually:** Check this box if you want to give the feedback manually, which is also the recommanded choice.
+    
+   If the box is unchecked, then tregression will give the feedback by comparing the buggy trace and correct trace. However, since some of the variable are changed for running the baseline, it is possible that tregression may give wrong feedback.
+
+      <p align="center">
+   <img src="./images/Preference.png" width="400"/>
+   </p> 
+
+5. If you are testing belief propagation with mutation framework, after the mutation is done, Tregression will print out the automatically detected input and output variables. If the variable are correctly detected, please skip step 5.
+
+6. Define the input and the output variables:
 
     - **Define Inputs Variables**
       1. Navigate to the node that define the input variables. Note that there may be multiple node that define input variables.
