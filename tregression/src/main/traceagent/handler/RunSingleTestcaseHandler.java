@@ -48,9 +48,9 @@ public class RunSingleTestcaseHandler extends RunAllDatasetHandler {
 					System.out.println("working on the " + id + "th bug of " + projectName + " project.");
 					ProjectConfig projectConfig;
 					if (Dataset.getTypeFromPref().equals(Dataset.DEFECTS4J)) {
-						projectConfig = Defects4jProjectConfig.getConfig(projectName, String.valueOf(j));
+						projectConfig = Defects4jProjectConfig.getConfig(projectName, String.valueOf(id));
 					} else {
-						projectConfig = Regs4jProjectConfig.getConfig(projectName, String.valueOf(j));
+						projectConfig = Regs4jProjectConfig.getConfig(projectName, String.valueOf(id));
 					}
 					AgentDatasetReport report = new AgentDatasetReport(new File("Agent_Defect4j_tc.xlsx"));
 					runSingleBug(projectConfig, report, tcs, new TestcaseFilter(false), monitor);

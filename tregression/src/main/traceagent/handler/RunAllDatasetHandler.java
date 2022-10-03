@@ -48,8 +48,8 @@ public class RunAllDatasetHandler  extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		String datasetName = Dataset.getTypeFromPref().getName();
 		Job job = new Job("Run Trace Agent On Defects4j") {
+			String datasetName = Dataset.getTypeFromPref().getName();
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				String reportFile = "Agent_" + datasetName + ".xlsx";
