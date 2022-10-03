@@ -2,6 +2,7 @@ package mutation;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class MutationAgent {
 		mutationFramework.setMaxNumberOfMutations(this.maxChanges);
 		mutationFramework.toggleStrongMutations(true);
 		mutationFramework.extractResources();
-		mutationFramework.setDropInsDir(MutationFramework.DEFAULT_RESOURCES_PATH + File.separator + "lib");
+		mutationFramework.setDropInsPath(Paths.get(MutationFramework.DEFAULT_RESOURCES_PATH, MutationFramework.DEFAULT_DROP_INS_DIR).toString());
 		
 		MicrobatConfig microbatConfig = MicrobatConfig.defaultConfig();
 		microbatConfig = microbatConfig.setJavaHome(this.java_path);
