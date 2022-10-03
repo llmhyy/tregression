@@ -13,7 +13,7 @@ public class Regs4jPathConfiguration extends PathConfiguration {
 	public String getCorrectPath(String projectName, String bugId){
 		StringBuilder result = new StringBuilder(getBugPath(projectName, bugId));
 		result.append(File.separator);
-		result.append("rfc");
+		result.append("work");
 		return result.toString();
 	}
 }
