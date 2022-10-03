@@ -40,9 +40,7 @@ public class Regs4jProjectConfig extends MavenProjectConfig {
 		String[] testClassAndName = testCaseStr.split("#");
 		String testMethod = testClassAndName[1].replaceAll("\r", "");
 		testMethod = testMethod.replaceAll("\n", "");
-		result.add(new TestCase(testClassAndName[0], testClassAndName[1]));
-//		result.add(new TestCase("com.univocity.parsers.issues.github.Github_420", "detectedFormatTest"));
-//		result.add(new TestCase("com.univocity.parsers.annotations.AnnotationHelperTest", "shouldCreateAnnotationHelper"));
+		result.add(new TestCase(testClassAndName[0], testMethod));
 		return result;
 	}
 	
