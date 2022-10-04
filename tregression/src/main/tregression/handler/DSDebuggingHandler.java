@@ -78,7 +78,7 @@ public class DSDebuggingHandler extends AbstractHandler {
 				final int startID = Integer.parseInt(testCaseID_str);
 	
 				final String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
-				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
+//				final String dropInDir = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.DROP_IN_FOLDER);
 				
 				final String java_path = Activator.getDefault().getPreferenceStore().getString(MicrobatPreference.JAVA7HOME_PATH);
 				final int stepLimit = Settings.stepLimit;
@@ -90,7 +90,7 @@ public class DSDebuggingHandler extends AbstractHandler {
 				
 				Recorder recorder = new Recorder();
 				
-				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit, dropInDir);
+				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit);
 				
 				String message = "";
 				
