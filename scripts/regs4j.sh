@@ -1,15 +1,33 @@
 #!/bin/bash
 
+# Description:
+# Clones working and RIC commits from each project in regs4j to your specified directory, then runs maven test-compile on each of them
+# Compilation failures and error messages are recorded on your specified CSV file
+
 # Usage:
 # 1. Update the configuration below to match your system's.
-# 2. Run the command: <this script> <path to CLI.sh>
+# 2. Run the command: <this script> <path to regs4j's CLI.sh>. If not specified, "./CLI.sh" is used.
 # e.g. ./regs4j.sh ./CLI.sh
 
 # ====================== Configuration =====================
 # Change the paths below to your system's
 repoDirToPasteTo='/media/sf_VBox-Shared/reg4j'
 reverse=0
+csvFile="/media/sf_VBox-Shared/regs4j.csv"
 # ==========================================================
+
+prevCSVContents=$( cat $csvFile )
+firstLineInCSV="Project,Type,BugId,CompilationFail,ErrorMsg"
+if [[ $prevCSVContents != *"$firstLineInCSV"* ]]
+then
+    echo $firstLineInCSV > $csvFile
+fi
+
+# If path to regs4j shell script not provided, use the default
+if [ -z $1 ]
+then
+    set -- "./CLI.sh"
+fi
 
 cliDir="$(dirname $1)"
 cd $cliDir
@@ -18,6 +36,7 @@ echo "entered $cliDir directory"
 cliCommand="./$(basename $1)"
 echo running $cliCommand
 echo ' '
+
 
 testFileName="tests.txt"
 
@@ -63,34 +82,60 @@ do
     done
 	for j in $(seq 1 $numOfRegs)
 	do
-		strRepRFC=$project/$j/rfc
+		strRepWork=$project/$j/work
 		strRepRIC=$project/$j/ric
-		csvRowRFC=$strRepRFC
-		csvRowRIC=$strRepRIC
+        csvRowWork=$project,work,$j
+        csvRowRIC=$project,ric,$j
+        if [[ $prevCSVContents == *"$csvRowWork"* && $prevCSVContents == *"$csvRowRIC"* ]]
+        then
+            echo $project with bug id $j already recorded in csv file, skipping...
+            continue
+        fi
 		echo checking out $j for $project
 		paths=$({ echo "use $project"; echo "checkout $j"; } | "$cliCommand")
-		pathToRFC=${paths/*"rfc directory:"}
-		pathToRFC=${pathToRFC/rfc*/rfc}
+		pathToWorking=${paths/*"work directory:"}
+		pathToWorking=${pathToWorking/work*/work}
 		pathToRIC=${paths/*"ric directory:"}
 		pathToRIC=${pathToRIC/ric*/ric}
-		echo path to rfc: $pathToRFC
+		echo path to work: $pathToWorking
 		echo path to ric: $pathToRIC
 
 		projectDir=${project/\//_}
+
+
 		newPath=$repoDirToPasteTo/$projectDir/$j
 		mkdir -p $newPath
 
-		echo copying rfc to $newPath/rfc
-		cp -r $pathToRFC $newPath
+		echo copying working to $newPath/work
+		cp -r $pathToWorking $newPath
 
 		echo copying ric to $newPath/ric
 		cp -r $pathToRIC $newPath
 
-        echo compiling rfc
-        mvn test-compile --file $newPath/rfc/pom.xml
+        failString='BUILD FAILURE'
+        echo compiling work
+        mvnOutput=$( mvn test-compile --file $newPath/work/pom.xml | tee /dev/fd/2 )
+        mvnOutput=$( echo $mvnOutput | tr '\n' '^' ) # Replace new lines with another char, since it creates another row in csv
+        if [[ $mvnOutput == *"$failString"* ]]
+        then
+            echo "mvn failure for work"
+            csvRowWork=$csvRowWork,TRUE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
+        else
+            csvRowWork=$csvRowWork,FALSE
+        fi
+        echo $csvRowWork >> $csvFile
 
         echo compiling ric
-        mvn test-compile --file $newPath/ric/pom.xml
+        mvnOutput=$( mvn test-compile --file $newPath/ric/pom.xml | tee /dev/fd/2 )
+        mvnOutput=$( echo $mvnOutput | tr '\n' '^' ) 
+        if [[ $mvnOutput == *"$failString"* ]]
+        then
+            echo "mvn failure for RIC"
+            csvRowRIC=$csvRowRIC,TRUE,\"$mvnOutput\"
+        else
+            csvRowRIC=$csvRowRIC,FALSE
+        fi
+        echo $csvRowRIC >> $csvFile
 
         echo "${tests[$((j-1))]}" > $newPath/$testFileName
 	done
