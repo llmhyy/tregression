@@ -11,14 +11,13 @@
 
 # ====================== Configuration =====================
 # Change the paths below to your system's
-repoDirToPasteTo='/media/sf_VBox-Shared/reg4j'
+repoDirToPasteTo="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/reg4j"
 reverse=0
-csvFile="/media/sf_VBox-Shared/regs4j.csv"
+csvFile="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/regs4j.csv"
 # ==========================================================
 
-prevCSVContents=$( cat $csvFile )
 firstLineInCSV="Project,Type,BugId,Regs4jError,ErrorMsg"
-if [[ $prevCSVContents != *"$firstLineInCSV"* ]]
+if [[ -f $csvFile ]]
 then
     echo $firstLineInCSV > $csvFile
 fi
@@ -36,7 +35,6 @@ echo "entered $cliDir directory"
 cliCommand="./$(basename $1)"
 echo running $cliCommand
 echo ' '
-
 
 testFileName="tests.txt"
 
@@ -84,25 +82,25 @@ do
 	do
 		strRepWork=$project/$j/work
 		strRepRIC=$project/$j/ric
-        csvRowWork=$project,work,$j
-        csvRowRIC=$project,ric,$j
-        if [[ $prevCSVContents == *"$csvRowWork"* && $prevCSVContents == *"$csvRowRIC"* ]]
-        then
-            echo $project with bug id $j already recorded in csv file, skipping...
-            continue
-        fi
-		echo checking out $j for $project
-		checkoutResult=$({ echo "use $project"; echo "checkout $j"; } | "$cliCommand")
-        if [[ $checkoutResult == *"Please specify a project before checking out a bug"* ]]
-        then
-            repoNotFoundMsg="Repository not found"
-            echo $repoNotFoundMsg 
-            csvRowWork+=,TRUE,$repoNotFoundMsg
-            csvRowRIC+=,TRUE,$repoNotFoundMsg
-            echo $csvRowWork >> $csvFile
-            echo $csvRowRIC >> $csvFile
-            continue
-        fi
+		csvRowWork=$project,work,$j,
+		csvRowRIC=$project,ric,$j,
+		if [[ $prevCSVContents == *"$csvRowWork"* && $prevCSVContents == *"$csvRowRIC"* ]]
+		then
+		    echo $project with bug id $j already recorded in csv file, skipping...
+		    continue
+		fi
+			echo checking out $j for $project
+			checkoutResult=$({ echo "use $project"; echo "checkout $j"; } | "$cliCommand")
+		if [[ $checkoutResult == *"Please specify a project before checking out a bug"* ]]
+		then
+		    repoNotFoundMsg="Repository not found"
+		    echo $repoNotFoundMsg 
+		    csvRowWork+=TRUE,$repoNotFoundMsg
+		    csvRowRIC+=TRUE,$repoNotFoundMsg
+		    echo $csvRowWork >> $csvFile
+		    echo $csvRowRIC >> $csvFile
+		    continue
+		fi
 		pathToWorking=${checkoutResult/*"work directory:"}
 		pathToWorking=${pathToWorking/work*/work}
 		pathToRIC=${checkoutResult/*"ric directory:"}
@@ -111,7 +109,6 @@ do
 		echo path to ric: $pathToRIC
 
 		projectDir=${project/\//_}
-
 
 		newPath=$repoDirToPasteTo/$projectDir/$j
 		mkdir -p $newPath
@@ -122,31 +119,48 @@ do
 		echo copying ric to $newPath/ric
 		cp -r $pathToRIC $newPath
 
-        failString='BUILD FAILURE'
-        echo compiling work
-        mvnOutput=$( mvn test-compile --file $newPath/work/pom.xml | tee /dev/fd/2 )
-        mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' ) # Replace new lines with another char, since it creates another row in csv
-        if [[ $mvnOutput == *"$failString"* ]]
-        then
-            echo "mvn failure for work"
-            csvRowWork=$csvRowWork,TRUE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
-        else
-            csvRowWork=$csvRowWork,FALSE,\"$mvnOutput\"
-        fi
-        echo $csvRowWork >> $csvFile
+		testCase="${tests[$((j-1))]}"
+		testCaseRunningStr='Tests run'
+		testFailStr='Failures: 1'
+		testPassStr='Failures: 0'
+		echo compiling working commit
+		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/work/pom.xml | tee /dev/fd/2 )
+		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^'  | tr -d '\r' ) # Replace new lines with another char, since it creates another row in csv
+		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
+		then
+		    echo "Test case ran"
+		    if [[ $mvnOutput == *"$testPassStr"* ]]
+		    then
+			csvRowWork+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
+		    else
+			echo "Test case failed for work"
+			csvRowWork+=TRUE,\"$mvnOutput\"
+		    fi
+		else
+		    echo "mvn failure for work"
+		    csvRowWork+=TRUE,\"$mvnOutput\"
+		fi
+		echo $csvRowWork >> $csvFile
 
-        echo compiling ric
-        mvnOutput=$( mvn test-compile --file $newPath/ric/pom.xml | tee /dev/fd/2 )
-        mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' ) 
-        if [[ $mvnOutput == *"$failString"* ]]
-        then
-            echo "mvn failure for RIC"
-            csvRowRIC=$csvRowRIC,TRUE,\"$mvnOutput\"
-        else
-            csvRowRIC=$csvRowRIC,FALSE,\"$mvnOutput\"
-        fi
-        echo $csvRowRIC >> $csvFile
+		echo compiling ric commit
+		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/ric/pom.xml | tee /dev/fd/2 )
+		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' | tr -d '\r') 
+		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
+		then
+		    echo "Test case ran"
+		    if [[ $mvnOutput == *"$testFailStr"* ]]
+		    then
+			csvRowRIC+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
+		    else
+			echo "Test case passed for ric"
+			csvRowRIC+=TRUE,\"$mvnOutput\"
+		    fi
+		else
+		    echo "mvn failure for ric"
+		    csvRowRIC+=TRUE,\"$mvnOutput\"
+		fi
+		echo $csvRowRIC >> $csvFile
 
-        echo "${tests[$((j-1))]}" > $newPath/$testFileName
+		echo "${tests[$((j-1))]}" > $newPath/$testFileName
 	done
 done
