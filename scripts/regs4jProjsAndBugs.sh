@@ -11,6 +11,11 @@
 reverse=0
 # ==========================================================
 
+if [ -z $1 ]
+then
+    set -- "./CLI.sh"
+fi
+
 cliDir="$(dirname $1)"
 cd $cliDir
 echo "entered $cliDir directory"

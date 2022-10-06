@@ -2,7 +2,7 @@
 
 # Description:
 # Clones working and RIC commits from each project in regs4j to your specified directory, then runs maven test-compile on each of them
-# Compilation failures and error messages are recorded on your specified CSV file
+# Compilation failures, checkout failures, and error messages are recorded on your specified CSV file
 
 # Usage:
 # 1. Update the configuration below to match your system's.
@@ -17,7 +17,7 @@ csvFile="/media/sf_VBox-Shared/regs4j.csv"
 # ==========================================================
 
 prevCSVContents=$( cat $csvFile )
-firstLineInCSV="Project,Type,BugId,CompilationFail,ErrorMsg"
+firstLineInCSV="Project,Type,BugId,Regs4jError,ErrorMsg"
 if [[ $prevCSVContents != *"$firstLineInCSV"* ]]
 then
     echo $firstLineInCSV > $csvFile
@@ -92,10 +92,20 @@ do
             continue
         fi
 		echo checking out $j for $project
-		paths=$({ echo "use $project"; echo "checkout $j"; } | "$cliCommand")
-		pathToWorking=${paths/*"work directory:"}
+		checkoutResult=$({ echo "use $project"; echo "checkout $j"; } | "$cliCommand")
+        if [[ $checkoutResult == *"Please specify a project before checking out a bug"* ]]
+        then
+            repoNotFoundMsg="Repository not found"
+            echo $repoNotFoundMsg 
+            csvRowWork+=,TRUE,$repoNotFoundMsg
+            csvRowRIC+=,TRUE,$repoNotFoundMsg
+            echo $csvRowWork >> $csvFile
+            echo $csvRowRIC >> $csvFile
+            continue
+        fi
+		pathToWorking=${checkoutResult/*"work directory:"}
 		pathToWorking=${pathToWorking/work*/work}
-		pathToRIC=${paths/*"ric directory:"}
+		pathToRIC=${checkoutResult/*"ric directory:"}
 		pathToRIC=${pathToRIC/ric*/ric}
 		echo path to work: $pathToWorking
 		echo path to ric: $pathToRIC
@@ -115,25 +125,25 @@ do
         failString='BUILD FAILURE'
         echo compiling work
         mvnOutput=$( mvn test-compile --file $newPath/work/pom.xml | tee /dev/fd/2 )
-        mvnOutput=$( echo $mvnOutput | tr '\n' '^' ) # Replace new lines with another char, since it creates another row in csv
+        mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' ) # Replace new lines with another char, since it creates another row in csv
         if [[ $mvnOutput == *"$failString"* ]]
         then
             echo "mvn failure for work"
             csvRowWork=$csvRowWork,TRUE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
         else
-            csvRowWork=$csvRowWork,FALSE
+            csvRowWork=$csvRowWork,FALSE,\"$mvnOutput\"
         fi
         echo $csvRowWork >> $csvFile
 
         echo compiling ric
         mvnOutput=$( mvn test-compile --file $newPath/ric/pom.xml | tee /dev/fd/2 )
-        mvnOutput=$( echo $mvnOutput | tr '\n' '^' ) 
+        mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' ) 
         if [[ $mvnOutput == *"$failString"* ]]
         then
             echo "mvn failure for RIC"
             csvRowRIC=$csvRowRIC,TRUE,\"$mvnOutput\"
         else
-            csvRowRIC=$csvRowRIC,FALSE
+            csvRowRIC=$csvRowRIC,FALSE,\"$mvnOutput\"
         fi
         echo $csvRowRIC >> $csvFile
 
