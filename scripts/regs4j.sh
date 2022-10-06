@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Description:
-# Clones working and RIC commits from each project in regs4j to your specified directory, then runs maven test-compile on each of them
-# Compilation failures, checkout failures, and error messages are recorded on your specified CSV file
+# Clones working and RIC commits from each project in regs4j to your specified directory, then runs maven test -Dtest=ClassName#testName on each of them
+# Compilation failures, checkout failures, and other error messages are recorded on your specified CSV file
 
 # Usage:
 # 1. Update the configuration below to match your system's.
@@ -16,7 +16,7 @@ reverse=0
 csvFile="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/regs4j.csv"
 # ==========================================================
 
-firstLineInCSV="Project,Type,BugId,Regs4jError,ErrorMsg"
+firstLineInCSV="Project,Type,BugId,Regs4jError,Logs"
 if [[ -f $csvFile ]]
 then
     echo $firstLineInCSV > $csvFile
@@ -121,42 +121,43 @@ do
 
 		testCase="${tests[$((j-1))]}"
 		testCaseRunningStr='Tests run'
-		testFailStr='Failures: 1'
 		testPassStr='Failures: 0'
-		echo compiling working commit
+		commitStr="working commit"
+		echo "compiling $commitStr"
 		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/work/pom.xml | tee /dev/fd/2 )
 		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^'  | tr -d '\r' ) # Replace new lines with another char, since it creates another row in csv
 		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
 		then
-		    echo "Test case ran"
 		    if [[ $mvnOutput == *"$testPassStr"* ]]
 		    then
+			echo "Test case passed as expected for $commitStr"
 			csvRowWork+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
 		    else
-			echo "Test case failed for work"
+			echo "Test case unexpectedly failed for $commitStr"
 			csvRowWork+=TRUE,\"$mvnOutput\"
 		    fi
 		else
-		    echo "mvn failure for work"
+		    echo "mvn build failure for $commitStr"
 		    csvRowWork+=TRUE,\"$mvnOutput\"
 		fi
 		echo $csvRowWork >> $csvFile
 
-		echo compiling ric commit
+		commitStr="ric commit"
+		echo compiling $commitStr
 		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/ric/pom.xml | tee /dev/fd/2 )
 		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' | tr -d '\r') 
 		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
 		then
-		    echo "Test case ran"
-		    if [[ $mvnOutput == *"$testFailStr"* ]]
+		    if [[ $mvnOutput != *"$testPassStr"* ]]
 		    then
+			echo "Test case failed as expected for $commitStr"
 			csvRowRIC+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
 		    else
-			echo "Test case passed for ric"
+			echo "Test case unexpectedly passed for $commitStr"
 			csvRowRIC+=TRUE,\"$mvnOutput\"
 		    fi
 		else
-		    echo "mvn failure for ric"
+		    echo "mvn build failure for $commitStr"
 		    csvRowRIC+=TRUE,\"$mvnOutput\"
 		fi
 		echo $csvRowRIC >> $csvFile
