@@ -108,7 +108,13 @@ public class SeparateVersionHandler extends AbstractHandler{
 						setTestCase(datas, t.getTestcase());						
 						try {
 //							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
-							new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projectName, id);
+							String fileSuffix;
+							if (datasetType.equals(Dataset.DEFECTS4J)) {
+								fileSuffix = "_d4j";
+							} else {
+								fileSuffix = "_r4j";
+							}
+							new DeadEndCSVWriter(fileSuffix, null).export(datas.getAllData(), projectName, id);
 						} catch (NumberFormatException | IOException e) {
 							e.printStackTrace();
 						}
