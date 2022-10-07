@@ -13,12 +13,13 @@
 # Change the paths below to your system's
 repoDirToPasteTo="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/reg4j"
 reverse=0
-csvFile="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/regs4j.csv"
+csvFile="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/test.csv"
 # ==========================================================
 
 firstLineInCSV="Project,Type,BugId,Regs4jError,Logs"
-if [[ -f $csvFile ]]
+if ! [[ -f $csvFile ]]
 then
+    echo 'CSV does not exist, creating a new one'
     echo $firstLineInCSV > $csvFile
 fi
 
@@ -61,7 +62,7 @@ do
 	echo $project
 done
 echo ' '
-echo Starting cloning...
+echo Start cloning...
 echo ' '
 for project in ${projects[@]}
 do
@@ -121,16 +122,17 @@ do
 
 		testCase="${tests[$((j-1))]}"
 		testCaseRunningStr='Tests run'
-		testPassStr='Failures: 0'
+		testPassStr='Failures: 0, Errors: 0'
 		commitStr="working commit"
 		echo "compiling $commitStr"
 		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/work/pom.xml | tee /dev/fd/2 )
 		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^'  | tr -d '\r' ) # Replace new lines with another char, since it creates another row in csv
+		mvnOutput=${mvnOutput//\"/\"\"} # Replace all double quotes, with double double quotes, for CSV
 		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
 		then
 		    if [[ $mvnOutput == *"$testPassStr"* ]]
 		    then
-			echo "Test case passed as expected for $commitStr"
+			echo "Test case passed as expected for $commitStr"	
 			csvRowWork+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
 		    else
 			echo "Test case unexpectedly failed for $commitStr"
@@ -146,15 +148,16 @@ do
 		echo compiling $commitStr
 		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/ric/pom.xml | tee /dev/fd/2 )
 		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' | tr -d '\r') 
+		mvnOutput=${mvnOutput//\"/\"\"} # Replace all double quotes, with double double quotes, for CSV
 		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
 		then
 		    if [[ $mvnOutput != *"$testPassStr"* ]]
 		    then
-			echo "Test case failed as expected for $commitStr"
-			csvRowRIC+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
+                echo "Test case failed as expected for $commitStr"	
+                csvRowRIC+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
 		    else
-			echo "Test case unexpectedly passed for $commitStr"
-			csvRowRIC+=TRUE,\"$mvnOutput\"
+                echo "Test case unexpectedly passed for $commitStr"
+                csvRowRIC+=TRUE,\"$mvnOutput\"
 		    fi
 		else
 		    echo "mvn build failure for $commitStr"
