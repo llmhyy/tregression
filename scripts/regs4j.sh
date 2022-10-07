@@ -65,12 +65,12 @@ echo Starting cloning...
 echo ' '
 for project in ${projects[@]}
 do
-	echo using project $project
-	numOfRegs=$(echo "use $project" | "$cliCommand")
-	numOfRegs=${numOfRegs/*"regressions... "}
-	numOfRegs=${numOfRegs/' '*}
-	echo num of regressions: $numOfRegs
-	listOutput=$({ echo "use $project"; echo "list"; } | "$cliCommand")
+    echo using project $project
+    numOfRegs=$(echo "use $project" | "$cliCommand")
+    numOfRegs=${numOfRegs/*"regressions... "}
+    numOfRegs=${numOfRegs/' '*}
+    echo num of regressions: $numOfRegs
+    listOutput=$({ echo "use $project"; echo "list"; } | "$cliCommand")
     tests=()
     testCaseStr=" testcase: "
     for fragment in $listOutput; do
