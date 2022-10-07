@@ -11,9 +11,9 @@
 
 # ====================== Configuration =====================
 # Change the paths below to your system's
-repoDirToPasteTo="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/reg4j"
+repoDirToPasteTo="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/regs4j"
 reverse=0
-csvFile="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/test.csv"
+csvFile="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/regs4j.csv"
 # ==========================================================
 
 firstLineInCSV="Project,Type,BugId,Regs4jError,Logs"
@@ -21,6 +21,8 @@ if ! [[ -f $csvFile ]]
 then
     echo 'CSV does not exist, creating a new one'
     echo $firstLineInCSV > $csvFile
+else
+    prevCSVContents=$(cat $csvFile)
 fi
 
 # If path to regs4j shell script not provided, use the default
