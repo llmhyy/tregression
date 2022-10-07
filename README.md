@@ -49,7 +49,7 @@ The regs4j.sh script also creates a CSV file that logs any error faced when clon
 
 ### Notes for Developers
 #### Regressions4J's CLI.jar
-The repository for the CLI.jar is in this link (https://github.com/SongXueZhi/regs4j/tree/feature/tregression-integration)<br/>
+The feature branch for our modified CLI.jar is in this link (https://github.com/SongXueZhi/regs4j/tree/feature/tregression-integration)<br/>
 The current JAR file in the scripts directory is based off of Release 1.2 (https://github.com/SongXueZhi/regs4j/releases/tag/1.2).<br/>
 Modifications were made to integrate with TRregression.
 - example.CLI#checkout
