@@ -415,7 +415,7 @@ public class DiffMatcher {
 
 	private boolean checkFollowByAdd(DiffChunk chunk, int startIndex, int successiveRemoveLines) {
 		int index = startIndex+successiveRemoveLines;
-		if(index <= chunk.getChangeList().size()){
+		if(index < chunk.getChangeList().size()){
 			return chunk.getChangeList().get(index).getType()==LineChange.ADD;
 		}
 		
