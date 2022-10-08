@@ -126,8 +126,9 @@ do
 		testCaseRunningStr='Tests run'
 		testPassStr='Failures: 0, Errors: 0'
 		commitStr="working commit"
+        timeoutDuration=500
 		echo "compiling $commitStr"
-		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/work/pom.xml | tee /dev/fd/2 )
+		mvnOutput=$( timeout $timeoutDuration mvn test -Dtest=$testCase --file $newPath/work/pom.xml | tee /dev/fd/2)
 		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^'  | tr -d '\r' ) # Replace new lines with another char, since it creates another row in csv
 		mvnOutput=${mvnOutput//\"/\"\"} # Replace all double quotes, with double double quotes, for CSV
 		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
@@ -148,7 +149,8 @@ do
 
 		commitStr="ric commit"
 		echo compiling $commitStr
-		mvnOutput=$( mvn test -Dtest=$testCase --file $newPath/ric/pom.xml | tee /dev/fd/2 )
+        isTimeout=0
+		mvnOutput=$( timeout $timeoutDuration mvn test -Dtest=$testCase --file $newPath/ric/pom.xml | tee /dev/fd/2 || isTimeout=1 )
 		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^' | tr -d '\r') 
 		mvnOutput=${mvnOutput//\"/\"\"} # Replace all double quotes, with double double quotes, for CSV
 		if [[ $mvnOutput == *"$testCaseRunningStr"* ]]
@@ -161,6 +163,10 @@ do
                 echo "Test case unexpectedly passed for $commitStr"
                 csvRowRIC+=TRUE,\"$mvnOutput\"
 		    fi
+        elif [[ $isTimeout -eq 1 ]]
+        then
+            echo "Test case failed as expected for $commitStr"	
+            csvRowRIC+=FALSE,\"$mvnOutput\"
 		else
 		    echo "mvn build failure for $commitStr"
 		    csvRowRIC+=TRUE,\"$mvnOutput\"
