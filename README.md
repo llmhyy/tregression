@@ -47,6 +47,8 @@ It also supports Regressions4J (https://github.com/SongXueZhi/regs4j) bugs. Ther
 
 The regs4j.sh script also creates a CSV file that logs any error faced when cloning, for instance, unexpected test results (failing for working commit/passing for bug inducing commit), maven compilation errors, etc. The CSV file is also used to track which bugs were already cloned, so to reclone the projects, please remove the specific row in the file, or provide a different path for the CSV file.
 
+To run Regs4J bugs, please update the "Dataset Name" drop down in the settings.
+
 ### Notes for Developers
 #### Regressions4J's CLI.jar
 The feature branch for our modified CLI.jar is in this link (https://github.com/SongXueZhi/regs4j/tree/feature/tregression-integration)<br/>
