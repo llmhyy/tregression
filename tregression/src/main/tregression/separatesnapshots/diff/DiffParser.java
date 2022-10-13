@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiffParser {
+	public static String ADDED_OR_REMOVED_FILE_NAME = "/dev/null";
+	
 	public List<FilePairWithDiff> parseDiff(List<String> diffContent, String sourceFolderName){
 		List<FilePairWithDiff> fileDiffList = new ArrayList<>();
 		FilePairWithDiff fileDiff = null;
@@ -78,8 +80,8 @@ public class DiffParser {
 			diffSuffix = "b/";
 		}
 		String resultFilePath;
-		if (line.contains("dev/null")) {
-			resultFilePath = "";
+		if (line.contains(ADDED_OR_REMOVED_FILE_NAME)) {
+			resultFilePath = ADDED_OR_REMOVED_FILE_NAME;
 		} else {
 			String osName = System.getProperty("os.name");
 			if(osName.contains("Win")){

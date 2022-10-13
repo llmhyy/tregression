@@ -312,6 +312,7 @@ public class DiffMatcher {
 	}
 
 	private int countLineNumber(String fileName){
+		if (fileName.equals(DiffParser.ADDED_OR_REMOVED_FILE_NAME)) return 0;
 		LineNumberReader lnr;
 		try {
 			File file = new File(fileName);
