@@ -17,8 +17,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.Activator;
-import microbat.baseline.encoders.NodeFeedbackPair;
-import microbat.baseline.encoders.ProbabilityEncoder;
+import microbat.baseline.beliefpropagation.NodeFeedbackPair;
+import microbat.baseline.beliefpropagation.PropabilityInference;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -90,7 +90,7 @@ public class BaselineHandler extends AbstractHandler {
 				int noOfFeedbacks = 0;
 				
 				// Set up the probability encoder
-				ProbabilityEncoder encoder = new ProbabilityEncoder(buggyTrace);
+				PropabilityInference encoder = new PropabilityInference(buggyTrace);
 				encoder.setInputVars(BaselineHandler.inputs);
 				encoder.setOutputVars(BaselineHandler.outputs);
 				encoder.setup();
@@ -179,7 +179,7 @@ public class BaselineHandler extends AbstractHandler {
 					}
 					
 					// Add the feedback as new constraint
-					ProbabilityEncoder.addFeedback(nodeFeedbackPair);
+					PropabilityInference.addFeedback(nodeFeedbackPair);
 					noOfFeedbacks += 1;
 				}
 				
@@ -195,7 +195,7 @@ public class BaselineHandler extends AbstractHandler {
 	
 	private void printReport(final int slicedTraceLen, final int noOfFeedbacks, final long startTime) {
 		System.out.println("---------------------------------");
-		System.out.println("Debug Report: Test Case " + testCaseID + " Method Name: " + BaselineHandler.testCaseMethod);
+		System.out.println("Debug Report: Test Case Method Name: " + BaselineHandler.testCaseMethod);
 		System.out.println("---------------------------------");
 		System.out.println("Root Cause is found");
 		System.out.println("Total Trace Length: " + buggyView.getTrace().getExecutionList().size());

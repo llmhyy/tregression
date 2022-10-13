@@ -55,9 +55,12 @@ To perform the mutation functionality, please follow the steps:
 
    - **Repository Path:** It is the absolute path to the testing project. The recommanded testing project are installed within `java-mutation-framework/sample`. In this example, we are using `math_70` as our testing project: `C:\Users\user_name\git\java-mutation-framework\sample`
    - **Project Name:** It is the name of the project. In this example, we are using `math_70`
-   - **Bug ID:** It represent which test case that is being tested. For example, for `Bug ID = 0`, that mean the first test case is being tested. Make sure that the `Bug ID` does not exceed the number of test cases. In our example, we are testing the first test case so that the input is `0`.
-
-   - **Drop In Folder:** It is the absolute path to the folder that store all the required `.jar` files for the mutation. You can find it in `tregression\mutation_dropin`. Please convert it to absolute path.
+   - **Test Case:** It represent which test case that is being tested. It follow the format `<Test Class Name>#<Test Case Method Name>`. Note that the `<Test Class Name>` should contain the package as well. In the example in the above image, the target test case class is `org.apache.commons.math.analysis.BinaryFunctionTest` and the target test case method name is `testAdd`
+   
+   Note that other than the test case name, you can also specify the target test case by ID:
+   - **Ues Test Case ID:** Check this boxes when you want to select the target test case by ID
+   - **Test Case ID:** The ID of target test case
+   Note that `Test Case ID` mean the ith test case of the project. From the above example, the `Test Caes ID` is 0 and thus we are using the 1st test case in math_70 project.
 
 2. It is assumed that [Microbat]() is installed. In the toolbar, go to Window -> Preference -> Microbat Debugging. Set up the following parameters:
 

@@ -17,8 +17,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.Activator;
-import microbat.baseline.encoders.NodeFeedbackPair;
-import microbat.baseline.encoders.ProbabilityEncoder;
+import microbat.baseline.beliefpropagation.NodeFeedbackPair;
+import microbat.baseline.beliefpropagation.PropabilityInference;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -173,7 +173,7 @@ public class AutoDebugEvaluator {
 		final int maxItr = (int) (buggyTrace.size() * this.maxBaselineItrFactor);
 		int noOfFeedbackNeeded = 0;
 		
-		ProbabilityEncoder encoder = new ProbabilityEncoder(buggyTrace);
+		PropabilityInference encoder = new PropabilityInference(buggyTrace);
 		encoder.setup();
 		
 		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, this.correctView.getTrace());
@@ -249,7 +249,7 @@ public class AutoDebugEvaluator {
 			UserFeedback feedback = this.typeToFeedback(type, result, true, PlayRegressionLocalizationHandler.finder);
 			System.out.println("Feedback for node: " + result.getOrder() + " is " + feedback);
 			NodeFeedbackPair pair = new NodeFeedbackPair(result, feedback);
-			ProbabilityEncoder.addFeedback(pair);
+			PropabilityInference.addFeedback(pair);
 
 			noOfFeedbackNeeded++;
 			

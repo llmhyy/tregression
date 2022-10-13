@@ -32,6 +32,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private Text defects4jFileText;
 	private Combo autoFeedbackCombo;
 	private Button manualFeedbackButton;
+	private Button useTestCaseIDButton;
+	private Text testCaseIDText;
 //	private Text seedText;
 //	private Text dropInFolderText;
 //	private Text configPathText;
@@ -46,6 +48,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private String defaultTestCase;
 	private String defaultDefects4jFile;
 	private String defaultManualFeedback;
+	private String defaultUseTestCaseID;
+	private String defaultTestCaesID;
+	
 //	private String defaultSeed;
 //	private String defaultDropInFolder;
 //	private String defaultConfigPath;
@@ -60,6 +65,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	public static final String DEFECTS4J_FILE = "defects4j_file";
 	public static final String AUTO_FEEDBACK_METHOD = "autoFeedbackMethod";
 	public static final String MANUAL_FEEDBACK = "manualFeedback";
+	public static final String TEST_CASE_ID = "testCaseID";
+	public static final String USE_TEST_CASE_ID = "useTestCaseID";
+	
 //	public static final String SEED = "seed";
 //	public static final String DROP_IN_FOLDER = "dropInFolder";
 //	public static final String CONFIG_PATH = "configPath";
@@ -85,6 +93,9 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.defaultTestCase = Activator.getDefault().getPreferenceStore().getString(TEST_CASE);
 		this.defaultDefects4jFile = Activator.getDefault().getPreferenceStore().getString(DEFECTS4J_FILE);
 		this.defaultManualFeedback = Activator.getDefault().getPreferenceStore().getString(MANUAL_FEEDBACK);
+		this.defaultUseTestCaseID = Activator.getDefault().getPreferenceStore().getString(USE_TEST_CASE_ID);
+		this.defaultTestCaesID = Activator.getDefault().getPreferenceStore().getString(TEST_CASE_ID);
+		
 //		this.defaultSeed = Activator.getDefault().getPreferenceStore().getString(SEED);
 //		this.defaultDropInFolder = Activator.getDefault().getPreferenceStore().getString(DROP_IN_FOLDER);
 //		this.defaultConfigPath = Activator.getDefault().getPreferenceStore().getString(CONFIG_PATH);
@@ -139,6 +150,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		preferences.put(DEFECTS4J_FILE, this.defects4jFileText.getText());
 		preferences.put(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		preferences.put(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
+		preferences.put(USE_TEST_CASE_ID, String.valueOf(this.useTestCaseIDButton.getSelection()));
+		preferences.put(TEST_CASE_ID, this.testCaseIDText.getText());
 //		preferences.put(SEED, this.seedText.getText());
 //		preferences.put(DROP_IN_FOLDER, this.dropInFolderText.getText());
 //		preferences.put(CONFIG_PATH, this.configPathText.getText());
@@ -150,6 +163,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		Activator.getDefault().getPreferenceStore().putValue(DEFECTS4J_FILE, this.defects4jFileText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
 		Activator.getDefault().getPreferenceStore().putValue(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
+		Activator.getDefault().getPreferenceStore().putValue(USE_TEST_CASE_ID, String.valueOf(this.useTestCaseIDButton.getSelection()));
+		Activator.getDefault().getPreferenceStore().putValue(TEST_CASE_ID, this.testCaseIDText.getText());
 //		Activator.getDefault().getPreferenceStore().putValue(SEED, this.seedText.getText());
 //		Activator.getDefault().getPreferenceStore().putValue(DROP_IN_FOLDER, this.dropInFolderText.getText());
 //		Activator.getDefault().getPreferenceStore().putValue(CONFIG_PATH, this.configPathText.getText());
@@ -190,6 +205,20 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.manualFeedbackButton.setLayoutData(manualFeedbackData);
 		boolean manualFeedbackButtonSelected = this.defaultManualFeedback.equals("true");
 		this.manualFeedbackButton.setSelection(manualFeedbackButtonSelected);
+		
+		this.useTestCaseIDButton = new Button(autoFeedbackGroup, SWT.CHECK);
+		this.useTestCaseIDButton.setText("Use Test Case ID");
+		GridData useTestCaseIDData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		useTestCaseIDData.horizontalSpan = 3;
+		this.useTestCaseIDButton.setLayoutData(useTestCaseIDData);
+		boolean useTestCaseIDDataSelected = this.defaultUseTestCaseID.equals("true");
+		this.useTestCaseIDButton.setSelection(useTestCaseIDDataSelected);
+		
+		Label testCaseIDLabel = new Label(autoFeedbackGroup, SWT.NONE);
+		testCaseIDLabel.setText("Test Case ID");
+		this.testCaseIDText = new Text(autoFeedbackGroup, SWT.NONE);
+		this.testCaseIDText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		this.testCaseIDText.setText(this.defaultTestCaesID);
 		
 //		Label seedLabel = new Label(autoFeedbackGroup, SWT.NONE);
 //		seedLabel.setText("Seed: ");

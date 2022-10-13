@@ -51,15 +51,24 @@ public class MutationHandler extends AbstractHandler {
 				final String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
 				final String projectPath = Paths.get(projectRepo, projectName).toString();
 				
-				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-				final int testCaesID = Integer.parseInt(testCaseID_str);
-				
 				final String java_path = Activator.getDefault().getPreferenceStore().getString(MicrobatPreference.JAVA7HOME_PATH);
 				final int stepLimit = Settings.stepLimit;
 				
 				// Perform mutation
 				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit);
-				mutationAgent.setTestCaseID(testCaesID);
+				
+				// Set the target test case
+				boolean useTestCaseID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.USE_TEST_CASE_ID).equals("true");
+				if (useTestCaseID) {
+					String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE_ID);
+					final int testCaesID = Integer.parseInt(testCaseID_str);
+					mutationAgent.setTestCaseID(testCaesID);
+				} else {
+					String testCaseName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE);
+					String[] tokens = testCaseName.split("#");
+					mutationAgent.setTestCaseInfo(tokens[0], tokens[1]);
+				}
+				
 				try {
 					mutationAgent.setup();
 				} catch (IOException e) {
@@ -79,7 +88,7 @@ public class MutationHandler extends AbstractHandler {
 				BaselineHandler.setMutatedProPath(mutationAgent.getMutatedProjPath());
 				BaselineHandler.setOriginalProPath(mutationAgent.getOriginalProjPath());
 				BaselineHandler.setMutationCount(mutationAgent.getMutationCount());
-				BaselineHandler.setTestCaseID(testCaesID);
+//				BaselineHandler.setTestCaseID(testCaesID);
 				BaselineHandler.setTestCaseMethod(mutationAgent.getTestCase().simpleName);
 				
 				// Print out detected inputs/outputs
