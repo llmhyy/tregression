@@ -18,7 +18,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import microbat.Activator;
-import tregression.autofeedback.AutoFeedbackMethods;
+import tregression.autofeedback.AutoFeedbackMethod;
 
 public class TregressionPreference extends PreferencePage implements IWorkbenchPreferencePage {
 
@@ -72,7 +72,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 //	public static final String DROP_IN_FOLDER = "dropInFolder";
 //	public static final String CONFIG_PATH = "configPath";
 
-	private int defaultAutoFeedbackMethod = AutoFeedbackMethods.RANDOM.ordinal();
+	private int defaultAutoFeedbackMethod = AutoFeedbackMethod.RANDOM.ordinal();
 	
 	public TregressionPreference() {
 	}
@@ -189,7 +189,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		Label methodLabel = new Label(autoFeedbackGroup, SWT.NONE);
 		methodLabel.setText("Method: ");
 		
-		AutoFeedbackMethods[] methods = AutoFeedbackMethods.values();
+		AutoFeedbackMethod[] methods = AutoFeedbackMethod.values();
 		String[] methodsName = new String[methods.length];
 		for(int i=0; i<methods.length; i++) {
 			methodsName[i] = methods[i].name();

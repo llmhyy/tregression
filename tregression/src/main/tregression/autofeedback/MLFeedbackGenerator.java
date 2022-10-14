@@ -43,7 +43,7 @@ public final class MLFeedbackGenerator extends FeedbackGenerator {
 	 */
 	private final int maxRecordSize = 50;
 	
-	public MLFeedbackGenerator(Trace trace, AutoFeedbackMethods method) {
+	public MLFeedbackGenerator(Trace trace, AutoFeedbackMethod method) {
 		super(trace, method);
 		this.client = new ModelClient();
 		this.correctnessRecords = new LinkedList<>();
@@ -91,7 +91,7 @@ public final class MLFeedbackGenerator extends FeedbackGenerator {
 		// Note: It is possible that the model said a step without read variable is Data Incorrect.
 		if (electedFeedback.getFeedbackType() == UserFeedback.WRONG_VARIABLE_VALUE) {
 			List<VarValue> readVars = node.getReadVariables();
-			readVars = this.removeVarsGenByJava(readVars);
+//			readVars = this.removeVarsGenByJava(readVars);
 			VarValue wrongVar = this.getRandVar(readVars, false);
 			finalFeedback.setOption(new ChosenVariableOption(wrongVar, null));
 		}

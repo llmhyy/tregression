@@ -26,7 +26,7 @@ import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
-import tregression.autofeedback.AutoFeedbackMethods;
+import tregression.autofeedback.AutoFeedbackMethod;
 import tregression.autofeedback.FeedbackGenerator;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
@@ -48,7 +48,7 @@ import tregression.views.CorrectTraceView;
 public class AutoDebugEvaluator {
 	
 	// Simulate debug process
-	private AutoFeedbackMethods method;
+	private AutoFeedbackMethod method;
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
 	
@@ -63,7 +63,7 @@ public class AutoDebugEvaluator {
 	 */
 	List<AccMeasurement> measurements;
 	
-	public AutoDebugEvaluator(AutoFeedbackMethods method) {
+	public AutoDebugEvaluator(AutoFeedbackMethod method) {
 		this.method = method;
 		this.measurements = new ArrayList<>();
 	}
@@ -141,7 +141,7 @@ public class AutoDebugEvaluator {
 		int noOfFeedbackNeeded = 0;
 		Trace buggyTrace = this.buggyView.getTrace();
 		
-		if (this.method == AutoFeedbackMethods.BASELINE) {
+		if (false) {
 			noOfFeedbackNeeded = this.evaluateBaseline(buggyTrace);
 			AccMeasurement measurement = new AccMeasurement(projectName, bugID);
 			measurement.setnoOfFeedbackNeeded(noOfFeedbackNeeded);
@@ -393,7 +393,7 @@ public class AutoDebugEvaluator {
 	 * @param method Evaluation method
 	 * @return Name of the text file
 	 */
-	public static String genFileName(String projectName, AutoFeedbackMethods method) {
+	public static String genFileName(String projectName, AutoFeedbackMethod method) {
 		return "Measurements_" + projectName + "_" + method.name() + ".txt";
 	}
 	

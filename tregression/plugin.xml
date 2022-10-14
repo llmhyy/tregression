@@ -208,12 +208,6 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.autofeedback"
-                  icon="icons/play.png"
-                  label="Auto Debug"
-                  style="push">
-            </command>
-            <command
                   commandId="tregression.collectdata"
                   icon="icons/after.ico"
                   style="push">
@@ -226,6 +220,12 @@
             <command
                   commandId="tregression.baseline"
                   icon="icons/recover.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.autofeedback"
+                  icon="icons/play.png"
+                  label="Auto Debug"
                   style="push">
             </command>
             <command

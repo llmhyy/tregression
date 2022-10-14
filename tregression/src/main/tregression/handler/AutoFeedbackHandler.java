@@ -15,9 +15,14 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.Activator;
+import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
+import microbat.model.value.VarValue;
 import microbat.preference.MicrobatPreference;
+import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
-import tregression.autofeedback.AutoFeedbackMethods;
+import tregression.autofeedback.AutoFeedbackMethod;
+import tregression.autofeedback.FeedbackGenerator;
 import tregression.autofeedbackevaluation.AccMeasurement;
 import tregression.autofeedbackevaluation.AutoDebugEvaluator;
 import tregression.autofeedbackevaluation.AvgAccMeasurement;
@@ -30,6 +35,8 @@ public class AutoFeedbackHandler extends AbstractHandler {
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
 	
+	private final long sleepTime = 2000;
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
@@ -39,28 +46,85 @@ public class AutoFeedbackHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
-//				String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-//				String bugID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-				System.out.println("Start debugging");
-				String projectPath = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-				int bugCount = 26;
+				// Get the trace view
+				getTraveViews();
 				
-				AutoDebugEvaluator evaluator = new AutoDebugEvaluator(getMethod());
-				evaluator.setup(getProjectName(), getBugID());
-				AccMeasurement measurement = evaluator.evaluate(getProjectName(), Integer.parseInt(getBugID()));
-				System.out.println(measurement);
+				// Get the buggy trace
+				Trace buggyTrace = buggyView.getTrace();
 				
-//				AutoDebugEvaluator evaluator = new AutoDebugEvaluator(getMethod());
-//				evaluator.evaulateAll(projectPath, bugCount);
-//				
-//				String folder = "C:\\Users\\arkwa\\Documents\\NUS\\Dissertation\\Measurements";
-//				String fileName = AutoDebugEvaluator.genFileName(projectPath, getMethod());
-//				
-//				Path path = Paths.get(folder, fileName);
-//				evaluator.exportCSV(path);
-//				AvgAccMeasurement avgMeasurement = evaluator.getAvgMeasurement();
-//				System.out.println(avgMeasurement);
-
+				// Determine the method for debugging
+				AutoFeedbackMethod method = getMethod();
+				
+				// Construct feedback generator
+				FeedbackGenerator generator = FeedbackGenerator.getFeedbackGenerator(buggyTrace, method);
+				generator.setVerbal(true);
+				
+				System.out.println();
+				System.out.println("AutoFeedback: Start debugging");
+				/**
+				 * By default, we assume that the very last node is the error node
+				 */
+				TraceNode errorNode = null;
+				for (int order = buggyTrace.size(); order>=1; order--) {
+					TraceNode node = buggyTrace.getTraceNode(order);
+					if (node.getCodeStatement() == "}") {
+						continue;
+					}
+					if (node.isThrowingException()) {
+						errorNode = node.getControlDominator();
+					} else {
+						errorNode = node;
+					}
+					break;
+				}
+				
+				if (errorNode == null) {
+					throw new RuntimeException("Error node cannot be defined");
+				}
+				
+				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
+				TraceNode currentNode = errorNode;
+				TraceNode prevNode = null;
+				TraceNode rootCauseNode = null;
+				while (feedback.getFeedbackType() == UserFeedback.WRONG_PATH || feedback.getFeedbackType() == UserFeedback.WRONG_VARIABLE_VALUE) {
+					
+					focusNode(currentNode);
+					
+					feedback = generator.giveFeedback(currentNode);
+					
+					if (feedback == null) {
+						rootCauseNode = prevNode;
+						break;
+					}
+					
+					if (feedback.getFeedbackType() == UserFeedback.CORRECT || feedback.getFeedbackType() == UserFeedback.UNCLEAR) {
+						rootCauseNode = prevNode;
+						break;
+					} else if (feedback.getFeedbackType() == UserFeedback.WRONG_PATH) {
+						prevNode = currentNode;
+						currentNode = currentNode.getControlDominator();
+					} else {
+						prevNode = currentNode;
+						VarValue wrongVar = feedback.getOption().getReadVar();
+						currentNode = buggyTrace.findDataDependency(currentNode, wrongVar);
+					}
+					
+					if (currentNode == null) {
+						rootCauseNode = prevNode;
+						break;
+					}
+					
+					if (currentNode.equals(prevNode)) {
+						rootCauseNode = prevNode;
+						break;
+					}
+				}
+				
+				if (rootCauseNode == null) {
+					throw new RuntimeException("Cannot find the root cause");
+				}
+				focusNode(rootCauseNode);
+				System.out.println("Root Cause is found to be node: " + rootCauseNode.getOrder());
 				return Status.OK_STATUS;
 			}
 		};
@@ -70,7 +134,7 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		return null;
 	}
 	
-	private void updateTraceView() {
+	private void getTraveViews() {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
@@ -86,17 +150,23 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		});
 	}
 	
-	private AutoFeedbackMethods getMethod() {
+	private AutoFeedbackMethod getMethod() {
 		String selectedMethodName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.AUTO_FEEDBACK_METHOD);
-		AutoFeedbackMethods selectedMethod = AutoFeedbackMethods.valueOf(selectedMethodName);
+		AutoFeedbackMethod selectedMethod = AutoFeedbackMethod.valueOf(selectedMethodName);
 		return selectedMethod;
 	}
 	
-	private String getProjectName() {
-		return Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-	}
-	
-	private String getBugID() {
-		return Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+	private void focusNode(final TraceNode node) {
+		Display.getDefault().asyncExec(new Runnable() {
+		    @Override
+		    public void run() {
+				buggyView.jumpToNode(buggyView.getTrace(), node.getOrder(), true);
+				try {
+					Thread.sleep(sleepTime);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+		    }
+		});
 	}
 }

@@ -34,7 +34,7 @@ import microbat.baseline.beliefpropagation.NodeFeedbackPair;
 import microbat.baseline.beliefpropagation.PropabilityInference;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
-import tregression.autofeedback.AutoFeedbackMethods;
+import tregression.autofeedback.AutoFeedbackMethod;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.empiricalstudy.RootCauseNode;
 import tregression.empiricalstudy.Simulator;
@@ -268,9 +268,9 @@ public class TestingHandler extends AbstractHandler {
 		}
 	}
 	
-	private AutoFeedbackMethods getMethod() {
+	private AutoFeedbackMethod getMethod() {
 		String selectedMethodName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.AUTO_FEEDBACK_METHOD);
-		AutoFeedbackMethods selectedMethod = AutoFeedbackMethods.valueOf(selectedMethodName);
+		AutoFeedbackMethod selectedMethod = AutoFeedbackMethod.valueOf(selectedMethodName);
 		return selectedMethod;
 	}
 	

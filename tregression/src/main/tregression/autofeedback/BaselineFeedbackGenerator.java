@@ -24,7 +24,7 @@ public final class BaselineFeedbackGenerator extends FeedbackGenerator {
 	 */
 	private final double correctThreshold = 0.75;
 	
-	public BaselineFeedbackGenerator(Trace trace, AutoFeedbackMethods method) {
+	public BaselineFeedbackGenerator(Trace trace, AutoFeedbackMethod method) {
 		super(trace, method);
 		this.encoder = new PropabilityInference(trace);
 		this.encoder.setup();

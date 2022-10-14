@@ -21,7 +21,7 @@ public class AutoDebugSimulator {
 	
 	private FeedbackGenerator feedbackGenerator;
 	
-	private AutoFeedbackMethods selectedMethod;
+	private AutoFeedbackMethod selectedMethod;
 	
 	private TraceView traceView;
 	
@@ -29,7 +29,7 @@ public class AutoDebugSimulator {
 	
 	final private int sleepTime = 1000;
 	
-	public AutoDebugSimulator(TraceView traceView, AutoFeedbackMethods method) {
+	public AutoDebugSimulator(TraceView traceView, AutoFeedbackMethod method) {
 		this.trace = traceView.getTrace();
 		this.traceView = traceView;
 		this.selectedMethod = method;
@@ -63,15 +63,15 @@ public class AutoDebugSimulator {
 		
 		// Temporary implementation for baseline
 		// Baseline will directly return the error trace node
-		if(this.selectedMethod == AutoFeedbackMethods.BASELINE) {
+		if(false) {
 			BaselineFeedbackGenerator baselineFeedbackGenerator = (BaselineFeedbackGenerator) this.feedbackGenerator;
 			rootCauseNode = baselineFeedbackGenerator.getErrorNode();
 		} else {
 			
 			// update trace view will erase the given initial feedback for NAIVE approach
-			if(this.selectedMethod != AutoFeedbackMethods.NAIVE) {
-				this.updateTraceView(currentNode);
-			}
+//			if(this.selectedMethod != AutoFeedbackMethods.NAIVE) {
+//				this.updateTraceView(currentNode);
+//			}
 			
 			while(!rootCauseFound) {
 				
