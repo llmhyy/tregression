@@ -47,8 +47,7 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 				
 				String[] projects = Dataset.getProjectNames();
 				int[] bugNum = Dataset.getBugNums();
-				projects = new String[] {"uniVocity_univocity-parsers"};
-				bugNum = new int[] {3};
+
 //				String fileName = "defects4j0.old.xlsx";
 				String fileName = "benchmark" + File.separator + "ben.xlsx";
 				Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
@@ -74,8 +73,7 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 				try {
 					for(int i=0; i<projects.length; i++) {
 						
-						for(int j=3; j<=bugNum[i]; j++) {
-							
+						for(int j=1; j<=bugNum[i]; j++) {
 							SingleTimer timer = SingleTimer.start("generateTrials");
 							if (monitor.isCanceled()) {
 								return Status.OK_STATUS;
