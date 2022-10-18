@@ -1,6 +1,8 @@
 package tregression.handler.runall;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +59,6 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 				File regs4jFile = null;
 				try {
 					for(int i=0; i<projects.length; i++) {
-						
 						for(int j=1; j<=bugNum[i]; j++) {
 							SingleTimer timer = SingleTimer.start("generateTrials");
 							if (monitor.isCanceled()) {
@@ -85,12 +86,16 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 							String buggyPath = pathConfig.getBuggyPath(projects[i], Integer.toString(j));
 							String fixPath = pathConfig.getCorrectPath(projects[i], Integer.toString(j));
 							
+							if (!(Files.exists(Paths.get(buggyPath)) && Files.exists(Paths.get(fixPath)))) {
+								continue;
+							}
 							System.out.println("analyzing the " + j + "th bug in " + projects[i] + " project.");
 							
 							TrialGenerator generator = new TrialGenerator();
 							TrialGenerator0 generator0 = new TrialGenerator0();
 							
 							ProjectConfig regs4jConfig = Regs4jProjectConfig.getConfig(projects[i], String.valueOf(j));
+
 							List<EmpiricalTrial> trials = generator0.generateTrials(buggyPath, fixPath, 
 									false, false, false, 3, false, true, regs4jConfig, null);
 							
