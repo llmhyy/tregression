@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -18,7 +15,6 @@ import experiment.utils.report.ExperimentReportComparisonReporter;
 import experiment.utils.report.rules.SimulatorComparisonRule;
 import experiment.utils.report.rules.TextComparisonRule;
 import microbat.Activator;
-import sav.common.core.Pair;
 import sav.common.core.utils.SingleTimer;
 import tregression.constants.Dataset;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -27,7 +23,6 @@ import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.TrialReader;
 import tregression.empiricalstudy.TrialRecorder;
-import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.config.Regs4jProjectConfig;
 import tregression.empiricalstudy.training.DED;
@@ -48,7 +43,6 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 				String[] projects = Dataset.getProjectNames();
 				int[] bugNum = Dataset.getBugNums();
 
-//				String fileName = "defects4j0.old.xlsx";
 				String fileName = "benchmark" + File.separator + "ben.xlsx";
 				Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
 				try {
@@ -56,15 +50,6 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 				} catch (Exception e1) {
 					e1.printStackTrace();
 				}
-				
-//				String[] projects = {"Chart"};
-//				int[] bugNum = {2};
-				
-//				String[] projects = {"Lang"};
-//				int[] bugNum = {65};
-//				
-//				String[] projects = {"Time"};
-//				int[] bugNum = {2};
 				
 				String prefix = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH) + File.separator;
 				
@@ -93,16 +78,6 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 									System.err.println(projects[i]+"-"+j+" is missing.");
 									continue;
 								}
-								
-//								String deadEndType = t.getDeadEndType();
-//								if(deadEndType==null || !(deadEndType.equals("control") || deadEndType.equals("data"))){
-//									continue;
-//								}
-								
-//							String exception = t.getException();
-//							if(exception==null || !exception.contains("over long")){
-//								continue;
-//							}
 							}
 							
 							System.out.println("***working on the " + j + "th bug of " + projects[i] + " project.");
@@ -123,26 +98,6 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 							try {
 								recorder = new TrialRecorder(Dataset.REGS4J);
 								regs4jFile = recorder.export(trials, projects[i], j);
-								
-//								for(EmpiricalTrial t: trials){
-//									
-//									if(!t.getDeadEndRecordList().isEmpty()){
-//										Repository.clearCache();
-//										DeadEndRecord record = t.getDeadEndRecordList().get(0);
-////									DED datas = new TrainingDataTransfer().transfer(record, t.getBuggyTrace());
-//										DED datas = record.getTransformedData(t.getBuggyTrace());
-//										setTestCase(datas, t.getTestcase());						
-//										try {
-////										new DeadEndReporter().export(datas.getAllData(), projects[i], Integer.valueOf(j));
-//											
-//											if(!t.getRootCauseFinder().getCausalityGraph().getRoots().isEmpty()){
-//												new DeadEndCSVWriter("_d4j", null).export(datas.getAllData(), projects[i], String.valueOf(j));											
-//											}
-//										} catch (NumberFormatException | IOException e) {
-//											e.printStackTrace();
-//										}
-//									}
-//								}
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -160,12 +115,6 @@ public class AllRegs4jHandlerExecutor extends RunAllInDatasetExecutor {
 									Arrays.asList(new TextComparisonRule(null), new SimulatorComparisonRule()), keys);
 					}
 				}
-					
-//					System.out.println("all the trials");
-//					for(int j=0; j<trials.size(); j++) {
-//						System.out.println("Trial " + (j+1));
-//						System.out.println(trials.get(j));
-//					}
 				
 				return Status.OK_STATUS;
 			}
