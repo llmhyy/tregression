@@ -3,6 +3,7 @@
 # Description:
 # Clones working and RIC commits from each project in regs4j to your specified directory, then runs maven test -Dtest=ClassName#testName on each of them
 # Compilation failures, checkout failures, and other error messages are recorded on your specified CSV file
+# It will check the CSV file if a bug in a project already passed. Otherwise, it will clone and compile it again, and replace the corresponding row with the new result if it was in the CSV.
 
 # Usage:
 # 1. Update the configuration below to match your system's.
@@ -14,9 +15,10 @@
 repoDirToPasteTo="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/regs4j"
 reverse=0
 csvFile="/mnt/c/Users/Chenghin/Desktop/VBox-Shared/regs4j.csv"
+rerunFailing=0
 # ==========================================================
 
-firstLineInCSV="Project,Type,BugId,Regs4jError,Logs"
+firstLineInCSV="Project,Type,BugId,Regs4jError,Reason,Logs"
 if ! [[ -f $csvFile ]]
 then
     echo 'CSV does not exist, creating a new one'
@@ -85,21 +87,42 @@ do
 	do
 		strRepWork=$project/$j/work
 		strRepRIC=$project/$j/ric
-		csvRowWork=$project,work,$j,
-		csvRowRIC=$project,ric,$j,
-		if [[ $prevCSVContents == *"$csvRowWork"* && $prevCSVContents == *"$csvRowRIC"* ]]
+		csvRowWorkPrefix=$project,work,$j,
+		csvRowRICPrefix=$project,ric,$j,
+		csvRowWork=$csvRowWorkPrefix
+		csvRowRIC=$csvRowRICPrefix
+        if [ $rerunFailing -eq 0 ]
+        then
+            if [[ $prevCSVContents == *"$csvRowWork"* && $prevCSVContents == *"$csvRowRIC"* ]]
+            then
+                echo $project with bug id $j already in csv file, skipping...
+                continue
+            fi
+        fi
+
+		if [[ $prevCSVContents == *"$csvRowWork"FALSE* && $prevCSVContents == *"$csvRowRIC"FALSE* ]]
 		then
-		    echo $project with bug id $j already recorded in csv file, skipping...
+		    echo $project with bug id $j already passing in csv file, skipping...
 		    continue
 		fi
-			echo checking out $j for $project
-			checkoutResult=$({ echo "use $project"; echo "checkout $j"; } | "$cliCommand")
+        workAlreadyInCSV=0
+        ricAlreadyInCSV=0
+		if [[ $prevCSVContents == *"$csvRowWork"* ]]
+		then
+            workAlreadyInCSV=1
+		fi
+		if [[ $prevCSVContents == *"$csvRowRIC"* ]]
+		then
+            ricAlreadyInCSV=1
+		fi
+        echo checking out $j for $project
+        checkoutResult=$({ echo "use $project"; echo "checkout $j"; } | "$cliCommand")
 		if [[ $checkoutResult == *"Please specify a project before checking out a bug"* ]]
 		then
 		    repoNotFoundMsg="Repository not found"
 		    echo $repoNotFoundMsg 
-		    csvRowWork+=TRUE,$repoNotFoundMsg
-		    csvRowRIC+=TRUE,$repoNotFoundMsg
+		    csvRowWork+=TRUE,$repoNotFoundMsg,
+		    csvRowRIC+=TRUE,$repoNotFoundMsg,
 		    echo $csvRowWork >> $csvFile
 		    echo $csvRowRIC >> $csvFile
 		    continue
@@ -126,7 +149,7 @@ do
 		testCaseRunningStr='Tests run'
 		testPassStr='Failures: 0, Errors: 0'
 		commitStr="working commit"
-        timeoutDuration=500
+        timeoutDuration=1000
 		echo "compiling $commitStr"
 		mvnOutput=$( timeout $timeoutDuration mvn test -Dtest=$testCase --file $newPath/work/pom.xml | tee /dev/fd/2)
 		mvnOutput=$( echo "$mvnOutput" | tr '\n' '^'  | tr -d '\r' ) # Replace new lines with another char, since it creates another row in csv
@@ -135,18 +158,22 @@ do
 		then
 		    if [[ $mvnOutput == *"$testPassStr"* ]]
 		    then
-			echo "Test case passed as expected for $commitStr"	
-			csvRowWork+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
+                echo "Test case passed as expected for $commitStr"	
+                csvRowWork+=FALSE,,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
 		    else
-			echo "Test case unexpectedly failed for $commitStr"
-			csvRowWork+=TRUE,\"$mvnOutput\"
+                echo "Test case unexpectedly failed for $commitStr"
+                csvRowWork+=TRUE,"Test case failed for working commit",\"$mvnOutput\"
 		    fi
 		else
 		    echo "mvn build failure for $commitStr"
-		    csvRowWork+=TRUE,\"$mvnOutput\"
+		    csvRowWork+=TRUE,"Build failure",\"$mvnOutput\"
 		fi
-		echo $csvRowWork >> $csvFile
-
+        if [ $workAlreadyInCSV -eq 1 ]
+        then
+            sed -i "s|.*$csvRowWorkPrefix.*|$csvRowWork|" $csvFile
+        else
+            echo $csvRowWork >> $csvFile
+        fi
 		commitStr="ric commit"
 		echo compiling $commitStr
         isTimeout=0
@@ -158,20 +185,25 @@ do
 		    if [[ $mvnOutput != *"$testPassStr"* ]]
 		    then
                 echo "Test case failed as expected for $commitStr"	
-                csvRowRIC+=FALSE,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
+                csvRowRIC+=FALSE,,\"$mvnOutput\" # Add quotes so that inner commas are not used to create columns in csv
 		    else
                 echo "Test case unexpectedly passed for $commitStr"
-                csvRowRIC+=TRUE,\"$mvnOutput\"
+                csvRowRIC+=TRUE,"Test case passed for RIC commit",\"$mvnOutput\"
 		    fi
         elif [[ $isTimeout -eq 1 ]]
         then
             echo "Test case failed as expected for $commitStr"	
-            csvRowRIC+=FALSE,\"$mvnOutput\"
+            csvRowRIC+=FALSE,,\"$mvnOutput\"
 		else
 		    echo "mvn build failure for $commitStr"
-		    csvRowRIC+=TRUE,\"$mvnOutput\"
+		    csvRowRIC+=TRUE,"Build failure",\"$mvnOutput\"
 		fi
-		echo $csvRowRIC >> $csvFile
+        if [ $ricAlreadyInCSV -eq 1 ]
+        then
+            sed -i "s|.*$csvRowRICPrefix.*|$csvRowRIC|" $csvFile
+        else
+            echo $csvRowRIC >> $csvFile
+        fi
 
 		echo "${tests[$((j-1))]}" > $newPath/$testFileName
 	done
