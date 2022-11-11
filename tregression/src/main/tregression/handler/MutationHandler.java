@@ -82,8 +82,8 @@ public class MutationHandler extends AbstractHandler {
 				updateView(mutationAgent.getBuggyTrace(), mutationAgent.getCorrectTrace(), mutationAgent.getPairList(), mutationAgent.getMatcher());
 				
 				// Pass mutation result to the BaselineHandler
-				BaselineHandler.setInputs(mutationAgent.getInputs());
-				BaselineHandler.setOutputs(mutationAgent.getOutputs());
+//				BaselineHandler.setInputs(mutationAgent.getInputs());
+//				BaselineHandler.setOutputs(mutationAgent.getOutputs());
 				BaselineHandler.setRootCause(mutationAgent.getRootCause());
 				BaselineHandler.setMutatedProPath(mutationAgent.getMutatedProjPath());
 				BaselineHandler.setOriginalProPath(mutationAgent.getOriginalProjPath());

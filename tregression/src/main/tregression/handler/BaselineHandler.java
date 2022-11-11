@@ -1,6 +1,7 @@
 package tregression.handler;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import org.eclipse.ui.PlatformUI;
 
 import microbat.Activator;
 import microbat.baseline.probpropagation.NodeFeedbackPair;
+import microbat.handler.RequireIO;
 import microbat.baseline.probpropagation.BeliefPropagation;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -35,8 +37,9 @@ import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
+import tregression.views.StepDetailIOUI;
 
-public class BaselineHandler extends AbstractHandler {
+public class BaselineHandler extends AbstractHandler implements RequireIO {
 	
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
@@ -46,8 +49,8 @@ public class BaselineHandler extends AbstractHandler {
 	
 	public static List<TraceNode> rootCause = null;
 	
-	public static List<VarValue> inputs = null;
-	public static List<VarValue> outputs = null;
+	private List<VarValue> inputs = new ArrayList<>();
+	private List<VarValue> outputs = new ArrayList<>();
 	
 	public static int mutaitonCount = -1;
 	public static int testCaseID = -1;
@@ -57,6 +60,8 @@ public class BaselineHandler extends AbstractHandler {
 	private static UserFeedback manualFeedback = null;
 	private static TraceNode feedbackNode = null;
 	
+	private static boolean registerFlag = false;
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
@@ -65,6 +70,11 @@ public class BaselineHandler extends AbstractHandler {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				
+				if (!BaselineHandler.registerFlag) {
+					registerHandler();
+					return Status.OK_STATUS;
+				}
 				
 				// Call setup before isReady method
 				setup();
@@ -91,8 +101,8 @@ public class BaselineHandler extends AbstractHandler {
 				
 				// Set up the probability encoder
 				BeliefPropagation encoder = new BeliefPropagation(buggyTrace);
-				encoder.setInputVars(BaselineHandler.inputs);
-				encoder.setOutputVars(BaselineHandler.outputs);
+				encoder.setInputVars(inputs);
+				encoder.setOutputVars(outputs);
 				encoder.setup();
 				
 				// getSlicedExecutionList should be called after encoder.setup() is called
@@ -183,7 +193,7 @@ public class BaselineHandler extends AbstractHandler {
 					noOfFeedbacks += 1;
 				}
 				
-				BaselineHandler.clearData();
+				clearData();
 				return Status.OK_STATUS;
 			}
 			
@@ -255,15 +265,15 @@ public class BaselineHandler extends AbstractHandler {
 	}
 	
 	private boolean isReady() {
-		if (BaselineHandler.inputs == null || BaselineHandler.outputs == null || BaselineHandler.rootCause == null) {
+		if (this.inputs == null || this.outputs == null || BaselineHandler.rootCause == null) {
 			return false;
 		}
 		
 		return 	BaselineHandler.MUTATED_PROJECT_PATH != null &&
 				BaselineHandler.ORIGINAL_PROJECT_PATH != null &&
 				!BaselineHandler.rootCause.isEmpty() &&
-				!BaselineHandler.inputs.isEmpty() &&
-				!BaselineHandler.outputs.isEmpty() &&
+				!this.inputs.isEmpty() &&
+				!this.outputs.isEmpty() &&
 				this.buggyView != null &&
 				this.correctView != null;
 	}
@@ -284,69 +294,8 @@ public class BaselineHandler extends AbstractHandler {
 		BaselineHandler.rootCause = rootCause;
 	}
 	
-	public static void setInputs(List<VarValue> inputs) {
-		BaselineHandler.inputs = inputs;
-	}
-	
-	public static void setOutputs(List<VarValue> outputs) {
-		BaselineHandler.outputs = outputs;
-	}
-	
-	public static void clearIO() {
-		if (BaselineHandler.inputs != null) {
-			BaselineHandler.inputs.clear();
-		}
-		
-		if (BaselineHandler.outputs != null) {
-			BaselineHandler.outputs.clear();
-		}
-		
-		System.out.println("BaselineHandler: Clear IO");
-	}
-	
 	public static void setMutationCount(int count) {
 		BaselineHandler.mutaitonCount = count;
-	}
-	
-	public static void addInputs(List<VarValue> inputs) {
-		if (BaselineHandler.inputs == null) {
-			BaselineHandler.inputs = new ArrayList<>();
-		}
-		BaselineHandler.inputs.addAll(inputs);
-		
-		for (VarValue input : BaselineHandler.inputs) {
-			System.out.println("BaselineHandler: Selected Inputs: " + input.getVarID());
-		}
-	}
-	
-	public static void printIO() {
-		for (VarValue input : BaselineHandler.inputs) {
-			System.out.println("BaselineHandler: Selected Inputs: " + input.getVarID());
-		}
-		for (VarValue output : BaselineHandler.outputs) {
-			System.out.println("BaselineHandler: Selected Outputs: " + output.getVarID());
-		}
-	}
-	
-	public static void addOutpus(List<VarValue> outputs) {
-		if (BaselineHandler.outputs == null) {
-			BaselineHandler.outputs = new ArrayList<>();
-		}
-		BaselineHandler.outputs.addAll(outputs);
-		
-		for (VarValue output : BaselineHandler.outputs) {
-			System.out.println("BaselineHandler: Selected Outputs: " + output.getVarID());
-		}
-	}
-	
-	public static void clearData() {
-		BaselineHandler.MUTATED_PROJECT_PATH = null;
-		BaselineHandler.ORIGINAL_PROJECT_PATH = null;
-		
-		BaselineHandler.rootCause = null;
-		
-		BaselineHandler.inputs = null;
-		BaselineHandler.outputs = null;
 	}
 	
 	public static void setManualFeedback(UserFeedback manualFeedback, TraceNode node) {
@@ -365,6 +314,55 @@ public class BaselineHandler extends AbstractHandler {
 	
 	public static boolean isManualFeedbackReady() {
 		return BaselineHandler.manualFeedback != null && BaselineHandler.feedbackNode != null;
+	}
+
+	@Override
+	public void registerHandler() {
+		StepDetailIOUI.registerHandler(this);
+		BaselineHandler.registerFlag = true;
+		
+		System.out.println();
+		System.out.println("BaselineHandler is now registered to buttons");
+		System.out.println("Please select the inputs and outputs");
+	}
+
+	@Override
+	public void addInputs(Collection<VarValue> inputs) {
+		this.inputs.addAll(inputs);
+		
+		for (VarValue input : this.inputs) {
+			System.out.println("BaselineHandler: Selected Inputs: " + input.getVarID());
+		}
+	}
+
+	@Override
+	public void addOutputs(Collection<VarValue> outputs) {
+		this.outputs.addAll(outputs);
+		
+		for (VarValue output : this.outputs) {
+			System.out.println("BaselineHandler: Selected Outputs: " + output.getVarID());
+		}
+	}
+
+	@Override
+	public void printIO() {
+		for (VarValue input : this.inputs) {
+			System.out.println("BaselineHandler: Selected Inputs: " + input.getVarID());
+		}
+		for (VarValue output : this.outputs) {
+			System.out.println("BaselineHandler: Selected Outputs: " + output.getVarID());
+		}
+	}
+
+	@Override
+	public void clearData() {
+		BaselineHandler.MUTATED_PROJECT_PATH = null;
+		BaselineHandler.ORIGINAL_PROJECT_PATH = null;
+		
+		BaselineHandler.rootCause = null;
+		
+		this.inputs = null;
+		this.outputs = null;
 	}
 
 }

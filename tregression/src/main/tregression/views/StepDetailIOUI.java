@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PlatformUI;
 
+import microbat.handler.RequireIO;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -32,6 +33,8 @@ import tregression.handler.BaselineHandler;
 public class StepDetailIOUI extends StepDetailUI {
 	
 	private Button correctButton;
+	
+	private static List<RequireIO> registeredHandlers = new ArrayList<>();
 	
 	public StepDetailIOUI(TregressionTraceView view, TraceNode node, boolean isOnBefore) {
 		super(view, node, isOnBefore);
@@ -99,7 +102,9 @@ public class StepDetailIOUI extends StepDetailUI {
 		@Override
 		public void mouseDown(MouseEvent e) {
 			List<VarValue> inputs = getSelectedVars();
-			BaselineHandler.addInputs(inputs);
+			for (RequireIO handler : registeredHandlers) {
+				handler.addInputs(inputs);
+			}
 		}
 		
 		@Override
@@ -114,7 +119,9 @@ public class StepDetailIOUI extends StepDetailUI {
 		@Override
 		public void mouseDown(MouseEvent e) {
 			List<VarValue> outputs = getSelectedVars();
-			BaselineHandler.addOutpus(outputs);
+			for (RequireIO handler : registeredHandlers) {
+				handler.addOutputs(outputs);
+			}
 		}
 
 		@Override
@@ -128,7 +135,9 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			BaselineHandler.clearIO();
+			for (RequireIO handler : registeredHandlers) {
+				handler.clearData();
+			}
 		}
 
 		@Override
@@ -143,7 +152,9 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			BaselineHandler.printIO();
+			for (RequireIO handler : registeredHandlers) {
+				handler.printIO();
+			}
 		}
 
 		@Override
@@ -220,5 +231,9 @@ public class StepDetailIOUI extends StepDetailUI {
 			}
 		}
 		return vars;
+	}
+	
+	public static void registerHandler(RequireIO handler) {
+		StepDetailIOUI.registeredHandlers.add(handler);
 	}
 }
