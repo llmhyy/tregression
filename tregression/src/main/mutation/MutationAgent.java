@@ -94,7 +94,7 @@ public class MutationAgent {
 		
 		MutationFramework mutationFramework = new MutationFramework();
 		mutationFramework.setMaxNumberOfMutations(this.maxChanges);
-		mutationFramework.toggleStrongMutations(true);
+		mutationFramework.toggleStrongMutations(false);
 		mutationFramework.extractResources();
 		mutationFramework.setDropInsPath(Paths.get(MutationFramework.DEFAULT_RESOURCES_PATH, MutationFramework.DEFAULT_DROP_INS_DIR).toString());
 		

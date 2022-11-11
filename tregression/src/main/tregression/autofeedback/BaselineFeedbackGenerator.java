@@ -3,7 +3,7 @@ package tregression.autofeedback;
 import java.util.ArrayList;
 import java.util.List;
 
-import microbat.baseline.beliefpropagation.PropabilityInference;
+import microbat.baseline.probpropagation.BeliefPropagation;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -17,7 +17,7 @@ public final class BaselineFeedbackGenerator extends FeedbackGenerator {
 	/**
 	 * Probability encoder
 	 */
-	private PropabilityInference encoder;
+	private BeliefPropagation encoder;
 	
 	/**
 	 * We assume the target to be correct if the probability of being correct is more than this threshold.
@@ -26,7 +26,7 @@ public final class BaselineFeedbackGenerator extends FeedbackGenerator {
 	
 	public BaselineFeedbackGenerator(Trace trace, AutoFeedbackMethod method) {
 		super(trace, method);
-		this.encoder = new PropabilityInference(trace);
+		this.encoder = new BeliefPropagation(trace);
 		this.encoder.setup();
 		
 	}

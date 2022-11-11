@@ -17,8 +17,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.Activator;
-import microbat.baseline.beliefpropagation.NodeFeedbackPair;
-import microbat.baseline.beliefpropagation.PropabilityInference;
+import microbat.baseline.probpropagation.NodeFeedbackPair;
+import microbat.baseline.probpropagation.BeliefPropagation;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -90,7 +90,7 @@ public class BaselineHandler extends AbstractHandler {
 				int noOfFeedbacks = 0;
 				
 				// Set up the probability encoder
-				PropabilityInference encoder = new PropabilityInference(buggyTrace);
+				BeliefPropagation encoder = new BeliefPropagation(buggyTrace);
 				encoder.setInputVars(BaselineHandler.inputs);
 				encoder.setOutputVars(BaselineHandler.outputs);
 				encoder.setup();
@@ -130,7 +130,7 @@ public class BaselineHandler extends AbstractHandler {
 					if (BaselineHandler.rootCause.contains(prediction)) {
 						// Baseline have found the root cause !
 						printReport(encoder.getSlicedExecutionList().size(), noOfFeedbacks, startTime);
-						break;
+//						break;
 					}
 					
 					// Get the feedback
@@ -179,7 +179,7 @@ public class BaselineHandler extends AbstractHandler {
 					}
 					
 					// Add the feedback as new constraint
-					PropabilityInference.addFeedback(nodeFeedbackPair);
+					BeliefPropagation.addFeedback(nodeFeedbackPair);
 					noOfFeedbacks += 1;
 				}
 				

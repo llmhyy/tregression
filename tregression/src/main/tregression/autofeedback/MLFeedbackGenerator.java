@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import microbat.baseline.beliefpropagation.NodeFeedbackPair;
+import microbat.baseline.probpropagation.NodeFeedbackPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
