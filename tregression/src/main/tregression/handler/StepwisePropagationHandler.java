@@ -1,6 +1,7 @@
 package tregression.handler;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -15,17 +16,21 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.baseline.probpropagation.StepwisePropagator;
+import microbat.handler.RequireIO;
 import microbat.model.value.VarValue;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
+import tregression.views.StepDetailIOUI;
 
-public class StepwisePropagationHandler extends AbstractHandler {
+public class StepwisePropagationHandler extends AbstractHandler implements RequireIO {
 
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
 	
-	private static List<VarValue> inputs = new ArrayList<>();
-	private static List<VarValue> outputs = new ArrayList<>();
+	private List<VarValue> inputs = new ArrayList<>();
+	private List<VarValue> outputs = new ArrayList<>();
+	
+	private static boolean registerFlag = false;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -35,13 +40,18 @@ public class StepwisePropagationHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				
+				if (!StepwisePropagationHandler.registerFlag) {
+					registerHandler();
+					return Status.OK_STATUS;
+				}
+				
 				setup();
 				
 				if (!isReady()) {
 					return Status.OK_STATUS;
 				}
 				
-				StepwisePropagator propagator = new StepwisePropagator(buggyView.getTrace(), StepwisePropagationHandler.inputs, StepwisePropagationHandler.outputs);
+				StepwisePropagator propagator = new StepwisePropagator(buggyView.getTrace(), inputs, outputs);
 				
 				System.out.println("Propagation Start");
 				propagator.propagate();
@@ -66,11 +76,11 @@ public class StepwisePropagationHandler extends AbstractHandler {
 			throw new RuntimeException("StepwisePropagationHandler: Correct view is not ready");
 		}
 		
-		if (StepwisePropagationHandler.inputs.isEmpty()) {
+		if (this.inputs.isEmpty()) {
 			throw new RuntimeException("StepwisePropagationHandler: There are no inputs");
 		}
 		
-		if (StepwisePropagationHandler.outputs.isEmpty()) {
+		if (this.outputs.isEmpty()) {
 			throw new RuntimeException("StepwisePropagationHandler: There are no outputs");
 		}
 		
@@ -93,33 +103,48 @@ public class StepwisePropagationHandler extends AbstractHandler {
 		});
 	}
 
-	public static void addInputs(List<VarValue> inputs) {
-		StepwisePropagationHandler.inputs.addAll(inputs);		
-		for (VarValue input : StepwisePropagationHandler.inputs) {
-			System.out.println("StepwisePropagationHandler: Selected Inputs: " + input.getVarID());
-		}
-	}
-	
-	public static void printIO() {
-		for (VarValue input : StepwisePropagationHandler.inputs) {
-			System.out.println("StepwisePropagationHandler: Selected Inputs: " + input.getVarID());
-		}
-		for (VarValue output : StepwisePropagationHandler.outputs) {
-			System.out.println("StepwisePropagationHandler: Selected Outputs: " + output.getVarID());
-		}
-	}
-	
-	public static void addOutpus(List<VarValue> outputs) {
-		StepwisePropagationHandler.outputs.addAll(outputs);
+	@Override
+	public void registerHandler() {
+		StepDetailIOUI.registerHandler(this);
+		StepwisePropagationHandler.registerFlag = true;
 		
-		for (VarValue output : StepwisePropagationHandler.outputs) {
+		System.out.println();
+		System.out.println("StepwisePropagationHandler is now registered to buttons");
+		System.out.println("Please select inputs and outputs");
+	}
+
+	@Override
+	public void addInputs(Collection<VarValue> inputs) {
+		this.inputs.addAll(inputs);		
+		for (VarValue input : this.inputs) {
+			System.out.println("StepwisePropagationHandler: Selected Inputs: " + input.getVarID());
+		}
+	}
+
+	@Override
+	public void addOutputs(Collection<VarValue> outputs) {
+		this.outputs.addAll(outputs);
+		
+		for (VarValue output : this.outputs) {
 			System.out.println("StepwisePropagationHandler: Selected Outputs: " + output.getVarID());
 		}
 	}
-	
-	public static void clearData() {
-		StepwisePropagationHandler.inputs.clear();
-		StepwisePropagationHandler.outputs.clear();
+
+	@Override
+	public void printIO() {
+		for (VarValue input : this.inputs) {
+			System.out.println("StepwisePropagationHandler: Selected Inputs: " + input.getVarID());
+		}
+		for (VarValue output : this.outputs) {
+			System.out.println("StepwisePropagationHandler: Selected Outputs: " + output.getVarID());
+		}
+	}
+
+	@Override
+	public void clearData() {
+		this.inputs.clear();
+		this.outputs.clear();
+		System.out.println("Clear Data");
 	}
 	
 }
