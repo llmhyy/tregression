@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PlatformUI;
 
-import microbat.handler.RequireIO;
+import debuginfo.DebugInfo;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -34,7 +34,7 @@ public class StepDetailIOUI extends StepDetailUI {
 	
 	private Button correctButton;
 	
-	private static List<RequireIO> registeredHandlers = new ArrayList<>();
+//	private static List<RequireIO> registeredHandlers = new ArrayList<>();
 	
 	public StepDetailIOUI(TregressionTraceView view, TraceNode node, boolean isOnBefore) {
 		super(view, node, isOnBefore);
@@ -102,9 +102,7 @@ public class StepDetailIOUI extends StepDetailUI {
 		@Override
 		public void mouseDown(MouseEvent e) {
 			List<VarValue> inputs = getSelectedVars();
-			for (RequireIO handler : registeredHandlers) {
-				handler.addInputs(inputs);
-			}
+			DebugInfo.addInputs(inputs);
 		}
 		
 		@Override
@@ -119,9 +117,7 @@ public class StepDetailIOUI extends StepDetailUI {
 		@Override
 		public void mouseDown(MouseEvent e) {
 			List<VarValue> outputs = getSelectedVars();
-			for (RequireIO handler : registeredHandlers) {
-				handler.addOutputs(outputs);
-			}
+			DebugInfo.addOutputs(outputs);
 		}
 
 		@Override
@@ -135,9 +131,7 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			for (RequireIO handler : registeredHandlers) {
-				handler.clearData();
-			}
+			DebugInfo.clearData();
 		}
 
 		@Override
@@ -152,9 +146,8 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			for (RequireIO handler : registeredHandlers) {
-				handler.printIO();
-			}
+			DebugInfo.printInputs();
+			DebugInfo.printOutputs();
 		}
 
 		@Override
@@ -192,7 +185,8 @@ public class StepDetailIOUI extends StepDetailUI {
 				}
 				feedback.setOption(new ChosenVariableOption(selectedReadVar, selectedWriteVar));
 			}
-			BaselineHandler.setManualFeedback(feedback, currentNode);
+			DebugInfo.addNodeFeedbackPair(currentNode, feedback);
+//			BaselineHandler.setManualFeedback(feedback, currentNode);
 		}
 
 		@Override
@@ -233,7 +227,7 @@ public class StepDetailIOUI extends StepDetailUI {
 		return vars;
 	}
 	
-	public static void registerHandler(RequireIO handler) {
-		StepDetailIOUI.registeredHandlers.add(handler);
-	}
+//	public static void registerHandler(RequireIO handler) {
+//		StepDetailIOUI.registeredHandlers.add(handler);
+//	}
 }
