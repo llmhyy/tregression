@@ -7,6 +7,9 @@ public class PathConfigurationFactory {
 		if (datasetType.equals(Dataset.DEFECTS4J)) {
 			return new Defects4jPathConfiguration();
 		}
+		if (datasetType.equals(Dataset.MUTATION_FRAMEWORK)) {
+			return new MutationFrameworkPathConfiguration();
+		}
 		return new Regs4jPathConfiguration();
 	}
 }

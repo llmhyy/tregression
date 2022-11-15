@@ -81,7 +81,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		projectLabel.setText("Dataset Name: ");
 		
 		datasetCombo = new Combo(compo, SWT.NONE);
-		datasetCombo.setItems(Dataset.DEFECTS4J.getName(), Dataset.REGS4J.getName());
+		datasetCombo.setItems(Dataset.DEFECTS4J.getName(), Dataset.REGS4J.getName(), Dataset.MUTATION_FRAMEWORK.getName());
 		datasetCombo.setText(this.defaultDatasetName);
 		
 		GridData comboData = new GridData(SWT.FILL, SWT.LEFT, true, false);

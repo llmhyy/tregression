@@ -7,6 +7,9 @@ public class RunAllInDatasetExecutorFactory {
 		if (datasetType.equals(Dataset.DEFECTS4J)) {
 			return new AllDefects4jExecutor();
 		}
+		if (datasetType.equals(Dataset.MUTATION_FRAMEWORK)) {
+			return new AllMutationFrameworkHandlerExecutor();
+		}
 		return new AllRegs4jHandlerExecutor();
 	}
 }

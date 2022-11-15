@@ -11,6 +11,9 @@ import microbat.Activator;
 import microbat.preference.MicrobatPreference;
 import tregression.empiricalstudy.TestCase;
 
+/**
+ * Stores/Obtains information of a project required for tregression.
+ */
 public class ProjectConfig {
 	
 	public String javaHome = Activator.getDefault().getPreferenceStore().getString(MicrobatPreference.JAVA7HOME_PATH);
