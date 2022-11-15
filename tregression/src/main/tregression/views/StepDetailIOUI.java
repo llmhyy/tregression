@@ -21,6 +21,7 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import tregression.handler.BaselineHandler;
+import tregression.handler.StepwisePropagationHandler;
 
 /**
  * Do everything the same as StepDetailUI.
