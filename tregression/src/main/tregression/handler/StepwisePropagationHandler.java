@@ -15,9 +15,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import microbat.baseline.probpropagation.NodeFeedbackPair;
 import microbat.baseline.probpropagation.StepwisePropagator;
 import microbat.handler.RequireIO;
+import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.recommendation.UserFeedback;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
 import tregression.views.StepDetailIOUI;
@@ -31,6 +35,9 @@ public class StepwisePropagationHandler extends AbstractHandler implements Requi
 	private List<VarValue> outputs = new ArrayList<>();
 	
 	private static boolean registerFlag = false;
+	
+	private static UserFeedback manualFeedback = null;
+	private static TraceNode feedbackNode = null;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -51,13 +58,40 @@ public class StepwisePropagationHandler extends AbstractHandler implements Requi
 					return Status.OK_STATUS;
 				}
 				
+				
 				StepwisePropagator propagator = new StepwisePropagator(buggyView.getTrace(), inputs, outputs);
 				
-				System.out.println("Propagation Start");
-				propagator.propagate();
-				
-				System.out.println("Propagation End");
-				
+				int feedbackCounts = 0;
+				final int maxItr = (int) buggyView.getTrace().size();
+				while (feedbackCounts<=maxItr) {
+					System.out.println("---------------------------------- " + feedbackCounts + " iteration");
+					System.out.println("Propagation Start");
+					propagator.propagate();
+					System.out.println();
+					System.out.println("Propagation End");
+					TraceNode rootCause = propagator.proposeRootCause();
+					jumpToNode(rootCause);
+					System.out.println("Proposed Root Cause: " + rootCause.getOrder());
+					
+					
+					System.out.println("Please give a feedback");
+					while (!StepwisePropagationHandler.isManualFeedbackReady()) {
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							
+						}
+					}
+					
+					UserFeedback feedback = StepwisePropagationHandler.manualFeedback;
+					TraceNode feedbackNode = StepwisePropagationHandler.feedbackNode;
+					NodeFeedbackPair nodeFeedbackPair = new NodeFeedbackPair(feedbackNode, feedback);
+					StepwisePropagationHandler.resetManualFeedback();
+					
+					propagator.responseToFeedback(nodeFeedbackPair);
+					feedbackCounts += 1;
+				}
+
 				return Status.OK_STATUS;
 			}
 			
@@ -103,6 +137,16 @@ public class StepwisePropagationHandler extends AbstractHandler implements Requi
 		});
 	}
 
+	private void jumpToNode(final TraceNode targetNode) {
+		Display.getDefault().asyncExec(new Runnable() {
+		    @Override
+		    public void run() {
+				Trace buggyTrace = buggyView.getTrace();
+				buggyView.jumpToNode(buggyTrace, targetNode.getOrder(), true);
+		    }
+		});
+	}
+	
 	@Override
 	public void registerHandler() {
 		StepDetailIOUI.registerHandler(this);
@@ -145,6 +189,20 @@ public class StepwisePropagationHandler extends AbstractHandler implements Requi
 		this.inputs.clear();
 		this.outputs.clear();
 		System.out.println("Clear Data");
+	}
+	
+	public static boolean isManualFeedbackReady() {
+		return StepwisePropagationHandler.manualFeedback != null && StepwisePropagationHandler.feedbackNode != null;
+	}
+	
+	public static void setManualFeedback(UserFeedback manualFeedback, TraceNode node) {
+		StepwisePropagationHandler.manualFeedback = manualFeedback;
+		StepwisePropagationHandler.feedbackNode = node;
+	}
+	
+	public static void resetManualFeedback() {
+		StepwisePropagationHandler.manualFeedback = null;
+		StepwisePropagationHandler.feedbackNode = null;
 	}
 	
 }

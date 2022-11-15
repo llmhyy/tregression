@@ -21,6 +21,7 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import tregression.handler.BaselineHandler;
+import tregression.handler.StepwisePropagationHandler;
 
 /**
  * Do everything the same as StepDetailUI.
@@ -193,6 +194,7 @@ public class StepDetailIOUI extends StepDetailUI {
 				feedback.setOption(new ChosenVariableOption(selectedReadVar, selectedWriteVar));
 			}
 			BaselineHandler.setManualFeedback(feedback, currentNode);
+			StepwisePropagationHandler.setManualFeedback(feedback, currentNode);
 		}
 
 		@Override
