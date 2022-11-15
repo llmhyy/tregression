@@ -16,8 +16,8 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import debuginfo.NodeFeedbackPair;
 import microbat.Activator;
-import microbat.baseline.probpropagation.NodeFeedbackPair;
 import microbat.baseline.probpropagation.BeliefPropagation;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;

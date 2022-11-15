@@ -16,6 +16,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
+import debuginfo.NodeFeedbackPair;
 import jmutation.MutationFramework;
 import jmutation.model.MutationResult;
 import jmutation.model.TestCase;
@@ -30,7 +31,6 @@ import tracediff.TraceDiff;
 import tracediff.model.PairList;
 import tracediff.model.TraceNodePair;
 import microbat.Activator;
-import microbat.baseline.probpropagation.NodeFeedbackPair;
 import microbat.baseline.probpropagation.BeliefPropagation;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
