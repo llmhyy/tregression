@@ -115,6 +115,29 @@ public class StepChangeTypeChecker {
 		return wrongVariableList;
 	}
 	
+	public List<Pair<VarValue, VarValue>> getWrongWrittenVariableList(boolean isOnBeforeTrace, TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
+		List<Pair<VarValue, VarValue>> wrongWrittenVarList = new ArrayList<>();
+		int count = 0;
+		for (VarValue writtenVar : thisStep.getWrittenVariables()) {
+			count++;
+			if (count > 100) {
+				break;
+			}
+			
+			VarMatch varMatch = this.matchWrittenVariable(isOnBeforeTrace, writtenVar, thisStep, thatStep, pairList, matcher);
+			if (varMatch.canBeMatched && !varMatch.sameContent) {
+				if (isOnBeforeTrace) {
+					Pair<VarValue, VarValue> pair = Pair.of(writtenVar, varMatch.matchedVariable);
+					wrongWrittenVarList.add(pair);
+				} else {
+					Pair<VarValue, VarValue> pair = Pair.of(varMatch.matchedVariable, writtenVar);
+					wrongWrittenVarList.add(pair);
+				}
+			}
+		}
+		return wrongWrittenVarList;
+	}
+	
 	private Trace getCorrespondingTrace(boolean isOnBeforeTrace, Trace buggyTrace, Trace correctTrace) {
 		return isOnBeforeTrace ? buggyTrace : correctTrace;
 	}
@@ -139,7 +162,7 @@ public class StepChangeTypeChecker {
 		}
 		
 	}
-
+	
 	private VarMatch canbeMatched(boolean isOnBeforeTrace, 
 			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
@@ -187,7 +210,53 @@ public class StepChangeTypeChecker {
 		
 		return new VarMatch(true, false, matchedVar);
 	}
-
+	
+	private VarMatch matchWrittenVariable(boolean isOnBeforeTrace, 
+			VarValue thisVar, TraceNode thisStep, TraceNode thatStep, PairList pairList, DiffMatcher matcher) {
+		
+		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
+		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
+		
+		List<VarValue> synonymVarList = this.findSymWrittenVaribles(thisStep, thatStep, thisVar, isOnBeforeTrace, pairList, matcher);
+		if(synonymVarList.isEmpty()){
+			return new VarMatch(false, false, null);
+		}
+		
+		VarValue matchedVar = null;
+		for(VarValue thatVar: synonymVarList){
+			matchedVar = thatVar;
+			
+			TraceNode thisDom = thisTrace.findDataDependency(thisStep, thisVar);
+			TraceNode thatDom = thatTrace.findDataDependency(thatStep, thatVar);
+			if(thatVar instanceof ReferenceValue && thisVar instanceof ReferenceValue) {
+				boolean isReferenceValueMatch = isReferenceValueMatch((ReferenceValue)thisVar, (ReferenceValue)thatVar, 
+						thisDom, thatDom, isOnBeforeTrace, pairList, matcher);
+				if(isReferenceValueMatch){
+					return new VarMatch(true, true, thatVar);
+				}
+			}
+			else {
+				String thisString = (thisVar.getStringValue()==null)?"null":thisVar.getStringValue();
+				String thatString = (thatVar.getStringValue()==null)?"null":thatVar.getStringValue();
+				
+				boolean equal = thisString.equals(thatString);
+				if(isIgnoreVarName(thisVar.getVarName()) && isIgnoreVarName(thatVar.getVarName())){
+					equal = true;
+				}
+				
+				if(!equal) {
+					matchedVar = thatVar;
+					continue;
+				}
+				else {
+					return new VarMatch(true, true, thatVar);					
+				}
+			}
+		}
+		
+		return new VarMatch(true, false, matchedVar);
+	}
+	
 	@SuppressWarnings({ "rawtypes" })
 	private boolean isReferenceValueMatch(ReferenceValue thisVar, ReferenceValue thatVar, TraceNode thisDom, TraceNode thatDom,
 			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
@@ -425,6 +494,65 @@ public class StepChangeTypeChecker {
 		return synonymousList;
 	}
 
+	private List<VarValue> findSymWrittenVaribles(TraceNode thisStep, TraceNode thatStep, VarValue thisVar,
+			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
+		List<VarValue> writtenVars = thatStep.getWrittenVariables();
+		List<VarValue> synonymousList = new ArrayList<>();
+		for(VarValue writtenVar: writtenVars) {
+			if(writtenVar.getVariable() instanceof ArrayElementVar && thisVar.getVariable() instanceof ArrayElementVar){
+				
+				String thisIndex = ((ArrayElementVar)thisVar.getVariable()).getIndex();
+				String thatIndex = ((ArrayElementVar)writtenVar.getVariable()).getIndex();
+				
+				if(thisIndex!=null && thatIndex!=null && thisIndex.equals(thatIndex)){
+					ReferenceValue thisParent = (ReferenceValue)thisVar.getParents().get(0);
+					ReferenceValue thatParent = (ReferenceValue)writtenVar.getParents().get(0);
+					
+					VarValue thisReadParent = findReadParentVariable(thisParent, thisStep);
+					VarValue thatReadParent = findReadParentVariable(thatParent, thatStep);
+					System.currentTimeMillis();
+					if(thisReadParent!=null && thatReadParent!=null){
+						if(thisReadParent.getVarName().equals(thatReadParent.getVarName())){
+							synonymousList.add(writtenVar);
+						}
+					}
+					else{
+						String thisParentID = Variable.truncateSimpleID(thisParent.getVarID());
+						String thatParentID = Variable.truncateSimpleID(thatParent.getVarID());
+						TraceNode thisDom = thisStep.getTrace().findLatestNodeDefiningVariable(
+								thisParentID, thisStep.getOrder());
+						TraceNode thatDom = thatStep.getTrace().findLatestNodeDefiningVariable(
+								thatParentID, thatStep.getOrder());
+						
+						boolean isReferenceValueMatch = pairList.isPair(thisDom, thatDom, isOnBeforeTrace);
+						if(isReferenceValueMatch){
+							synonymousList.add(writtenVar);
+						}
+					}
+				}
+				
+			}
+			else{
+				if(writtenVar.getVariable() instanceof VirtualVar && thisVar.getVariable() instanceof VirtualVar){
+					String virName1 = writtenVar.getVarName();
+					String virName2 = thisVar.getVarName();
+					
+					String simpleName1 = virName1.substring(virName1.lastIndexOf("#"), virName1.length());
+					String simpleName2 = virName2.substring(virName2.lastIndexOf("#"), virName2.length());
+					
+					if(simpleName1.equals(simpleName2)){
+						synonymousList.add(writtenVar);
+					}
+				}
+				else if(writtenVar.getVarName().equals(thisVar.getVarName())) {
+					synonymousList.add(writtenVar);
+				}
+			}
+		}
+		return synonymousList;
+		
+	}
+	
 	private boolean checkReturnVariable(TraceNode thisStep, TraceNode thatStep) {
 		boolean isThisStepContainVirtual = false;
 		boolean isThatStepContainVirtual = false;

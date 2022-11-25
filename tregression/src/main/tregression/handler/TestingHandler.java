@@ -1,9 +1,9 @@
 package tregression.handler;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -16,41 +16,26 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import debuginfo.NodeFeedbackPair;
-import jmutation.MutationFramework;
-import jmutation.model.MutationResult;
-import jmutation.model.TestCase;
+import microbat.bytecode.ByteCode;
+import microbat.bytecode.ByteCodeList;
+import microbat.bytecode.OpcodeType;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.recommendation.ChosenVariableOption;
-import microbat.recommendation.UserFeedback;
-import microbat.stepvectorizer.StepVectorizer;
 import microbat.util.JavaUtil;
-import tracediff.TraceDiff;
-import tracediff.model.PairList;
-import tracediff.model.TraceNodePair;
-import microbat.Activator;
-import microbat.baseline.probpropagation.BeliefPropagation;
+import sav.common.core.Pair;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
-import tregression.autofeedback.AutoFeedbackMethod;
-import tregression.empiricalstudy.RootCauseFinder;
-import tregression.empiricalstudy.RootCauseNode;
-import tregression.empiricalstudy.Simulator;
-import tregression.empiricalstudy.config.ConfigFactory;
-import tregression.preference.TregressionPreference;
+import tregression.empiricalstudy.MatchStepFinder;
+import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
-import tregression.views.Visualizer;
 
 public class TestingHandler extends AbstractHandler {
 
 	private BuggyTraceView buggyView;
 	private CorrectTraceView correctView;
-	
-	private final int maxMutationLimit = 10;
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -63,8 +48,76 @@ public class TestingHandler extends AbstractHandler {
 				// Access the buggy view and correct view
 				setup();
 				
-//				String selection = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.SEED);
-//				System.out.println(selection);
+				final Trace buggyTrace = buggyView.getTrace();
+				final Trace correctTrace = correctView.getTrace();
+				
+				final PairList pairList = buggyView.getPairList();
+				final DiffMatcher matcher = buggyView.getDiffMatcher();
+				
+				final StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+				
+				Set<String> forEachLoopLocations = new HashSet<>();
+				
+				for (TraceNode node : buggyTrace.getExecutionList()) {
+					
+					setAllPropability(node.getReadVariables(), -1.0);
+					setAllPropability(node.getWrittenVariables(), -1.0);
+					
+					final String nodeLocation = encodeNodeLocation(node);
+					if (forEachLoopLocations.contains(nodeLocation)) {
+						continue;
+					}
+					
+					if (node.getWrittenVariables().isEmpty() || node.getReadVariables().isEmpty()) {
+						continue;
+					}
+					
+					if (isForEachLoop(node)) {
+						System.out.println("TraceNode: " + node.getOrder() + " is for each loop");
+						forEachLoopLocations.add(nodeLocation);
+						continue;
+					}
+					
+					TraceNode matchedNode = MatchStepFinder.findMatchedStep(true, node, pairList);
+					if (matchedNode == null) {
+						continue;
+					}
+					
+					List<Pair<VarValue, VarValue>> wrongPairs = checker.getWrongWrittenVariableList(true, node, matchedNode, pairList, matcher);
+					List<VarValue> wrongVarList = new ArrayList<>();
+					for (Pair<VarValue, VarValue> wrongPair : wrongPairs) {
+						wrongVarList.add(wrongPair.first());
+					}
+					
+					StepChangeType changeType = checker.getType(node, true, pairList, matcher);
+					if (changeType.getType() == StepChangeType.SRC) {
+						setAllPropability(node.getReadVariables(), 1.0);
+						for (VarValue writtenVar : node.getWrittenVariables()) {
+							writtenVar.setProbability(wrongVarList.contains(writtenVar) ? 0.0 : 1.0);
+						}
+					} else if (changeType.getType() == StepChangeType.CTL) {
+						// Do nothing
+					} else if (changeType.getType() == StepChangeType.IDT) {
+						setAllPropability(node.getReadVariables(), 1.0);
+						setAllPropability(node.getWrittenVariables(), 1.0);
+					} else {
+						List<Pair<VarValue, VarValue>> wrongReadVarPair = changeType.getWrongVariableList();
+						List<VarValue> wrongReadVarList = new ArrayList<>();
+						for (Pair<VarValue, VarValue> pair : wrongReadVarPair) {
+							wrongReadVarList.add(pair.first());
+						}
+					
+						for (VarValue readVar : node.getReadVariables()) {
+							readVar.setProbability(wrongReadVarList.contains(readVar)?0.0:1.0);
+						}
+						
+						for (VarValue writtenVar : node.getWrittenVariables()) {
+							writtenVar.setProbability(wrongVarList.contains(writtenVar)?0.0:1.0);
+						}
+					}
+				}
+				
+				System.out.println("Finish assigning");
 				
 				return Status.OK_STATUS;
 			}
@@ -73,152 +126,127 @@ public class TestingHandler extends AbstractHandler {
 		return null;
 	}
 	
-	private UserFeedback typeToFeedback(StepChangeType type, TraceNode node, boolean isOnBefore, RootCauseFinder finder) {
-		UserFeedback feedback = new UserFeedback();
-		switch(type.getType()) {
-		case StepChangeType.IDT:
-			feedback.setFeedbackType(UserFeedback.CORRECT);
-			break;
-		case StepChangeType.CTL:
-			feedback.setFeedbackType(UserFeedback.WRONG_PATH);
-			break;
-		case StepChangeType.DAT:
-			feedback.setFeedbackType(UserFeedback.WRONG_VARIABLE_VALUE);
-			VarValue wrongVar = type.getWrongVariable(node, isOnBefore, finder);
-			feedback.setOption(new ChosenVariableOption(wrongVar, null));
-			break;
-		case StepChangeType.SRC:
-			feedback.setFeedbackType(UserFeedback.UNCLEAR);
-			break;
+	private void setAllPropability(List<VarValue> vars, double prob) {
+		for (VarValue var : vars) {
+			var.setProbability(prob);
 		}
-		return feedback;
+	}
+	private String encodeNodeLocation(TraceNode node) {
+		return node.getBreakPoint().getFullJavaFilePath() + "_" + node.getLineNumber();
 	}
 	
-	protected List<TraceNode> findObservedFaultList(Trace buggyTrace, Trace correctTrace,
-			tregression.model.PairList pairList, DiffMatcher matcher) {
-		List<TraceNode> observedFaultList = new ArrayList<>();
-		TraceNode initalStep = buggyTrace.getLatestNode();
-		TraceNode lastObservableFault = findObservedFault(initalStep, buggyTrace, correctTrace, pairList, matcher);
-		
-		if (lastObservableFault != null) {
-			observedFaultList.add(lastObservableFault);
-
-			StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-			TraceNode node = lastObservableFault.getStepOverPrevious();
-			
-			int times = 5;
-			while(observedFaultList.size() < times && node!= null){
-				
-				StepChangeType changeType = checker.getType(node, true, pairList, matcher);
-				if(changeType.getType()!=StepChangeType.IDT){
-					observedFaultList.add(node);
-				}
-				
-				node = node.getStepOverPrevious();
-			}
-		}
-		return observedFaultList;
-	}
-	protected TraceNode findObservedFault(TraceNode node, Trace buggyTrace, Trace correctTrace,
-			tregression.model.PairList pairList, DiffMatcher matcher){
-		StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
-		TraceNode firstTearDownNode = firstPreviousNodeInvokedByTearDown(node);
-		System.currentTimeMillis();
-		if(firstTearDownNode!=null){
-			node = firstTearDownNode.getStepInPrevious();
+	private boolean isForEachLoop(TraceNode node) {
+		String code = node.getCodeStatement();
+		code = code.replaceAll("\\s+", "");
+		if (!code.startsWith("for(")) {
+			return false;
 		}
 		
-		while(node != null) {
-			StepChangeType changeType = checker.getType(node, true, pairList, matcher);
-			if(changeType.getType()==StepChangeType.CTL) {
-				TraceNode cDom = node.getInvocationMethodOrDominator();
-				if(cDom==null){
-					if(node.isException()) {
-						return node;
-					}	
-					else{
-						node = node.getStepInPrevious();
-						continue;
-					}
-				}
-				
-				StepChangeType cDomType = checker.getType(cDom, true, pairList, matcher);
-				if(cDomType.getType()==StepChangeType.IDT){
-					TraceNode stepOverPrev = node.getStepOverPrevious();
-					if(stepOverPrev!=null){
-						if(stepOverPrev.equals(cDom) && stepOverPrev.isBranch() && !stepOverPrev.isConditional()){
-							node = node.getStepInPrevious();
-							continue;
-						}
-					}
-				}
-				
-				return node;
-			}
-			else if(changeType.getType()!=StepChangeType.IDT){
-				return node;
-			}
-			
-			node = node.getStepInPrevious();
+		int count = 0;
+		for (int i = 0; i < code.length(); i++) {
+		    if (code.charAt(i) == ':') {
+		        count++;
+		    }
 		}
 		
-		return null;
+		return count == 1;
+//		ByteCodeList byteCodeList = new ByteCodeList(node.getBytecode());
+//		return this.isCollectionForEachLoop(byteCodeList) || this.isArrayListForEachLoop(byteCodeList);
 	}
 	
-	private TraceNode firstPreviousNodeInvokedByTearDown(TraceNode node) {
-		TraceNode prev = node.getStepInPrevious();
-		if(prev==null) {
-			return null;
+	private boolean isCollectionForEachLoop(ByteCodeList byteCodeList) {
+		if (byteCodeList.size() != 10) {
+			return false;
 		}
-		
-		TraceNode returnNode = null;
-		
-		boolean isInvoked = isInvokedByTearDownMethod(prev);
-		if(isInvoked){
-			returnNode = prev;
-		}
-		else{
-			return null;
-		}
-		
-		while(prev != null){
-			prev = prev.getStepInPrevious();
-			if(prev==null){
-				return null;
+		int[] opCodeList = {-1,185,-1,167,-1,185,-1,-1,185,154};
+		for (int i=0; i<10; i++) {
+			ByteCode byteCode = byteCodeList.getByteCode(i);
+			int targetOpcode = opCodeList[i];
+			if (targetOpcode == -1) {
+				continue;
 			}
-			
-			isInvoked = isInvokedByTearDownMethod(prev);
-			if(isInvoked){
-				if(returnNode==null){
-					returnNode = prev;
-				}
-				else if(prev.getOrder()<returnNode.getOrder()){
-					returnNode = prev;					
-				}
-			}
-			else{
-				returnNode = prev;
-				break;
+			if (byteCode.getOpcode() != targetOpcode) {
+				return false;
 			}
 		}
 		
-		return returnNode;
+		ByteCode byteCode_0 = byteCodeList.getByteCode(0);
+		if(byteCode_0.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_2 = byteCodeList.getByteCode(2);
+		if (byteCode_2.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_4 = byteCodeList.getByteCode(4);
+		if (byteCode_4.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_6 = byteCodeList.getByteCode(6);
+		if (byteCode_6.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_7 = byteCodeList.getByteCode(7);
+		if (byteCode_7.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
+			return false;
+		}
+		
+		return true;
 	}
 	
-	private boolean isInvokedByTearDownMethod(TraceNode node) {
-		TraceNode n = node;
-		while(n!=null) {
-			if(n.getMethodSign()!=null && n.getMethodSign().contains("tearDown()V")) {
-				return true;
+	private boolean isArrayListForEachLoop(ByteCodeList byteCodeList) {
+		if (byteCodeList.size() != 16) {
+			return false;
+		}
+		
+		int[] opCodeList = {-1,89,58,190,54,3,-1,167,25,-1,-1,-1,132,-1,21,161};
+		for (int i=0; i<16; i++) {
+			ByteCode byteCode = byteCodeList.getByteCode(i);
+			int targetOpcode = opCodeList[i];
+			if (targetOpcode == -1) {
+				continue;
 			}
-			else {
-				n = n.getInvocationParent();
+			if (byteCode.getOpcode() != targetOpcode) {
+				return false;
 			}
 		}
 		
-		return false;
+		ByteCode byteCode_1 = byteCodeList.getByteCode(0);
+		if(byteCode_1.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_6 = byteCodeList.getByteCode(6);
+		if (byteCode_6.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_9 = byteCodeList.getByteCode(9);
+		if (byteCode_9.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_10 = byteCodeList.getByteCode(10);
+		if (byteCode_10.getOpcodeType() != OpcodeType.LOAD_FROM_ARRAY) {
+			return false;
+		}
+		
+		ByteCode byteCode_11 = byteCodeList.getByteCode(11);
+		if (byteCode_11.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
+			return false;
+		}
+		
+		ByteCode byteCode_13 = byteCodeList.getByteCode(13);
+		if (byteCode_13.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
+			return false;
+		}
+		
+		return true;
 	}
-	
 	
 	private void setup() {
 		Display.getDefault().syncExec(new Runnable() {
@@ -244,41 +272,5 @@ public class TestingHandler extends AbstractHandler {
 				buggyView.jumpToNode(buggyTrace, targetNode.getOrder(), true);
 		    }
 		});
-	}
-	
-	private void updateView(final Trace buggyTrace, final Trace correctTrace, final tregression.model.PairList pairListTregression, final DiffMatcher matcher) {
-		if (this.buggyView != null && this.correctView != null) {
-			Display.getDefault().syncExec(new Runnable() {
-				@Override
-				public void run() {
-					// TODO Auto-generated method stub
-					buggyView.setMainTrace(buggyTrace);
-					buggyView.updateData();
-					buggyView.setPairList(pairListTregression);
-					buggyView.setDiffMatcher(matcher);
-					
-					correctView.setMainTrace(correctTrace);
-					correctView.updateData();
-					correctView.setPairList(pairListTregression);
-					correctView.setDiffMatcher(matcher);
-				}
-			});
-		} else {
-			System.out.println("buggyView or correctView is null");
-		}
-	}
-	
-	private AutoFeedbackMethod getMethod() {
-		String selectedMethodName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.AUTO_FEEDBACK_METHOD);
-		AutoFeedbackMethod selectedMethod = AutoFeedbackMethod.valueOf(selectedMethodName);
-		return selectedMethod;
-	}
-	
-	private String getProjectName() {
-		return Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
-	}
-	
-	private String getBugID() {
-		return Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 	}
 }
