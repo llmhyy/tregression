@@ -18,10 +18,10 @@ import org.eclipse.ui.PlatformUI;
 
 import debuginfo.NodeFeedbackPair;
 import microbat.Activator;
-import microbat.baseline.probpropagation.BeliefPropagation;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.probability.BP.BeliefPropagation;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import tregression.StepChangeType;
