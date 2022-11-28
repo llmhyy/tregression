@@ -1,8 +1,10 @@
 package tregression.handler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -57,6 +59,8 @@ public class TestingHandler extends AbstractHandler {
 				final StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
 				
 				Set<String> forEachLoopLocations = new HashSet<>();
+				
+				Map<String, Pair<Integer, Integer>> apiConfidence = new HashMap<>();
 				
 				for (TraceNode node : buggyTrace.getExecutionList()) {
 					
@@ -115,8 +119,40 @@ public class TestingHandler extends AbstractHandler {
 							writtenVar.setProbability(wrongVarList.contains(writtenVar)?0.0:1.0);
 						}
 					}
+					
+					if (node.isCallingAPI()) {
+						final String invokingMethod = node.getInvokingMethod();
+						if (invokingMethod == "") {
+							System.out.println("[Warning] node is calling api but do not have invoking method");
+							continue;
+						}
+						
+						if (apiConfidence.containsKey(invokingMethod)) {
+							Pair<Integer, Integer> pair = apiConfidence.get(invokingMethod);
+							final int correctCount = pair.first();
+							final int totalCount = pair.second();
+							Pair<Integer, Integer> newPair = null;
+							if (changeType.getType() == StepChangeType.IDT) {
+								newPair = Pair.of(correctCount+1, totalCount+1);
+							} else if (changeType.getType() == StepChangeType.SRC) {
+								newPair = Pair.of(correctCount, totalCount+1);
+							}
+							apiConfidence.put(invokingMethod, newPair);
+						} else {
+							Pair<Integer, Integer> newPair = null;
+							if (changeType.getType() == StepChangeType.IDT) {
+								newPair = Pair.of(1, 1);
+							} else if (changeType.getType() == StepChangeType.SRC) {
+								newPair = Pair.of(0, 1);
+							}
+							apiConfidence.put(invokingMethod, newPair);
+						}
+					}
 				}
 				
+				for(Map.Entry<String, Pair<Integer, Integer>> entry : apiConfidence.entrySet()) {
+					System.out.println(entry.getKey() + "," + entry.getValue().first() + "," + entry.getValue().second());
+				}
 				System.out.println("Finish assigning");
 				
 				return Status.OK_STATUS;
