@@ -1,6 +1,5 @@
 package mutation;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -9,18 +8,17 @@ import java.util.List;
 import org.apache.commons.lang.SystemUtils;
 
 import jmutation.MutationFramework;
+import jmutation.constants.ResourcesPath;
 import jmutation.model.MicrobatConfig;
-import jmutation.model.MutationResult;
+import jmutation.model.mutation.MutationFrameworkResult;
 import jmutation.model.TestCase;
+import jmutation.model.mutation.MutationFrameworkConfig;
 import jmutation.model.project.Project;
+import jmutation.utils.RandomSingleton;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import sav.strategies.dto.AppJavaClassPath;
-import testio.TestIOFramework;
-import testio.model.IOModel;
-import testio.model.TestIO;
-import tracediff.TraceDiff;
 import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.model.PairList;
@@ -60,6 +58,7 @@ public class MutationAgent {
 	protected final int stepLimit;
 	protected int seed = 1;
 	protected MutationFramework mutationFramework = null;
+	protected MutationFrameworkConfig configuration = null;
 	
 	// Target Test Case
 	protected int testCaseID = -1;
@@ -93,18 +92,18 @@ public class MutationAgent {
 		this.reset();
 		
 		MutationFramework mutationFramework = new MutationFramework();
-		mutationFramework.setMaxNumberOfMutations(this.maxChanges);
-		mutationFramework.toggleStrongMutations(false);
+		MutationFrameworkConfig configuration = new MutationFrameworkConfig();
+		mutationFramework.setConfig(configuration);
+		configuration.setDropInsPath(Paths.get(ResourcesPath.DEFAULT_RESOURCES_PATH, ResourcesPath.DEFAULT_DROP_INS_DIR).toString());
 		mutationFramework.extractResources();
-		mutationFramework.setDropInsPath(Paths.get(MutationFramework.DEFAULT_RESOURCES_PATH, MutationFramework.DEFAULT_DROP_INS_DIR).toString());
-		
 		MicrobatConfig microbatConfig = MicrobatConfig.defaultConfig();
 		microbatConfig = microbatConfig.setJavaHome(this.java_path);
 		microbatConfig = microbatConfig.setStepLimit(this.stepLimit);
-		mutationFramework.setMicrobatConfig(microbatConfig);
-		mutationFramework.setProjectPath(this.projectPath);
+		configuration.setMicrobatConfig(microbatConfig);
+		configuration.setProjectPath(this.projectPath);
 		
 		this.mutationFramework = mutationFramework;
+		this.configuration = configuration;
 	}
 
 	public void startMutation() {
@@ -125,14 +124,14 @@ public class MutationAgent {
 				}
 			}
 		}
-		mutationFramework.setTestCase(testCase);
+		configuration.setTestCase(testCase);
 		
 		// Mutate project until it fail the test case
 		boolean testCaseFailed = false;
-		MutationResult result = null;
+		MutationFrameworkResult result = null;
 		for (int i=0; i<100; i++) {
 			this.mutationCount++;
-			mutationFramework.setSeed(i);
+			RandomSingleton.getSingleton().setSeed(i);
 			result = mutationFramework.startMutationFramework();
 			if (!result.isTestCasePassed()) {
 				testCaseFailed = true;
