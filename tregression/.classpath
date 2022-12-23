@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main"/>
+	<classpathentry kind="src" path="main"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/test-io-0.0.1-SNAPSHOT-jar-with-dependencies.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/java-mutation-framework-0.0.1-SNAPSHOT-jar-with-dependencies.jar" sourcepath="/java-mutation-framework"/>

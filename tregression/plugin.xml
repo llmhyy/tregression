@@ -85,8 +85,8 @@
        </command>
        <command
              defaultHandler="tregression.handler.StepwisePropagationHandler"
-             id="tregression.stepwiseProp"
-             name="Stepwise Probability Propagation">
+             id="tregression.spp"
+             name="Stepwise Propagation">
        </command>
  </extension>	
  <extension
