@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang.SystemUtils;
 
@@ -132,7 +133,12 @@ public class MutationAgent {
 		for (int i=0; i<100; i++) {
 			this.mutationCount++;
 			RandomSingleton.getSingleton().setSeed(i);
-			result = mutationFramework.startMutationFramework();
+			try {
+				result = mutationFramework.startMutationFramework();
+			} catch (TimeoutException e) {
+				e.printStackTrace();
+				continue;
+			}
 			if (!result.isTestCasePassed()) {
 				testCaseFailed = true;
 				break;
