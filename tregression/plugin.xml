@@ -83,6 +83,11 @@
              id="tregression.baseline"
              name="Run Baseline">
        </command>
+       <command
+             defaultHandler="tregression.handler.StepwisePropagationHandler"
+             id="tregression.spp"
+             name="Stepwise Propagation">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -236,6 +241,11 @@
             <command
                   commandId="tregression.testingTregression"
                   icon="icons/question_mark.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.spp"
+                  icon="icons/evaluation.png"
                   style="push">
             </command>
          </toolbar>
