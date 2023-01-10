@@ -93,6 +93,11 @@ public class StepDetailIOUI extends StepDetailUI {
 		manualFeedbackButton.setText("Feedback");
 		manualFeedbackButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
 		manualFeedbackButton.addMouseListener(new manualFeedbackListener());
+		
+		Button stopButton = new Button(slicingGroup, SWT.NONE);
+		stopButton.setText("Stop");
+		stopButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		stopButton.addMouseListener(new StopListener());
 	}
 	
 	private class AddInputListener implements MouseListener {
@@ -182,12 +187,27 @@ public class StepDetailIOUI extends StepDetailUI {
 				
 				VarValue selectedWriteVar = null;
 				if (!selectedWriteVars.isEmpty()) {
-					selectedReadVar = selectedWriteVars.get(0);
+					selectedWriteVar = selectedWriteVars.get(0);
 				}
 				feedback.setOption(new ChosenVariableOption(selectedReadVar, selectedWriteVar));
 			}
 			DebugInfo.addNodeFeedbackPair(currentNode, feedback);
 //			BaselineHandler.setManualFeedback(feedback, currentNode);
+		}
+
+		@Override
+		public void mouseUp(MouseEvent e) {	}
+		
+	}
+	
+	private class StopListener implements MouseListener {
+
+		@Override
+		public void mouseDoubleClick(MouseEvent e) {}
+
+		@Override
+		public void mouseDown(MouseEvent e) {
+			DebugInfo.setStop(true);
 		}
 
 		@Override

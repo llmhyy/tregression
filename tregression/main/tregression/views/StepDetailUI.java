@@ -384,6 +384,12 @@ public class StepDetailUI {
 					// For debugging baseline
 					double prob = varValue.getProbability();
 					return String.format("%.2f", prob);
+				case 5:
+					double forward_prob = varValue.getForwardProb();
+					return String.format("%.2f", forward_prob);
+				case 6:
+					double backward_prob = varValue.getBackwardProb();
+					return String.format("%.2f", backward_prob);
 				}
 			}
 
@@ -486,7 +492,17 @@ public class StepDetailUI {
 		probColumn.setAlignment(SWT.LEFT);
 		probColumn.setText("Probability");
 		probColumn.setWidth(150);
-
+		
+		TreeColumn forward_probColumn = new TreeColumn(tree, SWT.LEFT);
+		forward_probColumn.setAlignment(SWT.LEFT);
+		forward_probColumn.setText("F_Prob");
+		forward_probColumn.setWidth(150);
+		
+		TreeColumn backward_probColumn = new TreeColumn(tree, SWT.LEFT);
+		backward_probColumn.setAlignment(SWT.LEFT);
+		backward_probColumn.setText("B_Prob");
+		backward_probColumn.setWidth(150);
+		
 		CheckboxTreeViewer viewer = new CheckboxTreeViewer(tree);
 		createContextMenu(viewer);
 		return viewer;
