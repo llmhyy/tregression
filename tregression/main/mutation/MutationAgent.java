@@ -14,6 +14,7 @@ import jmutation.model.MicrobatConfig;
 import jmutation.model.mutation.MutationFrameworkResult;
 import jmutation.model.TestCase;
 import jmutation.model.mutation.MutationFrameworkConfig;
+import jmutation.model.mutation.MutationFrameworkConfig.MutationFrameworkConfigBuilder;
 import jmutation.model.project.Project;
 import jmutation.utils.RandomSingleton;
 import microbat.model.trace.Trace;
@@ -92,19 +93,16 @@ public class MutationAgent {
 		
 		this.reset();
 		
-		MutationFramework mutationFramework = new MutationFramework();
-		MutationFrameworkConfig configuration = new MutationFrameworkConfig();
-		mutationFramework.setConfig(configuration);
-		configuration.setDropInsPath(Paths.get(ResourcesPath.DEFAULT_RESOURCES_PATH, ResourcesPath.DEFAULT_DROP_INS_DIR).toString());
+		MutationFrameworkConfigBuilder configBuilder = new MutationFrameworkConfigBuilder();
+		configBuilder.setDropInsPath(Paths.get(ResourcesPath.DEFAULT_RESOURCES_PATH, ResourcesPath.DEFAULT_DROP_INS_DIR).toString());
+        configBuilder.setProjectPath(this.projectPath);
+        MicrobatConfig microbatConfig = MicrobatConfig.defaultConfig();
+        microbatConfig = microbatConfig.setJavaHome(this.java_path);
+        microbatConfig = microbatConfig.setStepLimit(this.stepLimit);
+        configBuilder.setMicrobatConfig(microbatConfig);
+        configuration = configBuilder.build();
+        mutationFramework = new MutationFramework(configuration);
 		mutationFramework.extractResources();
-		MicrobatConfig microbatConfig = MicrobatConfig.defaultConfig();
-		microbatConfig = microbatConfig.setJavaHome(this.java_path);
-		microbatConfig = microbatConfig.setStepLimit(this.stepLimit);
-		configuration.setMicrobatConfig(microbatConfig);
-		configuration.setProjectPath(this.projectPath);
-		
-		this.mutationFramework = mutationFramework;
-		this.configuration = configuration;
 	}
 
 	public void startMutation() {
