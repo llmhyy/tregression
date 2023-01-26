@@ -77,7 +77,7 @@ public class StepwisePropagationHandler extends AbstractHandler {
 				propagator.computeComputationalCost();
 				
 				int feedbackCounts = 0;
-				
+				boolean ombissionBug = false;
 				while(!DebugInfo.isRootCauseFound() && !DebugInfo.isStop()) {
 					System.out.println("---------------------------------- " + feedbackCounts + " iteration");
 					System.out.println("Propagation Start");
@@ -131,6 +131,8 @@ public class StepwisePropagationHandler extends AbstractHandler {
 						System.out.println("User Feedback: ");
 						System.out.println(userPair);
 						
+						records.add(userPair);
+						
 						UserFeedback userFeedback = userPair.getFeedback();
 						UserFeedback predictedFeedback = pair.getFeedback();
 						
@@ -138,9 +140,24 @@ public class StepwisePropagationHandler extends AbstractHandler {
 						if (userFeedback.week_equals(predictedFeedback)) {
 							currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyView.getTrace());
 						} else {
-							propagator.responseToFeedbacks(responses);
-							currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyView.getTrace());
-							break;
+							if (userFeedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
+								if (records.size() < 2) {
+									System.out.println("Obmission bug occur before Node:" + userPair.getNode().getOrder());
+								} else {
+									NodeFeedbackPair lastPair = records.get(records.size()-2);
+									TraceNode lastNode = lastPair.getNode();
+									TraceNode cNode = pair.getNode();
+									System.out.println("Obmission bug occur between Node: " + cNode.getOrder() + " and Node: " + lastNode.getOrder());
+								}
+								ombissionBug = true;
+								break;
+								
+							} else {
+								propagator.responseToFeedbacks(responses);
+								currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyView.getTrace());
+								break;
+							}
+							
 						}
 
 //						if (userFeedback.week_equals(predictedFeedback)) {
@@ -171,6 +188,10 @@ public class StepwisePropagationHandler extends AbstractHandler {
 //							}
 //							break;
 //						}
+					}
+					
+					if (ombissionBug) {
+						break;
 					}
 				}
 				return Status.OK_STATUS;

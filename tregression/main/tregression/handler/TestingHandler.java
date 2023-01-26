@@ -1,5 +1,7 @@
 package tregression.handler;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,13 +28,25 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.util.JavaUtil;
 import sav.common.core.Pair;
+import sav.strategies.dto.AppJavaClassPath;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.MatchStepFinder;
+import tregression.empiricalstudy.TestCase;
+import tregression.empiricalstudy.config.ConfigFactory;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.model.PairList;
+import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.DiffMatcher;
+import tregression.tracematch.ControlPathBasedTraceMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
+
+import dataset.BugDataset;
+import dataset.BugDataset.BugData;
+import dataset.bug.minimize.ProjectMinimizer;
+
+import jmutation.utils.TraceHelper;
 
 public class TestingHandler extends AbstractHandler {
 
@@ -50,130 +64,59 @@ public class TestingHandler extends AbstractHandler {
 				// Access the buggy view and correct view
 				setup();
 				
-				final Trace buggyTrace = buggyView.getTrace();
-				final Trace correctTrace = correctView.getTrace();
+				BugData data = null;
+		        int largestBugId = 17426;
+		        BugDataset bugdataset = new BugDataset("C:\\Users\\arkwa\\Documents\\NUS\\Debug_Simulation\\Mutation_BugDataset"); // change the path here
+		        for (int i = 1; i <= largestBugId; i++) {
+		        	ProjectMinimizer minimizer = bugdataset.createMinimizer(i);
+		            if (bugdataset.exists(i, false)) {
+		                try {
+//		                    bugdataset.unzip(i);
+		                    minimizer.maximise();
+		                    data = bugdataset.getData(i);
+		                    TraceHelper.setClassPathsToBreakpoints(data.getBuggyTrace(), new File(data.getBuggyProjectPath()));
+		                    TraceHelper.setClassPathsToBreakpoints(data.getWorkingTrace(), new File(data.getWorkingProjectPath()));
+//		                    bugdataset.zip(i);
+		                    break;
+		                } catch (IOException e) {
+		                    e.printStackTrace(); // when some file is missing
+		                } finally {
+		                    
+		                }
+		            }
+		        }
 				
-				final PairList pairList = buggyView.getPairList();
-				final DiffMatcher matcher = buggyView.getDiffMatcher();
+		        final String scrFolderPath = "src\\main\\java";
+		        final String testFolderPath = "src\\test\\java";
+		        final String mutatedProjPath = "C:\\Users\\arkwa\\Documents\\NUS\\Debug_Simulation\\Mutation_BugDataset\\1\\bug";
+		        final String originProjPath = "C:\\Users\\arkwa\\Documents\\NUS\\Debug_Simulation\\Mutation_BugDataset\\fix";
+		        
 				
-				final StepChangeTypeChecker checker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+//				final Trace buggyTrace = buggyView.getTrace();
+//				final Trace correctTrace = correctView.getTrace();
 				
-				Set<String> forEachLoopLocations = new HashSet<>();
-				APIConfidenceDict dictionary = new APIConfidenceDict();
-//				Map<String, Pair<Integer, Integer>> apiConfidence = new HashMap<>();
+		        final Trace buggyTrace = data.getBuggyTrace();
+		        final Trace correctTrace = data.getWorkingTrace();
+		        
+		        dataset.TestCase testCase = data.getTestCase();
+		        final String projName = data.getProjectName();
+		        final String regressionID = testCase.toString();
+		        
+		        ProjectConfig config = ConfigFactory.createConfig(projName, regressionID, mutatedProjPath, originProjPath);
+				tregression.empiricalstudy.TestCase tc = new tregression.empiricalstudy.TestCase(testCase.testClassName(), testCase.testMethodName());
+				AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(mutatedProjPath, tc, config);
+				AppJavaClassPath correctApp = AppClassPathInitializer.initialize(originProjPath, tc, config);
 				
-				for (TraceNode node : buggyTrace.getExecutionList()) {
-					
-					setAllPropability(node.getReadVariables(), -1.0);
-					setAllPropability(node.getWrittenVariables(), -1.0);
-					
-					final String nodeLocation = encodeNodeLocation(node);
-					if (forEachLoopLocations.contains(nodeLocation)) {
-						continue;
-					}
-					
-					if (node.getWrittenVariables().isEmpty() || node.getReadVariables().isEmpty()) {
-						continue;
-					}
-					
-					if (isForEachLoop(node)) {
-						System.out.println("TraceNode: " + node.getOrder() + " is for each loop");
-						forEachLoopLocations.add(nodeLocation);
-						continue;
-					}
-					
-					TraceNode matchedNode = MatchStepFinder.findMatchedStep(true, node, pairList);
-					if (matchedNode == null) {
-						continue;
-					}
-					
-					List<Pair<VarValue, VarValue>> wrongPairs = checker.getWrongWrittenVariableList(true, node, matchedNode, pairList, matcher);
-					List<VarValue> wrongVarList = new ArrayList<>();
-					for (Pair<VarValue, VarValue> wrongPair : wrongPairs) {
-						wrongVarList.add(wrongPair.first());
-					}
-					
-					StepChangeType changeType = checker.getType(node, true, pairList, matcher);
-					if (changeType.getType() == StepChangeType.SRC) {
-						setAllPropability(node.getReadVariables(), 1.0);
-						for (VarValue writtenVar : node.getWrittenVariables()) {
-							writtenVar.setProbability(wrongVarList.contains(writtenVar) ? 0.0 : 1.0);
-						}
-					} else if (changeType.getType() == StepChangeType.CTL) {
-						// Do nothing
-					} else if (changeType.getType() == StepChangeType.IDT) {
-						setAllPropability(node.getReadVariables(), 1.0);
-						setAllPropability(node.getWrittenVariables(), 1.0);
-					} else {
-						List<Pair<VarValue, VarValue>> wrongReadVarPair = changeType.getWrongVariableList();
-						List<VarValue> wrongReadVarList = new ArrayList<>();
-						for (Pair<VarValue, VarValue> pair : wrongReadVarPair) {
-							wrongReadVarList.add(pair.first());
-						}
-					
-						for (VarValue readVar : node.getReadVariables()) {
-							readVar.setProbability(wrongReadVarList.contains(readVar)?0.0:1.0);
-						}
-						
-						for (VarValue writtenVar : node.getWrittenVariables()) {
-							writtenVar.setProbability(wrongVarList.contains(writtenVar)?0.0:1.0);
-						}
-					}
-					
-					if (node.isCallingAPI()) {
-						final String invokingMethod = node.getInvokingMethod();
-						if (invokingMethod == "") {
-							System.out.println("[Warning] node is calling api but do not have invoking method");
-							continue;
-						}
-						
-						if (changeType.getType() == StepChangeType.IDT) {
-							dictionary.addRecord(invokingMethod, true);
-						} else if (changeType.getType() == StepChangeType.SRC) {
-							dictionary.addRecord(invokingMethod, false);
-						}
-//						if (diction.containsKey(invokingMethod)) {
-//							Pair<Integer, Integer> pair = apiConfidence.get(invokingMethod);
-//							final int correctCount = pair.first();
-//							final int totalCount = pair.second();
-//							Pair<Integer, Integer> newPair = null;
-//							if (changeType.getType() == StepChangeType.IDT) {
-//								newPair = Pair.of(correctCount+1, totalCount+1);
-//							} else if (changeType.getType() == StepChangeType.SRC) {
-//								newPair = Pair.of(correctCount, totalCount+1);
-//							} else {
-//								continue;
-//							}
-//							apiConfidence.put(invokingMethod, newPair);
-//						} else {
-//							Pair<Integer, Integer> newPair = null;
-//							if (changeType.getType() == StepChangeType.IDT) {
-//								newPair = Pair.of(1, 1);
-//							} else if (changeType.getType() == StepChangeType.SRC) {
-//								newPair = Pair.of(0, 1);
-//							} else {
-//								continue;
-//							}
-//							apiConfidence.put(invokingMethod, newPair);
-//						}
-					}
-					System.out.println("TraceNode: " + node.getOrder() + " is calling api " + node.isCallingAPI());
-					System.out.println("TraceNode: " + node.getOrder() + " invoking method: " + node.getInvokingMethod());
-				}
-				dictionary.printDict();
-//				System.out.println("api confidence size: " + apiConfidence.size());
-//				for(Map.Entry<String, Pair<Integer, Integer>> entry : apiConfidence.entrySet()) {
-//					System.out.println(entry.getKey() + "," + entry.getValue().first() + "," + entry.getValue().second());
-//				}
+				buggyTrace.setAppJavaClassPath(buggyApp);
+				correctTrace.setAppJavaClassPath(correctApp);
 				
-				List<APIConfidenceDict> list = new ArrayList<>();
-				list.add(dictionary);
-				list.add(dictionary);
+		        DiffMatcher matcher = new DiffMatcher(scrFolderPath, testFolderPath, mutatedProjPath, originProjPath);
+				matcher.matchCode();
 				
-				APIConfidenceDict a = APIConfidenceDict.aggreateDict(list);
-				System.out.println("----");
-				a.printDict();
-				System.out.println("Finish assigning");
+				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, matcher);
+				
+				updateView(buggyTrace, correctTrace, pairList, matcher);
 				
 				return Status.OK_STATUS;
 			}
@@ -319,7 +262,27 @@ public class TestingHandler extends AbstractHandler {
 			}
 		});
 	}
-	
+	private void updateView(final Trace buggyTrace, final Trace correctTrace, final tregression.model.PairList pairListTregression, final DiffMatcher matcher) {
+		if (this.buggyView != null && this.correctView != null) {
+			Display.getDefault().syncExec(new Runnable() {
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					buggyView.setMainTrace(buggyTrace);
+					buggyView.updateData();
+					buggyView.setPairList(pairListTregression);
+					buggyView.setDiffMatcher(matcher);
+					
+					correctView.setMainTrace(correctTrace);
+					correctView.updateData();
+					correctView.setPairList(pairListTregression);
+					correctView.setDiffMatcher(matcher);
+				}
+			});
+		} else {
+			System.out.println("buggyView or correctView is null");
+		}
+	}
 	private void jumpToNode(final TraceNode targetNode) {
 		Display.getDefault().asyncExec(new Runnable() {
 		    @Override
