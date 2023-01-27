@@ -35,7 +35,8 @@ public class StepwisePropagationHandler extends AbstractHandler {
 	
 //	private TraceNode currentNode = null;
 	
-	private Stack<NodeFeedbackPair> records = new Stack<>();
+	private ActionPath userPath = new ActionPath();
+	private List<NodeFeedbackPair> records = new ArrayList<>();
 	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -69,6 +70,8 @@ public class StepwisePropagationHandler extends AbstractHandler {
 				List<VarValue> outputs = DebugInfo.getOutputs();
 				
 				final TraceNode startingNode = getStartingNode(buggyView.getTrace(), outputs.get(0));
+				jumpToNode(startingNode);
+				
 				TraceNode currentNode = startingNode;
 				
 				// Set up the propagator that perform propagation
@@ -89,19 +92,19 @@ public class StepwisePropagationHandler extends AbstractHandler {
 					
 					System.out.println("Propagation End");
 					
-//					UserFeedback feedback = propagator.giveFeedback(startingNode);
-					
-					jumpToNode(startingNode);
-					
-//					System.out.println();
-//					System.out.println("Prediction for node: " + startingNode.getOrder());
-//					System.out.println(feedback);
-//			
 					// Get the predicted root cause
 					TraceNode rootCause = propagator.proposeRootCause();
+					if (rootCause.getOrder() > currentNode.getOrder()) {
+						System.out.println("Sorry cannot find the root cause");
+						break;
+					}
+					
 					System.out.println("Proposed Root Cause: " + rootCause.getOrder());
 
 					ActionPath path = propagator.findPathway(startingNode, rootCause);
+					if (!userPath.isFollowing(path)) {
+						path = propagator.findPathway_Greedy(startingNode, rootCause, userPath);
+					}
 					
 					System.out.println();
 					System.out.println("Debug: Suggested Pathway");
@@ -131,7 +134,7 @@ public class StepwisePropagationHandler extends AbstractHandler {
 						System.out.println("User Feedback: ");
 						System.out.println(userPair);
 						
-						records.add(userPair);
+						userPath.addPair(userPair);
 						
 						UserFeedback userFeedback = userPair.getFeedback();
 						UserFeedback predictedFeedback = pair.getFeedback();
@@ -141,10 +144,10 @@ public class StepwisePropagationHandler extends AbstractHandler {
 							currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyView.getTrace());
 						} else {
 							if (userFeedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
-								if (records.size() < 2) {
+								if (userPath.getLength() < 2) {
 									System.out.println("Obmission bug occur before Node:" + userPair.getNode().getOrder());
 								} else {
-									NodeFeedbackPair lastPair = records.get(records.size()-2);
+									NodeFeedbackPair lastPair = userPath.get(userPath.getLength()-2);
 									TraceNode lastNode = lastPair.getNode();
 									TraceNode cNode = pair.getNode();
 									System.out.println("Obmission bug occur between Node: " + cNode.getOrder() + " and Node: " + lastNode.getOrder());
@@ -156,38 +159,8 @@ public class StepwisePropagationHandler extends AbstractHandler {
 								propagator.responseToFeedbacks(responses);
 								currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyView.getTrace());
 								break;
-							}
-							
+							}	
 						}
-
-//						if (userFeedback.week_equals(predictedFeedback)) {
-//							responses.add(userPair);
-//							currentNode = findNextNode(currentNode, userFeedback);
-//						} else if (userFeedback.getFeedbackType().equals(UserFeedback.CORRECT)){
-//							System.out.println("Wrong feedback predicted. Recalculate the process...");
-//							currentNode = startingNode;
-//							propagator.responseToFeedback(userPair);
-//							break;
-//						} else {
-//							System.out.println("Wrong feedback predicted. Recalculate the process...");
-//							boolean isExternalFeedback = true;
-//							for (NodeFeedbackPair pair_ : path) {
-//								if (pair_.getNode().equals(node)) {
-//									isExternalFeedback = false;
-//									break;
-//								}
-//							}
-//							
-//							if (isExternalFeedback) {
-//								currentNode = startingNode;
-//								propagator.responseToFeedback(pair);
-//							} else {
-//								currentNode = findNextNode(currentNode, userFeedback);
-//								responses.add(userPair);
-//								propagator.responseToFeedbacks(responses);
-//							}
-//							break;
-//						}
 					}
 					
 					if (ombissionBug) {
