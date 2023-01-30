@@ -20,8 +20,8 @@ import debuginfo.NodeFeedbackPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.probability.SPP.ActionPath;
-import microbat.probability.SPP.StepwisePropagator;
+import microbat.probability.SPP.SPP;
+import microbat.probability.SPP.pathfinding.ActionPath;
 import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
 import microbat.util.TraceUtil;
@@ -75,9 +75,7 @@ public class StepwisePropagationHandler extends AbstractHandler {
 				TraceNode currentNode = startingNode;
 				
 				// Set up the propagator that perform propagation
-				StepwisePropagator propagator = new StepwisePropagator(buggyView.getTrace(), inputs, outputs);
-				propagator.init();
-				propagator.computeComputationalCost();
+				SPP spp = new SPP(buggyView.getTrace(), inputs, outputs);
 				
 				int feedbackCounts = 0;
 				boolean ombissionBug = false;
@@ -85,26 +83,8 @@ public class StepwisePropagationHandler extends AbstractHandler {
 					System.out.println("---------------------------------- " + feedbackCounts + " iteration");
 					System.out.println("Propagation Start");
 					
-					// Start propagation
-					propagator.forwardPropagation();
-					propagator.backwardPropagate();
-					propagator.combineProbability();
-					
-					System.out.println("Propagation End");
-					
-					// Get the predicted root cause
-					TraceNode rootCause = propagator.proposeRootCause();
-					if (rootCause.getOrder() > currentNode.getOrder()) {
-						System.out.println("Sorry cannot find the root cause");
-						break;
-					}
-					
-					System.out.println("Proposed Root Cause: " + rootCause.getOrder());
-
-					ActionPath path = propagator.findPathway(startingNode, rootCause);
-					if (!userPath.isFollowing(path)) {
-						path = propagator.findPathway_Greedy(startingNode, rootCause, userPath);
-					}
+					final ActionPath path = spp.suggestPath(currentNode, userPath);
+					final TraceNode rootCause = spp.proposeRootCause();
 					
 					System.out.println();
 					System.out.println("Debug: Suggested Pathway");
@@ -117,7 +97,7 @@ public class StepwisePropagationHandler extends AbstractHandler {
 					for (NodeFeedbackPair pair : path) {
 						
 						final TraceNode node = pair.getNode();
-						if (node.getOrder() > currentNode.getOrder()) {
+						if (userPath.contains(node)) {
 							continue;
 						}
 						
@@ -153,13 +133,11 @@ public class StepwisePropagationHandler extends AbstractHandler {
 									System.out.println("Obmission bug occur between Node: " + cNode.getOrder() + " and Node: " + lastNode.getOrder());
 								}
 								ombissionBug = true;
-								break;
-								
 							} else {
-								propagator.responseToFeedbacks(responses);
+								spp.responseToFeedbacks(responses);
 								currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyView.getTrace());
-								break;
-							}	
+							}
+							break;
 						}
 					}
 					
@@ -174,17 +152,6 @@ public class StepwisePropagationHandler extends AbstractHandler {
 		job.schedule();
 		return null;
 	}
-	
-//	private TraceNode findNextNode(final TraceNode node, final UserFeedback feedback) {
-//		TraceNode nextNode = null;
-//		if (feedback.getFeedbackType() == UserFeedback.WRONG_PATH) {
-//			nextNode = node.getControlDominator();
-//		} else if (feedback.getFeedbackType() == UserFeedback.WRONG_VARIABLE_VALUE) {
-//			VarValue wrongVar = feedback.getOption().getReadVar();
-//			nextNode = buggyView.getTrace().findDataDependency(node, wrongVar);
-//		}
-//		return nextNode;
-//	}
 	
 	private void setup() {
 		Display.getDefault().syncExec(new Runnable() {
