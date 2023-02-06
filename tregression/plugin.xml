@@ -84,7 +84,7 @@
              name="Run Baseline">
        </command>
        <command
-             defaultHandler="tregression.handler.StepwisePropagationHandler"
+             defaultHandler="tregression.handler.StepwisePropagationTHandler"
              id="tregression.spp"
              name="Stepwise Propagation">
        </command>
