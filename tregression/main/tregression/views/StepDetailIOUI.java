@@ -19,7 +19,9 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
+import microbat.recommendation.ChosenVariablesOption;
 import microbat.recommendation.UserFeedback;
+import microbat.recommendation.UserFeedback_M;
 import tregression.handler.BaselineHandler;
 
 /**
@@ -167,7 +169,7 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			UserFeedback feedback = new UserFeedback();
+			UserFeedback_M feedback = new UserFeedback_M();
 			if (correctButton.getSelection()) {
 				feedback.setFeedbackType(UserFeedback.CORRECT);
 			} else if (controlButton.getSelection()) {
@@ -179,16 +181,7 @@ public class StepDetailIOUI extends StepDetailUI {
 				if (selectedReadVars.isEmpty() && selectedWriteVars.isEmpty()) {
 					throw new RuntimeException("No selected variables");
 				}
-				VarValue selectedReadVar = null;
-				if (!selectedReadVars.isEmpty()) {
-					selectedReadVar = selectedReadVars.get(0);
-				}
-				
-				VarValue selectedWriteVar = null;
-				if (!selectedWriteVars.isEmpty()) {
-					selectedWriteVar = selectedWriteVars.get(0);
-				}
-				feedback.setOption(new ChosenVariableOption(selectedReadVar, selectedWriteVar));
+				feedback.setOption(new ChosenVariablesOption(selectedReadVars, selectedWriteVars));
 			}
 			DebugInfo.addNodeFeedbackPair(currentNode, feedback);
 //			BaselineHandler.setManualFeedback(feedback, currentNode);
