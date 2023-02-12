@@ -21,7 +21,6 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.ChosenVariablesOption;
 import microbat.recommendation.UserFeedback;
-import microbat.recommendation.UserFeedback_M;
 import tregression.handler.BaselineHandler;
 
 /**
@@ -169,22 +168,29 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			UserFeedback_M feedback = new UserFeedback_M();
+			List<UserFeedback> feedbacks = new ArrayList<>();
 			if (correctButton.getSelection()) {
+				UserFeedback feedback = new UserFeedback();
 				feedback.setFeedbackType(UserFeedback.CORRECT);
+				feedbacks.add(feedback);
 			} else if (controlButton.getSelection()) {
+				UserFeedback feedback = new UserFeedback();
 				feedback.setFeedbackType(UserFeedback.WRONG_PATH);
+				feedbacks.add(feedback);
 			} else {
-				feedback.setFeedbackType(UserFeedback.WRONG_VARIABLE_VALUE);
 				List<VarValue> selectedReadVars = getSelectedReadVars();
 				List<VarValue> selectedWriteVars = getSelectedWriteVars();
 				if (selectedReadVars.isEmpty() && selectedWriteVars.isEmpty()) {
 					throw new RuntimeException("No selected variables");
 				}
-				feedback.setOption(new ChosenVariablesOption(selectedReadVars, selectedWriteVars));
+				for (VarValue readVar : selectedReadVars) {
+					UserFeedback feedback = new UserFeedback();
+					feedback.setFeedbackType(UserFeedback.WRONG_VARIABLE_VALUE);
+					feedback.setOption(new ChosenVariableOption(readVar, null));
+					feedbacks.add(feedback);
+				}
 			}
-			DebugInfo.addNodeFeedbackPair(currentNode, feedback);
-//			BaselineHandler.setManualFeedback(feedback, currentNode);
+			DebugInfo.addNodeFeedbacksPair(currentNode, feedbacks);
 		}
 
 		@Override
