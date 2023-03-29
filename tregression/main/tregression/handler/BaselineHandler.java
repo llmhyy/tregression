@@ -155,8 +155,8 @@ public class BaselineHandler extends AbstractHandler {
 						System.out.println("Please give a feedback manually");
 						
 						DebugInfo.waitForFeedback();
-						nodeFeedbackPair = DebugInfo.getNodeFeedbackPair();
-						System.out.println(nodeFeedbackPair);
+//						nodeFeedbackPair = DebugInfo.getNodeFeedbackPairs();
+//						System.out.println(nodeFeedbackPair);
 //						while (!BaselineHandler.isManualFeedbackReady()) {
 //							// Wait for the manual feedback
 //						    try {
