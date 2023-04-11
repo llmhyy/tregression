@@ -74,7 +74,7 @@
              name="Run Dyanmic Slicing">
        </command>
        <command
-             defaultHandler="tregression.handler.MutationHandler"
+             defaultHandler="tregression.handler.MutationDatasetHandler"
              id="tregression.mutate"
              name="Mutate Target Project">
        </command>

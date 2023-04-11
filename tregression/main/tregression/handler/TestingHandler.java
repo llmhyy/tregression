@@ -42,9 +42,9 @@ import tregression.tracematch.ControlPathBasedTraceMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
 
-import dataset.BugDataset;
-import dataset.BugDataset.BugData;
-import dataset.bug.minimize.ProjectMinimizer;
+//import dataset.BugDataset;
+//import dataset.BugDataset.BugData;
+//import dataset.bug.minimize.ProjectMinimizer;
 
 import jmutation.utils.TraceHelper;
 
@@ -64,28 +64,6 @@ public class TestingHandler extends AbstractHandler {
 				// Access the buggy view and correct view
 				setup();
 				
-				BugData data = null;
-		        int largestBugId = 17426;
-		        BugDataset bugdataset = new BugDataset("C:\\Users\\arkwa\\Documents\\NUS\\Debug_Simulation\\Mutation_BugDataset"); // change the path here
-		        for (int i = 1; i <= largestBugId; i++) {
-		        	ProjectMinimizer minimizer = bugdataset.createMinimizer(i);
-		            if (bugdataset.exists(i, false)) {
-		                try {
-//		                    bugdataset.unzip(i);
-		                    minimizer.maximise();
-		                    data = bugdataset.getData(i);
-		                    TraceHelper.setClassPathsToBreakpoints(data.getBuggyTrace(), new File(data.getBuggyProjectPath()));
-		                    TraceHelper.setClassPathsToBreakpoints(data.getWorkingTrace(), new File(data.getWorkingProjectPath()));
-//		                    bugdataset.zip(i);
-		                    break;
-		                } catch (IOException e) {
-		                    e.printStackTrace(); // when some file is missing
-		                } finally {
-		                    
-		                }
-		            }
-		        }
-				
 		        final String scrFolderPath = "src\\main\\java";
 		        final String testFolderPath = "src\\test\\java";
 		        final String mutatedProjPath = "C:\\Users\\arkwa\\Documents\\NUS\\Debug_Simulation\\Mutation_BugDataset\\1\\bug";
@@ -95,28 +73,28 @@ public class TestingHandler extends AbstractHandler {
 //				final Trace buggyTrace = buggyView.getTrace();
 //				final Trace correctTrace = correctView.getTrace();
 				
-		        final Trace buggyTrace = data.getBuggyTrace();
-		        final Trace correctTrace = data.getWorkingTrace();
-		        
-		        dataset.TestCase testCase = data.getTestCase();
-		        final String projName = data.getProjectName();
-		        final String regressionID = testCase.toString();
-		        
-		        ProjectConfig config = ConfigFactory.createConfig(projName, regressionID, mutatedProjPath, originProjPath);
-				tregression.empiricalstudy.TestCase tc = new tregression.empiricalstudy.TestCase(testCase.testClassName(), testCase.testMethodName());
-				AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(mutatedProjPath, tc, config);
-				AppJavaClassPath correctApp = AppClassPathInitializer.initialize(originProjPath, tc, config);
-				
-				buggyTrace.setAppJavaClassPath(buggyApp);
-				correctTrace.setAppJavaClassPath(correctApp);
-				
-		        DiffMatcher matcher = new DiffMatcher(scrFolderPath, testFolderPath, mutatedProjPath, originProjPath);
-				matcher.matchCode();
-				
-				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, matcher);
-				
-				updateView(buggyTrace, correctTrace, pairList, matcher);
+//		        final Trace buggyTrace = data.getBuggyTrace();
+//		        final Trace correctTrace = data.getWorkingTrace();
+//		        
+//		        dataset.TestCase testCase = data.getTestCase();
+//		        final String projName = data.getProjectName();
+//		        final String regressionID = testCase.toString();
+//		        
+//		        ProjectConfig config = ConfigFactory.createConfig(projName, regressionID, mutatedProjPath, originProjPath);
+//				tregression.empiricalstudy.TestCase tc = new tregression.empiricalstudy.TestCase(testCase.testClassName(), testCase.testMethodName());
+//				AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(mutatedProjPath, tc, config);
+//				AppJavaClassPath correctApp = AppClassPathInitializer.initialize(originProjPath, tc, config);
+//				
+//				buggyTrace.setAppJavaClassPath(buggyApp);
+//				correctTrace.setAppJavaClassPath(correctApp);
+//				
+//		        DiffMatcher matcher = new DiffMatcher(scrFolderPath, testFolderPath, mutatedProjPath, originProjPath);
+//				matcher.matchCode();
+//				
+//				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
+//				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, matcher);
+//				
+//				updateView(buggyTrace, correctTrace, pairList, matcher);
 				
 				return Status.OK_STATUS;
 			}
