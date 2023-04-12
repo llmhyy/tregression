@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry exported="true" kind="lib" path="C:/Users/david/git/bug-dataset-creator/target/bug-dataset-creator-1.0-SNAPSHOT.jar" sourcepath="/bug-dataset-creator"/>
 	<classpathentry kind="src" path="main"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="lib/bug-dataset-creator-1.0-SNAPSHOT-jar-with-dependencies.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/test-io-0.0.1-SNAPSHOT-jar-with-dependencies.jar" sourcepath="/test-io"/>
-	<classpathentry exported="true" kind="lib" path="lib/java-mutation-framework-0.0.1-SNAPSHOT-jar-with-dependencies.jar" sourcepath="/java-mutation-framework"/>
 	<classpathentry exported="true" kind="lib" path="lib/plexus-utils-3.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/maven-model-3.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.11-20141221.jar"/>

@@ -49,6 +49,26 @@ public class MutationDatasetHandler extends AbstractHandler {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+
+//		        String repoPath = "E:\\chenghin";
+//		        String projName = "math_70";
+//		        int traceCollectionTimeoutSeconds = 60;
+//		        	
+//		        final int startIdx = 6;
+//		        final int endIdx = 7;
+//		        BugDataset bugdataset = new BugDataset(repoPath + "\\" + projName);
+//		        for (int i = startIdx; i < endIdx; i++) {
+//		        	System.out.println(i);
+//		            new TraceCollectionHandler(repoPath, projName, i, traceCollectionTimeoutSeconds,
+//		                    0, 0).handle(new Request(true));
+//		            try {
+//		            	BugData data = bugdataset.getData(i);	
+//		            	System.out.println(data);
+//		            } catch (Exception e) {
+//		            	e.printStackTrace();
+//		            }
+//		        }
+		        
 				setup();
 				
 				String projectRepo = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
@@ -68,8 +88,8 @@ public class MutationDatasetHandler extends AbstractHandler {
 				System.out.println("Loading mutated projection from " + projectPath + " with bug id " + testCaseID);
 				BugDataset bugDataset = new BugDataset(projectPath);
 				
-				TraceCollectionHandler hanlder = new TraceCollectionHandler(projectRepo, projectName, testCaseID, traceCollectionTimeoutSeconds,0, 0);
-				hanlder.handle(new Request(true));
+	            new TraceCollectionHandler(projectRepo, projectName, testCaseID, traceCollectionTimeoutSeconds,
+	                    0, 0).handle(new Request(true));
 				BugData data = null;
 				try {
 					data = bugDataset.getData(testCaseID);
