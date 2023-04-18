@@ -2,6 +2,8 @@ package tregression.handler;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -15,6 +17,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
 import microbat.Activator;
 import microbat.util.JavaUtil;
 import sav.strategies.dto.AppJavaClassPath;
@@ -49,33 +52,13 @@ public class MutationDatasetHandler extends AbstractHandler {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-
-//		        String repoPath = "E:\\chenghin";
-//		        String projName = "math_70";
-//		        int traceCollectionTimeoutSeconds = 60;
-//		        	
-//		        final int startIdx = 6;
-//		        final int endIdx = 7;
-//		        BugDataset bugdataset = new BugDataset(repoPath + "\\" + projName);
-//		        for (int i = startIdx; i < endIdx; i++) {
-//		        	System.out.println(i);
-//		            new TraceCollectionHandler(repoPath, projName, i, traceCollectionTimeoutSeconds,
-//		                    0, 0).handle(new Request(true));
-//		            try {
-//		            	BugData data = bugdataset.getData(i);	
-//		            	System.out.println(data);
-//		            } catch (Exception e) {
-//		            	e.printStackTrace();
-//		            }
-//		        }
 		        
 				setup();
-				
+		        
 				String projectRepo = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.REPO_PATH);
 				String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
 				final String projectPath = Paths.get(projectRepo, projectName).toString();
-				
-//				final int largestBugId = 17426;
+
 				int traceCollectionTimeoutSeconds = 60;
 				
 				boolean useTestCaseID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.USE_TEST_CASE_ID).equals("true");
@@ -98,7 +81,9 @@ public class MutationDatasetHandler extends AbstractHandler {
 					return Status.OK_STATUS;
 				}
 
-
+				final int rootCauseOrder = data.getRootCauseNode();
+				System.out.println("RootCause order: " + rootCauseOrder);
+				
 				final String srcFolderPath = "src\\main\\java";
 				final String testFolderPath = "src\\test\\java";
 				

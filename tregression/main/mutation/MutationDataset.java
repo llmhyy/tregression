@@ -10,6 +10,11 @@ import dataset.execution.handler.TraceCollectionHandler;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+
 public class MutationDataset {
     public static void main(String[] args) throws IOException {
         String repoPath = "E:\\chenghin";
@@ -17,8 +22,8 @@ public class MutationDataset {
         int traceCollectionTimeoutSeconds = 60;
         
         List<Integer> failingBugIds = new ArrayList<>();
-        final int startIdx = 8;
-        final int endIdx = 100;
+        final int startIdx = 20;
+        final int endIdx = 21;
         BugDataset bugdataset = new BugDataset(repoPath + "\\" + projName);
         for (int i = startIdx; i < endIdx; i++) {
         	System.out.println(i);
@@ -27,6 +32,7 @@ public class MutationDataset {
             try {
             	BugData data = bugdataset.getData(i);
             	System.out.println(data);
+            	System.out.println(data.getRootCauseNode());
             } catch (Exception e) {
             	failingBugIds.add(i);
             }
