@@ -71,8 +71,7 @@ public class MutationDatasetHandler extends AbstractHandler {
 				System.out.println("Loading mutated projection from " + projectPath + " with bug id " + testCaseID);
 				BugDataset bugDataset = new BugDataset(projectPath);
 				
-	            new TraceCollectionHandler(projectRepo, projectName, testCaseID, traceCollectionTimeoutSeconds,
-	                    0, 0).handle(new Request(true));
+	            new TraceCollectionHandler(projectRepo, projectName, testCaseID, traceCollectionTimeoutSeconds, 0, 0).handle(new Request(true));
 				BugData data = null;
 				try {
 					data = bugDataset.getData(testCaseID);

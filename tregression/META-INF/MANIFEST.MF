@@ -27,8 +27,7 @@ Require-Bundle: microbat;bundle-version="1.0.0",
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.editors,
  org.eclipse.jface.text;bundle-version="3.10.0"
-Bundle-ClassPath: lib/bug-dataset-creator-1.0-SNAPSHOT-jar-with-dependencies.jar,
- lib/poi-3.11-20141221.jar,
+Bundle-ClassPath: lib/poi-3.11-20141221.jar,
  lib/poi-ooxml-3.11-20141221.jar,
  lib/poi-ooxml-schemas-3.11-20141221.jar,
  lib/xmlbeans-2.6.0.jar,
@@ -36,7 +35,7 @@ Bundle-ClassPath: lib/bug-dataset-creator-1.0-SNAPSHOT-jar-with-dependencies.jar
  lib/maven-model-3.8.1.jar,
  lib/plexus-utils-3.2.1.jar,
  lib/test-io-0.0.1-SNAPSHOT-jar-with-dependencies.jar,
- lib/java-mutation-framework-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+ lib/bug-dataset-creator-1.0-SNAPSHOT-jar-with-dependencies.jar
 Export-Package: tregression,
  tregression.empiricalstudy,
  tregression.empiricalstudy.solutionpattern,

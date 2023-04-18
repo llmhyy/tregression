@@ -22,8 +22,8 @@ public class MutationDataset {
         int traceCollectionTimeoutSeconds = 60;
         
         List<Integer> failingBugIds = new ArrayList<>();
-        final int startIdx = 20;
-        final int endIdx = 21;
+        final int startIdx = 1;
+        final int endIdx = 2;
         BugDataset bugdataset = new BugDataset(repoPath + "\\" + projName);
         for (int i = startIdx; i < endIdx; i++) {
         	System.out.println(i);
