@@ -41,3 +41,11 @@ After import the projects, right-click the tregression project, and choose "Run 
 Second, please switch to Tregression perspective by (Windows >> Perspectives >> Open Operspective >> Other). 
 
 Third, click "Tregression" menu >> Run for Seperate Versions. The tool will automate the regression bug detection.
+
+## Running Mutation on Tregression
+
+Tregression now are able to mutate a originally correct trace into buggy trace that fail on targeted test case. For step-by-step guildline, please refer to [Mutation on Tregression](https://github.com/llmhyy/tregression/wiki/Mutation-on-Tregression).
+
+## Run Belief Propagation on Tregression
+
+Tregression can now debug based on belief propagation technique. For more information about debugging on belief propagation, please refer to [Debugging using Belief Propagation on Tregression](https://github.com/llmhyy/tregression/wiki/Run-Belief-Propagation-on-Tregression).

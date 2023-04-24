@@ -1,0 +1,86 @@
+[
+  {
+    "_id": "jquery/jquery_c75701a0152a589c21c4862c33b691902a8b8f7b",
+    "commit_hash": "c75701a0152a589c21c4862c33b691902a8b8f7b",
+    "commit_time": "17/05/2006, 20:46:51",
+    "local_repo_path": "benchmarks/top_JS_repos/jquery",
+    "url": "https://github.com/jquery/jquery/commit/c75701a0152a589c21c4862c33b691902a8b8f7b",
+    "fix": [
+      "typeof",
+      "Idf_0",
+      "!=",
+      "Lit_0"
+    ],
+    "fix_tokenType": "InfixExpression",
+    "fix_file_path": "jquery/jquery.js",
+    "fix_actual": [
+      "typeof",
+      "v",
+      "!=",
+      "'undefined'"
+    ],
+    "fix_range": [
+      14637,
+      14660
+    ],
+    "fix_line": "576-576",
+    "buggy": [
+      "Idf_0",
+      "!==",
+      "Lit_1"
+    ],
+    "buggy_tokenType": "InfixExpression",
+    "buggy_file_path": "jquery/jquery.js",
+    "buggy_actual": [
+      "v",
+      "!==",
+      "null"
+    ],
+    "buggy_range": [
+      14637,
+      14647
+    ],
+    "buggy_line": "576-576"
+  },
+  {
+    "_id": "jquery/jquery_c75701a0152a589c21c4862c33b691902a8b8f7b",
+    "commit_hash": "c75701a0152a589c21c4862c33b691902a8b8f7b",
+    "commit_time": "17/05/2006, 20:46:51",
+    "local_repo_path": "benchmarks/top_JS_repos/jquery",
+    "url": "https://github.com/jquery/jquery/commit/c75701a0152a589c21c4862c33b691902a8b8f7b",
+    "fix": [
+      "Idf_0",
+      "+",
+      "Idf_1"
+    ],
+    "fix_tokenType": "InfixExpression",
+    "fix_file_path": "jquery/jquery.js",
+    "fix_actual": [
+      "v",
+      "+",
+      "z"
+    ],
+    "fix_range": [
+      14637,
+      14660
+    ],
+    "fix_line": "576-576",
+    "buggy": [
+      "Idf_0",
+      "-",
+      "Idf_1"
+    ],
+    "buggy_tokenType": "InfixExpression",
+    "buggy_file_path": "jquery/jquery.js",
+    "buggy_actual": [
+      "v",
+      "-",
+      "z"
+    ],
+    "buggy_range": [
+      14637,
+      14647
+    ],
+    "buggy_line": "576-576"
+  }
+]

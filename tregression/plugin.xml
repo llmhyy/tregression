@@ -53,6 +53,41 @@
              id="traceagent.command.runSingleDefects4jBugs"
              name="Run Single Defect4j Bug">
        </command>
+       <command
+             defaultHandler="tregression.handler.AutoFeedbackHandler"
+             id="tregression.autofeedback"
+             name="Auto Debug">
+       </command>
+       <command
+             defaultHandler="tregression.handler.DataCollectionHandler"
+             id="tregression.collectdata"
+             name="Collect Data">
+       </command>
+       <command
+             defaultHandler="tregression.handler.TestingHandler"
+             id="tregression.testingTregression"
+             name="Testing Tregression">
+       </command>
+       <command
+             defaultHandler="tregression.handler.DSDebuggingHandler"
+             id="tregression.dynamicslicing"
+             name="Run Dyanmic Slicing">
+       </command>
+       <command
+             defaultHandler="tregression.handler.MutationDatasetHandler"
+             id="tregression.mutate"
+             name="Mutate Target Project">
+       </command>
+       <command
+             defaultHandler="tregression.handler.BaselineHandler"
+             id="tregression.baseline"
+             name="Run Baseline">
+       </command>
+       <command
+             defaultHandler="tregression.handler.StepwisePropagationTHandler"
+             id="tregression.spp"
+             name="Stepwise Propagation">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -175,6 +210,42 @@
                   commandId="tregression.command.localizationPlayer"
                   icon="icons/play.png"
                   label="Show Regression Localization"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.collectdata"
+                  icon="icons/after.ico"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.mutate"
+                  icon="icons/cross_mark.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.baseline"
+                  icon="icons/recover.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.autofeedback"
+                  icon="icons/play.png"
+                  label="Auto Debug"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.dynamicslicing"
+                  icon="icons/property.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.testingTregression"
+                  icon="icons/question_mark.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.spp"
+                  icon="icons/play.png"
                   style="push">
             </command>
          </toolbar>
