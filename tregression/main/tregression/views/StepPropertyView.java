@@ -24,6 +24,7 @@ public class StepPropertyView extends ViewPart {
 	public static final String ID = "tregression.view.stepProperty";
 	
 	public StepPropertyView() {
+		
 	}
 
 	@Override

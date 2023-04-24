@@ -390,6 +390,9 @@ public class StepDetailUI {
 				case 6:
 					double backward_prob = varValue.getBackwardProb();
 					return String.format("%.2f", backward_prob);
+				case 7:
+					double cost = varValue.getComputationalCost();
+					return String.format("%.5f", cost);
 				}
 			}
 
@@ -502,6 +505,11 @@ public class StepDetailUI {
 		backward_probColumn.setAlignment(SWT.LEFT);
 		backward_probColumn.setText("B_Prob");
 		backward_probColumn.setWidth(150);
+		
+		TreeColumn costColumn = new TreeColumn(tree, SWT.LEFT);
+		costColumn.setAlignment(SWT.LEFT);
+		costColumn.setText("Cost");
+		costColumn.setWidth(150);
 		
 		CheckboxTreeViewer viewer = new CheckboxTreeViewer(tree);
 		createContextMenu(viewer);

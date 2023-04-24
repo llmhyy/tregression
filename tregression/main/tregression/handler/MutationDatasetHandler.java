@@ -34,6 +34,8 @@ import dataset.BugDataset;
 import dataset.BugDataset.BugData;
 import dataset.TestCase;
 import dataset.bug.minimize.ProjectMinimizer;
+import dataset.bug.model.path.MutationFrameworkPathConfiguration;
+import dataset.bug.model.path.PathConfiguration;
 import dataset.execution.Request;
 import dataset.execution.handler.TraceCollectionHandler;
 
@@ -77,7 +79,7 @@ public class MutationDatasetHandler extends AbstractHandler {
 					data = bugDataset.getData(testCaseID);
 				} catch (Exception e){
 					e.printStackTrace();
-					return Status.OK_STATUS;
+					throw new RuntimeException();
 				}
 
 				final int rootCauseOrder = data.getRootCauseNode();
@@ -110,6 +112,15 @@ public class MutationDatasetHandler extends AbstractHandler {
 				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, matcher);
 				
 				updateView(buggyTrace, correctTrace, pairList, matcher);
+				
+				PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(projectRepo);
+				try {
+					bugDataset.deleteInstrumentationFiles(pathConfig, projName, testCaseID_str);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				return Status.OK_STATUS;
 			}
 			

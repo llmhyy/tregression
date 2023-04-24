@@ -1,0 +1,21 @@
+{
+  "run_id": [
+    "1763794d-c0c2-4704-a483-20725cb39fd3"
+  ],
+  "log": [
+    "printProgress",
+    "error"
+  ],
+  "trace_recorder": [
+    "FILE"
+  ],
+  "stepLimit": [
+    "300000"
+  ],
+  "require_method_split": [
+    "false"
+  ],
+  "java_home": [
+    "C:\\Program Files\\Java\\jre1.8.0_341"
+  ]
+}
