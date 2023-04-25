@@ -2,10 +2,10 @@ package mutation;
 
 import java.io.IOException;
 
-import dataset.BugDataset;
-import dataset.BugDataset.BugData;
-import dataset.execution.Request;
-import dataset.execution.handler.TraceCollectionHandler;
+import jmutation.dataset.BugDataset;
+import jmutation.dataset.BugDataset.BugData;
+import jmutation.dataset.execution.Request;
+import jmutation.dataset.execution.handler.TraceCollectionHandler;
 
 import java.util.ArrayList;
 import java.util.List;

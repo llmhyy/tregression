@@ -30,14 +30,14 @@ import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.tracematch.ControlPathBasedTraceMatcher;
-import dataset.BugDataset;
-import dataset.BugDataset.BugData;
-import dataset.TestCase;
-import dataset.bug.minimize.ProjectMinimizer;
-import dataset.bug.model.path.MutationFrameworkPathConfiguration;
-import dataset.bug.model.path.PathConfiguration;
-import dataset.execution.Request;
-import dataset.execution.handler.TraceCollectionHandler;
+import jmutation.dataset.BugDataset;
+import jmutation.dataset.BugDataset.BugData;
+import jmutation.dataset.TestCase;
+import jmutation.dataset.bug.minimize.ProjectMinimizer;
+import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
+import jmutation.dataset.bug.model.path.PathConfiguration;
+import jmutation.dataset.execution.Request;
+import jmutation.dataset.execution.handler.TraceCollectionHandler;
 
 
 

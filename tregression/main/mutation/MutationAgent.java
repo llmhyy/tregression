@@ -101,6 +101,7 @@ public class MutationAgent {
         microbatConfig = microbatConfig.setStepLimit(this.stepLimit);
         configBuilder.setMicrobatConfig(microbatConfig);
         configuration = configBuilder.build();
+        // TODO: Fix mutation agent
 //        mutationFramework = new MutationFramework(configuration);
 //		mutationFramework.extractResources();
 	}
