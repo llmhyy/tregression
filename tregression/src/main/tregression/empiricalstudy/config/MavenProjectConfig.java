@@ -1,18 +1,23 @@
 package tregression.empiricalstudy.config;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.Invoker;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 
 public class MavenProjectConfig extends ProjectConfig {
 
@@ -56,7 +61,7 @@ public class MavenProjectConfig extends ProjectConfig {
 
     public static List<String> readAllDependency(Path projectRoot) throws Exception {
         executeMavenCopyDepsCmd(projectRoot);
-        return parseJarAllFilesInPath(projectRoot.resolve("target").resolve("dependency"));
+        return getAllJarRelativePathsFromRoot(projectRoot.resolve("target").resolve("dependency"), projectRoot);
     }
 
     /**
@@ -66,43 +71,28 @@ public class MavenProjectConfig extends ProjectConfig {
      * @param root
      * @return
      */
-    private static List<String> executeMavenCopyDepsCmd(Path root) {
-        List<String> cmdList = new ArrayList<>();
-        
-        cmdList.add("mvn");
-        cmdList.add("dependency:copy-dependencies");
-
-        String[] cmds = cmdList.toArray(new String[0]);
-        List<String> result = new ArrayList<>();
-        try {
-            ProcessBuilder pb = new ProcessBuilder(cmds);
-            pb.directory(root.toFile());
-            pb.redirectErrorStream(true); // merge stdout and stderr
-            Process proc = pb.start();
-
-            InputStream stdin = proc.getInputStream();
-            InputStreamReader isr = new InputStreamReader(stdin);
-            BufferedReader br = new BufferedReader(isr);
-
-            String line = null;
-            while ((line = br.readLine()) != null)
-                result.add(line);
-
-            stdin.close();
-
-            return result;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result;
+    private static boolean executeMavenCopyDepsCmd(Path root) {
+    	InvocationRequest request = new DefaultInvocationRequest();
+    	request.setPomFile( new File( root + File.separator + "pom.xml" ) );
+    	request.setGoals( Collections.singletonList( "dependency:copy-dependencies" ) );
+    	 
+    	Invoker invoker = new DefaultInvoker();
+    	invoker.setMavenHome(new File("C:\\Users\\Chenghin\\Tools\\apache-maven-3.8.6"));
+    	try {
+    		InvocationResult invocationResult = invoker.execute( request );
+    		return invocationResult.getExitCode() == 0;
+    	} catch (MavenInvocationException e) {
+    		e.printStackTrace();
+    		return false;
+    	}
     }
 
-    private static List<String> parseJarAllFilesInPath(Path root) throws IOException {
+    private static List<String> getAllJarRelativePathsFromRoot(Path startPath, final Path projectRoot) throws IOException {
         final List<String> result = new ArrayList<>();
         // Only filter directories or jar files.
-        try (Stream<Path> stream = Files.list(root).filter(new Predicate<Path>() {
+        try (Stream<Path> stream = Files.list(startPath).filter(new Predicate<Path>() {
             public boolean test(Path path) {
-                return path.endsWith("jar") || Files.isDirectory(path);
+                return path.toString().endsWith("jar") || Files.isDirectory(path);
             }
         })) {
             // loop through the stream of directories/jar files
@@ -113,9 +103,9 @@ public class MavenProjectConfig extends ProjectConfig {
                         // if the path is a directory, recursively call this method on the directory. 
                         // Else if it is a jar, add to result
                         if (Files.isDirectory(path)) {
-                            parseJarAllFilesInPath(path);
+                            getAllJarRelativePathsFromRoot(path, projectRoot);
                         } else {
-                            result.add(path.toRealPath().toString());
+                            result.add("." + File.separator + projectRoot.relativize(path).toString());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -124,5 +114,10 @@ public class MavenProjectConfig extends ProjectConfig {
             });
         }
         return result;
+    }
+    
+    public static void main(String[] args) {
+    	System.out.println(System.getenv().get("maven.home"));
+    	executeMavenCopyDepsCmd(Paths.get("C:\\Users\\Chenghin\\Desktop\\tregression-test\\ClassNotFound\\4\\bug"));
     }
 }
