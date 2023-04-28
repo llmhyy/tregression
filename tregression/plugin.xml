@@ -88,6 +88,11 @@
              id="tregression.spp"
              name="Stepwise Propagation">
        </command>
+       <command
+             defaultHandler="tregression.handler.Defects4jCollectionHandler"
+             id="tregression.collectDefects4jData"
+             name="Collect Defects4j Data">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -213,7 +218,7 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.collectdata"
+                  commandId="tregression.collectDefects4jData"
                   icon="icons/after.ico"
                   style="push">
             </command>
