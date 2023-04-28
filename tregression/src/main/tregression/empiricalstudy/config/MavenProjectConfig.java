@@ -77,7 +77,7 @@ public class MavenProjectConfig extends ProjectConfig {
     	request.setGoals( Collections.singletonList( "dependency:copy-dependencies" ) );
     	 
     	Invoker invoker = new DefaultInvoker();
-    	invoker.setMavenHome(new File("C:\\Users\\Chenghin\\Tools\\apache-maven-3.8.6"));
+    	invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
     	try {
     		InvocationResult invocationResult = invoker.execute( request );
     		return invocationResult.getExitCode() == 0;
@@ -114,10 +114,5 @@ public class MavenProjectConfig extends ProjectConfig {
             });
         }
         return result;
-    }
-    
-    public static void main(String[] args) {
-    	System.out.println(System.getenv().get("maven.home"));
-    	executeMavenCopyDepsCmd(Paths.get("C:\\Users\\Chenghin\\Desktop\\tregression-test\\ClassNotFound\\4\\bug"));
     }
 }
