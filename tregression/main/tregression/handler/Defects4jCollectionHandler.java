@@ -55,6 +55,9 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    supportedProjectNames.add("Math");
 			    supportedProjectNames.add("Mockito");
 			    supportedProjectNames.add("Time");
+	
+			    List<String> projectFilters = new ArrayList<>();
+			    projectFilters.add("Closure:44");
 			    
 			    // Loop all projects in the Defects4j folder
 			    for (String projectName : baseFolder.list()) {
@@ -73,6 +76,10 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		project_count++;
 			    		System.out.println();
 			    		System.out.println("Working on " + projectName + " : " + bugID_str);
+			    		
+			    		if (projectFilters.contains(projectName + ":" + bugID_str)) {
+			    			throw new RuntimeException("Will cause hanging problem");
+			    		}
 			    		
 			    		// Path to the buggy folder and the fixed folder
 			    		final String bugFolder = Paths.get(projectPath, bugID_str, "bug").toString();
