@@ -41,3 +41,15 @@ After import the projects, right-click the tregression project, and choose "Run 
 Second, please switch to Tregression perspective by (Windows >> Perspectives >> Open Operspective >> Other). 
 
 Third, click "Tregression" menu >> Run for Seperate Versions. The tool will automate the regression bug detection.
+
+## Running Tregression (ERASE) on Regs4j bugs
+Set up a Regs4J bug-fix in a similar folder structure as Defects4J.
+|__ project-name (project_id)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ 1 (bug_id)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ bug<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ failing_tests<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ fix<br />
+
+Ensure MAVEN_HOME environment variable is set to the path to your system's maven.
+
+Follow the steps for running on Defects4J as above.
