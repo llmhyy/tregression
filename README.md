@@ -43,7 +43,10 @@ Second, please switch to Tregression perspective by (Windows >> Perspectives >> 
 Third, click "Tregression" menu >> Run for Seperate Versions. The tool will automate the regression bug detection.
 
 ## Running Tregression (ERASE) on Regs4j bugs
+Note: The following set-up is not user-friendly (requires manual set-up and understanding of Defects4J folder structure) and is a work in progress.
+
 Set up a Regs4J bug-fix in a similar folder structure as Defects4J.
+
 |__ project-name (project_id)<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ 1 (bug_id)<br />
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ bug<br />
