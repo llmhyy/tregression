@@ -1,6 +1,10 @@
 package tregression.handler;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,13 +41,29 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 				
 				final String basePath = "E:\\david\\Defects4j";
 				// Write the analysis result to this file
-				final String resultPath = Paths.get(basePath, "result.txt").toString();
+				final String resultFolderPath = "E:\\hongshu\\Defects4j";
+				final String resultPath = Paths.get(resultFolderPath, "result.txt").toString();
 				
 			    int project_count = 0;
 			    int success_count = 0;
 			    
-				ResultWriter writer = new ResultWriter(resultPath);
-				writer.writeTitle();
+			    ResultWriter writer = new ResultWriter(resultPath);
+			    List<String> processedProjects = new ArrayList<>();
+			    // If file exists, read the records
+		    	try {
+		    		FileReader fileReader = new FileReader(resultPath);
+		    		BufferedReader reader = new BufferedReader(fileReader);
+		    		String line = reader.readLine(); // first line is the headers
+		    		while ((line = reader.readLine()) != null) {
+		    			String[] content = line.split(",");
+		    			String record = content[0] + ":" + content[1];
+		    			processedProjects.add(record);
+		    		}
+		    	} catch (FileNotFoundException e) {
+		    		writer.writeTitle();
+		    	} catch (IOException e) {
+		    		e.printStackTrace();
+		    	}
 				
 			    File baseFolder = new File(basePath);
 			    
@@ -58,6 +78,9 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 	
 			    List<String> projectFilters = new ArrayList<>();
 			    projectFilters.add("Closure:44");
+			    projectFilters.add("Closure:51");
+			    projectFilters.add("Closure:52");
+			    projectFilters.add("Closure:59");
 			    
 			    // Loop all projects in the Defects4j folder
 			    for (String projectName : baseFolder.list()) {
@@ -77,8 +100,10 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		System.out.println();
 			    		System.out.println("Working on " + projectName + " : " + bugID_str);
 			    		
-			    		if (projectFilters.contains(projectName + ":" + bugID_str)) {
-			    			throw new RuntimeException("Will cause hanging problem");
+			    		// Skip if the project has been processed
+			    		if (processedProjects.contains(projectName + ":" + bugID_str)) {
+			    			System.out.println("Skipped: has record in the result file");
+			    			continue;
 			    		}
 			    		
 			    		// Path to the buggy folder and the fixed folder
@@ -91,6 +116,9 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		result.bugID = Integer.valueOf(bugID_str);
 			    		
 			    		try {
+			    			if (projectFilters.contains(projectName + ":" + bugID_str)) {
+				    			throw new RuntimeException("Will cause hanging problem");
+				    		}
 			    			
 			    			// Get the configuration of the Defects4j project
 							ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugID_str);
