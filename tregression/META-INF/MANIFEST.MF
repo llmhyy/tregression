@@ -33,7 +33,9 @@ Bundle-ClassPath: lib/poi-3.11-20141221.jar,
  lib/xmlbeans-2.6.0.jar,
  .,
  lib/maven-model-3.8.1.jar,
- lib/plexus-utils-3.2.1.jar
+ lib/plexus-utils-3.2.1.jar,
+ lib/maven-invoker-3.2.0.jar,
+ lib/maven-shared-utils-3.3.4.jar
 Export-Package: tregression,
  tregression.empiricalstudy,
  tregression.empiricalstudy.solutionpattern,

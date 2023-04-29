@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DiffParser {
+	public static String ADDED_OR_REMOVED_FILE_NAME = "/dev/null";
+	
 	public List<FilePairWithDiff> parseDiff(List<String> diffContent, String sourceFolderName){
 		List<FilePairWithDiff> fileDiffList = new ArrayList<>();
 		FilePairWithDiff fileDiff = null;
@@ -18,30 +20,10 @@ public class DiffParser {
 				fileDiff.setSourceFolderName(sourceFolderName);
 			}
 			else if(line.startsWith("---")){
-				String osName = System.getProperty("os.name");
-				String sourceFile;
-				if(osName.contains("Win")){
-					sourceFile = line.substring(line.indexOf("a/")+2, line.length()-1);
-				}
-				else{
-					sourceFile = line.substring(line.indexOf("a/")+1, line.length());
-				}
-				sourceFile = sourceFile.replace("/", File.separator);
-				sourceFile = sourceFile.replace("\\\\", File.separator);
-				fileDiff.setSourceFile(sourceFile);
+				fileDiff.setSourceFile(getFilePath(true, line));
 			}
 			else if(line.startsWith("+++")){
-				String osName = System.getProperty("os.name");
-				String targetFile;
-				if(osName.contains("Win")){
-					targetFile = line.substring(line.indexOf("b/")+2, line.length()-1);
-				}
-				else{
-					targetFile = line.substring(line.indexOf("b/")+1, line.length());
-				}
-				targetFile = targetFile.replace("/", File.separator);
-				targetFile = targetFile.replace("\\\\", File.separator);
-				fileDiff.setTargetFile(targetFile);
+				fileDiff.setTargetFile(getFilePath(false, line));
 			}
 			else if(line.startsWith("@@")){
 				String chunkInfo = line.substring(line.indexOf("@@")+3, line.lastIndexOf("@@")-1);
@@ -88,5 +70,29 @@ public class DiffParser {
 		}
 		
 		return -1;
+	}
+	
+	private String getFilePath(boolean isSource, String line) {
+		String diffSuffix = "";
+		if (isSource) {
+			diffSuffix = "a/";
+		} else {
+			diffSuffix = "b/";
+		}
+		String resultFilePath;
+		if (line.contains(ADDED_OR_REMOVED_FILE_NAME)) {
+			resultFilePath = ADDED_OR_REMOVED_FILE_NAME;
+		} else {
+			String osName = System.getProperty("os.name");
+			if(osName.contains("Win")){
+				resultFilePath = line.substring(line.indexOf(diffSuffix)+2, line.length()-1);
+			}
+			else{
+				resultFilePath = line.substring(line.indexOf(diffSuffix)+1, line.length());
+			}
+			resultFilePath = resultFilePath.replace("/", File.separator);
+			resultFilePath = resultFilePath.replace("\\\\", File.separator);
+		}
+		return resultFilePath;
 	}
 }
