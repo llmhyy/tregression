@@ -16,6 +16,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/microbat_instrumentator"/>
-	<classpathentry exported="true" kind="lib" path="lib/java-mutation-framework-0.0.1-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/java-mutation-framework-0.0.1-SNAPSHOT.jar" sourcepath="/java-mutation-framework"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
