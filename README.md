@@ -42,6 +42,7 @@ Second, please switch to Tregression perspective by (Windows >> Perspectives >> 
 
 Third, click "Tregression" menu >> Run for Seperate Versions. The tool will automate the regression bug detection.
 
+
 ## Running Mutation on Tregression
 
 Tregression now are able to mutate a originally correct trace into buggy trace that fail on targeted test case. For step-by-step guildline, please refer to [Mutation on Tregression](https://github.com/llmhyy/tregression/wiki/Mutation-on-Tregression).
@@ -49,3 +50,19 @@ Tregression now are able to mutate a originally correct trace into buggy trace t
 ## Run Belief Propagation on Tregression
 
 Tregression can now debug based on belief propagation technique. For more information about debugging on belief propagation, please refer to [Debugging using Belief Propagation on Tregression](https://github.com/llmhyy/tregression/wiki/Run-Belief-Propagation-on-Tregression).
+
+## Running Tregression (ERASE) on Regs4j bugs
+Note: The following set-up is not user-friendly (requires manual set-up and understanding of Defects4J folder structure) and is a work in progress.
+
+Set up a Regs4J bug-fix in a similar folder structure as Defects4J.
+
+|__ project-name (project_id)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ 1 (bug_id)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ bug<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ failing_tests<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|__ fix<br />
+
+Ensure MAVEN_HOME environment variable is set to the path to your system's maven.
+
+Follow the steps for running on Defects4J as above.
+
