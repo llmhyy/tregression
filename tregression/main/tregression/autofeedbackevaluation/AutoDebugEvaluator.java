@@ -169,94 +169,94 @@ public class AutoDebugEvaluator {
 	 * @return Number of user feedback needed to reach the root cause
 	 */
 	private int evaluateBaseline(Trace buggyTrace) {
-		
-		final int maxItr = (int) (buggyTrace.size() * this.maxBaselineItrFactor);
-		int noOfFeedbackNeeded = 0;
-		
-		BeliefPropagation encoder = new BeliefPropagation(buggyTrace);
-		encoder.setup();
-		
-		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, this.correctView.getTrace());
-		TraceNode ref = this.getFirstDeviationNode(PlayRegressionLocalizationHandler.finder);
-		
-		int startPointer = encoder.getSlicedExecutionList().get(0).getOrder();
-		List<Integer> branchOrders = new ArrayList<>();
-		for (TraceNode node : encoder.getSlicedExecutionList()) {
-			if (node.isBranch()) {
-				branchOrders.add(node.getOrder());
-			}
-		}
-		Collections.reverse(branchOrders);
-		
-		List<Integer> visitedNodeOrder = new ArrayList<>();
-		while(noOfFeedbackNeeded < maxItr) {
-			System.out.println("---------------------------------- " + noOfFeedbackNeeded + " iteration");
-			encoder.encode();
-			
-			TraceNode result = encoder.getMostErroneousNode();
-			
-			final TraceNode resultFinal = result;
-			
-			Display.getDefault().asyncExec(new Runnable() {
-			    @Override
-			    public void run() {
-					Trace buggyTrace = buggyView.getTrace();
-//					Trace correctTrace = correctView.getTrace();
-					buggyView.jumpToNode(buggyTrace, resultFinal.getOrder(), true); 
-					
-					try {
-						Thread.sleep(2000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-			    }
-			});
-			
-			System.out.println("Ground Truth: " + 27 + ", Prediction: " + result.getOrder());
-			
-			for (TraceNode node : encoder.getSlicedExecutionList()) {
-				System.out.println("Node: " + node.getOrder() + " have prob = " + node.getProbability());
-				for (VarValue readVar : node.getReadVariables()) {
-					System.out.println("readVar: " + readVar.getVarName() + " have prob = " + readVar.getProbability());
-				}
-				for (VarValue writeVar : node.getWrittenVariables()) {
-					System.out.println("writeVar: " + writeVar.getVarName() + " have prob = " + writeVar.getProbability());
-				}
-			}
-			
-			// Case that baseline find out the root cause
-			if (result.getOrder() == 27) {
-				break;
-			}
-			
-			if (visitedNodeOrder.contains(result.getOrder())) {
-				
-				if (!branchOrders.isEmpty()) {
-					startPointer = branchOrders.get(0);
-					branchOrders.remove(0);
-				} else {
-					encoder.getSlicedExecutionList().get(0).getOrder();
-					while (visitedNodeOrder.contains(startPointer)) {
-						startPointer++;
-					}
-				}
-				
-				result = buggyTrace.getTraceNode(startPointer);
-				System.out.println("Node is visited. Now change to Node: " + result.getOrder());
-			}
-			
-			StepChangeType type = typeChecker.getType(result, true, this.buggyView.getPairList(), this.buggyView.getDiffMatcher());
-			UserFeedback feedback = this.typeToFeedback(type, result, true, PlayRegressionLocalizationHandler.finder);
-			System.out.println("Feedback for node: " + result.getOrder() + " is " + feedback);
-			NodeFeedbackPair pair = new NodeFeedbackPair(result, feedback);
-			BeliefPropagation.addFeedback(pair);
-
-			noOfFeedbackNeeded++;
-			
-			visitedNodeOrder.add(result.getOrder());
-		}
-		
-		return noOfFeedbackNeeded;
+		return 0;
+//		final int maxItr = (int) (buggyTrace.size() * this.maxBaselineItrFactor);
+//		int noOfFeedbackNeeded = 0;
+//		
+//		BeliefPropagation encoder = new BeliefPropagation(buggyTrace);
+//		encoder.setup();
+//		
+//		StepChangeTypeChecker typeChecker = new StepChangeTypeChecker(buggyTrace, this.correctView.getTrace());
+//		TraceNode ref = this.getFirstDeviationNode(PlayRegressionLocalizationHandler.finder);
+//		
+//		int startPointer = encoder.getSlicedExecutionList().get(0).getOrder();
+//		List<Integer> branchOrders = new ArrayList<>();
+//		for (TraceNode node : encoder.getSlicedExecutionList()) {
+//			if (node.isBranch()) {
+//				branchOrders.add(node.getOrder());
+//			}
+//		}
+//		Collections.reverse(branchOrders);
+//		
+//		List<Integer> visitedNodeOrder = new ArrayList<>();
+//		while(noOfFeedbackNeeded < maxItr) {
+//			System.out.println("---------------------------------- " + noOfFeedbackNeeded + " iteration");
+//			encoder.encode();
+//			
+//			TraceNode result = encoder.getMostErroneousNode();
+//			
+//			final TraceNode resultFinal = result;
+//			
+//			Display.getDefault().asyncExec(new Runnable() {
+//			    @Override
+//			    public void run() {
+//					Trace buggyTrace = buggyView.getTrace();
+////					Trace correctTrace = correctView.getTrace();
+//					buggyView.jumpToNode(buggyTrace, resultFinal.getOrder(), true); 
+//					
+//					try {
+//						Thread.sleep(2000);
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
+//			    }
+//			});
+//			
+//			System.out.println("Ground Truth: " + 27 + ", Prediction: " + result.getOrder());
+//			
+//			for (TraceNode node : encoder.getSlicedExecutionList()) {
+//				System.out.println("Node: " + node.getOrder() + " have prob = " + node.getProbability());
+//				for (VarValue readVar : node.getReadVariables()) {
+//					System.out.println("readVar: " + readVar.getVarName() + " have prob = " + readVar.getProbability());
+//				}
+//				for (VarValue writeVar : node.getWrittenVariables()) {
+//					System.out.println("writeVar: " + writeVar.getVarName() + " have prob = " + writeVar.getProbability());
+//				}
+//			}
+//			
+//			// Case that baseline find out the root cause
+//			if (result.getOrder() == 27) {
+//				break;
+//			}
+//			
+//			if (visitedNodeOrder.contains(result.getOrder())) {
+//				
+//				if (!branchOrders.isEmpty()) {
+//					startPointer = branchOrders.get(0);
+//					branchOrders.remove(0);
+//				} else {
+//					encoder.getSlicedExecutionList().get(0).getOrder();
+//					while (visitedNodeOrder.contains(startPointer)) {
+//						startPointer++;
+//					}
+//				}
+//				
+//				result = buggyTrace.getTraceNode(startPointer);
+//				System.out.println("Node is visited. Now change to Node: " + result.getOrder());
+//			}
+//			
+//			StepChangeType type = typeChecker.getType(result, true, this.buggyView.getPairList(), this.buggyView.getDiffMatcher());
+//			UserFeedback feedback = this.typeToFeedback(type, result, true, PlayRegressionLocalizationHandler.finder);
+//			System.out.println("Feedback for node: " + result.getOrder() + " is " + feedback);
+//			NodeFeedbackPair pair = new NodeFeedbackPair(result, feedback);
+//			BeliefPropagation.addFeedback(pair);
+//
+//			noOfFeedbackNeeded++;
+//			
+//			visitedNodeOrder.add(result.getOrder());
+//		}
+//		
+//		return noOfFeedbackNeeded;
 	}
 	
 	public List<AccMeasurement> getMeasurements() {

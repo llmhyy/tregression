@@ -328,6 +328,7 @@ public class DiffMatcher {
 	}
 
 	private int countLineNumber(String fileName){
+		if (fileName.equals(DiffParser.ADDED_OR_REMOVED_FILE_NAME)) return 0;
 		LineNumberReader lnr;
 		try {
 			File file = new File(fileName);
@@ -435,10 +436,6 @@ public class DiffMatcher {
 
 	private boolean checkFollowByAdd(DiffChunk chunk, int startIndex, int successiveRemoveLines) {
 		int index = startIndex+successiveRemoveLines;
-		// Modified by David
-		// It may cause index out of bound error
-		
-//		if(index <= chunk.getChangeList().size()){
 		if(index < chunk.getChangeList().size()){
 			return chunk.getChangeList().get(index).getType()==LineChange.ADD;
 		}

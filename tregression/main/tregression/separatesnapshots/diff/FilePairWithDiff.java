@@ -11,7 +11,7 @@ import java.util.List;
  *
  */
 public class FilePairWithDiff {
-	
+	public static String UNKNOWN_COMPILATION_UNIT = "UNKNOWN_COMPILATION_UNIT";
 	private HashMap<Integer, List<Integer>> sourceToTargetMap = new HashMap<>();
 	private HashMap<Integer, List<Integer>> targetToSourceMap = new HashMap<>();
 	
@@ -41,6 +41,12 @@ public class FilePairWithDiff {
 	
 	public String getDeclaringCompilationUnit(String path, String sourceFolderName){
 
+		if (path.equals(DiffParser.ADDED_OR_REMOVED_FILE_NAME)) return UNKNOWN_COMPILATION_UNIT;
+		int indexOfJava = path.indexOf(".java");
+		if (indexOfJava == -1) {
+		    // Not a java file then return "unknown compilation unit" as the class name
+		    return UNKNOWN_COMPILATION_UNIT;
+		}
 		String path0 = path.substring(path.indexOf(sourceFolderName)+sourceFolderName.length()+1, path.indexOf(".java"));
 		String qualifier = path0.replace(File.separatorChar, '.');
 		

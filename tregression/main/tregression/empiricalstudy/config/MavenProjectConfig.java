@@ -1,87 +1,118 @@
 package tregression.empiricalstudy.config;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
-import org.apache.commons.lang.SystemUtils;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.Invoker;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 
 public class MavenProjectConfig extends ProjectConfig {
 
-	public final static String M2AFFIX = ".m2" + File.separator + "repository";
+    public final static String M2AFFIX = ".m2" + File.separator + "repository";
 
-	public MavenProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
-			String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
-		super(srcTestFolder, srcSourceFolder, bytecodeTestFolder, bytecodeSourceFolder, buildFolder, projectName,
-				regressionID);
-	}
+    public MavenProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
+            String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
+        super(srcTestFolder, srcSourceFolder, bytecodeTestFolder, bytecodeSourceFolder, buildFolder, projectName,
+                regressionID);
+    }
 
-	public static boolean check(String path) {
+    public static boolean check(String path) {
 
-		File f = new File(path);
-		if (f.exists() && f.isDirectory()) {
-			for (String file : f.list()) {
-				if (file.toString().equals("pom.xml")) {
-					return true;
-				}
-			}
-		}
+        File f = new File(path);
+        if (f.exists() && f.isDirectory()) {
+            for (String file : f.list()) {
+                if (file.toString().equals("pom.xml")) {
+                    return true;
+                }
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
+    public static ProjectConfig getConfig(String projectName, String regressionID) {
+        return new MavenProjectConfig("src" + File.separator + "test" + File.separator + "java",
+                "src" + File.separator + "main" + File.separator + "java", "target" + File.separator + "test-classes",
+                "target" + File.separator + "classes", "target", projectName, regressionID);
+    }
 
-	public static ProjectConfig getConfig(String projectName, String regressionID) {
-		return new MavenProjectConfig("src"+File.separator+"test"+File.separator+"java", 
-				"src"+File.separator+"main"+File.separator+"java", 
-				"target"+File.separator+"test-classes", 
-				"target"+File.separator+"classes", 
-				"target", 
-				projectName, 
-				regressionID);
-	}
-	
-	public static List<String> getMavenDependencies(String path){
-		String pomPath = path + File.separator + "pom.xml";
-		File pomFile = new File(pomPath);
+    public static List<String> getMavenDependencies(String path) {
+        Path projectRoot = Paths.get(path);
+        try {
+            return readAllDependency(projectRoot);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
 
-		try {
-			List<String> dependencies = readAllDependency(pomFile);
-			
-			return dependencies;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return new ArrayList<String>();
-	}
+    public static List<String> readAllDependency(Path projectRoot) throws Exception {
+        executeMavenCopyDepsCmd(projectRoot);
+        return getAllJarRelativePathsFromRoot(projectRoot.resolve("target").resolve("dependency"), projectRoot);
+    }
 
-	@SuppressWarnings("unchecked")
-	public static List<String> readAllDependency(File pom) throws Exception {
-		MavenXpp3Reader mavenReader = new MavenXpp3Reader();
-		Model pomModel = mavenReader.read(new FileReader(pom));
-		List<Dependency> dependencies = pomModel.getDependencies();
-		List<String> result = new ArrayList<>();
-		String usrHomePath = getUserHomePath();
-		for (Dependency dependency : dependencies) {
-			StringBuilder sb = new StringBuilder(usrHomePath);
-			sb.append(File.separator).append(M2AFFIX).append(File.separator)
-					.append(dependency.getGroupId().replace(".", File.separator)).append(File.separator)
-					.append(dependency.getArtifactId()).append(File.separator).append(dependency.getVersion())
-					.append(File.separator).append(dependency.getArtifactId()).append("-")
-					.append(dependency.getVersion()).append(".").append(dependency.getType());
-			result.add(sb.toString());
-		}
-		return result;
-	}
+    /**
+     * Executes `mvn dependency:copy-dependencies` command.
+     * It copies all dependencies to src/target/dependency directory.
+     * 
+     * @param root
+     * @return
+     */
+    private static boolean executeMavenCopyDepsCmd(Path root) {
+    	InvocationRequest request = new DefaultInvocationRequest();
+    	request.setPomFile( new File( root + File.separator + "pom.xml" ) );
+    	request.setGoals( Collections.singletonList( "dependency:copy-dependencies" ) );
+    	 
+    	Invoker invoker = new DefaultInvoker();
+    	invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
+    	try {
+    		InvocationResult invocationResult = invoker.execute( request );
+    		return invocationResult.getExitCode() == 0;
+    	} catch (MavenInvocationException e) {
+    		e.printStackTrace();
+    		return false;
+    	}
+    }
 
-	private static String getUserHomePath() {
-		return SystemUtils.getUserHome().toString();
-	}
-
+    private static List<String> getAllJarRelativePathsFromRoot(Path startPath, final Path projectRoot) throws IOException {
+        final List<String> result = new ArrayList<>();
+        // Only filter directories or jar files.
+        try (Stream<Path> stream = Files.list(startPath).filter(new Predicate<Path>() {
+            public boolean test(Path path) {
+                return path.toString().endsWith("jar") || Files.isDirectory(path);
+            }
+        })) {
+            // loop through the stream of directories/jar files
+            stream.forEach(new Consumer<Path>() {
+                @Override
+                public void accept(Path path) {
+                    try {
+                        // if the path is a directory, recursively call this method on the directory. 
+                        // Else if it is a jar, add to result
+                        if (Files.isDirectory(path)) {
+                            getAllJarRelativePathsFromRoot(path, projectRoot);
+                        } else {
+                            result.add("." + File.separator + projectRoot.relativize(path).toString());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        return result;
+    }
 }

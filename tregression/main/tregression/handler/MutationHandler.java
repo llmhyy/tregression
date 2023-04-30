@@ -84,12 +84,12 @@ public class MutationHandler extends AbstractHandler {
 				// Pass mutation result to the BaselineHandler
 //				BaselineHandler.setInputs(mutationAgent.getInputs());
 //				BaselineHandler.setOutputs(mutationAgent.getOutputs());
-				BaselineHandler.setRootCause(mutationAgent.getRootCause());
-				BaselineHandler.setMutatedProPath(mutationAgent.getMutatedProjPath());
-				BaselineHandler.setOriginalProPath(mutationAgent.getOriginalProjPath());
-				BaselineHandler.setMutationCount(mutationAgent.getMutationCount());
-//				BaselineHandler.setTestCaseID(testCaesID);
-				BaselineHandler.setTestCaseMethod(mutationAgent.getTestCase().simpleName);
+//				ProfInferTHandler.setRootCause(mutationAgent.getRootCause());
+//				ProfInferTHandler.setMutatedProPath(mutationAgent.getMutatedProjPath());
+//				ProfInferTHandler.setOriginalProPath(mutationAgent.getOriginalProjPath());
+//				ProfInferTHandler.setMutationCount(mutationAgent.getMutationCount());
+////				BaselineHandler.setTestCaseID(testCaesID);
+//				ProfInferTHandler.setTestCaseMethod(mutationAgent.getTestCase().simpleName);
 				
 				// Print out detected inputs/outputs
 				for (VarValue input : mutationAgent.getInputs()) {
@@ -101,15 +101,15 @@ public class MutationHandler extends AbstractHandler {
 				
 				// Print root cause order
 				String rootCauseIDStr = "";
-				Collections.sort(BaselineHandler.rootCause, new Comparator<TraceNode>() {
-					@Override
-					public int compare(TraceNode node1, TraceNode node2) {
-						return node1.getOrder() - node2.getOrder();
-					}
-				});
-				for (TraceNode rootCause : BaselineHandler.rootCause) {
-					rootCauseIDStr += rootCause.getOrder() + ",";
-				}
+//				Collections.sort(ProfInferTHandler.rootCause, new Comparator<TraceNode>() {
+//					@Override
+//					public int compare(TraceNode node1, TraceNode node2) {
+//						return node1.getOrder() - node2.getOrder();
+//					}
+//				});
+//				for (TraceNode rootCause : ProfInferTHandler.rootCause) {
+//					rootCauseIDStr += rootCause.getOrder() + ",";
+//				}
 				System.out.println("Ground Truth: " + rootCauseIDStr);
 				
 				System.out.println("Mutation Count: " + mutationAgent.getMutationCount());
