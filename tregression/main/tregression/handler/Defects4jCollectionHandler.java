@@ -109,6 +109,12 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		System.out.println();
 			    		System.out.println("Working on " + projectName + " : " + bugID_str);
 			    		
+			    		if (projectName.equals("Closure") && bugID_str.equals("47")) {
+			    			
+			    		} else {
+			    			continue;
+			    		}
+			    		
 			    		// Skip if the project has been processed
 			    		if (processedProjects.contains(projectName + ":" + bugID_str)) {
 			    			System.out.println("Skipped: has record in the result file");
@@ -137,15 +143,16 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 							
 							// TrailGenerator will generate the buggy trace and fixed trace
 							final TrialGenerator0 generator0 = new TrialGenerator0();
-							ExecutorService executorService = Executors.newSingleThreadExecutor();
-							Future<List<EmpiricalTrial>> getTrials = executorService.submit(new Callable<List<EmpiricalTrial>>() {
-								@Override
-								public List<EmpiricalTrial> call() throws Exception {
-									return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
-								}
-							});
-							// Timeout: 15 minutes
-							List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
+//							ExecutorService executorService = Executors.newSingleThreadExecutor();
+//							Future<List<EmpiricalTrial>> getTrials = executorService.submit(new Callable<List<EmpiricalTrial>>() {
+//								@Override
+//								public List<EmpiricalTrial> call() throws Exception {
+//									return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+//								}
+//							});
+//							// Timeout: 15 minutes
+//							List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
+							List<EmpiricalTrial> trials = generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
 							
 							// Record the analysis result
 							if (trials.size() != 0) {
