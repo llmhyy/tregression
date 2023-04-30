@@ -8,19 +8,6 @@ public class ResultWriter {
 	
 	private final String path;
 	
-	public static void main(String[] args) {
-		final String path = "E:\\david\\Defects4j\\testing.txt";
-		ResultWriter writer = new ResultWriter(path);
-		RunResult result = new RunResult();
-		result.projectName = "testing";
-		result.bugID = 1;
-		result.traceLen = 10;
-		result.rootCauseOrder = 2;
-		result.isOmissionBug = true;
-		for (int i=0; i<5; i++)
-			writer.writeResult(result);
-	}
-	
 	public ResultWriter(final String path) {
 		this.path = path;
 	}
@@ -42,7 +29,7 @@ public class ResultWriter {
 			this.appendStr(strBuffer, "Solution Name");
 			this.appendStr(strBuffer, "Error Message");
 	
-			fileWriter.write(strBuffer.toString() + "\n");
+			fileWriter.write(strBuffer.toString() + System.lineSeparator());
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -75,7 +62,7 @@ public class ResultWriter {
 			this.appendStr(strBuffer, String.valueOf(result.isOmissionBug));
 			this.appendStr(strBuffer, result.solutionName);
 			this.appendStr(strBuffer, result.errorMessage);
-			fileWriter.write(strBuffer.toString() + "\n");
+			fileWriter.write(strBuffer.toString() + System.lineSeparator());
 			
 		} catch (Exception e) {
 			e.printStackTrace();
