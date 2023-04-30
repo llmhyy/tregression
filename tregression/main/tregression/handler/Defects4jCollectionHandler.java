@@ -8,6 +8,11 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -76,11 +81,15 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    supportedProjectNames.add("Mockito");
 			    supportedProjectNames.add("Time");
 	
-			    List<String> projectFilters = new ArrayList<>();
-			    projectFilters.add("Closure:44");
-			    projectFilters.add("Closure:51");
-			    projectFilters.add("Closure:52");
-			    projectFilters.add("Closure:59");
+			    //List<String> projectFilters = new ArrayList<>();
+			    //projectFilters.add("Closure:44");
+			    //projectFilters.add("Closure:51");
+			    //projectFilters.add("Closure:52");
+			    //projectFilters.add("Closure:59");
+			    //projectFilters.add("Closure:65");
+			    //projectFilters.add("Closure:73");
+			    //projectFilters.add("Closure:77");
+			    //projectFilters.add("Closure:107");
 			    
 			    // Loop all projects in the Defects4j folder
 			    for (String projectName : baseFolder.list()) {
@@ -116,19 +125,27 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		result.bugID = Integer.valueOf(bugID_str);
 			    		
 			    		try {
-			    			if (projectFilters.contains(projectName + ":" + bugID_str)) {
-				    			throw new RuntimeException("Will cause hanging problem");
-				    		}
+			    			//if (projectFilters.contains(projectName + ":" + bugID_str)) {
+				    		//	throw new RuntimeException("Will cause hanging problem");
+				    		//}
 			    			
 			    			// Get the configuration of the Defects4j project
-							ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugID_str);
+							final ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugID_str);
 							if(config == null) {
 								throw new Exception("cannot parse the configuration of the project " + projectName + " with id " + bugID_str);						
 							}
 							
 							// TrailGenerator will generate the buggy trace and fixed trace
-							TrialGenerator0 generator0 = new TrialGenerator0();
-							List<EmpiricalTrial> trials = generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+							final TrialGenerator0 generator0 = new TrialGenerator0();
+							ExecutorService executorService = Executors.newSingleThreadExecutor();
+							Future<List<EmpiricalTrial>> getTrials = executorService.submit(new Callable<List<EmpiricalTrial>>() {
+								@Override
+								public List<EmpiricalTrial> call() throws Exception {
+									return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+								}
+							});
+							// Timeout: 15 minutes
+							List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
 							
 							// Record the analysis result
 							if (trials.size() != 0) {
