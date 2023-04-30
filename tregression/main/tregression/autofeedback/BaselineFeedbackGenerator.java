@@ -26,8 +26,8 @@ public final class BaselineFeedbackGenerator extends FeedbackGenerator {
 	
 	public BaselineFeedbackGenerator(Trace trace, AutoFeedbackMethod method) {
 		super(trace, method);
-		this.encoder = new BeliefPropagation(trace);
-		this.encoder.setup();
+//		this.encoder = new BeliefPropagation(trace);
+//		this.encoder.setup();
 		
 	}
 	

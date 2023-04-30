@@ -22,22 +22,20 @@ import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
-import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 
-public class Defects4jCollectionHandler extends AbstractHandler {
+public class MutationRunnerHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
 		JavaUtil.sourceFile2CUMap.clear();
 		Job job = new Job("Testing Tregression") {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
+				final String basePath = "E:\\david\\MutationDataset";
 				
-				final String basePath = "E:\\david\\Defects4j";
 				// Write the analysis result to this file
-				final String resultPath = Paths.get(basePath, "result_1.txt").toString();
+				final String resultPath = Paths.get(basePath, "result.txt").toString();
 				
 			    int project_count = 0;
 			    int success_count = 0;
@@ -46,26 +44,13 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 				writer.writeTitle();
 				
 			    File baseFolder = new File(basePath);
-			    
-			    // Not all projects are supported by Tregression by now
-			    List<String> supportedProjectNames = new ArrayList<>();
-			    supportedProjectNames.add("Chart");
-			    supportedProjectNames.add("Closure");
-			    supportedProjectNames.add("Lang");
-			    supportedProjectNames.add("Math");
-			    supportedProjectNames.add("Mockito");
-			    supportedProjectNames.add("Time");
 	
+			    // You can filter out some problematic projection. The example is commented
 			    List<String> projectFilters = new ArrayList<>();
-			    projectFilters.add("Closure:44");
+//			    projectFilters.add("Closure:44");
 			    
 			    // Loop all projects in the Defects4j folder
 			    for (String projectName : baseFolder.list()) {
-			    	
-			    	// Skip if the project is not supported
-			    	if (!supportedProjectNames.contains(projectName)) {
-			    		continue;
-			    	}
 			    	
 			    	System.out.println("Start running " + projectName);
 			    	final String projectPath = Paths.get(basePath, projectName).toString();
@@ -90,10 +75,13 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		result.projectName = projectName;
 			    		result.bugID = Integer.valueOf(bugID_str);
 			    		
-			    		try {
+			    		
 			    			
-			    			// Get the configuration of the Defects4j project
-							ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugID_str);
+	    				try {
+			    			
+			    			// Project config of the mutation dataset
+							ProjectConfig config = null;
+									
 							if(config == null) {
 								throw new Exception("cannot parse the configuration of the project " + projectName + " with id " + bugID_str);						
 							}
@@ -125,7 +113,7 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    			System.out.println("Failed");
 			    			result.errorMessage = e.toString();
 			    		}
-			    			
+
 			    		writer.writeResult(result);
 
 			    	}
@@ -138,4 +126,5 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 		job.schedule();
 		return null;
 	}
+
 }
