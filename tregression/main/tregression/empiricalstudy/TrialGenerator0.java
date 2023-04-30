@@ -75,7 +75,7 @@ public class TrialGenerator0 {
 		EmpiricalTrial trial = null;
 		TestCase workingTC = null;
 		try {
-			tcList = retrieveD4jFailingTestCase(buggyPath);
+			tcList = config.retrieveFailingTestCase(buggyPath);
 			
 			if(testcase!=null){
 				tcList = filterSpecificTestCase(testcase, tcList);
@@ -433,9 +433,5 @@ public class TrialGenerator0 {
 			
 		}
 		
-	}
-
-	public List<TestCase> retrieveD4jFailingTestCase(String buggyVersionPath) throws IOException {
-		return Defects4jProjectConfig.retrieveFailingTestCase(buggyVersionPath);
 	}
 }

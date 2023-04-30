@@ -34,7 +34,8 @@ public class MutationRunnerHandler extends AbstractHandler {
 
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				final String basePath = "E:\\david\\MutationDataset";
+				// TODO: Use tregression preferences (repo path)
+ 				final String basePath = "E:\\david\\Mutation_Dataset";
 
 				// Write the analysis result to this file
 				final String resultPath = Paths.get(basePath, "result.txt").toString();
@@ -60,12 +61,14 @@ public class MutationRunnerHandler extends AbstractHandler {
 					// Loop all bug id in the projects folder
 					for (String bugID_str : projectFolder.list()) {
 						int bugId;
-						try {
-							bugId = Integer.parseInt(bugID_str);
-						} catch (NumberFormatException e) {
-							continue;
-						}
-
+//						try {
+//							bugId = Integer.parseInt(bugID_str);
+//						} catch (NumberFormatException e) {
+//							continue;
+//						}
+						bugID_str = "1";
+						bugId = 1;
+						
 						PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 						project_count++;
 						System.out.println();
@@ -76,8 +79,8 @@ public class MutationRunnerHandler extends AbstractHandler {
 						}
 
 						// Path to the buggy folder and the fixed folder
-						final String bugFolder = pathConfig.getBuggyPath(projectPath, bugID_str);
-						final String fixFolder = pathConfig.getFixPath(projectPath, bugID_str);
+						final String bugFolder = pathConfig.getBuggyPath(projectName, bugID_str);
+						final String fixFolder = pathConfig.getFixPath(projectName, bugID_str);
 
 						// Result store the analysis result
 						RunResult result = new RunResult();
@@ -87,7 +90,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 						try {
 
 							// Project config of the mutation dataset
-							ProjectConfig config = ConfigFactory.createConfig(projectName, projectName, bugFolder,
+							ProjectConfig config = ConfigFactory.createConfig(projectName, bugID_str, bugFolder,
 									fixFolder);
 
 							if (config == null) {
