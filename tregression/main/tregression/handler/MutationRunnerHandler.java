@@ -35,7 +35,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				// TODO: Use tregression preferences (repo path)
- 				final String basePath = "E:\\david\\Mutation_Dataset";
+				final String basePath = "E:\\david\\Mutation_Dataset";
 
 				// Write the analysis result to this file
 				final String resultPath = Paths.get(basePath, "result.txt").toString();
@@ -66,9 +66,9 @@ public class MutationRunnerHandler extends AbstractHandler {
 //						} catch (NumberFormatException e) {
 //							continue;
 //						}
-						bugID_str = "1";
-						bugId = 1;
-						
+						bugID_str = "2";
+						bugId = 2;
+
 						PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 						project_count++;
 						System.out.println();
@@ -88,7 +88,6 @@ public class MutationRunnerHandler extends AbstractHandler {
 						result.bugID = bugId;
 
 						try {
-
 							// Project config of the mutation dataset
 							ProjectConfig config = ConfigFactory.createConfig(projectName, bugID_str, bugFolder,
 									fixFolder);
@@ -99,7 +98,6 @@ public class MutationRunnerHandler extends AbstractHandler {
 							}
 
 							// TrailGenerator will generate the buggy trace and fixed trace
-							TrialGenerator0 generator0 = new TrialGenerator0();
 							List<EmpiricalTrial> trials = new TrialGenerator0().generateTrials(bugFolder, fixFolder,
 									false, false, false, 3, true, true, config, "");
 
@@ -117,21 +115,16 @@ public class MutationRunnerHandler extends AbstractHandler {
 											: t.getRootcauseNode().getOrder();
 									for (DeadEndRecord record : t.getDeadEndRecordList()) {
 										result.solutionName = record.getSolutionPattern().getTypeName();
-
 									}
 								}
 								success_count++;
 							}
-
 						} catch (Exception e) {
 							System.out.println("Failed");
 							result.errorMessage = e.toString();
 						}
-
 						writer.writeResult(result);
-
 					}
-
 				}
 				writer.writeResult(success_count, project_count);
 				return Status.OK_STATUS;
