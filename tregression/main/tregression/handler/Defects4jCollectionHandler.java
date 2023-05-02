@@ -125,7 +125,13 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		// Result store the analysis result
 			    		RunResult result = new RunResult();
 			    		result.projectName = projectName;
-			    		result.bugID = Integer.valueOf(bugID_str);
+			    		try {
+			    			result.bugID = Integer.valueOf(bugID_str);
+			    		} catch (NumberFormatException e) {
+			    			e.printStackTrace();
+			    			System.out.println("Skipped: invalid folder format");
+			    			continue;
+			    		}
 			    		
 			    		try {
 			    			//if (projectFilters.contains(projectName + ":" + bugID_str)) {
