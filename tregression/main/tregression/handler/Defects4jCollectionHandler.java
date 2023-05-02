@@ -47,7 +47,7 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 				final String basePath = "E:\\david\\Defects4j";
 				// Write the analysis result to this file
 				final String resultFolderPath = "E:\\hongshu\\Defects4j";
-				final String resultPath = Paths.get(resultFolderPath, "result.txt").toString();
+				final String resultPath = Paths.get(resultFolderPath, "result_1.txt").toString();
 				
 			    int project_count = 0;
 			    int success_count = 0;
@@ -91,6 +91,9 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    //projectFilters.add("Closure:77");
 			    //projectFilters.add("Closure:107");
 			    
+			    // executor service for Future (timeout check)
+			    ExecutorService executorService = Executors.newSingleThreadExecutor();
+			    
 			    // Loop all projects in the Defects4j folder
 			    for (String projectName : baseFolder.list()) {
 			    	
@@ -108,12 +111,6 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		project_count++;
 			    		System.out.println();
 			    		System.out.println("Working on " + projectName + " : " + bugID_str);
-			    		
-			    		if (projectName.equals("Closure") && bugID_str.equals("47")) {
-			    			
-			    		} else {
-			    			continue;
-			    		}
 			    		
 			    		// Skip if the project has been processed
 			    		if (processedProjects.contains(projectName + ":" + bugID_str)) {
@@ -143,16 +140,15 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 							
 							// TrailGenerator will generate the buggy trace and fixed trace
 							final TrialGenerator0 generator0 = new TrialGenerator0();
-//							ExecutorService executorService = Executors.newSingleThreadExecutor();
-//							Future<List<EmpiricalTrial>> getTrials = executorService.submit(new Callable<List<EmpiricalTrial>>() {
-//								@Override
-//								public List<EmpiricalTrial> call() throws Exception {
-//									return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
-//								}
-//							});
-//							// Timeout: 15 minutes
-//							List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
-							List<EmpiricalTrial> trials = generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+							Future<List<EmpiricalTrial>> getTrials = executorService.submit(new Callable<List<EmpiricalTrial>>() {
+								@Override
+								public List<EmpiricalTrial> call() throws Exception {
+									return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+								}
+							});
+							// Timeout: 15 minutes
+							List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
+							getTrials.cancel(true);
 							
 							// Record the analysis result
 							if (trials.size() != 0) {
@@ -184,6 +180,7 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 
 			    }
 			    writer.writeResult(success_count, project_count);
+			    executorService.shutdown();
 				return Status.OK_STATUS;
 			}
 		};
