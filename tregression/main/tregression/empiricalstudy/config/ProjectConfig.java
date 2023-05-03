@@ -34,6 +34,7 @@ public class ProjectConfig {
 		this.buildFolder = buildFolder;
 		this.projectName = projectName;
 		this.regressionID = regressionID;
+		
 	}
 	
 	public List<TestCase> retrieveFailingTestCase(String buggyVersionPath) throws IOException {

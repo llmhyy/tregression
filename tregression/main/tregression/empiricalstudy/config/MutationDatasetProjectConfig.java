@@ -19,7 +19,6 @@ public class MutationDatasetProjectConfig extends MavenProjectConfig {
 		super(srcTestFolder, srcSourceFolder, bytecodeTestFolder, bytecodeSourceFolder, buildFolder, projectName, regressionID);
 	}
 	
-	
 	@Override
 	public List<TestCase> retrieveFailingTestCase(String buggyVersionPath) throws IOException {
 		String failingTestFilePathStr = String.join(File.separator, buggyVersionPath, "..", TESTCASE_FILE_NAME);

@@ -21,8 +21,6 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 
 public class MavenProjectConfig extends ProjectConfig {
 
-//    public final static final String M2AFFIX = ".m2" + File.separator + "repository";
-    
     public static final String PATH_MAVEN_TEST = "src" + File.separator + "test" + File.separator + "java";
     public static final String PATH_MAVEN_SRC = "src" + File.separator + "main" + File.separator + "java";
     public static final String PATH_MAVEN_BUILD = "target";
@@ -35,7 +33,7 @@ public class MavenProjectConfig extends ProjectConfig {
         super(srcTestFolder, srcSourceFolder, bytecodeTestFolder, bytecodeSourceFolder, buildFolder, projectName,
                 regressionID);
     }
-
+	
     public static boolean check(String path) {
 
         File f = new File(path);
