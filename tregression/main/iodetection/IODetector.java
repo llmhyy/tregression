@@ -16,7 +16,7 @@ public class IODetector {
 	private final String testDir;
 
 	private List<VarValue> inputs = new ArrayList<>();
-	private List<VarValue> outputs = new ArrayList<>();
+	private VarValue output;
 
 	public IODetector(Trace buggyTrace, Trace correctTrace, String testDir) {
 		this.buggyTrace = buggyTrace;
@@ -44,15 +44,26 @@ public class IODetector {
 		return this.inputs;
 	}
 
-	public List<VarValue> getOutputs() {
-		return this.outputs;
+	public VarValue getOutputs() {
+		return this.output;
 	}
 
 	public void detect() {
-
+		IOModel outputNodeAndVarVal = detectOutput();
+		output = outputNodeAndVarVal.getVarVal();
+		inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
 	}
 
-	public VarValue detectOutputVarVal() {
+	public IOModel detectOutput() {
+		// TODO: Go backwards from this node.
+		TraceNode node;
+		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
+		for (int i = lastNodeOrder; i >= 0; i--) {
+			node = buggyTrace.getTraceNode(i);
+			if (node.getReadVariables().size() == 1) {
+				return new IOModel(node, node.getReadVariables().get(0));
+			}
+		}
 		return null;
 	}
 
@@ -63,20 +74,35 @@ public class IODetector {
 		return new ArrayList<>(result);
 	}
 
-	void detectInputVarValsFromOutput(TraceNode outputNode, VarValue output, Set<VarValue> inputs, Set<TraceNode> visited) {
+	void detectInputVarValsFromOutput(TraceNode outputNode, VarValue output, Set<VarValue> inputs,
+			Set<TraceNode> visited) {
 		if (visited.contains(outputNode)) {
 			return;
 		}
 		boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
+		Set<VarValue> readVariables = new HashSet<>(outputNode.getReadVariables());
+		if (isTestFile) {
+			// TODO: check if reference, then use aliasID. (math_70 bug id 5)
+			// Check primitive variables, how to identify if they were read + written in the same node. (math_70 bug id 2)
+			Set<VarValue> writtenVariables = new HashSet<>(outputNode.getWrittenVariables());
+			writtenVariables.removeAll(readVariables);
+			inputs.addAll(writtenVariables);
+		}
+
 		TraceNode dataDominator = buggyTrace.findDataDependency(outputNode, output);
-		if (dataDominator != null) {
-			addInputsInTraceNode(dataDominator, inputs, visited);
-		} else if (isTestFile) {
+		if (dataDominator == null && isTestFile) {
 			inputs.add(output);
+		}		
+		if (dataDominator != null) {
+			for (VarValue readVarVal : dataDominator.getReadVariables()) {
+				detectInputVarValsFromOutput(dataDominator, readVarVal, inputs, visited);
+			}
 		}
 		TraceNode controlDominator = outputNode.getControlDominator();
 		if (controlDominator != null) {
-			addInputsInTraceNode(controlDominator, inputs, visited);
+			for (VarValue readVarVal : controlDominator.getReadVariables()) {
+				detectInputVarValsFromOutput(controlDominator, readVarVal, inputs, visited);
+			}
 		}
 	}
 
@@ -84,16 +110,21 @@ public class IODetector {
 		return filePath.contains(testDir);
 	}
 
-	void addInputsInTraceNode(TraceNode node, Set<VarValue> inputs, Set<TraceNode> visited) {
-		boolean isTestFile = isInTestDir(node.getBreakPoint().getFullJavaFilePath());
-		Set<VarValue> readVariables = new HashSet<>(node.getReadVariables());
-		if (isTestFile) {
-			Set<VarValue> writtenVariables = new HashSet<>(node.getWrittenVariables());
-			writtenVariables.removeAll(readVariables);
-			inputs.addAll(writtenVariables);
+	static class IOModel {
+		private final TraceNode node;
+		private final VarValue varVal;
+
+		public IOModel(TraceNode node, VarValue varVal) {
+			this.node = node;
+			this.varVal = varVal;
 		}
-		for (VarValue readVariable : readVariables) {
-			detectInputVarValsFromOutput(node, readVariable, inputs, visited);
+
+		public TraceNode getNode() {
+			return node;
+		}
+
+		public VarValue getVarVal() {
+			return varVal;
 		}
 	}
 }

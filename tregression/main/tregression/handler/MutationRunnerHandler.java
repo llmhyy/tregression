@@ -61,13 +61,11 @@ public class MutationRunnerHandler extends AbstractHandler {
 					// Loop all bug id in the projects folder
 					for (String bugID_str : projectFolder.list()) {
 						int bugId;
-//						try {
-//							bugId = Integer.parseInt(bugID_str);
-//						} catch (NumberFormatException e) {
-//							continue;
-//						}
-						bugID_str = "2";
-						bugId = 2;
+						try {
+							bugId = Integer.parseInt(bugID_str);
+						} catch (NumberFormatException e) {
+							continue;
+						}
 
 						PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 						project_count++;
