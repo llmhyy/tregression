@@ -20,7 +20,7 @@ import org.eclipse.ui.PlatformUI;
 import debuginfo.DebugInfo;
 import debuginfo.NodeFeedbackPair;
 import microbat.Activator;
-import microbat.handler.ProbInferHandler;
+//import microbat.handler.ProbInferHandler;
 import microbat.handler.RequireIO;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -42,24 +42,26 @@ import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
 import tregression.views.StepDetailIOUI;
 
-public class ProfInferTHandler extends ProbInferHandler {
+public class ProfInferTHandler 
+//extends ProbInferHandler 
+{
 	
 	protected TraceView correctView = null;
 	
-	@Override
-	protected void setup() {
-		Display.getDefault().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					buggyView = (BuggyTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BuggyTraceView.ID);
-					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
-				} catch (PartInitException e) {
-					buggyView = null;
-					correctView = null;
-					System.out.println("Fail to get the view");
-				}
-			}
-		});
-	}
+//	@Override
+//	protected void setup() {
+//		Display.getDefault().syncExec(new Runnable() {
+//			@Override
+//			public void run() {
+//				try {
+//					buggyView = (BuggyTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BuggyTraceView.ID);
+//					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
+//				} catch (PartInitException e) {
+//					buggyView = null;
+//					correctView = null;
+//					System.out.println("Fail to get the view");
+//				}
+//			}
+//		});
+//	}
 }

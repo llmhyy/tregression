@@ -21,14 +21,19 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 
 public class MavenProjectConfig extends ProjectConfig {
 
-    public final static String M2AFFIX = ".m2" + File.separator + "repository";
+    public static final String PATH_MAVEN_TEST = "src" + File.separator + "test" + File.separator + "java";
+    public static final String PATH_MAVEN_SRC = "src" + File.separator + "main" + File.separator + "java";
+    public static final String PATH_MAVEN_BUILD = "target";
+    public static final String PATH_MAVEN_BUILD_SRC = "target" + File.separator + "test-classes";
+    public static final String PATH_MAVEN_BUILD_TEST = "target" + File.separator + "classes";
+    
 
     public MavenProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
             String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
         super(srcTestFolder, srcSourceFolder, bytecodeTestFolder, bytecodeSourceFolder, buildFolder, projectName,
                 regressionID);
     }
-
+	
     public static boolean check(String path) {
 
         File f = new File(path);
@@ -44,9 +49,9 @@ public class MavenProjectConfig extends ProjectConfig {
     }
 
     public static ProjectConfig getConfig(String projectName, String regressionID) {
-        return new MavenProjectConfig("src" + File.separator + "test" + File.separator + "java",
-                "src" + File.separator + "main" + File.separator + "java", "target" + File.separator + "test-classes",
-                "target" + File.separator + "classes", "target", projectName, regressionID);
+        return new MavenProjectConfig(PATH_MAVEN_TEST,
+        		PATH_MAVEN_SRC, PATH_MAVEN_BUILD_TEST,
+        		PATH_MAVEN_BUILD_SRC, PATH_MAVEN_BUILD, projectName, regressionID);
     }
 
     public static List<String> getMavenDependencies(String path) {
