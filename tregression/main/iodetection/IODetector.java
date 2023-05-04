@@ -1,12 +1,16 @@
 package iodetection;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
+import microbat.model.value.PrimitiveValue;
+import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 
 public class IODetector {
@@ -70,11 +74,20 @@ public class IODetector {
 	public List<VarValue> detectInputVarValsFromOutput(TraceNode outputNode, VarValue output) {
 		Set<VarValue> result = new HashSet<>();
 		detectInputVarValsFromOutput(outputNode, output, result, new HashSet<TraceNode>());
+//		Map<String, VarValue> primitiveInputs = new HashMap<>();
+//		Map<String, VarValue> referenceInputs = new HashMap<>();
+//		detectInputVarValsFromOutput(outputNode, output, primitiveInputs, referenceInputs, new HashSet<TraceNode>());
+//		for (VarValue input : primitiveInputs.values()) {
+//			result.add(input);
+//		}		
+//		for (VarValue input : referenceInputs.values()) {
+//			result.add(input);
+//		}
 		assert !result.contains(output);
 		return new ArrayList<>(result);
 	}
-
-	void detectInputVarValsFromOutput(TraceNode outputNode, VarValue output, Set<VarValue> inputs,
+	
+	void detectInputVarValsFromOutput(TraceNode outputNode, VarValue output, Map<String, VarValue> primitiveInputs, Map<String, VarValue> referenceInputs,
 			Set<TraceNode> visited) {
 		if (visited.contains(outputNode)) {
 			return;
@@ -86,6 +99,45 @@ public class IODetector {
 			// Check primitive variables, how to identify if they were read + written in the same node. (math_70 bug id 2)
 			Set<VarValue> writtenVariables = new HashSet<>(outputNode.getWrittenVariables());
 			writtenVariables.removeAll(readVariables);
+			inputs.addAll(writtenVariables);
+		}
+
+		TraceNode dataDominator = buggyTrace.findDataDependency(outputNode, output);
+		if (dataDominator == null && isTestFile) {
+			inputs.add(output);
+		}
+		if (dataDominator != null) {
+			for (VarValue readVarVal : dataDominator.getReadVariables()) {
+				detectInputVarValsFromOutput(dataDominator, readVarVal, primitiveInputs, referenceInputs, visited);
+			}
+		}
+		TraceNode controlDominator = outputNode.getControlDominator();
+		if (controlDominator != null) {
+			for (VarValue readVarVal : controlDominator.getReadVariables()) {
+				detectInputVarValsFromOutput(controlDominator, readVarVal, primitiveInputs, referenceInputs, visited);
+			}
+		}
+	}
+	
+	private String primitiveValueKey(PrimitiveValue primitiveValue) {
+		return primitiveValue.getVariable().getSimpleName();
+	}
+	
+	private String referenceValueKey(ReferenceValue referenceValue) {
+		return referenceValue.getAliasVarID();
+	}
+	
+	void detectInputVarValsFromOutput(TraceNode outputNode, VarValue output, Set<VarValue> inputs,
+			Set<TraceNode> visited) {
+		if (visited.contains(outputNode)) {
+			return;
+		}
+		boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
+		if (isTestFile) {
+			// TODO: check if reference, then use aliasID. (math_70 bug id 5)
+			// Check primitive variables, how to identify if they were read + written in the same node. (math_70 bug id 2)
+//			Set<VarValue> readVariables = new HashSet<>(outputNode.getReadVariables());
+			Set<VarValue> writtenVariables = new HashSet<>(outputNode.getWrittenVariables());
 			inputs.addAll(writtenVariables);
 		}
 

@@ -136,6 +136,7 @@ class IODetectorIT {
 			VarValue output = outputNode.getReadVariables().get(0);
 			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
 			Set<VarValue> expectedInputs = new HashSet<>();
+			// x at line 86, Math.cosh, sinh, tanh, log, ceil
 //			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 

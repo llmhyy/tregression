@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceStore;
-import org.eclipse.ui.console.ConsolePlugin;
 
 import defects4janalysis.ResultWriter;
 import defects4janalysis.RunResult;
@@ -32,35 +31,35 @@ import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.ProjectConfig;
 
 public class MutationRunnerHandler extends AbstractHandler {
-	
+
 	/**
-	 * A main method is provided so that we do not need to run this in an Eclipse Application.
-	 * Modify:
-	 * - Eclipse home in setUpSystem method to your eclipse home.
+	 * A main method is provided so that we do not need to run this in an Eclipse
+	 * Application.
+	 * 
+	 * Modify Eclipse home in setUpSystem method to your eclipse home.
 	 * 
 	 * Microbat configurations can be changed in setUpPreferences method
 	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		setUpSystem();
+		new ConsoleUtilsStub().setItselfAsSingleton();		
 		IPreferenceStore preference = new PreferenceStore();
 		setUpPreferences(preference);
-		setUpSystem();
-		new ConsoleUtilsStub().setItselfAsSingleton();
-		ActivatorStub activatorStub = new ActivatorStub(preference);
-		activatorStub.setItselfAsPlugin();
+		new ActivatorStub(preference).setItselfAsPlugin();
 
 		MutationRunnerHandler handler = new MutationRunnerHandler();
 		handler.collectResultsInDataset();
 	}
 
 	private static void setUpPreferences(IPreferenceStore preference) {
-		preference.setDefault(MicrobatPreference.JAVA7HOME_PATH, "C:\\Program Files\\Java\\jdk1.8.0_341");				
+		preference.setDefault(MicrobatPreference.JAVA7HOME_PATH, "C:\\Program Files\\Java\\jdk1.8.0_341");
 		preference.setDefault(MicrobatPreference.STEP_LIMIT, 30000);
 		preference.setDefault(MicrobatPreference.VARIABLE_LAYER, 5);
 		preference.setDefault(MicrobatPreference.RUN_WITH_DEBUG_MODE, false);
 	}
-	
+
 	private static void setUpSystem() {
 		System.setProperty("eclipse.launcher", "C:\\Users\\Chenghin\\eclipse\\java-2022-06\\eclipse\\eclipse.exe");
 	}
@@ -96,7 +95,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 
 		// You can filter out some problematic projection. The example is commented
 		List<String> projectFilters = new ArrayList<>();
-//	    projectFilters.add("Closure:44");
+		// projectFilters.add("Closure:44");
 
 		// Loop all projects in the MutationDataset folder
 		for (String projectName : baseFolder.list()) {
@@ -117,6 +116,8 @@ public class MutationRunnerHandler extends AbstractHandler {
 				} catch (NumberFormatException e) {
 					continue;
 				}
+				bugId = 2;
+				bugID_str = "2";
 				PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 				project_count++;
 				System.out.println();
