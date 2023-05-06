@@ -80,6 +80,25 @@ public class IODetector2 extends IODetector {
 		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
 		for (int i = lastNodeOrder; i >= 0; i--) {
 			node = buggyTrace.getTraceNode(i);
+			TraceNodePair pair = pairList.findByAfterNode(node);
+			if (pair == null) {
+				continue;
+			}
+			List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
+			if (!result.isEmpty()) {
+				return new IOModel(node, result.get(0));
+			}
+			result = pair.findSingleWrongReadVar(buggyTrace);			
+			if (result.isEmpty()) {
+				return new IOModel(node, result.get(0));
+			}
+		}
+
+		for (int i = lastNodeOrder; i >= 0; i--) {
+			node = buggyTrace.getTraceNode(i);
+			if (node.getWrittenVariables().size() == 1) {
+				return new IOModel(node, node.getWrittenVariables().get(0));
+			}
 			if (node.getReadVariables().size() == 1) {
 				return new IOModel(node, node.getReadVariables().get(0));
 			}
@@ -189,21 +208,5 @@ public class IODetector2 extends IODetector {
 
 	boolean isInTestDir(String filePath) {
 		return filePath.contains(testDir);
-	}
-
-	private List<VarValue> collapseVarValues(List<VarValue> varValues) {
-		List<VarValue> result = new ArrayList<>();
-		Queue<VarValue> queue = new LinkedList<>();
-		for (VarValue varValue : varValues) {
-			queue.add(varValue);
-		}
-		while (!queue.isEmpty()) {
-			VarValue current = queue.poll();
-			for (VarValue child : current.getChildren()) {
-				queue.add(child);
-			}
-			result.add(current);
-		}
-		return result;
 	}
 }
