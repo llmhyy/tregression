@@ -89,9 +89,9 @@ public class TraceNodePair {
 	public List<VarValue> findSingleWrongWrittenVarID(Trace trace){
 		List<VarValue> wrongVars = new ArrayList<>();
 		
-		for(VarValue mutatedWrittenVar: afterdNode.getWrittenVariables()){
+		for(VarValue mutatedWrittenVar: beforeNode.getWrittenVariables()){
 			List<VarValue> mutatedVarList = findCorrespondingVarWithDifferentValue(mutatedWrittenVar, 
-					beforeNode.getWrittenVariables(), afterdNode.getWrittenVariables(), trace, Variable.WRITTEN);
+					afterdNode.getWrittenVariables(), beforeNode.getWrittenVariables(), trace, Variable.WRITTEN);
 			if(!mutatedVarList.isEmpty()){
 				for(VarValue value: mutatedVarList){
 					wrongVars.add(value);
@@ -112,9 +112,9 @@ public class TraceNodePair {
 		
 		List<VarValue> wrongVars = new ArrayList<>();
 		
-		for(VarValue mutatedReadVar: afterdNode.getReadVariables()){
+		for(VarValue mutatedReadVar: beforeNode.getReadVariables()){
 			List<VarValue> mutatedVarList = findCorrespondingVarWithDifferentValue(mutatedReadVar, 
-					beforeNode.getReadVariables(), afterdNode.getReadVariables(), mutatedTrace, Variable.READ);
+					afterdNode.getReadVariables(), beforeNode.getReadVariables(), mutatedTrace, Variable.READ);
 			if(!mutatedVarList.isEmpty()){
 				for(VarValue value: mutatedVarList){
 					wrongVars.add(value);
@@ -203,9 +203,9 @@ public class TraceNodePair {
 				if(originalVar instanceof ReferenceValue){
 					if(mutatedVar.getVarName().equals(originalVar.getVarName())){
 						ReferenceValue mutatedRefVar = (ReferenceValue)mutatedVar;
-						setChildren(mutatedRefVar, afterdNode, RW);
+						setChildren(mutatedRefVar, beforeNode, RW);
 						ReferenceValue originalRefVar = (ReferenceValue)originalVar;
-						setChildren(originalRefVar, beforeNode, RW);
+						setChildren(originalRefVar, afterdNode, RW);
 						
 						if(mutatedRefVar.getChildren() != null && originalRefVar.getChildren() != null){
 							HierarchyGraphDiffer differ = new HierarchyGraphDiffer();
@@ -234,7 +234,7 @@ public class TraceNodePair {
 										String varID = mutatedSubVarValue.getVarID();
 										if(!varID.contains(":") && !varID.contains(VirtualVar.VIRTUAL_PREFIX)){
 											
-											TraceNode producer = mutatedTrace.findProducer(mutatedSubVarValue, afterdNode);
+											TraceNode producer = mutatedTrace.findProducer(mutatedSubVarValue, beforeNode);
 											
 											String order = (producer == null) ? "0": String.valueOf(producer.getOrder());
 											
