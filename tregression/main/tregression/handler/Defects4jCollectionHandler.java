@@ -64,6 +64,7 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 		    			String record = content[0] + ":" + content[1];
 		    			processedProjects.add(record);
 		    		}
+		    		reader.close();
 		    	} catch (FileNotFoundException e) {
 		    		writer.writeTitle();
 		    	} catch (IOException e) {

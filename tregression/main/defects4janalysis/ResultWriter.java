@@ -52,18 +52,7 @@ public class ResultWriter {
 			File file = new File(this.path);
 			file.createNewFile();
 			fileWriter = new FileWriter(file, true);
-			
-			StringBuffer strBuffer = new StringBuffer();
-			this.appendStr(strBuffer, result.projectName);
-			this.appendStr(strBuffer, String.valueOf(result.bugID));
-			this.appendStr(strBuffer, String.valueOf(result.traceLen));
-//			this.appendStr(strBuffer, String.valueOf(result.trailType));
-			this.appendStr(strBuffer, String.valueOf(result.rootCauseOrder));
-			this.appendStr(strBuffer, String.valueOf(result.isOmissionBug));
-			this.appendStr(strBuffer, result.solutionName);
-			this.appendStr(strBuffer, result.errorMessage);
-			fileWriter.write(strBuffer.toString() + System.lineSeparator());
-			
+			fileWriter.write(result + System.lineSeparator());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally {
