@@ -80,7 +80,7 @@ public class IODetector2 extends IODetector {
 		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
 		for (int i = lastNodeOrder; i >= 0; i--) {
 			node = buggyTrace.getTraceNode(i);
-			TraceNodePair pair = pairList.findByAfterNode(node);
+			TraceNodePair pair = pairList.findByBeforeNode(node);
 			if (pair == null) {
 				continue;
 			}
@@ -89,7 +89,7 @@ public class IODetector2 extends IODetector {
 				return new IOModel(node, result.get(0));
 			}
 			result = pair.findSingleWrongReadVar(buggyTrace);			
-			if (result.isEmpty()) {
+			if (!result.isEmpty()) {
 				return new IOModel(node, result.get(0));
 			}
 		}
