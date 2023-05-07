@@ -17,10 +17,12 @@ import org.eclipse.jface.preference.PreferenceStore;
 
 import defects4janalysis.ResultWriter;
 import defects4janalysis.RunResult;
+import iodetection.IODetector;
 import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
 import jmutation.dataset.bug.model.path.PathConfiguration;
 import microbat.ActivatorStub;
 import microbat.model.trace.Trace;
+import microbat.model.value.VarValue;
 import microbat.preference.MicrobatPreference;
 import microbat.util.ConsoleUtilsStub;
 import microbat.util.JavaUtil;
@@ -44,7 +46,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 	 */
 	public static void main(String[] args) {
 		setUpSystem();
-		new ConsoleUtilsStub().setItselfAsSingleton();		
+		new ConsoleUtilsStub().setItselfAsSingleton();
 		IPreferenceStore preference = new PreferenceStore();
 		setUpPreferences(preference);
 		new ActivatorStub(preference).setItselfAsPlugin();
@@ -116,8 +118,6 @@ public class MutationRunnerHandler extends AbstractHandler {
 				} catch (NumberFormatException e) {
 					continue;
 				}
-				bugId = 5;
-				bugID_str = "5";
 				PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 				project_count++;
 				System.out.println();
@@ -148,7 +148,6 @@ public class MutationRunnerHandler extends AbstractHandler {
 					// TrailGenerator will generate the buggy trace and fixed trace
 					List<EmpiricalTrial> trials = new TrialGenerator0().generateTrials(bugFolder, fixFolder, false,
 							false, false, 3, true, true, config, "");
-
 					// Record the analysis result
 					if (trials.size() != 0) {
 						PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();

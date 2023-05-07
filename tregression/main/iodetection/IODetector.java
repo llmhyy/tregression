@@ -2,30 +2,45 @@ package iodetection;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.PrimitiveValue;
 import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
+import tregression.model.PairList;
+import tregression.model.TraceNodePair;
 
+/**
+ * We store written Variables, but remove
+ * read variables from it & we don't add reference VarValues as inputs based on
+ * heap address (alias id), & we don't add primitive VarValues based on whether
+ * the corresponding trace node in correct trace has the same stringValue.
+ * 
+ * @author Chenghin
+ *
+ */
 public class IODetector {
 
 	private final Trace buggyTrace;
 	private final Trace correctTrace;
 	private final String testDir;
+	private final PairList pairList;
 
 	private List<VarValue> inputs = new ArrayList<>();
 	private VarValue output;
 
-	public IODetector(Trace buggyTrace, Trace correctTrace, String testDir) {
+	public IODetector(Trace buggyTrace, Trace correctTrace, String testDir, PairList pairList) {
 		this.buggyTrace = buggyTrace;
 		this.correctTrace = correctTrace;
 		this.testDir = testDir;
+		this.pairList = pairList;
 	}
 
 	// TODO find the input and the output of the test case
@@ -59,11 +74,29 @@ public class IODetector {
 	}
 
 	public IOModel detectOutput() {
-		// TODO: Go backwards from this node.
 		TraceNode node;
 		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
 		for (int i = lastNodeOrder; i >= 0; i--) {
 			node = buggyTrace.getTraceNode(i);
+			TraceNodePair pair = pairList.findByBeforeNode(node);
+			if (pair == null) {
+				continue;
+			}
+			List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
+			if (!result.isEmpty()) {
+				return new IOModel(node, result.get(0));
+			}
+			result = pair.findSingleWrongReadVar(buggyTrace);			
+			if (!result.isEmpty()) {
+				return new IOModel(node, result.get(0));
+			}
+		}
+
+		for (int i = lastNodeOrder; i >= 0; i--) {
+			node = buggyTrace.getTraceNode(i);
+			if (node.getWrittenVariables().size() == 1) {
+				return new IOModel(node, node.getWrittenVariables().get(0));
+			}
 			if (node.getReadVariables().size() == 1) {
 				return new IOModel(node, node.getReadVariables().get(0));
 			}
@@ -73,45 +106,107 @@ public class IODetector {
 
 	public List<VarValue> detectInputVarValsFromOutput(TraceNode outputNode, VarValue output) {
 		Set<VarValue> result = new HashSet<>();
-		detectInputVarValsFromOutput(outputNode, output, result, new HashSet<String>());
+		detectInputVarValsFromOutput(outputNode, result, new HashSet<String>());
 		assert !result.contains(output);
 		return new ArrayList<>(result);
 	}
 
-	void detectInputVarValsFromOutput(TraceNode outputNode, VarValue output, Set<VarValue> inputs,
-			Set<String> visited) {
-		boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
-		if (isTestFile) {
-			// TODO: check if reference, then use aliasID. (math_70 bug id 5)
-			// Check primitive variables, how to identify if they were read + written in the
-			// same node. (math_70 bug id 2)
-			Set<VarValue> readVariables = new HashSet<>(outputNode.getReadVariables());
-			Set<VarValue> writtenVariables = new HashSet<>(outputNode.getWrittenVariables());
-			writtenVariables.removeAll(readVariables);
-			inputs.addAll(writtenVariables);
+	private List<VarValue> removeReadVariablesFromWritten(TraceNode node) {
+		TraceNodePair nodePair = pairList.findByAfterNode(node);
+
+		List<VarValue> writtenVariables = node.getWrittenVariables();
+		if (nodePair == null) {
+			return writtenVariables;
+		}
+		TraceNode correctNode = nodePair.getBeforeNode();
+		Map<String, VarValue> varNameToPrimitiveVarValBuggyMap = createPrimitiveValueKeyToVarValueMap(writtenVariables);
+		Map<String, VarValue> varNameToPrimitiveVarValWorkingMap = createPrimitiveValueKeyToVarValueMap(
+				correctNode.getWrittenVariables());
+		varNameToPrimitiveVarValBuggyMap.keySet().retainAll(varNameToPrimitiveVarValWorkingMap.keySet());
+		List<VarValue> result = new ArrayList<>();
+		result.addAll(varNameToPrimitiveVarValBuggyMap.values());
+
+		List<VarValue> readVariables = node.getReadVariables();
+		Map<Long, VarValue> addrToWrittenVar = createHeapAddrToVarValueMap(writtenVariables);
+		Map<Long, VarValue> addrToReadVar = createHeapAddrToVarValueMap(readVariables);
+		for (long key : addrToReadVar.keySet()) {
+			addrToWrittenVar.remove(key);
 		}
 
-		TraceNode dataDominator = buggyTrace.findDataDependency(outputNode, output);
-		if (dataDominator == null && isTestFile) {
-			inputs.add(output);
-		}
-		if (dataDominator != null) {
-			for (VarValue readVarVal : dataDominator.getReadVariables()) {
-				detectInputVarValsFromOutput(dataDominator, readVarVal, inputs, visited);
+		result.addAll(addrToWrittenVar.values());
+		return result;
+	}
+
+	private Map<Long, VarValue> createHeapAddrToVarValueMap(List<VarValue> varValues) {
+		Map<Long, VarValue> result = new HashMap<>();
+		for (VarValue varValue : varValues) {
+			if (varValue instanceof ReferenceValue) {
+				ReferenceValue refVarVal = (ReferenceValue) varValue;
+				result.put(refVarVal.getUniqueID(), refVarVal);
 			}
 		}
-		TraceNode controlDominator = outputNode.getControlDominator();
+		return result;
+	}
+
+	private Map<String, VarValue> createPrimitiveValueKeyToVarValueMap(List<VarValue> varValues) {
+		Map<String, VarValue> result = new HashMap<>();
+		for (VarValue varValue : varValues) {
+			if (varValue instanceof PrimitiveValue) {
+				PrimitiveValue primitiveValue = (PrimitiveValue) varValue;
+				result.put(createPrimitiveValueKey(primitiveValue), primitiveValue);
+			}
+		}
+		return result;
+	}
+
+	private String createPrimitiveValueKey(PrimitiveValue varVal) {
+		String delim = "::";
+		return String.join(delim, varVal.getVarName(), varVal.getStringValue());
+	}
+
+	// For each node, add the following as inputs
+	// 1. Written vars - read variables.
+	// 2. read variables without data dominators
+	//
+	// Recurse on the following:
+	// 1. Data dominator on each read variable
+	// 2. Control/Invocation Parent
+	void detectInputVarValsFromOutput(TraceNode outputNode, Set<VarValue> inputs, Set<String> visited) {
+		String key = formVisitedKey(outputNode);
+		if (visited.contains(key)) {
+			return;
+		}
+		visited.add(key);
+		boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
+		if (isTestFile) {
+			// TODO: check if reference, then use heap address. (math_70 bug id 5)
+			// Check primitive variables, compare with correct trace's aligned node
+			List<VarValue> newInputs = removeReadVariablesFromWritten(outputNode);
+			inputs.addAll(newInputs);
+		}
+
+		for (VarValue readVarVal : outputNode.getReadVariables()) {
+			TraceNode dataDominator = buggyTrace.findDataDependency(outputNode, readVarVal);
+			if (dataDominator == null && isTestFile) {
+				inputs.add(readVarVal);
+			}
+			if (dataDominator != null) {
+				detectInputVarValsFromOutput(dataDominator, inputs, visited);
+			}
+		}
+		TraceNode controlDominator = outputNode.getInvocationMethodOrDominator();
 		if (controlDominator != null) {
-			for (VarValue readVarVal : controlDominator.getReadVariables()) {
-				detectInputVarValsFromOutput(controlDominator, readVarVal, inputs, visited);
-			}
+			detectInputVarValsFromOutput(controlDominator, inputs, visited);
 		}
+	}
+
+	private String formVisitedKey(TraceNode node) {
+		return String.valueOf(node.getOrder());
 	}
 
 	boolean isInTestDir(String filePath) {
 		return filePath.contains(testDir);
-	}
-
+	}	
 	static class IOModel {
 		private final TraceNode node;
 		private final VarValue varVal;
