@@ -1,6 +1,7 @@
 package tregression.handler;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,8 @@ import org.eclipse.jface.preference.PreferenceStore;
 
 import defects4janalysis.ResultWriter;
 import defects4janalysis.RunResult;
+import jmutation.dataset.BugDataset;
+import jmutation.dataset.bug.minimize.ProjectMinimizer;
 import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
 import jmutation.dataset.bug.model.path.PathConfiguration;
 import microbat.ActivatorStub;
@@ -28,9 +31,11 @@ import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.config.ConfigFactory;
+import tregression.empiricalstudy.config.MutationDatasetProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
 
 public class MutationRunnerHandler extends AbstractHandler {
+	private static final String ZIP_EXT = ".zip";
 
 	/**
 	 * A main method is provided so that we do not need to run this in an Eclipse
@@ -44,7 +49,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 	 */
 	public static void main(String[] args) {
 		setUpSystem();
-		new ConsoleUtilsStub().setItselfAsSingleton();		
+		new ConsoleUtilsStub().setItselfAsSingleton();
 		IPreferenceStore preference = new PreferenceStore();
 		setUpPreferences(preference);
 		new ActivatorStub(preference).setItselfAsPlugin();
@@ -101,6 +106,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 		for (String projectName : baseFolder.list()) {
 			System.out.println("Start running " + projectName);
 			final String projectPath = Paths.get(basePath, projectName).toString();
+			BugDataset dataset = new BugDataset(projectPath);
 			File projectFolder = new File(projectPath);
 			String[] mutationFolders = projectFolder.list();
 			if (mutationFolders == null) {
@@ -109,70 +115,93 @@ public class MutationRunnerHandler extends AbstractHandler {
 				return Status.warning(message);
 			}
 			// Loop all bug id in the projects folder
-			for (String bugID_str : mutationFolders) {
+			for (String bugIDZipStr : mutationFolders) {
+				if (!bugIDZipStr.endsWith(ZIP_EXT)) {
+					continue;
+				}
+				String bugID_str = bugIDZipStr.substring(0, bugIDZipStr.indexOf(ZIP_EXT));
 				int bugId;
 				try {
 					bugId = Integer.parseInt(bugID_str);
 				} catch (NumberFormatException e) {
 					continue;
 				}
-				bugId = 2;
-				bugID_str = "2";
-				PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
-				project_count++;
-				System.out.println();
-				System.out.println("Working on " + projectName + " : " + bugID_str);
 
 				if (projectFilters.contains(projectName + ":" + bugID_str)) {
 					throw new RuntimeException("Will cause hanging problem");
 				}
 
-				// Path to the buggy folder and the fixed folder
-				final String bugFolder = pathConfig.getBuggyPath(projectName, bugID_str);
-				final String fixFolder = pathConfig.getFixPath(projectName, bugID_str);
-
-				// Result store the analysis result
-				RunResult result = new RunResult();
-				result.projectName = projectName;
-				result.bugID = bugId;
-
+				RunResult result;
 				try {
-					// Project config of the mutation dataset
-					ProjectConfig config = ConfigFactory.createConfig(projectName, bugID_str, bugFolder, fixFolder);
-
-					if (config == null) {
-						throw new Exception("cannot parse the configuration of the project " + projectName + " with id "
-								+ bugID_str);
-					}
-
-					// TrailGenerator will generate the buggy trace and fixed trace
-					List<EmpiricalTrial> trials = new TrialGenerator0().generateTrials(bugFolder, fixFolder, false,
-							false, false, 3, true, true, config, "");
-
-					// Record the analysis result
-					if (trials.size() != 0) {
-						PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();
-						for (int i = 0; i < trials.size(); i++) {
-							EmpiricalTrial t = trials.get(i);
-							System.out.println(t);
-							Trace trace = t.getBuggyTrace();
-							result.traceLen = Long.valueOf(trace.size());
-							result.isOmissionBug = t.getBugType() == EmpiricalTrial.OVER_SKIP;
-							result.rootCauseOrder = t.getRootcauseNode() == null ? -1 : t.getRootcauseNode().getOrder();
-							for (DeadEndRecord record : t.getDeadEndRecordList()) {
-								result.solutionName = record.getSolutionPattern().getTypeName();
-							}
-						}
-						success_count++;
-					}
-				} catch (Exception e) {
-					System.out.println("Failed");
-					result.errorMessage = e.toString();
+					dataset.unzip(bugId);
+					ProjectMinimizer minimizer = dataset.createMinimizer(bugId);
+					minimizer.maximise();
+					result = collectSingleResult(basePath, projectName, bugId);
+					minimizer.minimize();
+					dataset.zip(bugId);
+				} catch (IOException e) {
+					// Crash from zipping or unzipping
+					e.printStackTrace();
+					continue;
 				}
 				writer.writeResult(result);
 			}
 		}
 		writer.writeResult(success_count, project_count);
 		return Status.OK_STATUS;
+	}
+
+	private RunResult collectSingleResult(String basePath, String projectName, int bugId) {
+		String bugID_str = String.valueOf(bugId);
+		PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
+		System.out.println();
+		System.out.println("Working on " + projectName + " : " + bugID_str);
+
+		// Path to the buggy folder and the fixed folder
+		final String bugFolder = pathConfig.getBuggyPath(projectName, bugID_str);
+		final String fixFolder = pathConfig.getFixPath(projectName, bugID_str);
+
+		// Result store the analysis result
+		RunResult result = new RunResult();
+		result.projectName = projectName;
+		result.bugID = bugId;
+
+		try {
+			// Project config of the mutation dataset
+			ProjectConfig config = ConfigFactory.createConfig(projectName, bugID_str, bugFolder, fixFolder);
+
+			if (config == null) {
+				throw new Exception(
+						"cannot parse the configuration of the project " + projectName + " with id " + bugID_str);
+			}
+			
+			MutationDatasetProjectConfig.executeMavenCmd(Paths.get(bugFolder), "test-compile");
+			
+			// TrailGenerator will generate the buggy trace and fixed trace
+			List<EmpiricalTrial> trials = new TrialGenerator0().generateTrials(bugFolder, fixFolder, false, false,
+					false, 3, true, true, config, "");
+
+			// Record the analysis result
+			if (trials.size() != 0) {
+				PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();
+				for (int i = 0; i < trials.size(); i++) {
+					EmpiricalTrial t = trials.get(i);
+					System.out.println(t);
+					Trace trace = t.getBuggyTrace();
+					result.traceLen = Long.valueOf(trace.size());
+					result.isOmissionBug = t.getBugType() == EmpiricalTrial.OVER_SKIP;
+					result.rootCauseOrder = t.getRootcauseNode() == null ? -1 : t.getRootcauseNode().getOrder();
+					for (DeadEndRecord record : t.getDeadEndRecordList()) {
+						result.solutionName = record.getSolutionPattern().getTypeName();
+					}
+				}
+			} else {
+				result.errorMessage = "No trials";
+			}
+		} catch (Exception e) {
+			System.out.println("Failed");
+			result.errorMessage = e.toString();
+		}
+		return result;
 	}
 }
