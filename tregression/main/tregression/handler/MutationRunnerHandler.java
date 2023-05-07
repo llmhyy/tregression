@@ -90,7 +90,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 		// Write the analysis result to this file
 		final String resultPath = Paths.get(basePath, "result.txt").toString();
 
-		int project_count = 0;
+		int total_count = 0;
 		int success_count = 0;
 
 		ResultWriter writer = new ResultWriter(resultPath);
@@ -126,7 +126,9 @@ public class MutationRunnerHandler extends AbstractHandler {
 				} catch (NumberFormatException e) {
 					continue;
 				}
-
+				
+				total_count++;
+				
 				if (projectFilters.contains(projectName + ":" + bugID_str)) {
 					throw new RuntimeException("Will cause hanging problem");
 				}
@@ -144,10 +146,13 @@ public class MutationRunnerHandler extends AbstractHandler {
 					e.printStackTrace();
 					continue;
 				}
+				if (result.errorMessage.isEmpty()) {
+					success_count++;
+				}
 				writer.writeResult(result);
 			}
 		}
-		writer.writeResult(success_count, project_count);
+		writer.writeResult(success_count, total_count);
 		return Status.OK_STATUS;
 	}
 
@@ -174,13 +179,11 @@ public class MutationRunnerHandler extends AbstractHandler {
 				throw new Exception(
 						"cannot parse the configuration of the project " + projectName + " with id " + bugID_str);
 			}
-			
+
 			MutationDatasetProjectConfig.executeMavenCmd(Paths.get(bugFolder), "test-compile");
-			
 			// TrailGenerator will generate the buggy trace and fixed trace
 			List<EmpiricalTrial> trials = new TrialGenerator0().generateTrials(bugFolder, fixFolder, false, false,
 					false, 3, true, true, config, "");
-
 			// Record the analysis result
 			if (trials.size() != 0) {
 				PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();
