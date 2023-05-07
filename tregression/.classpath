@@ -6,6 +6,7 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/json-20220924.jar"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/plexus-utils-3.2.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/maven-model-3.8.1.jar"/>
