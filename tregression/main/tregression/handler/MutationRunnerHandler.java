@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -126,21 +127,22 @@ public class MutationRunnerHandler extends AbstractHandler {
 				} catch (NumberFormatException e) {
 					continue;
 				}
-				
+
 				total_count++;
-				
+
 				if (projectFilters.contains(projectName + ":" + bugID_str)) {
 					throw new RuntimeException("Will cause hanging problem");
 				}
 
 				RunResult result;
 				try {
+					PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 					dataset.unzip(bugId);
 					ProjectMinimizer minimizer = dataset.createMinimizer(bugId);
 					minimizer.maximise();
-					result = collectSingleResult(basePath, projectName, bugId);
-					minimizer.minimize();
-					dataset.zip(bugId);
+					result = collectSingleResult(basePath, projectName, bugId, pathConfig);
+					String pathToBug = pathConfig.getBugPath(projectName, Integer.toString(bugId));
+					FileUtils.deleteDirectory(new File(pathToBug));
 				} catch (IOException e) {
 					// Crash from zipping or unzipping
 					e.printStackTrace();
@@ -156,9 +158,9 @@ public class MutationRunnerHandler extends AbstractHandler {
 		return Status.OK_STATUS;
 	}
 
-	private RunResult collectSingleResult(String basePath, String projectName, int bugId) {
+	private RunResult collectSingleResult(String basePath, String projectName, int bugId,
+			PathConfiguration pathConfig) {
 		String bugID_str = String.valueOf(bugId);
-		PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 		System.out.println();
 		System.out.println("Working on " + projectName + " : " + bugID_str);
 
@@ -182,6 +184,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 
 			MutationDatasetProjectConfig.executeMavenCmd(Paths.get(bugFolder), "test-compile");
 			// TrailGenerator will generate the buggy trace and fixed trace
+
 			List<EmpiricalTrial> trials = new TrialGenerator0().generateTrials(bugFolder, fixFolder, false, false,
 					false, 3, true, true, config, "");
 			// Record the analysis result
