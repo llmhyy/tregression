@@ -73,7 +73,12 @@ public class MavenProjectConfig extends ProjectConfig {
 		request.setGoals(Collections.singletonList(cmd));
 
 		Invoker invoker = new DefaultInvoker();
-		invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
+		
+		final String MAVEN_HOME = System.getenv("MAVEN_HOME");
+		if (MAVEN_HOME == null || MAVEN_HOME.isEmpty()) {
+			throw new RuntimeException("MAVEN_HOME is not configured in environment");
+		}
+		invoker.setMavenHome(new File(MAVEN_HOME));
 		try {
 			InvocationResult invocationResult = invoker.execute(request);
 			return invocationResult.getExitCode() == 0;
