@@ -202,6 +202,18 @@ public class MutationRunnerHandler extends AbstractHandler {
 					for (DeadEndRecord record : t.getDeadEndRecordList()) {
 						result.solutionName = record.getSolutionPattern().getTypeName();
 					}
+					IODetector ioDetector = new IODetector(t.getBuggyTrace(), t.getFixedTrace(), "src\\test\\java",
+							t.getPairList());
+					ioDetector.detect();
+					List<VarValue> inputs = ioDetector.getInputs();
+					VarValue output = ioDetector.getOutputs();
+					String line = "=========";
+					System.out.println(String.join(" ", line, "inputs", line));
+					for (VarValue input : inputs) {
+						System.out.println(input);
+					}
+					System.out.println(String.join(" ", line, "output", line));
+					System.out.println(output);
 				}
 			} else {
 				result.errorMessage = "No trials";
