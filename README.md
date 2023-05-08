@@ -61,3 +61,4 @@ Modifications were made to integrate with TRregression.
 
 #### regs4jProjAndBugs.sh
 This bash script will print out all the project names and bug ID numbers in regs4j. They can copied into tregression.constants.Dataset class if there are any updates to the database.
+
