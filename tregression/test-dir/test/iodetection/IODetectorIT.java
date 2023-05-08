@@ -39,8 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class IODetectorIT {
 
-	private static final Path testFilesDir = Paths.get("test-dir", "files", "iodetection");
-
+	private static final Path TEST_FILES_DIR = Paths.get("test-dir", "files", "iodetection");
 	private static final String SAMPLE_PROJECT_FORMAT = "projects\\%d";
 	private static final String SRC_DIR = "src\\main\\java";
 	private static final String TEST_DIR = "src\\test\\java";
@@ -410,7 +409,7 @@ class IODetectorIT {
 	}
 
 	private IODetectorTestObjects constructTestObjects(String traceName, int projectID) {
-		String projectRoot = testFilesDir.resolve(String.format(SAMPLE_PROJECT_FORMAT, projectID)).toAbsolutePath()
+		String projectRoot = TEST_FILES_DIR.resolve(String.format(SAMPLE_PROJECT_FORMAT, projectID)).toAbsolutePath()
 				.toString();
 		String buggyPath = projectRoot + "\\bug";
 		String workingPath = projectRoot + "\\fix";
@@ -419,9 +418,10 @@ class IODetectorIT {
 
 	private IODetectorTestObjects constructTestObjects(String traceName, String buggyPath, String workingPath) {
 		Trace buggyTrace = RunningInfo
-				.readFromFile(testFilesDir.resolve(String.format(BUGGY_TRACE_FMT, traceName)).toFile()).getMainTrace();
+				.readFromFile(TEST_FILES_DIR.resolve(String.format(BUGGY_TRACE_FMT, traceName)).toFile())
+				.getMainTrace();
 		Trace workingTrace = RunningInfo
-				.readFromFile(testFilesDir.resolve(String.format(WORKING_TRACE_FMT, traceName)).toFile())
+				.readFromFile(TEST_FILES_DIR.resolve(String.format(WORKING_TRACE_FMT, traceName)).toFile())
 				.getMainTrace();
 		appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
 		appendMissingInfoToExecutionList(workingTrace.getExecutionList(), workingPath);
