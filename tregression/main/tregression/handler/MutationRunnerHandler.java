@@ -102,7 +102,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 		final String resultPath = Paths.get(basePath, "result.txt").toString();
 
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
-		
+
 		int total_count = 0;
 		int success_count = 0;
 
@@ -112,27 +112,28 @@ public class MutationRunnerHandler extends AbstractHandler {
 		File baseFolder = new File(basePath);
 
 		List<String> processedProjects = new ArrayList<>();
-	    // If file exists, read the records
-    	try {
-    		FileReader fileReader = new FileReader(resultPath);
-    		BufferedReader reader = new BufferedReader(fileReader);
-    		String line = reader.readLine(); // first line is the headers
-    		while ((line = reader.readLine()) != null) {
-    			String[] content = line.split(",");
-    			String record = content[0] + ":" + content[1];
-    			processedProjects.add(record);
-    		}
-    		reader.close();
-    	} catch (FileNotFoundException e) {
-    		writer.writeTitle();
-    	} catch (IOException e) {
-    		e.printStackTrace();
-    	}
-    	
+		// If file exists, read the records
+		try {
+			FileReader fileReader = new FileReader(resultPath);
+			BufferedReader reader = new BufferedReader(fileReader);
+			String line = reader.readLine(); // first line is the headers
+			while ((line = reader.readLine()) != null) {
+				String[] content = line.split(",");
+				String record = content[0] + ":" + content[1];
+				processedProjects.add(record);
+			}
+			reader.close();
+		} catch (FileNotFoundException e) {
+			writer.writeTitle();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		// You can filter out some problematic projection. The example is commented
 		List<String> projectFilters = new ArrayList<>();
 		// projectFilters.add("Closure:44");
 
+		PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 		// Loop all projects in the MutationDataset folder
 		for (String projectName : baseFolder.list()) {
 			System.out.println("Start running " + projectName);
@@ -145,20 +146,20 @@ public class MutationRunnerHandler extends AbstractHandler {
 				System.out.println(message);
 				return Status.warning(message);
 			}
-			
+
 			// Loop all bug id in the projects folder
 			for (String bugIDZipStr : mutationFolders) {
 				if (!bugIDZipStr.endsWith(ZIP_EXT)) {
 					continue;
 				}
 				String bugID_str = bugIDZipStr.substring(0, bugIDZipStr.indexOf(ZIP_EXT));
-				
-	    		// Skip if the project has been processed
-	    		if (processedProjects.contains(projectName + ":" + bugID_str)) {
-	    			System.out.println("Skipped: has record in the result file");
-	    			continue;
-	    		}
-	    		
+				bugID_str = "5";
+				// Skip if the project has been processed
+				if (processedProjects.contains(projectName + ":" + bugID_str)) {
+					System.out.println("Skipped: has record in the result file");
+					continue;
+				}
+
 				int bugId;
 				try {
 					bugId = Integer.parseInt(bugID_str);
@@ -174,7 +175,6 @@ public class MutationRunnerHandler extends AbstractHandler {
 
 				RunResult result;
 				try {
-					PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
 					dataset.unzip(bugId);
 					ProjectMinimizer minimizer = dataset.createMinimizer(bugId);
 					minimizer.maximise();
@@ -182,7 +182,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 					String pathToBug = pathConfig.getBugPath(projectName, Integer.toString(bugId));
 					FileUtils.deleteDirectory(new File(pathToBug));
 				} catch (IOException e) {
-					// Crash from zipping or unzipping
+					// Crash from unzipping or deleting buggy project
 					e.printStackTrace();
 					continue;
 				}
@@ -196,8 +196,8 @@ public class MutationRunnerHandler extends AbstractHandler {
 		return Status.OK_STATUS;
 	}
 
-	private RunResult collectSingleResult(String basePath, String projectName, int bugId,
-			PathConfiguration pathConfig, ExecutorService executorService) {
+	private RunResult collectSingleResult(String basePath, String projectName, int bugId, PathConfiguration pathConfig,
+			ExecutorService executorService) {
 		String bugID_str = String.valueOf(bugId);
 		System.out.println();
 		System.out.println("Working on " + projectName + " : " + bugID_str);
@@ -227,13 +227,14 @@ public class MutationRunnerHandler extends AbstractHandler {
 			Future<List<EmpiricalTrial>> getTrials = executorService.submit(new Callable<List<EmpiricalTrial>>() {
 				@Override
 				public List<EmpiricalTrial> call() throws Exception {
-					return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+					return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config,
+							"");
 				}
 			});
 			// Timeout: 15 minutes
 			List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
 			getTrials.cancel(true);
-			
+
 			// Record the analysis result
 			if (trials.size() != 0) {
 				PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();

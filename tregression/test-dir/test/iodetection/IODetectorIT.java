@@ -217,13 +217,10 @@ class IODetectorIT {
 			}
 		}
 
-
-		
 		@Test
 		void detectInputVarValsFromOutput_InputNotReadOnlyWritten_ObtainsInputs() {
 			Trace buggyTrace = RunningInfo
-					.readFromFile(testFilesDir.resolve("buggy-input-written-only-trace.exec").toFile())
-					.getMainTrace();
+					.readFromFile(testFilesDir.resolve("buggy-input-written-only-trace.exec").toFile()).getMainTrace();
 			Trace workingTrace = RunningInfo
 					.readFromFile(testFilesDir.resolve("working-input-written-only-trace.exec").toFile())
 					.getMainTrace();
@@ -244,12 +241,10 @@ class IODetectorIT {
 
 		@Test
 		void detectInputVarValsFromOutput_ArrayInputs_ObtainsInputs() {
-			Trace buggyTrace = RunningInfo
-					.readFromFile(testFilesDir.resolve("buggy-array-input-trace.exec").toFile())
+			Trace buggyTrace = RunningInfo.readFromFile(testFilesDir.resolve("buggy-array-input-trace.exec").toFile())
 					.getMainTrace();
 			Trace workingTrace = RunningInfo
-					.readFromFile(testFilesDir.resolve("working-array-input-trace.exec").toFile())
-					.getMainTrace();
+					.readFromFile(testFilesDir.resolve("working-array-input-trace.exec").toFile()).getMainTrace();
 			String projectRoot = testFilesDir.resolve(String.format(SAMPLE_PROJECT_FORMAT, 6)).toAbsolutePath()
 					.toString();
 			String buggyPath = projectRoot + "\\bug";
@@ -264,13 +259,15 @@ class IODetectorIT {
 			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
 			Set<VarValue> expectedInputs = new HashSet<>();
 			// add the 4 array value
-			// LocalVariable [type=regularproject.MainTest, variableName=this]: regularproject/MainTest{7,7}this-0
+			// LocalVariable [type=regularproject.MainTest, variableName=this]:
+			// regularproject/MainTest{7,7}this-0
 //			LocalVariable [type=regularproject.Main, variableName=main]: regularproject/MainTest{12,14}main-1
 //			ArrayElementVar [type=java.lang.Object, variableName=1993134103[0]]: 1993134103[0]
 //			ArrayElementVar [type=java.lang.Object, variableName=1993134103[1]]: 1993134103[1]
-			// Missing the arr argument itself. This is due the "wrong var" identifier returning arr.
+			// Missing the arr argument itself. This is due the "wrong var" identifier
+			// returning arr.
 		}
-		
+
 		@Test
 		void detectInputVarValsFromOutput_WrongIntermediateValue_DoesNotIncludeWrongValueAsInput() {
 			Trace buggyTrace = RunningInfo
@@ -315,92 +312,97 @@ class IODetectorIT {
 			VarValue output = outputNode.getReadVariables().get(0);
 			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
 			Set<VarValue> expectedInputs = new HashSet<>();
-			
+
 		}
 	}
 
 	@Nested
 	class ObtainingOutputs {
-		// math_70 bug ID 1
-		@Test
-		void detectOutput_LastNodeAssertionSingleReadVar_ObtainsOutput() {
-			Trace buggyTrace = RunningInfo
-					.readFromFile(testFilesDir.resolve("buggy-SingleAssertionAndAllInputsInTest-trace.exec").toFile())
-					.getMainTrace();
-			Trace workingTrace = RunningInfo
-					.readFromFile(testFilesDir.resolve("working-SingleAssertionAndAllInputsInTest-trace.exec").toFile())
-					.getMainTrace();
-			String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 1);
-			appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
-			appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
-			IODetector detector = constructIODetector(buggyTrace, workingTrace,
-					createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
-			IOModel output = detector.detectOutput();
-			assertEquals(3, output.getNode().getOrder());
-			TraceNode outputNode = buggyTrace.getLatestNode();
-			VarValue expectedVarVal = outputNode.getReadVariables().get(0);
-			assertEquals(expectedVarVal, output.getVarVal());
-		}
+		@Nested
+		class Math70 {
+			// math_70 bug ID 1
+			@Test
+			void detectOutput_LastNodeAssertionSingleReadVar_ObtainsOutput() {
+				Trace buggyTrace = RunningInfo
+						.readFromFile(
+								testFilesDir.resolve("buggy-SingleAssertionAndAllInputsInTest-trace.exec").toFile())
+						.getMainTrace();
+				Trace workingTrace = RunningInfo
+						.readFromFile(
+								testFilesDir.resolve("working-SingleAssertionAndAllInputsInTest-trace.exec").toFile())
+						.getMainTrace();
+				String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 1);
+				appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
+				appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
+				IODetector detector = constructIODetector(buggyTrace, workingTrace,
+						createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
+				IOModel output = detector.detectOutput();
+				assertEquals(3, output.getNode().getOrder());
+				TraceNode outputNode = buggyTrace.getLatestNode();
+				VarValue expectedVarVal = outputNode.getReadVariables().get(0);
+				assertEquals(expectedVarVal, output.getVarVal());
+			}
 
-		// math_70 bug ID 2
-		@Test
-		void detectOutput_MultiLineAssertionWithEpsilon_ObtainsOutput() {
-			Trace buggyTrace = RunningInfo
-					.readFromFile(testFilesDir
-							.resolve("buggy-MultipleAssertionsMultiLineAssertionWithEpsilon-trace.exec").toFile())
-					.getMainTrace();
-			Trace workingTrace = RunningInfo
-					.readFromFile(testFilesDir
-							.resolve("working-MultipleAssertionsMultiLineAssertionWithEpsilon-trace.exec").toFile())
-					.getMainTrace();
-			String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 2);
-			appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
-			appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
-			IODetector detector = constructIODetector(buggyTrace, workingTrace,
-					createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
-			IOModel output = detector.detectOutput();
-			assertEquals(1537, output.getNode().getOrder());
-			TraceNode expectedOutputNode = buggyTrace.getTraceNode(1537);
-			VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
-			assertEquals(expectedVarVal, output.getVarVal());
-		}
+			// math_70 bug ID 2
+			@Test
+			void detectOutput_MultiLineAssertionWithEpsilon_ObtainsOutput() {
+				Trace buggyTrace = RunningInfo
+						.readFromFile(testFilesDir
+								.resolve("buggy-MultipleAssertionsMultiLineAssertionWithEpsilon-trace.exec").toFile())
+						.getMainTrace();
+				Trace workingTrace = RunningInfo
+						.readFromFile(testFilesDir
+								.resolve("working-MultipleAssertionsMultiLineAssertionWithEpsilon-trace.exec").toFile())
+						.getMainTrace();
+				String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 2);
+				appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
+				appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
+				IODetector detector = constructIODetector(buggyTrace, workingTrace,
+						createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
+				IOModel output = detector.detectOutput();
+				assertEquals(1537, output.getNode().getOrder());
+				TraceNode expectedOutputNode = buggyTrace.getTraceNode(1537);
+				VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
+				assertEquals(expectedVarVal, output.getVarVal());
+			}
 
-		// math_70 bug ID 3
-		@Test
-		void detectOutput_LastNodeAssertion_ObtainsOutput() {
-			Trace buggyTrace = RunningInfo.readFromFile(testFilesDir.resolve("buggy-math_70-3-trace.exec").toFile())
-					.getMainTrace();
-			Trace workingTrace = RunningInfo.readFromFile(testFilesDir.resolve("working-math_70-3-trace.exec").toFile())
-					.getMainTrace();
-			String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 3);
-			appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
-			appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
-			IODetector detector = constructIODetector(buggyTrace, workingTrace,
-					createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
-			IOModel output = detector.detectOutput();
-			TraceNode expectedOutputNode = buggyTrace.getLatestNode();
-			VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
-			assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
-			assertEquals(expectedVarVal, output.getVarVal());
-		}
+			// math_70 bug ID 3
+			@Test
+			void detectOutput_LastNodeAssertion_ObtainsOutput() {
+				Trace buggyTrace = RunningInfo.readFromFile(testFilesDir.resolve("buggy-math_70-3-trace.exec").toFile())
+						.getMainTrace();
+				Trace workingTrace = RunningInfo
+						.readFromFile(testFilesDir.resolve("working-math_70-3-trace.exec").toFile()).getMainTrace();
+				String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 3);
+				appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
+				appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
+				IODetector detector = constructIODetector(buggyTrace, workingTrace,
+						createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
+				IOModel output = detector.detectOutput();
+				TraceNode expectedOutputNode = buggyTrace.getLatestNode();
+				VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
+				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
+				assertEquals(expectedVarVal, output.getVarVal());
+			}
 
-		// math_70 bug ID 5
-		@Test
-		void detectOutput_ArrayInputs_ObtainsOutput() {
-			Trace buggyTrace = RunningInfo.readFromFile(testFilesDir.resolve("buggy-ArrayInput-trace.exec").toFile())
-					.getMainTrace();
-			Trace workingTrace = RunningInfo
-					.readFromFile(testFilesDir.resolve("working-ArrayInput-trace.exec").toFile()).getMainTrace();
-			String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 5);
-			appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
-			appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
-			IODetector detector = constructIODetector(buggyTrace, workingTrace,
-					createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
-			IOModel output = detector.detectOutput();
-			TraceNode expectedOutputNode = buggyTrace.getLatestNode();
-			VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
-			assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
-			assertEquals(expectedVarVal, output.getVarVal());
+			// math_70 bug ID 5
+			@Test
+			void detectOutput_ArrayInputs_ObtainsOutput() {
+				Trace buggyTrace = RunningInfo
+						.readFromFile(testFilesDir.resolve("buggy-ArrayInput-trace.exec").toFile()).getMainTrace();
+				Trace workingTrace = RunningInfo
+						.readFromFile(testFilesDir.resolve("working-ArrayInput-trace.exec").toFile()).getMainTrace();
+				String buggyPath = String.format(DATA_SET_BUG_DIR_FORMAT, 5);
+				appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
+				appendMissingInfoToExecutionList(workingTrace.getExecutionList(), DATA_SET_FIX_DIR);
+				IODetector detector = constructIODetector(buggyTrace, workingTrace,
+						createPairList(buggyTrace, workingTrace, buggyPath, DATA_SET_FIX_DIR));
+				IOModel output = detector.detectOutput();
+				TraceNode expectedOutputNode = buggyTrace.getLatestNode();
+				VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
+				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
+				assertEquals(expectedVarVal, output.getVarVal());
+			}
 		}
 
 		@Nested
@@ -493,6 +495,29 @@ class IODetectorIT {
 				IOModel output = detector.detectOutput();
 				TraceNode expectedOutputNode = buggyTrace.getTraceNode(14);
 				VarValue expectedVarVal = expectedOutputNode.getWrittenVariables().get(0);
+				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
+				assertEquals(expectedVarVal, output.getVarVal());
+			}
+
+			@Test
+			void detectOutput_OutOfBoundsExceptionThrownDueToDataStructureSize_ObtainsOutput() {
+				Trace buggyTrace = RunningInfo
+						.readFromFile(testFilesDir.resolve("buggy-out-of-bounds-list-size-trace.exec").toFile())
+						.getMainTrace();
+				Trace workingTrace = RunningInfo
+						.readFromFile(testFilesDir.resolve("working-out-of-bounds-list-size-trace.exec").toFile())
+						.getMainTrace();
+				String projectRoot = testFilesDir.resolve(String.format(SAMPLE_PROJECT_FORMAT, 9)).toAbsolutePath()
+						.toString();
+				String buggyPath = projectRoot + "\\bug";
+				String workingPath = projectRoot + "\\fix";
+				appendMissingInfoToExecutionList(buggyTrace.getExecutionList(), buggyPath);
+				appendMissingInfoToExecutionList(workingTrace.getExecutionList(), workingPath);
+				IODetector detector = constructIODetector(buggyTrace, workingTrace,
+						createPairList(buggyTrace, workingTrace, buggyPath, workingPath));
+				IOModel output = detector.detectOutput();
+				TraceNode expectedOutputNode = buggyTrace.getTraceNode(7);
+				VarValue expectedVarVal = expectedOutputNode.getWrittenVariables().get(1);
 				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
 				assertEquals(expectedVarVal, output.getVarVal());
 			}

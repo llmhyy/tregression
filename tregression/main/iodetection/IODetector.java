@@ -77,7 +77,7 @@ public class IODetector {
 	public IOModel detectOutput() {
 		TraceNode node;
 		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
-		for (int i = lastNodeOrder; i >= 0; i--) {
+		for (int i = lastNodeOrder; i >= 1; i--) {
 			node = buggyTrace.getTraceNode(i);
 			Optional<IOModel> wrongVariableOptional = getWrongVariableInNode(node);
 			if (wrongVariableOptional.isEmpty()) {
@@ -85,16 +85,16 @@ public class IODetector {
 			}
 			return wrongVariableOptional.get();
 		}
-
-		for (int i = lastNodeOrder; i >= 0; i--) {
-			node = buggyTrace.getTraceNode(i);
-			if (node.getWrittenVariables().size() == 1) {
-				return new IOModel(node, node.getWrittenVariables().get(0));
-			}
-			if (node.getReadVariables().size() == 1) {
-				return new IOModel(node, node.getReadVariables().get(0));
-			}
-		}
+//
+//		for (int i = lastNodeOrder; i >= 0; i--) {
+//			node = buggyTrace.getTraceNode(i);
+//			if (node.getWrittenVariables().size() == 1) {
+//				return new IOModel(node, node.getWrittenVariables().get(0));
+//			}
+//			if (node.getReadVariables().size() == 1) {
+//				return new IOModel(node, node.getReadVariables().get(0));
+//			}
+//		}
 		return null;
 	}
 
@@ -106,8 +106,10 @@ public class IODetector {
 	}
 
 	/**
-	 * Currently, it looks at the pair list for the corresponding node in correct trace.
-	 * It then checks if the value in the variables written is correct. If it is, it is added to the result.
+	 * Currently, it looks at the pair list for the corresponding node in correct
+	 * trace. It then checks if the value in the variables written is correct. If it
+	 * is, it is added to the result.
+	 * 
 	 * @param node
 	 * @return
 	 */
@@ -160,7 +162,9 @@ public class IODetector {
 	}
 
 	/**
-	 * Using var name + value does not work since, unnamed variables will use the address.
+	 * Using var name + value does not work since, unnamed variables will use the
+	 * address.
+	 * 
 	 * @param varVal
 	 * @return
 	 */
@@ -218,17 +222,24 @@ public class IODetector {
 		return filePath.contains(testDir);
 	}
 
+	/**
+	 * Use PairList code to get wrong VarValues in the current node. Do not add ReferenceValue, as it's
+	 * correctness is determined by the address (i.e. always correct.)
+	 * 
+	 * @param node
+	 * @return
+	 */
 	private Optional<IOModel> getWrongVariableInNode(TraceNode node) {
 		TraceNodePair pair = pairList.findByBeforeNode(node);
 		if (pair == null) {
 			return Optional.empty();
 		}
 		List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
-		if (!result.isEmpty()) {
+		if (!result.isEmpty() && !(result.get(0) instanceof ReferenceValue)) {
 			return Optional.of(new IOModel(node, result.get(0)));
 		}
 		result = pair.findSingleWrongReadVar(buggyTrace);
-		if (!result.isEmpty()) {
+		if (!result.isEmpty() && !(result.get(0) instanceof ReferenceValue)) {
 			return Optional.of(new IOModel(node, result.get(0)));
 		}
 		return Optional.empty();
