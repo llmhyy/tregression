@@ -55,7 +55,7 @@ class IODetectorIT {
 	}
 
 	@Test
-	void detectInputVarValsFromOutput_InputNotReadOnlyWritten_ObtainsInputs() {
+	void detect_InputNotReadOnlyWritten_ObtainsIO() {
 		IODetectorTestObjects testObjects = constructTestObjects("input-written-only", 5);
 		IODetector detector = testObjects.getIoDetector();
 		Trace buggyTrace = testObjects.getBuggyTrace();
