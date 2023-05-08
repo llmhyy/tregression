@@ -1,176 +1,73 @@
 package iodetection;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import microbat.model.value.PrimitiveValue;
 import microbat.model.value.ReferenceValue;
 import microbat.model.value.VarValue;
 import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 
 /**
- * We store written Variables, but remove read variables from it & we don't add
- * reference VarValues as inputs based on heap address (alias id), & we don't
- * add primitive VarValues based on whether the corresponding trace node in
- * correct trace has the same stringValue.
+ * Find the input and the output of the test case Okay to include many inputs
+ * (eg. setting all the variable before the test case to inputs, but be careful
+ * on this) Since we have the correct trace for reference, you may know which
+ * variable is correct or not.
  * 
- * @author Chenghin
- *
+ * To make reference from the correct trace, you may take some reference from
+ * the following classes: tregression.handler.SeparateVersionHandler,
+ * tregression.StepChangeType, tregression.separatesnapshots.DiffMatcher
+ * 
+ * Some code example are available at
+ * tregression.autofeedbackevaluation.AutoDebugEvaluator#getRefFeedbacks
  */
 public class IODetector {
 
 	private final Trace buggyTrace;
-	private final Trace correctTrace;
 	private final String testDir;
 	private final PairList pairList;
 
-	private List<VarValue> inputs = new ArrayList<>();
-	private VarValue output;
-
 	public IODetector(Trace buggyTrace, Trace correctTrace, String testDir, PairList pairList) {
 		this.buggyTrace = buggyTrace;
-		this.correctTrace = correctTrace;
 		this.testDir = testDir;
 		this.pairList = pairList;
 	}
 
-	// TODO find the input and the output of the test case
-	// Okay to include many inputs (eg. setting all the variable before the test
-	// case to inputs, but be careful on this)
-	// Since we have the correct trace for reference, you may know which variable is
-	// correct or not
-	// To make reference from the correct trace, you may take some reference from
-	// the following class:
-
-	// tregression.handler.SeparateVersionHandler
-	// tregression.StepChangeType
-	// tregression.separatesnapshots.DiffMatcher
-	// tregression.separatesnapshots.DiffMatcher
-
-	// Some code example are avaiable at
-	// tregression.autofeedbackevaluation.AutoDebugEvaluator#getRefFeedbacks
-
-	public List<VarValue> getInputs() {
-		return this.inputs;
+	public Optional<IOResult> detect() {
+		Optional<NodeVarValPair> outputNodeAndVarValOpt = detectOutput();
+		if (outputNodeAndVarValOpt.isEmpty()) {
+			return Optional.empty();
+		}
+		NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
+		VarValue output = outputNodeAndVarVal.getVarVal();
+		List<VarValue> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
+		return Optional.of(new IOResult(inputs, output));
 	}
 
-	public VarValue getOutputs() {
-		return this.output;
-	}
-
-	public void detect() {
-		IOModel outputNodeAndVarVal = detectOutput();
-		output = outputNodeAndVarVal.getVarVal();
-		inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
-	}
-
-	public IOModel detectOutput() {
+	Optional<NodeVarValPair> detectOutput() {
 		TraceNode node;
 		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
 		for (int i = lastNodeOrder; i >= 1; i--) {
 			node = buggyTrace.getTraceNode(i);
-			Optional<IOModel> wrongVariableOptional = getWrongVariableInNode(node);
+			Optional<NodeVarValPair> wrongVariableOptional = getWrongVariableInNode(node);
 			if (wrongVariableOptional.isEmpty()) {
 				continue;
 			}
-			return wrongVariableOptional.get();
+			return wrongVariableOptional;
 		}
-//
-//		for (int i = lastNodeOrder; i >= 0; i--) {
-//			node = buggyTrace.getTraceNode(i);
-//			if (node.getWrittenVariables().size() == 1) {
-//				return new IOModel(node, node.getWrittenVariables().get(0));
-//			}
-//			if (node.getReadVariables().size() == 1) {
-//				return new IOModel(node, node.getReadVariables().get(0));
-//			}
-//		}
-		return null;
+		return Optional.empty();
 	}
 
-	public List<VarValue> detectInputVarValsFromOutput(TraceNode outputNode, VarValue output) {
+	List<VarValue> detectInputVarValsFromOutput(TraceNode outputNode, VarValue output) {
 		Set<VarValue> result = new HashSet<>();
 		detectInputVarValsFromOutput(outputNode, result, new HashSet<String>());
 		assert !result.contains(output);
 		return new ArrayList<>(result);
-	}
-
-	/**
-	 * Currently, it looks at the pair list for the corresponding node in correct
-	 * trace. It then checks if the value in the variables written is correct. If it
-	 * is, it is added to the result.
-	 * 
-	 * @param node
-	 * @return
-	 */
-	private List<VarValue> removeReadVariablesFromWritten(TraceNode node) {
-		TraceNodePair nodePair = pairList.findByBeforeNode(node);
-
-		List<VarValue> writtenVariables = node.getWrittenVariables();
-		if (nodePair == null) {
-			return writtenVariables;
-		}
-		TraceNode correctNode = nodePair.getAfterNode();
-		Map<String, VarValue> varNameToPrimitiveVarValBuggyMap = createPrimitiveValueKeyToVarValueMap(writtenVariables);
-		Map<String, VarValue> varNameToPrimitiveVarValWorkingMap = createPrimitiveValueKeyToVarValueMap(
-				correctNode.getWrittenVariables());
-		varNameToPrimitiveVarValBuggyMap.keySet().retainAll(varNameToPrimitiveVarValWorkingMap.keySet());
-		List<VarValue> result = new ArrayList<>();
-		result.addAll(varNameToPrimitiveVarValBuggyMap.values());
-
-		List<VarValue> readVariables = node.getReadVariables();
-		Map<Long, VarValue> addrToWrittenVar = createHeapAddrToVarValueMap(writtenVariables);
-		Map<Long, VarValue> addrToReadVar = createHeapAddrToVarValueMap(readVariables);
-		for (long key : addrToReadVar.keySet()) {
-			addrToWrittenVar.remove(key);
-		}
-
-		result.addAll(addrToWrittenVar.values());
-		return result;
-	}
-
-	private Map<Long, VarValue> createHeapAddrToVarValueMap(List<VarValue> varValues) {
-		Map<Long, VarValue> result = new HashMap<>();
-		for (VarValue varValue : varValues) {
-			if (varValue instanceof ReferenceValue) {
-				ReferenceValue refVarVal = (ReferenceValue) varValue;
-				result.put(refVarVal.getUniqueID(), refVarVal);
-			}
-		}
-		return result;
-	}
-
-	private Map<String, VarValue> createPrimitiveValueKeyToVarValueMap(List<VarValue> varValues) {
-		Map<String, VarValue> result = new HashMap<>();
-		for (VarValue varValue : varValues) {
-			if (varValue instanceof PrimitiveValue) {
-				PrimitiveValue primitiveValue = (PrimitiveValue) varValue;
-				result.put(createPrimitiveValueKey(primitiveValue), primitiveValue);
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Using var name + value does not work since, unnamed variables will use the
-	 * address.
-	 * 
-	 * @param varVal
-	 * @return
-	 */
-	private String createPrimitiveValueKey(PrimitiveValue varVal) {
-		String delim = "::";
-		return String.join(delim, varVal.getVarName(), varVal.getStringValue());
 	}
 
 	// For each node, add the following as inputs
@@ -191,7 +88,7 @@ public class IODetector {
 			// TODO: check if reference, then use heap address. (math_70 bug id 5)
 			// Check primitive variables, compare with correct trace's aligned node
 			List<VarValue> newInputs = new ArrayList<>(outputNode.getWrittenVariables());
-			Optional<IOModel> wrongVariable = getWrongVariableInNode(outputNode);
+			Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(outputNode);
 			if (wrongVariable.isPresent()) {
 				VarValue incorrectValue = wrongVariable.get().getVarVal();
 				newInputs.remove(incorrectValue);
@@ -229,29 +126,30 @@ public class IODetector {
 	 * @param node
 	 * @return
 	 */
-	private Optional<IOModel> getWrongVariableInNode(TraceNode node) {
+	private Optional<NodeVarValPair> getWrongVariableInNode(TraceNode node) {
 		TraceNodePair pair = pairList.findByBeforeNode(node);
 		if (pair == null) {
 			return Optional.empty();
 		}
 		List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
-		Optional<IOModel> wrongWrittenVar = getWrongVarFromVarList(result, node);
+		Optional<NodeVarValPair> wrongWrittenVar = getWrongVarFromVarList(result, node);
 		if (wrongWrittenVar.isPresent()) {
 			return wrongWrittenVar;
 		}
 		result = pair.findSingleWrongReadVar(buggyTrace);
-		Optional<IOModel> wrongReadVar = getWrongVarFromVarList(result, node);
+		Optional<NodeVarValPair> wrongReadVar = getWrongVarFromVarList(result, node);
 		return wrongReadVar;
 	}
 
 	/**
-	 * Check the "incorrect" var values in the list, and return it if it is null or primitive values.
+	 * Check the "incorrect" var values in the list, and return it if it is null or
+	 * primitive values.
 	 * 
 	 * @param varValues
 	 * @param node
 	 * @return
 	 */
-	private Optional<IOModel> getWrongVarFromVarList(List<VarValue> varValues, TraceNode node) {
+	private Optional<NodeVarValPair> getWrongVarFromVarList(List<VarValue> varValues, TraceNode node) {
 		if (!varValues.isEmpty()) {
 			VarValue output = varValues.get(0);
 			if (output instanceof ReferenceValue) {
@@ -260,15 +158,16 @@ public class IODetector {
 					return Optional.empty();
 				}
 			}
-			return Optional.of(new IOModel(node, output));
+			return Optional.of(new NodeVarValPair(node, output));
 		}
 		return Optional.empty();
 	}
-	static class IOModel {
+
+	static class NodeVarValPair {
 		private final TraceNode node;
 		private final VarValue varVal;
 
-		public IOModel(TraceNode node, VarValue varVal) {
+		public NodeVarValPair(TraceNode node, VarValue varVal) {
 			this.node = node;
 			this.varVal = varVal;
 		}
@@ -280,5 +179,25 @@ public class IODetector {
 		public VarValue getVarVal() {
 			return varVal;
 		}
+	}
+
+	public static class IOResult {
+		private final List<VarValue> inputs;
+		private final VarValue output;
+
+		public IOResult(List<VarValue> inputs, VarValue output) {
+			super();
+			this.inputs = inputs;
+			this.output = output;
+		}
+
+		public List<VarValue> getInputs() {
+			return inputs;
+		}
+
+		public VarValue getOutput() {
+			return output;
+		}
+
 	}
 }

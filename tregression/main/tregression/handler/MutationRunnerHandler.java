@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +29,7 @@ import org.eclipse.jface.preference.PreferenceStore;
 import defects4janalysis.ResultWriter;
 import defects4janalysis.RunResult;
 import iodetection.IODetector;
+import iodetection.IODetector.IOResult;
 import jmutation.dataset.BugDataset;
 import jmutation.dataset.bug.minimize.ProjectMinimizer;
 import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
@@ -47,6 +49,7 @@ import tregression.empiricalstudy.config.ProjectConfig;
 
 public class MutationRunnerHandler extends AbstractHandler {
 	private static final String ZIP_EXT = ".zip";
+	private static final String LINE = "=========";
 
 	/**
 	 * A main method is provided so that we do not need to run this in an Eclipse
@@ -153,7 +156,6 @@ public class MutationRunnerHandler extends AbstractHandler {
 					continue;
 				}
 				String bugID_str = bugIDZipStr.substring(0, bugIDZipStr.indexOf(ZIP_EXT));
-				bugID_str = "5";
 				// Skip if the project has been processed
 				if (processedProjects.contains(projectName + ":" + bugID_str)) {
 					System.out.println("Skipped: has record in the result file");
@@ -250,16 +252,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 					}
 					IODetector ioDetector = new IODetector(t.getBuggyTrace(), t.getFixedTrace(), "src\\test\\java",
 							t.getPairList());
-					ioDetector.detect();
-					List<VarValue> inputs = ioDetector.getInputs();
-					VarValue output = ioDetector.getOutputs();
-					String line = "=========";
-					System.out.println(String.join(" ", line, "inputs", line));
-					for (VarValue input : inputs) {
-						System.out.println(input);
-					}
-					System.out.println(String.join(" ", line, "output", line));
-					System.out.println(output);
+					printIOResult(ioDetector);
 				}
 			} else {
 				result.errorMessage = "No trials";
@@ -269,5 +262,22 @@ public class MutationRunnerHandler extends AbstractHandler {
 			result.errorMessage = e.toString();
 		}
 		return result;
+	}
+
+	private void printIOResult(IODetector ioDetector) {
+		Optional<IOResult> ioOptional = ioDetector.detect();
+		if (ioOptional.isEmpty()) {
+			System.out.println("IO failed");
+		} else {
+			IOResult io = ioOptional.get();
+			List<VarValue> inputs = io.getInputs();
+			VarValue output = io.getOutput();
+			System.out.println(String.join(" ", LINE, "inputs", LINE));
+			for (VarValue input : inputs) {
+				System.out.println(input);
+			}
+			System.out.println(String.join(" ", LINE, "output", LINE));
+			System.out.println(output);
+		}
 	}
 }
