@@ -30,6 +30,9 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.util.MinimumASTNodeFinder;
+import tregression.StepChangeType;
+import tregression.StepChangeTypeChecker;
+import tregression.empiricalstudy.config.MavenProjectConfig;
 import tregression.model.PairList;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.tracematch.ControlPathBasedTraceMatcher;
@@ -52,6 +55,7 @@ class IODetectorIT {
 	private static final String SAMPLE_PROJECT_FORMAT = "projects\\%d";
 	private static final String SRC_DIR = "src\\main\\java";
 	private static final String TEST_DIR = "src\\test\\java";
+	private static final String MVN_TEST_COMPILE = "test-compile";
 
 	private Map<String, CompilationUnit> pathToCompilationUnitMap;
 
@@ -237,6 +241,11 @@ class IODetectorIT {
 			VarValue output = outputNode.getReadVariables().get(0);
 			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
 			Set<VarValue> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(6).getWrittenVariables());
+			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 
 		@Test
@@ -258,14 +267,17 @@ class IODetectorIT {
 			VarValue output = outputNode.getReadVariables().get(0);
 			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
 			Set<VarValue> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(2).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(6).getWrittenVariables());
+			assertEquals(expectedInputs, new HashSet<>(inputs));
 			// add the 4 array value
 			// LocalVariable [type=regularproject.MainTest, variableName=this]:
 			// regularproject/MainTest{7,7}this-0
 //			LocalVariable [type=regularproject.Main, variableName=main]: regularproject/MainTest{12,14}main-1
 //			ArrayElementVar [type=java.lang.Object, variableName=1993134103[0]]: 1993134103[0]
 //			ArrayElementVar [type=java.lang.Object, variableName=1993134103[1]]: 1993134103[1]
-			// Missing the arr argument itself. This is due the "wrong var" identifier
-			// returning arr.
 		}
 
 		@Test
@@ -289,6 +301,11 @@ class IODetectorIT {
 			VarValue output = outputNode.getReadVariables().get(0);
 			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
 			Set<VarValue> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
+			expectedInputs.add(buggyTrace.getTraceNode(8).getWrittenVariables().get(0));
+			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 
 		@Test
@@ -312,7 +329,14 @@ class IODetectorIT {
 			VarValue output = outputNode.getReadVariables().get(0);
 			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
 			Set<VarValue> expectedInputs = new HashSet<>();
-
+			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(8).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(9).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(11).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(12).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(13).getWrittenVariables());
+			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 	}
 

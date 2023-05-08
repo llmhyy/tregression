@@ -223,8 +223,8 @@ public class IODetector {
 	}
 
 	/**
-	 * Use PairList code to get wrong VarValues in the current node. Do not add ReferenceValue, as it's
-	 * correctness is determined by the address (i.e. always correct.)
+	 * Use PairList code to get wrong VarValues in the current node. Do not add
+	 * non-null ReferenceValue, as they are always correct.
 	 * 
 	 * @param node
 	 * @return
@@ -235,16 +235,35 @@ public class IODetector {
 			return Optional.empty();
 		}
 		List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
-		if (!result.isEmpty() && !(result.get(0) instanceof ReferenceValue)) {
-			return Optional.of(new IOModel(node, result.get(0)));
+		Optional<IOModel> wrongWrittenVar = getWrongVarFromVarList(result, node);
+		if (wrongWrittenVar.isPresent()) {
+			return wrongWrittenVar;
 		}
 		result = pair.findSingleWrongReadVar(buggyTrace);
-		if (!result.isEmpty() && !(result.get(0) instanceof ReferenceValue)) {
-			return Optional.of(new IOModel(node, result.get(0)));
+		Optional<IOModel> wrongReadVar = getWrongVarFromVarList(result, node);
+		return wrongReadVar;
+	}
+
+	/**
+	 * Check the "incorrect" var values in the list, and return it if it is null or primitive values.
+	 * 
+	 * @param varValues
+	 * @param node
+	 * @return
+	 */
+	private Optional<IOModel> getWrongVarFromVarList(List<VarValue> varValues, TraceNode node) {
+		if (!varValues.isEmpty()) {
+			VarValue output = varValues.get(0);
+			if (output instanceof ReferenceValue) {
+				long addr = ((ReferenceValue) output).getUniqueID();
+				if (addr != -1) { // If the "incorrect" ref var value is not null, don't return it.
+					return Optional.empty();
+				}
+			}
+			return Optional.of(new IOModel(node, output));
 		}
 		return Optional.empty();
 	}
-
 	static class IOModel {
 		private final TraceNode node;
 		private final VarValue varVal;
