@@ -105,7 +105,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 		int success_count = 0;
 
 		ResultWriter writer = new ResultWriter(resultPath);
-		writer.writeTitle();
+
 
 		File baseFolder = new File(basePath);
 
