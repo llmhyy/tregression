@@ -2,6 +2,7 @@ package iodetection;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.ArrayList;
@@ -18,10 +19,10 @@ import tregression.model.PairList;
 import tregression.model.TraceNodePair;
 
 /**
- * We store written Variables, but remove
- * read variables from it & we don't add reference VarValues as inputs based on
- * heap address (alias id), & we don't add primitive VarValues based on whether
- * the corresponding trace node in correct trace has the same stringValue.
+ * We store written Variables, but remove read variables from it & we don't add
+ * reference VarValues as inputs based on heap address (alias id), & we don't
+ * add primitive VarValues based on whether the corresponding trace node in
+ * correct trace has the same stringValue.
  * 
  * @author Chenghin
  *
@@ -78,18 +79,11 @@ public class IODetector {
 		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
 		for (int i = lastNodeOrder; i >= 0; i--) {
 			node = buggyTrace.getTraceNode(i);
-			TraceNodePair pair = pairList.findByBeforeNode(node);
-			if (pair == null) {
+			Optional<IOModel> wrongVariableOptional = getWrongVariableInNode(node);
+			if (wrongVariableOptional.isEmpty()) {
 				continue;
 			}
-			List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
-			if (!result.isEmpty()) {
-				return new IOModel(node, result.get(0));
-			}
-			result = pair.findSingleWrongReadVar(buggyTrace);			
-			if (!result.isEmpty()) {
-				return new IOModel(node, result.get(0));
-			}
+			return wrongVariableOptional.get();
 		}
 
 		for (int i = lastNodeOrder; i >= 0; i--) {
@@ -111,14 +105,20 @@ public class IODetector {
 		return new ArrayList<>(result);
 	}
 
+	/**
+	 * Currently, it looks at the pair list for the corresponding node in correct trace.
+	 * It then checks if the value in the variables written is correct. If it is, it is added to the result.
+	 * @param node
+	 * @return
+	 */
 	private List<VarValue> removeReadVariablesFromWritten(TraceNode node) {
-		TraceNodePair nodePair = pairList.findByAfterNode(node);
+		TraceNodePair nodePair = pairList.findByBeforeNode(node);
 
 		List<VarValue> writtenVariables = node.getWrittenVariables();
 		if (nodePair == null) {
 			return writtenVariables;
 		}
-		TraceNode correctNode = nodePair.getBeforeNode();
+		TraceNode correctNode = nodePair.getAfterNode();
 		Map<String, VarValue> varNameToPrimitiveVarValBuggyMap = createPrimitiveValueKeyToVarValueMap(writtenVariables);
 		Map<String, VarValue> varNameToPrimitiveVarValWorkingMap = createPrimitiveValueKeyToVarValueMap(
 				correctNode.getWrittenVariables());
@@ -159,6 +159,11 @@ public class IODetector {
 		return result;
 	}
 
+	/**
+	 * Using var name + value does not work since, unnamed variables will use the address.
+	 * @param varVal
+	 * @return
+	 */
 	private String createPrimitiveValueKey(PrimitiveValue varVal) {
 		String delim = "::";
 		return String.join(delim, varVal.getVarName(), varVal.getStringValue());
@@ -181,7 +186,12 @@ public class IODetector {
 		if (isTestFile) {
 			// TODO: check if reference, then use heap address. (math_70 bug id 5)
 			// Check primitive variables, compare with correct trace's aligned node
-			List<VarValue> newInputs = removeReadVariablesFromWritten(outputNode);
+			List<VarValue> newInputs = new ArrayList<>(outputNode.getWrittenVariables());
+			Optional<IOModel> wrongVariable = getWrongVariableInNode(outputNode);
+			if (wrongVariable.isPresent()) {
+				VarValue incorrectValue = wrongVariable.get().getVarVal();
+				newInputs.remove(incorrectValue);
+			}
 			inputs.addAll(newInputs);
 		}
 
@@ -204,9 +214,26 @@ public class IODetector {
 		return String.valueOf(node.getOrder());
 	}
 
-	boolean isInTestDir(String filePath) {
+	private boolean isInTestDir(String filePath) {
 		return filePath.contains(testDir);
-	}	
+	}
+
+	private Optional<IOModel> getWrongVariableInNode(TraceNode node) {
+		TraceNodePair pair = pairList.findByBeforeNode(node);
+		if (pair == null) {
+			return Optional.empty();
+		}
+		List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
+		if (!result.isEmpty()) {
+			return Optional.of(new IOModel(node, result.get(0)));
+		}
+		result = pair.findSingleWrongReadVar(buggyTrace);
+		if (!result.isEmpty()) {
+			return Optional.of(new IOModel(node, result.get(0)));
+		}
+		return Optional.empty();
+	}
+
 	static class IOModel {
 		private final TraceNode node;
 		private final VarValue varVal;
