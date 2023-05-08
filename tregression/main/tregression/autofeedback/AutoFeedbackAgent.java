@@ -30,6 +30,11 @@ public class AutoFeedbackAgent {
 		this.finder = trail.getRootCauseFinder();
 	}
 	
+	/**
+	 * Get the ground truth feedback of the given node
+	 * @param node Target node
+	 * @return Ground truth feedback
+	 */
 	public UserFeedback giveFeedback(final TraceNode node) {
 		StepChangeType type = this.typeChecker.getType(node, true, this.pairList, this.matcher);
 		return this.typeToFeedback(type, node, true, this.finder);

@@ -12,6 +12,10 @@ public class RunResult {
 	
 	public final static String DELIMITER = ",";
 	
+	public boolean isSuccess() {
+		return this.traceLen != -1;
+	}
+	
 	public static RunResult parseString(final String string) {
 		RunResult result = new RunResult();
 		String[] tokens = string.split(RunResult.DELIMITER);

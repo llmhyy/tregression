@@ -1,10 +1,18 @@
 package tregression.handler;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.commands.AbstractHandler;
@@ -93,6 +101,8 @@ public class MutationRunnerHandler extends AbstractHandler {
 		// Write the analysis result to this file
 		final String resultPath = Paths.get(basePath, "result.txt").toString();
 
+		ExecutorService executorService = Executors.newSingleThreadExecutor();
+		
 		int total_count = 0;
 		int success_count = 0;
 
@@ -101,6 +111,24 @@ public class MutationRunnerHandler extends AbstractHandler {
 
 		File baseFolder = new File(basePath);
 
+		List<String> processedProjects = new ArrayList<>();
+	    // If file exists, read the records
+    	try {
+    		FileReader fileReader = new FileReader(resultPath);
+    		BufferedReader reader = new BufferedReader(fileReader);
+    		String line = reader.readLine(); // first line is the headers
+    		while ((line = reader.readLine()) != null) {
+    			String[] content = line.split(",");
+    			String record = content[0] + ":" + content[1];
+    			processedProjects.add(record);
+    		}
+    		reader.close();
+    	} catch (FileNotFoundException e) {
+    		writer.writeTitle();
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    	}
+    	
 		// You can filter out some problematic projection. The example is commented
 		List<String> projectFilters = new ArrayList<>();
 		// projectFilters.add("Closure:44");
@@ -117,12 +145,20 @@ public class MutationRunnerHandler extends AbstractHandler {
 				System.out.println(message);
 				return Status.warning(message);
 			}
+			
 			// Loop all bug id in the projects folder
 			for (String bugIDZipStr : mutationFolders) {
 				if (!bugIDZipStr.endsWith(ZIP_EXT)) {
 					continue;
 				}
 				String bugID_str = bugIDZipStr.substring(0, bugIDZipStr.indexOf(ZIP_EXT));
+				
+	    		// Skip if the project has been processed
+	    		if (processedProjects.contains(projectName + ":" + bugID_str)) {
+	    			System.out.println("Skipped: has record in the result file");
+	    			continue;
+	    		}
+	    		
 				int bugId;
 				try {
 					bugId = Integer.parseInt(bugID_str);
@@ -142,7 +178,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 					dataset.unzip(bugId);
 					ProjectMinimizer minimizer = dataset.createMinimizer(bugId);
 					minimizer.maximise();
-					result = collectSingleResult(basePath, projectName, bugId, pathConfig);
+					result = collectSingleResult(basePath, projectName, bugId, pathConfig, executorService);
 					String pathToBug = pathConfig.getBugPath(projectName, Integer.toString(bugId));
 					FileUtils.deleteDirectory(new File(pathToBug));
 				} catch (IOException e) {
@@ -161,7 +197,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 	}
 
 	private RunResult collectSingleResult(String basePath, String projectName, int bugId,
-			PathConfiguration pathConfig) {
+			PathConfiguration pathConfig, ExecutorService executorService) {
 		String bugID_str = String.valueOf(bugId);
 		System.out.println();
 		System.out.println("Working on " + projectName + " : " + bugID_str);
@@ -177,7 +213,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 
 		try {
 			// Project config of the mutation dataset
-			ProjectConfig config = ConfigFactory.createConfig(projectName, bugID_str, bugFolder, fixFolder);
+			final ProjectConfig config = ConfigFactory.createConfig(projectName, bugID_str, bugFolder, fixFolder);
 
 			if (config == null) {
 				throw new Exception(
@@ -187,8 +223,17 @@ public class MutationRunnerHandler extends AbstractHandler {
 			MutationDatasetProjectConfig.executeMavenCmd(Paths.get(bugFolder), "test-compile");
 			// TrailGenerator will generate the buggy trace and fixed trace
 
-			List<EmpiricalTrial> trials = new TrialGenerator0().generateTrials(bugFolder, fixFolder, false, false,
-					false, 3, true, true, config, "");
+			final TrialGenerator0 generator0 = new TrialGenerator0();
+			Future<List<EmpiricalTrial>> getTrials = executorService.submit(new Callable<List<EmpiricalTrial>>() {
+				@Override
+				public List<EmpiricalTrial> call() throws Exception {
+					return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+				}
+			});
+			// Timeout: 15 minutes
+			List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
+			getTrials.cancel(true);
+			
 			// Record the analysis result
 			if (trials.size() != 0) {
 				PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();
