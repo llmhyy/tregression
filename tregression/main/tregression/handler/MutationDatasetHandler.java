@@ -1,10 +1,12 @@
 package tregression.handler;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -21,7 +23,9 @@ import microbat.model.trace.TraceNode;
 import microbat.Activator;
 import microbat.util.JavaUtil;
 import sav.strategies.dto.AppJavaClassPath;
+import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.config.ConfigFactory;
+import tregression.empiricalstudy.config.MutationDatasetProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.model.PairList;
 import tregression.preference.TregressionPreference;
@@ -38,7 +42,8 @@ import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
 import jmutation.dataset.bug.model.path.PathConfiguration;
 import jmutation.dataset.execution.Request;
 import jmutation.dataset.execution.handler.TraceCollectionHandler;
-
+import tregression.empiricalstudy.DeadEndRecord;
+import tregression.empiricalstudy.EmpiricalTrial;
 
 
 public class MutationDatasetHandler extends AbstractHandler {
@@ -71,56 +76,28 @@ public class MutationDatasetHandler extends AbstractHandler {
 				int testCaseID = Integer.parseInt(testCaseID_str);
 				
 				System.out.println("Loading mutated projection from " + projectPath + " with bug id " + testCaseID);
-				BugDataset bugDataset = new BugDataset(projectPath);
+				BugDataset dataset = new BugDataset(projectPath);
 				
-	            new TraceCollectionHandler(projectRepo, projectName, testCaseID, traceCollectionTimeoutSeconds, 0, 0).handle(new Request(true));
-				BugData data = null;
 				try {
-					data = bugDataset.getData(testCaseID);
-				} catch (Exception e){
-					e.printStackTrace();
-					throw new RuntimeException();
-				}
-
-				final int rootCauseOrder = data.getRootCauseNode();
-				System.out.println("RootCause order: " + rootCauseOrder);
-				
-				final String srcFolderPath = "src\\main\\java";
-				final String testFolderPath = "src\\test\\java";
-				
-				final String projName = data.getProjectName();
-				final String mutatedProjPath = data.getBuggyProjectPath();
-				final String originalProjPath = data.getWorkingProjectPath();
-				
-				Trace buggyTrace = data.getBuggyTrace();
-				Trace correctTrace = data.getWorkingTrace();
-				TestCase testCase = data.getTestCase();
-				final String regressionID = testCase.toString();
-				
-				ProjectConfig config = ConfigFactory.createConfig(projName, regressionID, mutatedProjPath, originalProjPath);
-				tregression.empiricalstudy.TestCase tc = new tregression.empiricalstudy.TestCase(testCase.testClassName(), testCase.testMethodName());
-				AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(mutatedProjPath, tc, config);
-				AppJavaClassPath correctApp = AppClassPathInitializer.initialize(originalProjPath, tc, config);
-				
-				buggyTrace.setAppJavaClassPath(buggyApp);
-				correctTrace.setAppJavaClassPath(correctApp);
-				
-				DiffMatcher matcher = new DiffMatcher(srcFolderPath, testFolderPath, mutatedProjPath, originalProjPath);
-				matcher.matchCode();
-				
-				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, matcher);
-				
-				updateView(buggyTrace, correctTrace, pairList, matcher);
-				
-				PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(projectRepo);
-				try {
-					bugDataset.deleteInstrumentationFiles(pathConfig, projName, testCaseID_str);
+					PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(projectRepo);
+					dataset.unzip(testCaseID);
+					ProjectMinimizer minimizer = dataset.createMinimizer(testCaseID);
+					minimizer.maximise();
+					
+					final String bugFolder = pathConfig.getBuggyPath(projectName, testCaseID_str);
+					final String fixFolder = pathConfig.getFixPath(projectName, testCaseID_str);
+					final ProjectConfig config = ConfigFactory.createConfig(projectName, testCaseID_str, bugFolder, fixFolder);
+					MutationDatasetProjectConfig.executeMavenCmd(Paths.get(bugFolder), "test-compile");
+					final TrialGenerator0 generator0 = new TrialGenerator0();
+					List<EmpiricalTrial> trails = generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+					if(trails.size() != 0) {
+						PlayRegressionLocalizationHandler.finder = trails.get(0).getRootCauseFinder();					
+					}
+					String pathToBug = pathConfig.getBugPath(projectName, testCaseID_str);
+					FileUtils.deleteDirectory(new File(pathToBug));
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				
 				return Status.OK_STATUS;
 			}
 			
