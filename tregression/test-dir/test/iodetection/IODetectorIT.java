@@ -145,6 +145,21 @@ class IODetectorIT {
 			expectedInputs.addAll(buggyTrace.getTraceNode(13).getWrittenVariables());
 			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
+		
+		@Test
+		void detectInputVarValsFromOutput_OutputHasNoDataDependencies_ObtainsInputs() {
+			IODetectorTestObjects testObjects = constructTestObjects("null-ptr-exception", 2);
+			IODetector detector = testObjects.getIoDetector();
+			Trace buggyTrace = testObjects.getBuggyTrace();
+			TraceNode outputNode = buggyTrace.getLatestNode();
+			VarValue output = outputNode.getReadVariables().get(0);
+			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+			Set<VarValue> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
+			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
+			assertEquals(expectedInputs, new HashSet<>(inputs));
+		}
 	}
 
 	@Nested
@@ -177,7 +192,7 @@ class IODetectorIT {
 			}
 
 			@Test
-			void detectOutput_NullPointerExceptionThrown_ObtainsControlDominatorAsOutput() {
+			void detectOutput_NullPointerExceptionThrown_ObtainsNullAsOutput() {
 				IODetectorTestObjects testObjects = constructTestObjects("null-ptr-exception", 2);
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
@@ -189,7 +204,7 @@ class IODetectorIT {
 			}
 
 			@Test
-			void detectOutput_DivByZeroExceptionThrown_ObtainsOutput() {
+			void detectOutput_DivByZeroExceptionThrown_ObtainsZeroAsOutput() {
 				IODetectorTestObjects testObjects = constructTestObjects("div-by-zero-exception", 3);
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
@@ -201,7 +216,7 @@ class IODetectorIT {
 			}
 
 			@Test
-			void detectOutput_OutOfBoundsExceptionThrown_ObtainsOutput() {
+			void detectOutput_OutOfBoundsExceptionThrown_ObtainsAccessingIndexAsOutput() {
 				IODetectorTestObjects testObjects = constructTestObjects("out-of-bounds-exception", 4);
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
@@ -213,7 +228,7 @@ class IODetectorIT {
 			}
 
 			@Test
-			void detectOutput_OutOfBoundsExceptionThrownDueToDataStructureSize_ObtainsOutput() {
+			void detectOutput_OutOfBoundsExceptionThrownDueToDataStructureSize_ObtainsConditionalResultInLoopAsOutput() {
 				IODetectorTestObjects testObjects = constructTestObjects("out-of-bounds-list-size", 9);
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
