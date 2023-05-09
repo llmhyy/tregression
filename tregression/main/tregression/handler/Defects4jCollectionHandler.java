@@ -164,6 +164,9 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 									EmpiricalTrial t = trials.get(i);
 									System.out.println(t);
 									Trace trace = t.getBuggyTrace();
+									if (trace == null) {
+										throw new RuntimeException(t.getExceptionExplanation());
+									}
 									result.traceLen = Long.valueOf(trace.size());
 									result.isOmissionBug = t.getBugType() == EmpiricalTrial.OVER_SKIP;
 	

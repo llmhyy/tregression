@@ -17,7 +17,7 @@ public class ResultWriter {
 		try {
 			File file = new File(this.path);
 			file.createNewFile();
-			fileWriter = new FileWriter(file);
+			fileWriter = new FileWriter(file, true);
 			
 			StringBuffer strBuffer = new StringBuffer();
 			this.appendStr(strBuffer, "Project Name");
