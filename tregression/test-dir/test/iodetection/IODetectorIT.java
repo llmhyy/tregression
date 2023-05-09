@@ -145,7 +145,7 @@ class IODetectorIT {
 			expectedInputs.addAll(buggyTrace.getTraceNode(13).getWrittenVariables());
 			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
-		
+
 		@Test
 		void detectInputVarValsFromOutput_OutputHasNoDataDependencies_ObtainsInputs() {
 			IODetectorTestObjects testObjects = constructTestObjects("null-ptr-exception", 2);
@@ -445,7 +445,7 @@ class IODetectorIT {
 	}
 
 	private IODetector constructIODetector(Trace buggyTrace, Trace workingTrace, PairList pairList) {
-		return new IODetector(buggyTrace, workingTrace, TEST_DIR, pairList);
+		return new IODetector(buggyTrace, TEST_DIR, pairList);
 	}
 
 	private void appendMissingInfoToExecutionList(List<TraceNode> executionList, String path) {

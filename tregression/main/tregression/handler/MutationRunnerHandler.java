@@ -253,8 +253,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 					for (DeadEndRecord record : t.getDeadEndRecordList()) {
 						result.solutionName = record.getSolutionPattern().getTypeName();
 					}
-					IODetector ioDetector = new IODetector(t.getBuggyTrace(), t.getFixedTrace(), "src\\test\\java",
-							t.getPairList());
+					IODetector ioDetector = new IODetector(t.getBuggyTrace(), "src\\test\\java", t.getPairList());
 					printIOResult(ioDetector);
 				}
 			} else {

@@ -32,7 +32,7 @@ public class IODetector {
 	private final String testDir;
 	private final PairList pairList;
 
-	public IODetector(Trace buggyTrace, Trace correctTrace, String testDir, PairList pairList) {
+	public IODetector(Trace buggyTrace, String testDir, PairList pairList) {
 		this.buggyTrace = buggyTrace;
 		this.testDir = testDir;
 		this.pairList = pairList;
