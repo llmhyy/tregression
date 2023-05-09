@@ -44,6 +44,7 @@ class IOReaderIT {
 					String.format(INPUT_VAR_ID_FMT, 2) };
 			assertArrayEquals(expectedInputs, inputs);
 		}
+
 		@Test
 		void readInputs_FileWithNoInputs_GetsInputsCorrectly() throws IOException {
 			Files.writeString(tempFile, System.lineSeparator() + SAMPLE_OUTPUT_CONTENT);

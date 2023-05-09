@@ -11,8 +11,7 @@ import microbat.model.value.VarValue;
 public class IOWriter {
 	static final String VAR_VAL_DELIMITER = " ";
 
-	public void writeIO(List<VarValue> inputs, VarValue output, final Path filePath)
-			throws IOException {
+	public void writeIO(List<VarValue> inputs, VarValue output, final Path filePath) throws IOException {
 		String ioStr = formIOStr(inputs, output, filePath);
 		Files.write(filePath, ioStr.getBytes());
 	}
@@ -30,7 +29,7 @@ public class IOWriter {
 		return strBuilder.toString();
 	}
 
-	String formIOStr( List<VarValue> inputs, VarValue output, final Path filePath) {
+	String formIOStr(List<VarValue> inputs, VarValue output, final Path filePath) {
 		String inputRow = formVarValueRow(inputs);
 		return String.join(System.lineSeparator(), inputRow, output.getVarID()) + System.lineSeparator();
 	}
