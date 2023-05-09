@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -76,24 +77,45 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    // Not all projects are supported by Tregression by now
 			    List<String> supportedProjectNames = new ArrayList<>();
 			    supportedProjectNames.add("Chart");
+			    supportedProjectNames.add("Cli");
 			    supportedProjectNames.add("Closure");
+			    supportedProjectNames.add("Codec");
+			    supportedProjectNames.add("Compress");
+			    supportedProjectNames.add("Csv");
+			    supportedProjectNames.add("Gson");
+			    supportedProjectNames.add("JacksonCore");
+			    supportedProjectNames.add("JacksonDatabind");
+			    supportedProjectNames.add("JacksonXml");
+			    supportedProjectNames.add("Jsoup");
+			    supportedProjectNames.add("JxPath");
 			    supportedProjectNames.add("Lang");
 			    supportedProjectNames.add("Math");
 			    supportedProjectNames.add("Mockito");
 			    supportedProjectNames.add("Time");
 	
-			    //List<String> projectFilters = new ArrayList<>();
-			    //projectFilters.add("Closure:44");
-			    //projectFilters.add("Closure:51");
-			    //projectFilters.add("Closure:52");
-			    //projectFilters.add("Closure:59");
-			    //projectFilters.add("Closure:65");
-			    //projectFilters.add("Closure:73");
-			    //projectFilters.add("Closure:77");
-			    //projectFilters.add("Closure:107");
+			    // bugs causing hanging error:
+//			    List<String> projectFilters = new ArrayList<>();
+//			    projectFilters.add("Closure:44");
+//			    projectFilters.add("Closure:51");
+//			    projectFilters.add("Closure:52");
+//			    projectFilters.add("Closure:59");
+//			    projectFilters.add("Closure:65");
+//			    projectFilters.add("Closure:73");
+//			    projectFilters.add("Closure:77");
+//			    projectFilters.add("Closure:107");
 			    
-			    // executor service for Future (timeout check)
-			    ExecutorService executorService = Executors.newSingleThreadExecutor();
+			    // out of memory:
+			    List<String> outOfMemoryFilters = new ArrayList<>();
+			    outOfMemoryFilters.add("Compress:22");
+			    outOfMemoryFilters.add("Compress:29");
+			    outOfMemoryFilters.add("JacksonCore:4");
+			    outOfMemoryFilters.add("JacksonCore:17");
+			    outOfMemoryFilters.add("JacksonCore:25");
+			    outOfMemoryFilters.add("Jsoup:81");
+			    
+			    int maxThreadsCount = 5;
+			    ExecutorService executorService = Executors.newFixedThreadPool(maxThreadsCount);
+			    int hangingThreads = 0;
 			    
 			    // Loop all projects in the Defects4j folder
 			    for (String projectName : baseFolder.list()) {
@@ -135,9 +157,13 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		}
 			    		
 			    		try {
-			    			//if (projectFilters.contains(projectName + ":" + bugID_str)) {
-				    		//	throw new RuntimeException("Will cause hanging problem");
-				    		//}
+//			    			if (projectFilters.contains(projectName + ":" + bugID_str)) {
+//				    			throw new RuntimeException("Will cause hanging problem");
+//				    		}
+			    			
+			    			if (outOfMemoryFilters.contains(projectName + ":" + bugID_str)) {
+			    				throw new RuntimeException("Out of memory");
+			    			}
 			    			
 			    			// Get the configuration of the Defects4j project
 							final ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugID_str);
@@ -154,8 +180,17 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 								}
 							});
 							// Timeout: 15 minutes
-							List<EmpiricalTrial> trials = getTrials.get(15, TimeUnit.MINUTES);
-							getTrials.cancel(true);
+							List<EmpiricalTrial> trials;
+							try {
+								trials = getTrials.get(15, TimeUnit.MINUTES);
+							} catch (TimeoutException e) {
+								getTrials.cancel(true);
+								hangingThreads++;
+								if (hangingThreads >= maxThreadsCount) {
+									executorService.shutdownNow();
+								}
+								throw e;
+							}
 							
 							// Record the analysis result
 							if (trials.size() != 0) {
@@ -185,12 +220,14 @@ public class Defects4jCollectionHandler extends AbstractHandler {
 			    		}
 			    			
 			    		writer.writeResult(result);
+			    		if (hangingThreads >= maxThreadsCount) {
+			    			break;
+			    		}
 
 			    	}
 
 			    }
 			    writer.writeResult(success_count, project_count);
-			    executorService.shutdown();
 				return Status.OK_STATUS;
 			}
 		};
