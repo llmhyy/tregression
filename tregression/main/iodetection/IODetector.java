@@ -38,6 +38,10 @@ public class IODetector {
 		this.pairList = pairList;
 	}
 
+	/**
+	 * Runs IO detection.
+	 * @return
+	 */
 	public Optional<IOResult> detect() {
 		Optional<NodeVarValPair> outputNodeAndVarValOpt = detectOutput();
 		if (outputNodeAndVarValOpt.isEmpty()) {
@@ -49,6 +53,12 @@ public class IODetector {
 		return Optional.of(new IOResult(inputs, output));
 	}
 
+	/**
+	 * Iterates from the last node to first node, and checks for wrong variable
+	 * value. Once it is found, it is returned.
+	 * 
+	 * @return
+	 */
 	Optional<NodeVarValPair> detectOutput() {
 		TraceNode node;
 		int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
@@ -63,22 +73,28 @@ public class IODetector {
 		return Optional.empty();
 	}
 
+	/**
+	 * Given an output, it uses data, control and method invocation parent dependencies to identify inputs.
+	 * @param outputNode
+	 * @param output
+	 * @return
+	 */
 	List<VarValue> detectInputVarValsFromOutput(TraceNode outputNode, VarValue output) {
 		Set<VarValue> result = new HashSet<>();
-		detectInputVarValsFromOutput(outputNode, result, new HashSet<String>());
+		detectInputVarValsFromOutput(outputNode, result, new HashSet<Integer>());
 		assert !result.contains(output);
 		return new ArrayList<>(result);
 	}
 
-	// For each node, add the following as inputs
-	// 1. Written vars - read variables.
+	// For each node, add the following as inputs (Variables in test file only)
+	// 1. Written variables.
 	// 2. read variables without data dominators
 	//
 	// Recurse on the following:
 	// 1. Data dominator on each read variable
 	// 2. Control/Invocation Parent
-	void detectInputVarValsFromOutput(TraceNode outputNode, Set<VarValue> inputs, Set<String> visited) {
-		String key = formVisitedKey(outputNode);
+	void detectInputVarValsFromOutput(TraceNode outputNode, Set<VarValue> inputs, Set<Integer> visited) {
+		int key = formVisitedKey(outputNode);
 		if (visited.contains(key)) {
 			return;
 		}
@@ -111,8 +127,8 @@ public class IODetector {
 		}
 	}
 
-	private String formVisitedKey(TraceNode node) {
-		return String.valueOf(node.getOrder());
+	private int formVisitedKey(TraceNode node) {
+		return node.getOrder();
 	}
 
 	private boolean isInTestDir(String filePath) {
@@ -131,12 +147,12 @@ public class IODetector {
 		if (pair == null) {
 			return Optional.empty();
 		}
-		List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace);
+		List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace, pairList);
 		Optional<NodeVarValPair> wrongWrittenVar = getWrongVarFromVarList(result, node);
 		if (wrongWrittenVar.isPresent()) {
 			return wrongWrittenVar;
 		}
-		result = pair.findSingleWrongReadVar(buggyTrace);
+		result = pair.findSingleWrongReadVar(buggyTrace, pairList);
 		Optional<NodeVarValPair> wrongReadVar = getWrongVarFromVarList(result, node);
 		return wrongReadVar;
 	}
@@ -150,15 +166,14 @@ public class IODetector {
 	 * @return
 	 */
 	private Optional<NodeVarValPair> getWrongVarFromVarList(List<VarValue> varValues, TraceNode node) {
-		if (!varValues.isEmpty()) {
-			VarValue output = varValues.get(0);
-			if (output instanceof ReferenceValue) {
-				long addr = ((ReferenceValue) output).getUniqueID();
+		for (VarValue varValue : varValues) {
+			if (varValue instanceof ReferenceValue) {
+				long addr = ((ReferenceValue) varValue).getUniqueID();
 				if (addr != -1) { // If the "incorrect" ref var value is not null, don't return it.
-					return Optional.empty();
+					continue;
 				}
 			}
-			return Optional.of(new NodeVarValPair(node, output));
+			return Optional.of(new NodeVarValPair(node, varValue));
 		}
 		return Optional.empty();
 	}

@@ -35,7 +35,7 @@ class IOReaderIT {
 	}
 
 	@Nested
-	class ReadInput {
+	class ReadInputs {
 		@Test
 		void readInputs_FileWithInputsAndOutputs_GetsInputsCorrectly() throws IOException {
 			Files.writeString(tempFile, SAMPLE_FILE_CONTENT);

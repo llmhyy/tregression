@@ -176,6 +176,18 @@ class IODetectorIT {
 			assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
 			assertEquals(expectedVarVal, output.getVarVal());
 		}
+		
+		@Test
+		void detectOutput_WrongArrayContents_TakesTheAccessedContent() {
+			IODetectorTestObjects testObjects = constructTestObjects("array-contents-diff", 10);
+			IODetector detector = testObjects.getIoDetector();
+			Trace buggyTrace = testObjects.getBuggyTrace();
+			NodeVarValPair output = detector.detectOutput().get();
+			TraceNode expectedOutputNode = buggyTrace.getLatestNode();
+			VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
+			assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
+			assertEquals(expectedVarVal, output.getVarVal());
+		}
 
 		@Nested
 		class ObtainingOutputsAfterException {
@@ -228,13 +240,13 @@ class IODetectorIT {
 			}
 
 			@Test
-			void detectOutput_OutOfBoundsExceptionThrownDueToDataStructureSize_ObtainsConditionalResultInLoopAsOutput() {
+			void detectOutput_OutOfBoundsExceptionThrownDueToDataStructureSize_ObtainsDataStructureSizeAsOutput() {
 				IODetectorTestObjects testObjects = constructTestObjects("out-of-bounds-list-size", 9);
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
 				NodeVarValPair output = detector.detectOutput().get();
-				TraceNode expectedOutputNode = buggyTrace.getTraceNode(7);
-				VarValue expectedVarVal = expectedOutputNode.getWrittenVariables().get(1);
+				TraceNode expectedOutputNode = buggyTrace.getTraceNode(10);
+				VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0).getChildren().get(1);
 				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
 				assertEquals(expectedVarVal, output.getVarVal());
 			}
@@ -341,7 +353,7 @@ class IODetectorIT {
 		}
 
 		@Nested
-		class ObtainingOutputs {
+		class ObtainingOutput {
 			// math_70 bug ID 1
 			@Test
 			void detectOutput_LastNodeAssertionSingleReadVar_ObtainsOutput() {
@@ -386,6 +398,19 @@ class IODetectorIT {
 			@Test
 			void detectOutput_ArrayInputs_ObtainsOutput() {
 				IODetectorTestObjects testObjects = constructTestObjectsMath70("ArrayInput", 5);
+				IODetector detector = testObjects.getIoDetector();
+				Trace buggyTrace = testObjects.getBuggyTrace();
+				NodeVarValPair output = detector.detectOutput().get();
+				TraceNode expectedOutputNode = buggyTrace.getLatestNode();
+				VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
+				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
+				assertEquals(expectedVarVal, output.getVarVal());
+			}			
+			
+			// math_70 bug ID 8
+			@Test
+			void detectOutput_Test_ObtainsOutput() {
+				IODetectorTestObjects testObjects = constructTestObjectsMath70("math_70-8", 8);
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
 				NodeVarValPair output = detector.detectOutput().get();

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import defects4janalysis.ResultWriter;
 import defects4janalysis.RunResult;
 import iodetection.IODetector;
 import iodetection.IODetector.IOResult;
+import iodetection.IOWriter;
 import jmutation.dataset.BugDataset;
 import jmutation.dataset.bug.minimize.ProjectMinimizer;
 import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
@@ -50,6 +52,8 @@ import tregression.empiricalstudy.config.ProjectConfig;
 public class MutationRunnerHandler extends AbstractHandler {
 	private static final String ZIP_EXT = ".zip";
 	private static final String LINE = "=========";
+	private static final String IO_FILE_NAME_FORMAT = "io-%d.txt";
+	private static final String BASE_PATH = "E:\\david\\Mutation_Dataset";
 
 	/**
 	 * A main method is provided so that we do not need to run this in an Eclipse
@@ -62,6 +66,24 @@ public class MutationRunnerHandler extends AbstractHandler {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		updateBug(12, "math_70");
+	}
+
+	private static void updateBug(int bugId, String projectName) {
+		try {
+			PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(BASE_PATH);
+			final String projectPath = Paths.get(BASE_PATH, projectName).toString();
+			BugDataset dataset = new BugDataset(projectPath);
+			ProjectMinimizer minimizer = dataset.createMinimizer(bugId);
+			String pathToBug = pathConfig.getBugPath(projectName, Integer.toString(bugId));
+			minimizer.minimize();
+			dataset.zip(bugId);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void runInJavaApplication() {
 		setUpSystem();
 		new ConsoleUtilsStub().setItselfAsSingleton();
 		IPreferenceStore preference = new PreferenceStore();
@@ -98,11 +120,9 @@ public class MutationRunnerHandler extends AbstractHandler {
 	}
 
 	private IStatus collectResultsInDataset() {
-		// TODO: Use tregression preferences (repo path)
-		final String basePath = "E:\\david\\Mutation_Dataset";
 
 		// Write the analysis result to this file
-		final String resultPath = Paths.get(basePath, "result.txt").toString();
+		final String resultPath = Paths.get(BASE_PATH, "result.txt").toString();
 
 		ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -111,8 +131,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 
 		ResultWriter writer = new ResultWriter(resultPath);
 
-
-		File baseFolder = new File(basePath);
+		File baseFolder = new File(BASE_PATH);
 
 		List<String> processedProjects = new ArrayList<>();
 		// If file exists, read the records
@@ -136,11 +155,11 @@ public class MutationRunnerHandler extends AbstractHandler {
 		List<String> projectFilters = new ArrayList<>();
 		// projectFilters.add("Closure:44");
 
-		PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(basePath);
+		PathConfiguration pathConfig = new MutationFrameworkPathConfiguration(BASE_PATH);
 		// Loop all projects in the MutationDataset folder
 		for (String projectName : baseFolder.list()) {
 			System.out.println("Start running " + projectName);
-			final String projectPath = Paths.get(basePath, projectName).toString();
+			final String projectPath = Paths.get(BASE_PATH, projectName).toString();
 			BugDataset dataset = new BugDataset(projectPath);
 			File projectFolder = new File(projectPath);
 			String[] mutationFolders = projectFolder.list();
@@ -180,7 +199,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 					dataset.unzip(bugId);
 					ProjectMinimizer minimizer = dataset.createMinimizer(bugId);
 					minimizer.maximise();
-					result = collectSingleResult(basePath, projectName, bugId, pathConfig, executorService);
+					result = collectSingleResult(BASE_PATH, projectName, bugId, pathConfig, executorService);
 					String pathToBug = pathConfig.getBugPath(projectName, Integer.toString(bugId));
 					FileUtils.deleteDirectory(new File(pathToBug));
 				} catch (IOException e) {
@@ -254,7 +273,9 @@ public class MutationRunnerHandler extends AbstractHandler {
 						result.solutionName = record.getSolutionPattern().getTypeName();
 					}
 					IODetector ioDetector = new IODetector(t.getBuggyTrace(), "src\\test\\java", t.getPairList());
-					printIOResult(ioDetector);
+					Path ioFilePath = Paths.get(pathConfig.getRepoPath(), projectName,
+							String.format(IO_FILE_NAME_FORMAT, bugId));
+					executeIOPostProcessing(ioDetector, ioFilePath);
 				}
 			} else {
 				result.errorMessage = "No trials";
@@ -266,20 +287,34 @@ public class MutationRunnerHandler extends AbstractHandler {
 		return result;
 	}
 
-	private void printIOResult(IODetector ioDetector) {
+	private void executeIOPostProcessing(IODetector ioDetector, Path ioFilePath) {
 		Optional<IOResult> ioOptional = ioDetector.detect();
 		if (ioOptional.isEmpty()) {
-			System.out.println("IO failed");
-		} else {
-			IOResult io = ioOptional.get();
-			List<VarValue> inputs = io.getInputs();
-			VarValue output = io.getOutput();
-			System.out.println(String.join(" ", LINE, "inputs", LINE));
-			for (VarValue input : inputs) {
-				System.out.println(input);
-			}
-			System.out.println(String.join(" ", LINE, "output", LINE));
-			System.out.println(output);
+			System.out.println("IO Detection Failed");
+			return;
+		}
+		IOResult io = ioOptional.get();
+		printIOResult(io);
+		saveIOResult(io, ioFilePath);
+	}
+
+	private void printIOResult(IOResult io) {
+		List<VarValue> inputs = io.getInputs();
+		VarValue output = io.getOutput();
+		System.out.println(String.join(" ", LINE, "inputs", LINE));
+		for (VarValue input : inputs) {
+			System.out.println(input);
+		}
+		System.out.println(String.join(" ", LINE, "output", LINE));
+		System.out.println(output);
+	}
+
+	private void saveIOResult(IOResult io, Path path) {
+		IOWriter writer = new IOWriter();
+		try {
+			writer.writeIO(io.getInputs(), io.getOutput(), path);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 }
