@@ -43,21 +43,28 @@ Second, please switch to Tregression perspective by (Windows >> Perspectives >> 
 Third, click "Tregression" menu >> Run for Seperate Versions. The tool will automate the regression bug detection.
 
 ## Running Tregression (ERASE) on Regs4J bugs
-It also supports Regressions4J (https://github.com/SongXueZhi/regs4j) bugs. There is no need to download Regressions4J's CLI.sh and CLI.jar, as we already provide our modified version in the scripts directory. Open and modify scripts/regs4j.sh file as specified inside. Then run regs4j.sh as instructed in the file itself. Similar to Defects4j, it will clone all buggy and working versions to your specified directory.
+It also supports Regressions4J (https://github.com/SongXueZhi/regs4j) bugs.
 
-The regs4j.sh script also creates a CSV file that logs any error faced when cloning, for instance, unexpected test results (failing for working commit/passing for bug inducing commit), maven compilation errors, etc. The CSV file is also used to track which bugs were already cloned, so to reclone the projects, please remove the specific row in the file, or provide a different path for the CSV file.
+First run `tregression.util.Regs4jWrapper#cloneAll` method to clone all regressions from regs4j into your system. 
 
-To run Regs4J bugs, please update the "Dataset Name" drop down in the settings.
+`tregression.util.Regs4jWrapper#main` is already set up to run `cloneAll`. You may modify the destination path of the projects in the method.
+
+To run Regs4J bugs in Tregression, please update the "Dataset Name" drop down in the settings.
 
 ### Notes for Developers
 #### Regressions4J's CLI.jar
 The feature branch for our modified CLI.jar is in this link (https://github.com/SongXueZhi/regs4j/tree/feature/tregression-integration)<br/>
 The current JAR file in the scripts directory is based off of Release 1.2 (https://github.com/SongXueZhi/regs4j/releases/tag/1.2).<br/>
-Modifications were made to integrate with TRregression.
+Modifications were made to integrate with Tregression.
 - example.CLI#checkout
 	- It additionally clones the working commit, and migrates the test case to the working commit. Before this was only done to the RIC commit.
 - core.Migrator#migrateTestFromTo_0
 	- Migrated files that were new to the working/RIC commit were deleted on exit from the CLI tool, however, it is now saved. (To save migrated test files and its dependencies)
+
+#### regs4j.sh
+For diagnosis of regressions, a shell script is provided that clones and checks each regression for issues.
+
+It creates a CSV file that logs any error faced when cloning, for instance, unexpected test results (failing for working commit/passing for bug inducing commit), maven compilation errors, etc. The CSV file is also used to track which bugs were already cloned and diagnosed, so to reclone the projects, please remove the specific row in the file, or provide a different path for the CSV file.
 
 #### regs4jProjAndBugs.sh
 This bash script will print out all the project names and bug ID numbers in regs4j. They can copied into tregression.constants.Dataset class if there are any updates to the database.
