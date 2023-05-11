@@ -170,7 +170,7 @@ public class StepChangeTypeChecker {
 //		boolean containsVirtual = checkReturnVariable(thisStep, thatStep);
 		
 		List<VarValue> synonymVarList = findSynonymousVarList(thisStep, thatStep, thisVar, 
-				isOnBeforeTrace, pairList, matcher);
+				isOnBeforeTrace, pairList);
 		if(synonymVarList.isEmpty()){
 			return new VarMatch(false, false, null);
 		}
@@ -217,7 +217,7 @@ public class StepChangeTypeChecker {
 		Trace thisTrace = getCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		Trace thatTrace = getOtherCorrespondingTrace(isOnBeforeTrace, buggyTrace, correctTrace);
 		
-		List<VarValue> synonymVarList = this.findSymWrittenVaribles(thisStep, thatStep, thisVar, isOnBeforeTrace, pairList, matcher);
+		List<VarValue> synonymVarList = this.findSymWrittenVaribles(thisStep, thatStep, thisVar, isOnBeforeTrace, pairList);
 		if(synonymVarList.isEmpty()){
 			return new VarMatch(false, false, null);
 		}
@@ -436,8 +436,18 @@ public class StepChangeTypeChecker {
 		return null;
 	}
 
-	private List<VarValue> findSynonymousVarList(TraceNode thisStep, TraceNode thatStep, VarValue thisVar,
-			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
+	/**
+	 * Given a read VarValue <code>thisVar</code> that contains an <code>ArrayElementVar</code> or <code>VirtualVar</code>, return the corresponding VarValue in the other TraceNode.
+	 * This method is necessary as identifying the corresponding VarValue is not simple for <code>ArrayElementVar</code> or <code>VirtualVar</code>.
+	 * @param thisStep
+	 * @param thatStep
+	 * @param thisVar
+	 * @param isOnBeforeTrace
+	 * @param pairList
+	 * @return
+	 */
+	public List<VarValue> findSynonymousVarList(TraceNode thisStep, TraceNode thatStep, VarValue thisVar,
+			boolean isOnBeforeTrace, PairList pairList) {
 		List<VarValue> readVariables = thatStep.getReadVariables();
 		List<VarValue> synonymousList = new ArrayList<>();
 		for(VarValue readVar: readVariables) {
@@ -494,8 +504,8 @@ public class StepChangeTypeChecker {
 		return synonymousList;
 	}
 
-	private List<VarValue> findSymWrittenVaribles(TraceNode thisStep, TraceNode thatStep, VarValue thisVar,
-			boolean isOnBeforeTrace, PairList pairList, DiffMatcher matcher) {
+	public List<VarValue> findSymWrittenVaribles(TraceNode thisStep, TraceNode thatStep, VarValue thisVar,
+			boolean isOnBeforeTrace, PairList pairList) {
 		List<VarValue> writtenVars = thatStep.getWrittenVariables();
 		List<VarValue> synonymousList = new ArrayList<>();
 		for(VarValue writtenVar: writtenVars) {

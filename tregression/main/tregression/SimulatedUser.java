@@ -22,12 +22,12 @@ public class SimulatedUser {
 	private List<ChosenVariableOption> otherOptions = new ArrayList<>();
 	private int unclearFeedbackNum = 0;
 	
-	private List<ChosenVariableOption> checkWrongVariableOptions(TraceNodePair pair, Trace mutatedTrace){
+	private List<ChosenVariableOption> checkWrongVariableOptions(TraceNodePair pair, Trace mutatedTrace, PairList pairList){
 		
 		List<ChosenVariableOption> options = new ArrayList<>();
 		
-		List<VarValue> wrongReadVars = pair.findSingleWrongReadVar(mutatedTrace);
-		List<VarValue> wrongWrittenVars = pair.findSingleWrongWrittenVarID(mutatedTrace);
+		List<VarValue> wrongReadVars = pair.findSingleWrongReadVar(mutatedTrace, pairList);
+		List<VarValue> wrongWrittenVars = pair.findSingleWrongWrittenVarID(mutatedTrace, pairList);
 		
 		System.currentTimeMillis();
 		
@@ -78,7 +78,7 @@ public class SimulatedUser {
 				feedback.setFeedbackType(UserFeedback.WRONG_PATH);
 			}
 			else{
-				List<ChosenVariableOption> options = checkWrongVariableOptions(pair, mutatedTrace);
+				List<ChosenVariableOption> options = checkWrongVariableOptions(pair, mutatedTrace, pairList);
 				/**
 				 * I prioritize the option so that the feedback number can be quickly reduced.
 				 */
