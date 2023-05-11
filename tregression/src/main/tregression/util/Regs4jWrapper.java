@@ -23,7 +23,7 @@ import tregression.empiricalstudy.config.Regs4jProjectConfig;
 /**
  * Wrapper for Regs4J CLI. Refer to core.CLI class in
  * https://github.com/SongXueZhi/regs4j/tree/feature/tregression-integration.
- * Most of the logic from there was copied over.
+ * Most of the logic in here was copied over from core.CLI.
  *
  */
 public class Regs4jWrapper {
@@ -39,7 +39,13 @@ public class Regs4jWrapper {
     }
 
     public static void main(String[] args) {
-        exampleUsage();
+        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
+        // Instantiation
+        SourceCodeManager sourceCodeManager = new SourceCodeManager();
+        Reducer reducer = new Reducer();
+        Migrator migrator = new Migrator();
+        Regs4jWrapper wrapper = new Regs4jWrapper(sourceCodeManager, reducer, migrator);
+        wrapper.cloneAll(repoPath.toString());
     }
 
     /**
@@ -78,8 +84,7 @@ public class Regs4jWrapper {
     /**
      * Clones every regression into specified repoPath.
      */
-    public void cloneAll() {
-        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
+    public void cloneAll(String repoPath) {
 
         // List projects
         List<String> projectNames = getProjectNames();
