@@ -37,6 +37,20 @@ import tregression.tracematch.ControlPathBasedTraceMatcher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/**
+ * To create new tests: 1. Add another project under
+ * test-dir/files/io-detection/projects 2. Open Tregression, and "Run Separate
+ * Versions" on the new project. 3. Identify the trace file locations (it is
+ * printed inside the instrumentation cmd in the console) 4. Copy paste them
+ * into test-dir/files/io-detection directory. 5. Rename the traces into
+ * buggy-"description"-trace.exec & working-"description"-trace.exec,
+ * "description" is up to you. 6. Initialise objects necessary in the test using
+ * constructTestObjects("description", projectID). Refer to any of the tests for
+ * an example.
+ * 
+ * @author Chenghin
+ *
+ */
 class IODetectorIT {
 
 	private static final Path TEST_FILES_DIR = Paths.get("test-dir", "files", "iodetection");
@@ -176,7 +190,7 @@ class IODetectorIT {
 			assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
 			assertEquals(expectedVarVal, output.getVarVal());
 		}
-		
+
 		@Test
 		void detectOutput_WrongArrayContents_TakesTheAccessedContent() {
 			IODetectorTestObjects testObjects = constructTestObjects("array-contents-diff", 10);
@@ -405,8 +419,8 @@ class IODetectorIT {
 				VarValue expectedVarVal = expectedOutputNode.getReadVariables().get(0);
 				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
 				assertEquals(expectedVarVal, output.getVarVal());
-			}			
-			
+			}
+
 			// math_70 bug ID 8
 			@Test
 			void detectOutput_Test_ObtainsOutput() {
