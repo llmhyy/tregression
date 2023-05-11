@@ -19,8 +19,34 @@ public class Defects4jProjectConfig extends ProjectConfig{
 		if(projectName.equals("Chart")) {
 			config = new Defects4jProjectConfig("tests", "source", "build-tests", "build", "build", projectName, regressionID);
 		}
+		else if (projectName.equals("Cli")) {
+			if (bugID < 30) {
+				config = new Defects4jProjectConfig("src"+File.separator+"test", "src"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
+			} else {
+				config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
+			}
+		}
 		else if (projectName.equals("Closure")) {
 			config = new Defects4jProjectConfig("test", "src", "build"+File.separator+"test", "build"+File.separator+"classes", "build", projectName, regressionID);
+		}
+		else if (projectName.equals("Codec")) {
+			if (bugID < 11) {
+				config = new Defects4jProjectConfig("src"+File.separator+"test", "src"+File.separator+"java", "target"+File.separator+"tests", "target"+File.separator+"classes", "target", projectName, regressionID);
+			} else {
+				config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"tests", "target"+File.separator+"classes", "target", projectName, regressionID);
+			}
+		}
+		else if (projectName.equals("Compress") || projectName.equals("Csv")) {
+			config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
+		}
+		else if (projectName.equals("Gson")) {
+			config = new Defects4jProjectConfig("gson"+File.separator+"src"+File.separator+"test"+File.separator+"java", "gson"+File.separator+"src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "", projectName, regressionID);
+		}
+		else if (projectName.equals("JacksonCore") || projectName.equals("JacksonDatabind") || projectName.equals("JacksonXml") || projectName.equals("Jsoup")) {
+			config = new Defects4jProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
+		}
+		else if (projectName.equals("JxPath")) {
+			config = new Defects4jProjectConfig("src"+File.separator+"test", "src"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
 		}
 		else if (projectName.equals("Lang")) {
 			if(bugID<21){
