@@ -85,29 +85,13 @@ public class SeparateVersionHandler extends AbstractHandler{
 					
 					EmpiricalTrial t = trials.get(i);
 					Trace trace = t.getBuggyTrace();
-//					for(DeadEndRecord r: t.getDeadEndRecordList()){
-//						TraceNode breakStep = trace.getTraceNode(r.getBreakStepOrder());
-////						TraceNode occurStep = trace.getTraceNode(91);
-//						TraceNode occurStep = trace.getTraceNode(r.getOccurOrder());
-//						
-//						TraversingDistanceCalculator cal = new TraversingDistanceCalculator(trace.getAppJavaClassPath());
-//						Traverse tra = cal.calculateASTTravsingDistance(occurStep.getBreakPoint(), breakStep.getBreakPoint());
-//						
-//						DependencyCalculator dCal = new DependencyCalculator(trace.getAppJavaClassPath());
-//						Dependency dep = dCal.calculateDependency(occurStep.getBreakPoint(), breakStep.getBreakPoint());
-//						
-//						System.currentTimeMillis();
-//						break;
-//					}
 					
 					if(!t.getDeadEndRecordList().isEmpty()){
 						Repository.clearCache();
 						DeadEndRecord record = t.getDeadEndRecordList().get(0);
 						DED datas = record.getTransformedData(trace);
-//						DED datas = new TrainingDataTransfer().transfer(record, trace);
 						setTestCase(datas, t.getTestcase());						
 						try {
-//							new DeadEndReporter().export(datas.getAllData(), projectName, Integer.valueOf(id));
 							String fileSuffix;
 							if (datasetType.equals(Dataset.DEFECTS4J)) {
 								fileSuffix = "_d4j";

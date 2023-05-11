@@ -72,7 +72,7 @@ public class TestCaseRunner extends ExecutionStatementCollector{
 							ClassPrepareEvent cEvent = (ClassPrepareEvent)event;
 							ReferenceType refType = cEvent.referenceType();
 							String className = refType.toString();
-							if(className.equals("microbat.evaluation.MicroBatTestRunner")){
+							if(className.equals("microbat.evaluation.junit.MicroBatTestRunner")){
 								List<Location> locations = refType.locationsOfLine(FINISH_LINE_NO_IN_TEST_RUNNER);
 								if(!locations.isEmpty()){
 									Location loc = locations.get(0);
