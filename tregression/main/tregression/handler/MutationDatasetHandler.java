@@ -93,8 +93,8 @@ public class MutationDatasetHandler extends AbstractHandler {
 					if(trails.size() != 0) {
 						PlayRegressionLocalizationHandler.finder = trails.get(0).getRootCauseFinder();					
 					}
-					String pathToBug = pathConfig.getBugPath(projectName, testCaseID_str);
-					FileUtils.deleteDirectory(new File(pathToBug));
+//					String pathToBug = pathConfig.getBugPath(projectName, testCaseID_str);
+//					FileUtils.deleteDirectory(new File(pathToBug));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
