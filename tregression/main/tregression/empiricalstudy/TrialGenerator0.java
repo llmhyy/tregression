@@ -296,30 +296,30 @@ public class TrialGenerator0 {
 				
 				if(rootCause==null){
 					
-					System.out.println("[Search Lib Class] Cannot find the root cause, I am searching for library classes...");
-					
-					List<TraceNode> buggySteps = rootcauseFinder.getStopStepsOnBuggyTrace();
-					List<TraceNode> correctSteps = rootcauseFinder.getStopStepsOnCorrectTrace();
-					
-					List<String> newIncludedClassNames = new ArrayList<>();
-					List<String> newIncludedBuggyClassNames = RegressionUtil.identifyIncludedClassNames(buggySteps, buggyRS.getPrecheckInfo(), rootcauseFinder.getRegressionNodeList());
-					List<String> newIncludedCorrectClassNames = RegressionUtil.identifyIncludedClassNames(correctSteps, correctRs.getPrecheckInfo(), rootcauseFinder.getCorrectNodeList());
-					newIncludedClassNames.addAll(newIncludedBuggyClassNames);
-					newIncludedClassNames.addAll(newIncludedCorrectClassNames);
-					boolean includedClassChanged = false;
-					for(String name: newIncludedClassNames){
-						if(!includedClassNames.contains(name)){
-							includedClassNames.add(name);
-							includedClassChanged = true;
-						}
-					}
-					
-					if(!includedClassChanged) {
-						trialNum = trialLimit + 1;
-					}
-					else {
-						continue;						
-					}
+//					System.out.println("[Search Lib Class] Cannot find the root cause, I am searching for library classes...");
+//					
+//					List<TraceNode> buggySteps = rootcauseFinder.getStopStepsOnBuggyTrace();
+//					List<TraceNode> correctSteps = rootcauseFinder.getStopStepsOnCorrectTrace();
+//					
+//					List<String> newIncludedClassNames = new ArrayList<>();
+//					List<String> newIncludedBuggyClassNames = RegressionUtil.identifyIncludedClassNames(buggySteps, buggyRS.getPrecheckInfo(), rootcauseFinder.getRegressionNodeList());
+//					List<String> newIncludedCorrectClassNames = RegressionUtil.identifyIncludedClassNames(correctSteps, correctRs.getPrecheckInfo(), rootcauseFinder.getCorrectNodeList());
+//					newIncludedClassNames.addAll(newIncludedBuggyClassNames);
+//					newIncludedClassNames.addAll(newIncludedCorrectClassNames);
+//					boolean includedClassChanged = false;
+//					for(String name: newIncludedClassNames){
+//						if(!includedClassNames.contains(name)){
+//							includedClassNames.add(name);
+//							includedClassChanged = true;
+//						}
+//					}
+//					
+//					if(!includedClassChanged) {
+//						trialNum = trialLimit + 1;
+//					}
+//					else {
+//						continue;						
+//					}
 				}
 				
 				isDataFlowComplete = true;

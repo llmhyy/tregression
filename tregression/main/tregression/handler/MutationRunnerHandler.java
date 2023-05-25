@@ -15,7 +15,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
+import java.util.Set;
+import java.util.HashSet;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -42,8 +43,11 @@ import microbat.model.value.VarValue;
 import microbat.preference.MicrobatPreference;
 import microbat.util.ConsoleUtilsStub;
 import microbat.util.JavaUtil;
+import microbat.probability.SPP.vectorization.NodeFeatureRecord;
+import microbat.probability.SPP.vectorization.TraceVectorizer;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.MutationDatasetProjectConfig;
@@ -54,6 +58,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 	private static final String LINE = "=========";
 	private static final String IO_FILE_NAME_FORMAT = "io-%d.txt";
 	private static final String BASE_PATH = "E:\\david\\Mutation_Dataset";
+	private static final String FEATURE_DATASET_PATH = "E:\\\\david\\\\NodeFeatures";
 
 	/**
 	 * A main method is provided so that we do not need to run this in an Eclipse
@@ -168,18 +173,21 @@ public class MutationRunnerHandler extends AbstractHandler {
 				System.out.println(message);
 				return Status.warning(message);
 			}
-
+			
+			Set<String> processedTC = new HashSet<>();
 			// Loop all bug id in the projects folder
 			for (String bugIDZipStr : mutationFolders) {
 				if (!bugIDZipStr.endsWith(ZIP_EXT)) {
 					continue;
 				}
 				String bugID_str = bugIDZipStr.substring(0, bugIDZipStr.indexOf(ZIP_EXT));
+				
 				// Skip if the project has been processed
 				if (processedProjects.contains(projectName + ":" + bugID_str)) {
 					System.out.println("Skipped: has record in the result file");
 					continue;
 				}
+
 
 				int bugId;
 				try {
@@ -199,7 +207,23 @@ public class MutationRunnerHandler extends AbstractHandler {
 					dataset.unzip(bugId);
 					ProjectMinimizer minimizer = dataset.createMinimizer(bugId);
 					minimizer.maximise();
-					result = collectSingleResult(BASE_PATH, projectName, bugId, pathConfig, executorService);
+					final String bugFolder = pathConfig.getBuggyPath(projectName, bugID_str);
+					final String fixFolder = pathConfig.getFixPath(projectName, bugID_str);
+					final ProjectConfig config = ConfigFactory.createConfig(projectName, bugID_str, bugFolder, fixFolder);
+					List<TestCase> tc = null;
+					try {
+						tc = config.retrieveFailingTestCase(bugFolder);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					if (processedTC.contains(tc.get(0).toString())) {
+						System.out.println("Skipped because it contain test case");
+						continue;
+					} else {
+						processedTC.add(tc.get(0).toString());
+						result = collectSingleResult(BASE_PATH, projectName, bugId, pathConfig, executorService);
+					}
+					
 					String pathToBug = pathConfig.getBugPath(projectName, Integer.toString(bugId));
 					FileUtils.deleteDirectory(new File(pathToBug));
 				} catch (IOException e) {
@@ -263,9 +287,15 @@ public class MutationRunnerHandler extends AbstractHandler {
 					EmpiricalTrial t = trials.get(i);
 					System.out.println(t);
 					Trace trace = t.getBuggyTrace();
+					final String fileName = projectName + "_" + bugID_str + ".txt";
+					final String outputPath = Paths.get(MutationRunnerHandler.FEATURE_DATASET_PATH, fileName).toString();
 					if (trace == null) {
 						throw new RuntimeException(t.getExceptionExplanation());
 					}
+					TraceVectorizer vectorizer = new TraceVectorizer();
+					Trace correctTrace = t.getFixedTrace();
+					List<NodeFeatureRecord> records = vectorizer.vectorize(correctTrace);
+					vectorizer.wirteToFile(records, outputPath);
 					result.traceLen = Long.valueOf(trace.size());
 					result.isOmissionBug = t.getBugType() == EmpiricalTrial.OVER_SKIP;
 					result.rootCauseOrder = t.getRootcauseNode() == null ? -1 : t.getRootcauseNode().getOrder();

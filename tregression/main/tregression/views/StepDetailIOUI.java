@@ -14,6 +14,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.PlatformUI;
 
+import microbat.model.variable.Variable;
+import microbat.model.variable.LocalVar;
+import microbat.model.value.PrimitiveValue;
+import debuginfo.NodeFeedbacksPair;
 import debuginfo.DebugInfo;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -122,8 +126,18 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			List<VarValue> outputs = getSelectedVars();
-			DebugInfo.addOutputs(outputs);
+			if (controlButton.getSelection()) {
+				TraceNode controlDom = currentNode.getControlDominator();
+				VarValue controlDomVar = controlDom.getConditionResult();
+				DebugInfo.addOutput(controlDomVar);
+				
+				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
+				NodeFeedbacksPair pair = new NodeFeedbacksPair(currentNode, feedback);
+				DebugInfo.addNodeFeedbacksPair(pair);
+			} else {
+				List<VarValue> outputs = getSelectedVars();
+				DebugInfo.addOutputs(outputs);
+			}
 		}
 
 		@Override

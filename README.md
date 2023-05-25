@@ -51,6 +51,10 @@ Tregression now are able to mutate a originally correct trace into buggy trace t
 
 Tregression can now debug based on belief propagation technique. For more information about debugging on belief propagation, please refer to [Debugging using Belief Propagation on Tregression](https://github.com/llmhyy/tregression/wiki/Run-Belief-Propagation-on-Tregression).
 
+## Run SPP on Tregression
+
+Tregresion now support generation of feedback that guide user to locate the root cause. For more information, please refer to [Run SPP on Tregression](https://github.com/llmhyy/tregression/wiki/Run-SPP-on-Tregression)
+
 ## Running Tregression (ERASE) on Regs4j bugs
 Note: The following set-up is not user-friendly (requires manual set-up and understanding of Defects4J folder structure) and is a work in progress.
 

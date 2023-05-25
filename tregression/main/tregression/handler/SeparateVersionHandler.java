@@ -109,13 +109,13 @@ public class SeparateVersionHandler extends AbstractHandler{
 					
 				}
 				
-				try {
-					TrialRecorder recorder = new TrialRecorder();
-					recorder.export(trials, projectName, Integer.valueOf(id));
-					
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+//				try {
+//					TrialRecorder recorder = new TrialRecorder();
+//					recorder.export(trials, projectName, Integer.valueOf(id));
+//					
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 				
 				return Status.OK_STATUS;
 			}
