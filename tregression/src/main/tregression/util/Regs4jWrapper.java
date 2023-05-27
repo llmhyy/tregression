@@ -94,7 +94,7 @@ public class Regs4jWrapper {
             System.out.println(regressions);
             for (int i = 0; i < regressions.size(); i++) {
                 int regId = 1;
-                ProjectPaths clonedProjectPaths = checkout("alibaba/fastjson", regressions.get(regId - 1), regId,
+                ProjectPaths clonedProjectPaths = checkout(projectName, regressions.get(regId - 1), regId,
                         repoPath.toString());
                 System.out.println(clonedProjectPaths);
 
@@ -115,7 +115,7 @@ public class Regs4jWrapper {
 
     /**
      * Clones the corresponding regression (work and ric), writes failing test into
-     * a file, then moves them into repoPath\bugId\<ric or work>
+     * a file, then moves them into repoPath\projectName\bugId\<ric or work>
      * 
      * @param projectFullName
      * @param regression
