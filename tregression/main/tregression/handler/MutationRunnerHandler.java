@@ -1,5 +1,6 @@
 package tregression.handler;
 
+import tregression.auto.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,7 +59,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 	private static final String LINE = "=========";
 	private static final String IO_FILE_NAME_FORMAT = "io-%d.txt";
 	private static final String BASE_PATH = "E:\\david\\Mutation_Dataset";
-	private static final String FEATURE_DATASET_PATH = "E:\\\\david\\\\NodeFeatures";
+	private static final String FEATURE_DATASET_PATH = "E:\\david\\NodeFeatures";
 
 	/**
 	 * A main method is provided so that we do not need to run this in an Eclipse
@@ -114,16 +115,25 @@ public class MutationRunnerHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		JavaUtil.sourceFile2CUMap.clear();
 		Job job = new Job("Testing Tregression") {
-
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				return collectResultsInDataset();
+				execute();
+				return Status.OK_STATUS;
 			}
 		};
 		job.schedule();
 		return null;
 	}
-
+	
+	private void execute() {
+		final String basePath = "E:\\david\\Mutation_Dataset";
+		final String resultPath = Paths.get(basePath, "result.txt").toString();
+		final String datasetPath = "E:\\david\\NodeFeatures";
+		ProjectsRunner runner = new MutationRunner(basePath, resultPath, datasetPath, true);
+		runner.run();
+	}
+	
+	
 	private IStatus collectResultsInDataset() {
 
 		// Write the analysis result to this file
