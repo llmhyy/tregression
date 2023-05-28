@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import core.Migrator;
 import core.MysqlManager;
@@ -31,6 +33,7 @@ public class Regs4jWrapper {
     private final SourceCodeManager sourceCodeManager;
     private final Reducer reducer;
     private final Migrator migrator;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Regs4jWrapper.class);
 
     public Regs4jWrapper(SourceCodeManager sourceCodeManager, Reducer reducer, Migrator migrator) {
         super();
@@ -40,13 +43,16 @@ public class Regs4jWrapper {
     }
 
     public static void main(String[] args) {
-        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
-        // Instantiation
-        SourceCodeManager sourceCodeManager = new SourceCodeManager();
-        Reducer reducer = new Reducer();
-        Migrator migrator = new Migrator();
-        Regs4jWrapper wrapper = new Regs4jWrapper(sourceCodeManager, reducer, migrator);
-        wrapper.cloneAll(repoPath.toString());
+        LOGGER.info("test");
+//        exampleUsage();
+        
+//        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
+//        // Instantiation
+//        SourceCodeManager sourceCodeManager = new SourceCodeManager();
+//        Reducer reducer = new Reducer();
+//        Migrator migrator = new Migrator();
+//        Regs4jWrapper wrapper = new Regs4jWrapper(sourceCodeManager, reducer, migrator);
+//        wrapper.cloneAll(repoPath.toString());
     }
 
     /**
@@ -75,11 +81,11 @@ public class Regs4jWrapper {
         final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
         ProjectPaths checkoutDestinationPaths = wrapper.generateProjectPaths(repoPath.toString(), projectName, regId);
         boolean checkoutSuccess = wrapper.checkout(projectName, regressions.get(regId - 1), checkoutDestinationPaths);
-        System.out.println(checkoutSuccess);
+        LOGGER.info("Checkout success {}", checkoutSuccess);
 
         // Compile
         boolean compilationSuccessful = wrapper.mvnCompileProjects(checkoutDestinationPaths);
-        System.out.println(compilationSuccessful);
+        LOGGER.info("Compilation success {}", compilationSuccessful);
     }
 
     /**
@@ -92,16 +98,24 @@ public class Regs4jWrapper {
 
         for (String projectName : projectNames) {
             List<Regression> regressions = getRegressions(projectName);
-            System.out.println(regressions);
+            LOGGER.info("Regressions {}", regressions);
             for (int regId = 1; regId <= regressions.size(); regId++) {
                 ProjectPaths checkoutDestinationPaths = generateProjectPaths(repoPath, projectName, regId);
-                System.out.println(checkoutDestinationPaths);
-                
-                boolean checkoutSuccessful = checkout(projectName, regressions.get(regId - 1), checkoutDestinationPaths);
-                System.out.println("Checkout Success: " + checkoutSuccessful);
+
+                if (isCheckedOut(checkoutDestinationPaths)) {
+                    continue;
+                }
+
+                boolean checkoutSuccessful = checkout(projectName, regressions.get(regId - 1),
+                        checkoutDestinationPaths);
+                LOGGER.info("Checkout success {}", checkoutSuccessful);
+
+                if (!checkoutSuccessful) {
+                    continue;
+                }
 
                 boolean compilationSuccessful = mvnCompileProjects(checkoutDestinationPaths);
-                System.out.println("Compilation Success: " + compilationSuccessful);
+                LOGGER.info("Compilation success {}", compilationSuccessful);
 
                 compress(checkoutDestinationPaths.getBasePath());
             }
@@ -156,6 +170,11 @@ public class Regs4jWrapper {
      * @return
      */
     public boolean checkout(String projectFullName, Regression regression, ProjectPaths checkoutDestPaths) {
+        String testCaseStr = regression.getTestCase();
+        if (testCaseStr.isEmpty()) {
+            return false;
+        }
+
         File projectDir = sourceCodeManager.getProjectDir(projectFullName);
         Revision rfc = regression.getRfc();
         File rfcDir = sourceCodeManager.checkout(rfc, projectDir, projectFullName);
@@ -170,7 +189,6 @@ public class Regs4jWrapper {
         working.setLocalCodeDir(workDir);
         regression.setWork(working);
         List<Revision> needToTestMigrateRevisionList = Arrays.asList(ric, working);
-        String testCaseStr = regression.getTestCase();
         migrateTestAndDependency(rfc, needToTestMigrateRevisionList, testCaseStr);
         Path ricPath = ricDir.toPath();
         Path testFilePath = Regs4jProjectConfig.getTestFilePath(ricPath.toString());
@@ -198,6 +216,16 @@ public class Regs4jWrapper {
     }
 
     /**
+     * Returns whether the regression is checked-out successfully.
+     * 
+     * @param paths
+     * @return
+     */
+    public boolean isCheckedOut(ProjectPaths paths) {
+        return paths.getRicPath().toFile().exists() && paths.getWorkingPath().toFile().exists();
+    }
+
+    /**
      * Copied from example.CLI.java in CLI.jar (the regs4j jar file).
      * 
      * @param rfc
@@ -221,7 +249,7 @@ public class Regs4jWrapper {
             FileUtils.deleteDirectory(path.toFile());
         }
     }
-    
+
     private ProjectPaths generateProjectPaths(String repoPath, String projectFullName, int bugId) {
         String bugIdStr = String.valueOf(bugId);
         Path basePath = Paths.get(repoPath, projectFullName.replace("/", "_"), bugIdStr);
