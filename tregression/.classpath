@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="lib/zip4j-2.11.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/CLI.jar"/>
 	<classpathentry kind="src" path="src/main"/>
 	<classpathentry exported="true" kind="lib" path="lib/plexus-utils-3.2.1.jar"/>
@@ -8,11 +9,11 @@
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.11-20141221.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.11-20141221.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/xmlbeans-2.6.0.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
+      <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7">
+              <attributes>
+                      <attribute name="module" value="true"/>
+              </attributes>
+      </classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/microbat_instrumentator"/>

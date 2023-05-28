@@ -36,7 +36,8 @@ Bundle-ClassPath: lib/CLI.jar,
  lib/maven-model-3.8.1.jar,
  lib/plexus-utils-3.2.1.jar,
  lib/maven-invoker-3.2.0.jar,
- lib/maven-shared-utils-3.3.4.jar
+ lib/maven-shared-utils-3.3.4.jar,
+ lib/zip4j-2.11.5.jar
 Export-Package: tregression,
  tregression.empiricalstudy,
  tregression.empiricalstudy.solutionpattern,

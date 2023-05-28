@@ -95,6 +95,16 @@ public class MavenProjectConfig extends ProjectConfig {
         }
     }
 
+    /**
+     * Obtains all paths to jars inside startPath folder recursively. The paths obtained are relative to projectRoot argument.
+     * 
+     * This method uses Java 8 API (Stream, Consumer, etc). Should be modified to use only Java 7 API.
+     * 
+     * @param startPath
+     * @param projectRoot
+     * @return
+     * @throws IOException
+     */
     private static List<String> getAllJarRelativePathsFromRoot(Path startPath, final Path projectRoot)
             throws IOException {
         final List<String> result = new ArrayList<>();
