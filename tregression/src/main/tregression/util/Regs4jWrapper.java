@@ -43,16 +43,13 @@ public class Regs4jWrapper {
     }
 
     public static void main(String[] args) {
-        LOGGER.info("test");
-//        exampleUsage();
-        
-//        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
-//        // Instantiation
-//        SourceCodeManager sourceCodeManager = new SourceCodeManager();
-//        Reducer reducer = new Reducer();
-//        Migrator migrator = new Migrator();
-//        Regs4jWrapper wrapper = new Regs4jWrapper(sourceCodeManager, reducer, migrator);
-//        wrapper.cloneAll(repoPath.toString());
+        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
+        // Instantiation
+        SourceCodeManager sourceCodeManager = new SourceCodeManager();
+        Reducer reducer = new Reducer();
+        Migrator migrator = new Migrator();
+        Regs4jWrapper wrapper = new Regs4jWrapper(sourceCodeManager, reducer, migrator);
+        wrapper.cloneAll(repoPath.toString());
     }
 
     /**
