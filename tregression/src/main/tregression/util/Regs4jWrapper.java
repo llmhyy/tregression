@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import core.Migrator;
 import core.MysqlManager;
@@ -17,6 +19,7 @@ import core.Reducer;
 import core.SourceCodeManager;
 import model.Regression;
 import model.Revision;
+import net.lingala.zip4j.ZipFile;
 import tregression.empiricalstudy.config.MavenProjectConfig;
 import tregression.empiricalstudy.config.Regs4jProjectConfig;
 
@@ -30,6 +33,7 @@ public class Regs4jWrapper {
     private final SourceCodeManager sourceCodeManager;
     private final Reducer reducer;
     private final Migrator migrator;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Regs4jWrapper.class);
 
     public Regs4jWrapper(SourceCodeManager sourceCodeManager, Reducer reducer, Migrator migrator) {
         super();
@@ -49,8 +53,7 @@ public class Regs4jWrapper {
     }
 
     /**
-     * Example usage of this class.
-     * Run this to check if everything is setup.
+     * Example usage of this class. Run this to check if everything is setup.
      * 
      * @param args
      */
@@ -65,20 +68,21 @@ public class Regs4jWrapper {
         System.out.println(wrapper.getProjectNames());
 
         // Get all regressions in the project "alibaba/fastjson"
-        List<Regression> regressions = wrapper.getRegressions("alibaba/fastjson");
+        String projectName = "alibaba/fastjson";
+        List<Regression> regressions = wrapper.getRegressions(projectName);
         System.out.println(regressions);
 
         // Checkout "alibaba/fastjson" regression ID 1, and return the paths to working
         // and regression inducing versions
         int regId = 1;
         final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
-        ProjectPaths clonedProjectPaths = wrapper.checkout("alibaba/fastjson", regressions.get(regId - 1), regId,
-                repoPath.toString());
-        System.out.println(clonedProjectPaths);
+        ProjectPaths checkoutDestinationPaths = wrapper.generateProjectPaths(repoPath.toString(), projectName, regId);
+        boolean checkoutSuccess = wrapper.checkout(projectName, regressions.get(regId - 1), checkoutDestinationPaths);
+        LOGGER.info("Checkout success {}", checkoutSuccess);
 
         // Compile
-        boolean compilationSuccessful = wrapper.mvnCompileProjects(clonedProjectPaths);
-        System.out.println(compilationSuccessful);
+        boolean compilationSuccessful = wrapper.mvnCompileProjects(checkoutDestinationPaths);
+        LOGGER.info("Compilation success {}", compilationSuccessful);
     }
 
     /**
@@ -91,15 +95,26 @@ public class Regs4jWrapper {
 
         for (String projectName : projectNames) {
             List<Regression> regressions = getRegressions(projectName);
-            System.out.println(regressions);
-            for (int i = 0; i < regressions.size(); i++) {
-                int regId = 1;
-                ProjectPaths clonedProjectPaths = checkout(projectName, regressions.get(regId - 1), regId,
-                        repoPath.toString());
-                System.out.println(clonedProjectPaths);
+            LOGGER.info("Regressions {}", regressions);
+            for (int regId = 1; regId <= regressions.size(); regId++) {
+                ProjectPaths checkoutDestinationPaths = generateProjectPaths(repoPath, projectName, regId);
 
-                boolean compilationSuccessful = mvnCompileProjects(clonedProjectPaths);
-                System.out.println(compilationSuccessful);
+                if (isCheckedOut(checkoutDestinationPaths)) {
+                    continue;
+                }
+
+                boolean checkoutSuccessful = checkout(projectName, regressions.get(regId - 1),
+                        checkoutDestinationPaths);
+                LOGGER.info("Checkout success {}", checkoutSuccessful);
+
+                if (!checkoutSuccessful) {
+                    continue;
+                }
+
+                boolean compilationSuccessful = mvnCompileProjects(checkoutDestinationPaths);
+                LOGGER.info("Compilation success {}", compilationSuccessful);
+
+                compress(checkoutDestinationPaths.getBasePath());
             }
         }
     }
@@ -113,6 +128,34 @@ public class Regs4jWrapper {
                 "select bfc,buggy,bic,work,testcase from regressions where project_full_name='" + projectName + "'");
     }
 
+    public boolean compress(Path path) {
+        try (ZipFile zippedRegression = new ZipFile(path.toString() + ".zip")) {
+            zippedRegression.addFolder(path.toFile());
+            deleteIfExists(path); // Delete original folder after zipping
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Extract contents from a zipped folder.
+     * 
+     * @param path Zipped folder path
+     * @return
+     */
+    public boolean extract(Path path) {
+        String pathStr = path.toString();
+        try (ZipFile zippedRegression = new ZipFile(pathStr)) {
+            zippedRegression.extractAll(pathStr.substring(0, pathStr.lastIndexOf(File.separator)));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Clones the corresponding regression (work and ric), writes failing test into
      * a file, then moves them into repoPath\projectName\bugId\<ric or work>
@@ -123,7 +166,12 @@ public class Regs4jWrapper {
      * @param repoPath
      * @return
      */
-    public ProjectPaths checkout(String projectFullName, Regression regression, int bugId, String repoPath) {
+    public boolean checkout(String projectFullName, Regression regression, ProjectPaths checkoutDestPaths) {
+        String testCaseStr = regression.getTestCase();
+        if (testCaseStr.isEmpty()) {
+            return false;
+        }
+
         File projectDir = sourceCodeManager.getProjectDir(projectFullName);
         Revision rfc = regression.getRfc();
         File rfcDir = sourceCodeManager.checkout(rfc, projectDir, projectFullName);
@@ -138,14 +186,12 @@ public class Regs4jWrapper {
         working.setLocalCodeDir(workDir);
         regression.setWork(working);
         List<Revision> needToTestMigrateRevisionList = Arrays.asList(ric, working);
-        String testCaseStr = regression.getTestCase();
         migrateTestAndDependency(rfc, needToTestMigrateRevisionList, testCaseStr);
         Path ricPath = ricDir.toPath();
         Path testFilePath = Regs4jProjectConfig.getTestFilePath(ricPath.toString());
-        String bugIdStr = String.valueOf(bugId);
-        Path basePath = Paths.get(repoPath, projectFullName.replace("/", "_"), bugIdStr);
-        Path newRICPath = basePath.resolve("ric");
-        Path newWorkPath = basePath.resolve("work");
+        Path basePath = checkoutDestPaths.getBasePath();
+        Path newRICPath = checkoutDestPaths.getRicPath();
+        Path newWorkPath = checkoutDestPaths.getWorkingPath();
         try {
             Files.writeString(testFilePath, testCaseStr);
             Files.createDirectories(basePath);
@@ -155,8 +201,9 @@ public class Regs4jWrapper {
             Files.move(workDir.toPath(), newWorkPath);
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
-        return new ProjectPaths(newWorkPath, newRICPath);
+        return true;
     }
 
     public boolean mvnCompileProjects(ProjectPaths paths) {
@@ -169,6 +216,16 @@ public class Regs4jWrapper {
         final String mvnTestCmd = String.format("test -Dtest=%s", testCaseStr);
         boolean ricTestSuccess = MavenProjectConfig.executeMavenCmd(paths.getRicPath(), mvnTestCmd);
         return MavenProjectConfig.executeMavenCmd(paths.getWorkingPath(), mvnTestCmd) && !ricTestSuccess;
+    }
+
+    /**
+     * Returns whether the regression is checked-out successfully.
+     * 
+     * @param paths
+     * @return
+     */
+    public boolean isCheckedOut(ProjectPaths paths) {
+        return paths.getRicPath().toFile().exists() && paths.getWorkingPath().toFile().exists();
     }
 
     /**
@@ -196,9 +253,17 @@ public class Regs4jWrapper {
         }
     }
 
+    private ProjectPaths generateProjectPaths(String repoPath, String projectFullName, int bugId) {
+        String bugIdStr = String.valueOf(bugId);
+        Path basePath = Paths.get(repoPath, projectFullName.replace("/", "_"), bugIdStr);
+        Path newRICPath = basePath.resolve("ric");
+        Path newWorkPath = basePath.resolve("work");
+        return new ProjectPaths(newWorkPath, newRICPath, basePath);
+    }
+
     /**
      * Paths to working (before regression) and regression inducing versions after
-     * checking out
+     * checking out, and path to the folder containing both of them (basePath).
      * 
      * @author bchenghi
      *
@@ -206,11 +271,13 @@ public class Regs4jWrapper {
     public static class ProjectPaths {
         private final Path workingPath;
         private final Path ricPath;
+        private final Path basePath;
 
-        public ProjectPaths(Path workingPath, Path ricPath) {
+        public ProjectPaths(Path workingPath, Path ricPath, Path basePath) {
             super();
             this.workingPath = workingPath;
             this.ricPath = ricPath;
+            this.basePath = basePath;
         }
 
         public Path getWorkingPath() {
@@ -221,10 +288,13 @@ public class Regs4jWrapper {
             return ricPath;
         }
 
-        @Override
-        public String toString() {
-            return "ProjectPaths [workingPath=" + workingPath + ", ricPath=" + ricPath + "]";
+        public Path getBasePath() {
+            return basePath;
         }
 
+        @Override
+        public String toString() {
+            return "ProjectPaths [workingPath=" + workingPath + ", ricPath=" + ricPath + ", basePath=" + basePath + "]";
+        }
     }
 }
