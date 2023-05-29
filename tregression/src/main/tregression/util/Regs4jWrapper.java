@@ -164,6 +164,12 @@ public class Regs4jWrapper {
         boolean ricCompilationSuccess = MavenProjectConfig.executeMavenCmd(paths.getRicPath(), mvnTestCompileCmd);
         return MavenProjectConfig.executeMavenCmd(paths.getWorkingPath(), mvnTestCompileCmd) && ricCompilationSuccess;
     }
+    
+    public boolean mvnRunTest(ProjectPaths paths, String testCaseStr) {
+        final String mvnTestCmd = String.format("test -Dtest=%s", testCaseStr);
+        boolean ricTestSuccess = MavenProjectConfig.executeMavenCmd(paths.getRicPath(), mvnTestCmd);
+        return MavenProjectConfig.executeMavenCmd(paths.getWorkingPath(), mvnTestCmd) && !ricTestSuccess;
+    }
 
     /**
      * Copied from example.CLI.java in CLI.jar (the regs4j jar file).
