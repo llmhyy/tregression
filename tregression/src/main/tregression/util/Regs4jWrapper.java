@@ -43,7 +43,8 @@ public class Regs4jWrapper {
     }
 
     public static void main(String[] args) {
-        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
+//        final Path repoPath = Paths.get(System.getenv("USERPROFILE"), "Desktop", "regs4j-test-repo");
+        final Path repoPath = Paths.get("E:\\david\\Regs4j");
         // Instantiation
         SourceCodeManager sourceCodeManager = new SourceCodeManager();
         Reducer reducer = new Reducer();
@@ -100,21 +101,23 @@ public class Regs4jWrapper {
                 ProjectPaths checkoutDestinationPaths = generateProjectPaths(repoPath, projectName, regId);
 
                 if (isCheckedOut(checkoutDestinationPaths)) {
+                    LOGGER.info("{} {} already exists", projectName, regId);
                     continue;
                 }
 
                 boolean checkoutSuccessful = checkout(projectName, regressions.get(regId - 1),
                         checkoutDestinationPaths);
-                LOGGER.info("Checkout success {}", checkoutSuccessful);
+                LOGGER.info("Checkout successful? {}", checkoutSuccessful);
 
                 if (!checkoutSuccessful) {
                     continue;
                 }
 
                 boolean compilationSuccessful = mvnCompileProjects(checkoutDestinationPaths);
-                LOGGER.info("Compilation success {}", compilationSuccessful);
+                LOGGER.info("Compilation successful? {}", compilationSuccessful);
 
-                compress(checkoutDestinationPaths.getBasePath());
+                boolean compressionSuccessful = compress(checkoutDestinationPaths.getBasePath());
+                LOGGER.info("Compression successful? {}", compressionSuccessful);
             }
         }
     }
@@ -197,8 +200,8 @@ public class Regs4jWrapper {
             Files.createDirectories(basePath);
             deleteIfExists(newRICPath);
             deleteIfExists(newWorkPath);
-            Files.move(ricPath, newRICPath);
-            Files.move(workDir.toPath(), newWorkPath);
+            FileUtils.moveDirectory(ricPath.toFile(), newRICPath.toFile());
+            FileUtils.moveDirectory(workDir, newWorkPath.toFile());
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -211,7 +214,7 @@ public class Regs4jWrapper {
         boolean ricCompilationSuccess = MavenProjectConfig.executeMavenCmd(paths.getRicPath(), mvnTestCompileCmd);
         return MavenProjectConfig.executeMavenCmd(paths.getWorkingPath(), mvnTestCompileCmd) && ricCompilationSuccess;
     }
-    
+
     public boolean mvnRunTest(ProjectPaths paths, String testCaseStr) {
         final String mvnTestCmd = String.format("test -Dtest=%s", testCaseStr);
         boolean ricTestSuccess = MavenProjectConfig.executeMavenCmd(paths.getRicPath(), mvnTestCmd);
@@ -225,7 +228,7 @@ public class Regs4jWrapper {
      * @return
      */
     public boolean isCheckedOut(ProjectPaths paths) {
-        return paths.getRicPath().toFile().exists() && paths.getWorkingPath().toFile().exists();
+        return new File(paths.getBasePath().toString() + ".zip").exists();
     }
 
     /**
