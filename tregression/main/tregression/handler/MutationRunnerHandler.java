@@ -1,6 +1,9 @@
 package tregression.handler;
 
 import tregression.auto.*;
+import tregression.auto.result.ResultWriter;
+import tregression.auto.result.RunResult;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,8 +32,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceStore;
 
-import defects4janalysis.ResultWriter;
-import defects4janalysis.RunResult;
 import iodetection.IODetector;
 import iodetection.IODetector.IOResult;
 import iodetection.IOWriter;

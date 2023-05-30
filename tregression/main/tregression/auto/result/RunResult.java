@@ -1,16 +1,30 @@
-package defects4janalysis;
+package tregression.auto.result;
 
 public class RunResult {
 	
-	public String projectName = "";
+	public String projectName = " ";
 	public int bugID = -1;
 	public long traceLen = -1;
 	public long rootCauseOrder = -1;
 	public boolean isOmissionBug = false;
-	public String solutionName = "";
-	public String errorMessage = "";
+	public String solutionName = " ";
+	public String errorMessage = " ";
 	
 	public final static String DELIMITER = ",";
+	
+	public RunResult() {
+		
+	}
+	
+	public RunResult(final RunResult result) {
+		this.projectName = result.projectName;
+		this.bugID = result.bugID;
+		this.traceLen = result.traceLen;
+		this.rootCauseOrder = result.rootCauseOrder;
+		this.isOmissionBug = result.isOmissionBug;
+		this.solutionName = result.solutionName;
+		this.errorMessage = result.errorMessage;
+	}
 	
 	public boolean isSuccess() {
 		return this.traceLen != -1;
@@ -21,7 +35,7 @@ public class RunResult {
 		String[] tokens = string.split(RunResult.DELIMITER);
 		
 		final String projName = tokens[0];
-		result.projectName = projName;
+		result.projectName = projName == " " ? null : projName;
 		
 		final String bugID_str = tokens[1];
 		result.bugID = Integer.valueOf(bugID_str);
@@ -36,10 +50,10 @@ public class RunResult {
 		result.isOmissionBug = Boolean.valueOf(isOmissionBug_str);
 		
 		final String solutionName = tokens[5];
-		result.solutionName = solutionName;
+		result.solutionName = solutionName == " " ? null : solutionName;
 		
 		final String errMsg = tokens[6];
-		result.errorMessage = errMsg;
+		result.errorMessage = errMsg == " " ? null : errMsg;
 		
 		return result;
 	}
@@ -57,7 +71,7 @@ public class RunResult {
 		return strBuilder.toString();
 	}
 	
-	private void appendStr(final StringBuilder buffer, final String string) {
+	protected void appendStr(final StringBuilder buffer, final String string) {
 		buffer.append(string);
 		buffer.append(RunResult.DELIMITER);
 	}

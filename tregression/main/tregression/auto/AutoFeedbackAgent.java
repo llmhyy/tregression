@@ -1,4 +1,4 @@
-package tregression.autofeedback;
+package tregression.auto;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -19,7 +19,6 @@ public class AutoFeedbackAgent {
 	private final DiffMatcher matcher;
 	private final RootCauseFinder finder;
 	
-	
 	public AutoFeedbackAgent(EmpiricalTrial trail) {
 		final Trace buggyTrace = trail.getBuggyTrace();
 		final Trace correctTrace = trail.getFixedTrace();
@@ -28,6 +27,13 @@ public class AutoFeedbackAgent {
 		this.pairList = trail.getPairList();
 		this.matcher = trail.getDiffMatcher();
 		this.finder = trail.getRootCauseFinder();
+	}
+	
+	public AutoFeedbackAgent(final Trace buggyTrace, final Trace correctTrace, final PairList pairList, final DiffMatcher matcher, final RootCauseFinder finder) {
+		this.typeChecker = new StepChangeTypeChecker(buggyTrace, correctTrace);
+		this.pairList = pairList;
+		this.matcher = matcher;
+		this.finder = finder;
 	}
 	
 	/**
