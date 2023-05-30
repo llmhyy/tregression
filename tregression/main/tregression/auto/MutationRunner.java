@@ -13,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import defects4janalysis.RunResult;
 import iodetection.IODetector;
 import iodetection.IOWriter;
 import iodetection.IODetector.IOResult;
@@ -25,6 +24,7 @@ import microbat.model.trace.Trace;
 import microbat.model.value.VarValue;
 import microbat.probability.SPP.vectorization.NodeFeatureRecord;
 import microbat.probability.SPP.vectorization.TraceVectorizer;
+import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TestCase;
@@ -66,7 +66,7 @@ public class MutationRunner extends ProjectsRunner {
 	
 	
 	@Override
-	protected RunResult runProject(String projectName, String bugID_str) {
+	public RunResult runProject(String projectName, String bugID_str) {
 		final String projectPath = Paths.get(this.basePath, projectName).toString();
 		BugDataset dataset = new BugDataset(projectPath);
 		
@@ -75,6 +75,11 @@ public class MutationRunner extends ProjectsRunner {
 			return null;
 		}
 		bugID_str = bugID_str.substring(0, bugID_str.indexOf(ZIP_EXT));
+		
+		if (this.filter.contains(projectName + ":" + bugID_str)) {
+			ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
+			return null;
+		}
 		
 		int bugId;
 		try {
@@ -104,6 +109,7 @@ public class MutationRunner extends ProjectsRunner {
 			}
 			
 			if (this.processTC.contains(tc.get(0).toString()) && this.skipProcessedTestCase) {
+				ProjectsRunner.printMsg("Skip processed test case: " + projectName + ":" + bugID_str);
 				return null;
 			}
 			
@@ -158,7 +164,6 @@ public class MutationRunner extends ProjectsRunner {
 			try {
 				FileUtils.deleteDirectory(new File(pathToBug));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

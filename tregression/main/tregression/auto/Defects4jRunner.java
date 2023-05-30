@@ -9,8 +9,8 @@ import java.util.List;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-import defects4janalysis.RunResult;
 import microbat.model.trace.Trace;
+import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator0;
@@ -36,7 +36,7 @@ public class Defects4jRunner extends ProjectsRunner {
 	}
 
 	@Override
-	protected RunResult runProject(String projectName, String bugID_str) {
+	public RunResult runProject(String projectName, String bugID_str) {
 		RunResult result = new RunResult();
 		try {
 			Integer.valueOf(bugID_str);

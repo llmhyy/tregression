@@ -50,3 +50,4 @@ Export-Package: tregression,
  tregression.separatesnapshots.diff,
  tregression.tracematch,
  tregression.views
+Import-Package: tregression.empiricalstudy

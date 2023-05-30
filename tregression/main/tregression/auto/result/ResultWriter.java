@@ -1,4 +1,4 @@
-package defects4janalysis;
+package tregression.auto.result;
 
 import java.io.File;
 import java.io.FileWriter;

@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import tregression.auto.result.ResultWriter;
+import tregression.auto.result.RunResult;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ResultWriterIT {

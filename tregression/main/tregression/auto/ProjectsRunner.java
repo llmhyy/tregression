@@ -14,8 +14,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import defects4janalysis.ResultWriter;
-import defects4janalysis.RunResult;
+import tregression.auto.result.ResultWriter;
+import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.config.ProjectConfig;
@@ -27,6 +27,7 @@ public abstract class ProjectsRunner {
 	protected int hangingThreads = 0;
 	protected ExecutorService executorService;
 
+	protected List<String> filter = new ArrayList<>();
 	
 	public ProjectsRunner(final String basePath, final String resultPath) {
 		this(basePath, resultPath, 5);
@@ -40,9 +41,9 @@ public abstract class ProjectsRunner {
 	}
 	
 	public void run() {
-		List<String> filter = new ArrayList<>();
+		this.filter = new ArrayList<>();
 		for (RunResult result : this.loadProcessedResult()) {
-			filter.add(result.projectName + ":" + result.bugID);
+			this.filter.add(result.projectName + ":" + result.bugID);
 		}
 	    
 	    ResultWriter writer = new ResultWriter(resultPath);
@@ -52,7 +53,7 @@ public abstract class ProjectsRunner {
 	    	final String projectPath = Paths.get(this.basePath, projectName).toString();
 	    	File projectFolder = new File(projectPath);
 	    	for (String bugID_str : projectFolder.list()) {
-	    		if (filter.contains(projectName + ":" + bugID_str)) {
+	    		if (this.filter.contains(projectName + ":" + bugID_str)) {
 	    			ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
 	    			continue;
 	    		}
@@ -68,7 +69,7 @@ public abstract class ProjectsRunner {
 	    
 	}
 	
-	protected abstract RunResult runProject(final String projectName, final String bugID_str);
+	public abstract RunResult runProject(final String projectName, final String bugID_str);
 	
 	protected List<EmpiricalTrial> generateTrials(final String bugFolder, final String fixFolder, final ProjectConfig config) {
 		final TrialGenerator0 generator0 = new TrialGenerator0();
@@ -119,6 +120,6 @@ public abstract class ProjectsRunner {
 	}
 	
 	public static void printMsg(final String message) {
-		System.out.print(ProjectsRunner.genMsg(message));
+		System.out.println(ProjectsRunner.genMsg(message));
 	}
 }

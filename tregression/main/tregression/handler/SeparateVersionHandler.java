@@ -14,6 +14,8 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import microbat.model.trace.Trace;
+import microbat.model.trace.TraceNode;
+import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
@@ -26,6 +28,9 @@ import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
 import tregression.preference.TregressionPreference;
+import tregression.auto.AutoFeedbackAgent;
+import tregression.autofeedback.*;
+import tregression.handler.AutoFeedbackHandler;
 
 public class SeparateVersionHandler extends AbstractHandler{
 
@@ -68,7 +73,8 @@ public class SeparateVersionHandler extends AbstractHandler{
 						false, false, false, 3, true, true, config, testcase);
 				
 				if(trials.size() != 0) {
-					PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();					
+					PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();
+					AutoFeedbackHandler.trial = trials.get(0);
 				}
 				
 				System.out.println("all the trials");
