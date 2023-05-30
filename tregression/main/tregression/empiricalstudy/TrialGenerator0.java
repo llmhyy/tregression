@@ -90,6 +90,9 @@ public class TrialGenerator0 {
 //				if(!trial.isDump()){
 //					break;					
 //				}
+				if(trial.isSuccessful()){
+					break;					
+				}
 			}
 
 		} catch (Exception e) {
