@@ -1,6 +1,7 @@
 package tregression.util;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +35,8 @@ public class Regs4jWrapper {
     private final Reducer reducer;
     private final Migrator migrator;
     private static final Logger LOGGER = LoggerFactory.getLogger(Regs4jWrapper.class);
+    private static final int DEFAULT_TEST_TIMEOUT_SEC = 120;
+    private static final String CLONE_SUCCESS_MSG = "SUCCESS";
 
     public Regs4jWrapper(SourceCodeManager sourceCodeManager, Reducer reducer, Migrator migrator) {
         super();
@@ -98,6 +101,7 @@ public class Regs4jWrapper {
             List<Regression> regressions = getRegressions(projectName);
             LOGGER.info("Regressions {}", regressions);
             for (int regId = 1; regId <= regressions.size(); regId++) {
+                LOGGER.info("Start clone for {} {}", projectName, regId);
                 ProjectPaths checkoutDestinationPaths = generateProjectPaths(repoPath, projectName, regId);
 
                 if (isCheckedOut(checkoutDestinationPaths)) {
@@ -105,21 +109,72 @@ public class Regs4jWrapper {
                     continue;
                 }
 
-                boolean checkoutSuccessful = checkout(projectName, regressions.get(regId - 1),
+                String cloneMessage = cloneSingleRegression(projectName, regId, regressions.get(regId - 1),
                         checkoutDestinationPaths);
-                LOGGER.info("Checkout successful? {}", checkoutSuccessful);
-
-                if (!checkoutSuccessful) {
-                    continue;
+                try {
+                    // Delete original regression folder after
+                    // cloning it is complete, regardless of
+                    // failure or success
+                    deleteIfExists(checkoutDestinationPaths.getBasePath());
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-
-                boolean compilationSuccessful = mvnCompileProjects(checkoutDestinationPaths);
-                LOGGER.info("Compilation successful? {}", compilationSuccessful);
-
-                boolean compressionSuccessful = compress(checkoutDestinationPaths.getBasePath());
-                LOGGER.info("Compression successful? {}", compressionSuccessful);
+                storeResult(projectName, regId, cloneMessage, repoPath + File.separator + "result.txt");
             }
         }
+    }
+
+    private void storeResult(String projectName, int regId, String message, String path) {
+        LOGGER.info("Writing result for {} {} to file {}", projectName, regId, path);
+        FileWriter fileWriter = null;
+        try {
+            File file = new File(path);
+            file.createNewFile();
+            fileWriter = new FileWriter(file, true);
+            fileWriter.write(String.join(",", projectName, String.valueOf(regId), message) + System.lineSeparator());
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fileWriter != null) {
+                    fileWriter.flush();
+                    fileWriter.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String cloneSingleRegression(String projectName, int regId, Regression regression,
+            ProjectPaths checkoutDestinationPaths) {
+        boolean checkoutSuccessful = checkout(projectName, regression, checkoutDestinationPaths);
+        LOGGER.info("Checkout successful? {}", checkoutSuccessful);
+
+        if (!checkoutSuccessful) {
+            return "CHECKOUT FAILURE";
+        }
+
+        boolean compilationSuccessful = mvnCompileProjects(checkoutDestinationPaths);
+        LOGGER.info("Compilation successful? {}", compilationSuccessful);
+
+        if (!compilationSuccessful) {
+            return "COMPILATION FAILURE";
+        }
+
+        boolean testsSuccessful = mvnRunTest(checkoutDestinationPaths, regression.getTestCase());
+        LOGGER.info("Tests successful? {}", testsSuccessful);
+
+        if (!testsSuccessful) {
+            return "TEST RESULT INCORRECT";
+        }
+
+        boolean compressionSuccessful = compress(checkoutDestinationPaths.getBasePath());
+        LOGGER.info("Compression successful? {}", compressionSuccessful);
+        if (!compressionSuccessful) {
+            return "COMPRESSION FAILURE";
+        }
+        return CLONE_SUCCESS_MSG;
     }
 
     public List<String> getProjectNames() {
@@ -134,7 +189,6 @@ public class Regs4jWrapper {
     public boolean compress(Path path) {
         try (ZipFile zippedRegression = new ZipFile(path.toString() + ".zip")) {
             zippedRegression.addFolder(path.toFile());
-            deleteIfExists(path); // Delete original folder after zipping
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -217,8 +271,10 @@ public class Regs4jWrapper {
 
     public boolean mvnRunTest(ProjectPaths paths, String testCaseStr) {
         final String mvnTestCmd = String.format("test -Dtest=%s", testCaseStr);
-        boolean ricTestSuccess = MavenProjectConfig.executeMavenCmd(paths.getRicPath(), mvnTestCmd);
-        return MavenProjectConfig.executeMavenCmd(paths.getWorkingPath(), mvnTestCmd) && !ricTestSuccess;
+        boolean ricTestSuccess = MavenProjectConfig.executeMavenCmd(paths.getRicPath(), mvnTestCmd,
+                DEFAULT_TEST_TIMEOUT_SEC);
+        return MavenProjectConfig.executeMavenCmd(paths.getWorkingPath(), mvnTestCmd, DEFAULT_TEST_TIMEOUT_SEC)
+                && !ricTestSuccess;
     }
 
     /**

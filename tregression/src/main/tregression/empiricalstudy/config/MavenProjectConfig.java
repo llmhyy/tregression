@@ -80,9 +80,14 @@ public class MavenProjectConfig extends ProjectConfig {
     }
 
     public static boolean executeMavenCmd(Path root, String cmd) {
+        return executeMavenCmd(root, cmd, InvocationRequest.NO_TIMEOUT);
+    }
+
+    public static boolean executeMavenCmd(Path root, String cmd, int timeoutSeconds) {
         InvocationRequest request = new DefaultInvocationRequest();
         request.setPomFile(new File(root + File.separator + "pom.xml"));
         request.setGoals(Collections.singletonList(cmd));
+        request.setTimeoutInSeconds(timeoutSeconds);
 
         Invoker invoker = new DefaultInvoker();
         invoker.setMavenHome(new File(System.getenv("MAVEN_HOME")));
@@ -96,9 +101,11 @@ public class MavenProjectConfig extends ProjectConfig {
     }
 
     /**
-     * Obtains all paths to jars inside startPath folder recursively. The paths obtained are relative to projectRoot argument.
+     * Obtains all paths to jars inside startPath folder recursively. The paths
+     * obtained are relative to projectRoot argument.
      * 
-     * This method uses Java 8 API (Stream, Consumer, etc). Should be modified to use only Java 7 API.
+     * This method uses Java 8 API (Stream, Consumer, etc). Should be modified to
+     * use only Java 7 API.
      * 
      * @param startPath
      * @param projectRoot
