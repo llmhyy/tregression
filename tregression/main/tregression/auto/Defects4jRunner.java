@@ -16,6 +16,7 @@ import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
+import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 
 public class Defects4jRunner extends ProjectsRunner {
 	
@@ -79,7 +80,10 @@ public class Defects4jRunner extends ProjectsRunner {
 				result.isOmissionBug = trial.getBugType() == EmpiricalTrial.OVER_SKIP;
 				result.rootCauseOrder = trial.getRootcauseNode() == null ? -1 : trial.getRootcauseNode().getOrder();
 				for (DeadEndRecord record : trial.getDeadEndRecordList()) {
-					result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+					SolutionPattern solutionPattern = record.getSolutionPattern();
+					if (solutionPattern != null) {
+						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+					}
 				}
 			}
 		}
