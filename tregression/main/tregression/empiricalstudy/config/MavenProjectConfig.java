@@ -24,8 +24,8 @@ public class MavenProjectConfig extends ProjectConfig {
 	public static final String PATH_MAVEN_TEST = "src" + File.separator + "test" + File.separator + "java";
 	public static final String PATH_MAVEN_SRC = "src" + File.separator + "main" + File.separator + "java";
 	public static final String PATH_MAVEN_BUILD = "target";
-	public static final String PATH_MAVEN_BUILD_SRC = "target" + File.separator + "test-classes";
-	public static final String PATH_MAVEN_BUILD_TEST = "target" + File.separator + "classes";
+	public static final String PATH_MAVEN_BUILD_SRC = "target" + File.separator + "classes";
+	public static final String PATH_MAVEN_BUILD_TEST = "target" + File.separator + "test-classes";
 
 	public MavenProjectConfig(String srcTestFolder, String srcSourceFolder, String bytecodeTestFolder,
 			String bytecodeSourceFolder, String buildFolder, String projectName, String regressionID) {
