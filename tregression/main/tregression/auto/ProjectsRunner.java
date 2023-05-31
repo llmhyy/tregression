@@ -52,7 +52,9 @@ public abstract class ProjectsRunner {
 	    	ProjectsRunner.printMsg("Processing: " + projectName);
 	    	final String projectPath = Paths.get(this.basePath, projectName).toString();
 	    	File projectFolder = new File(projectPath);
-	    	for (String bugID_str : projectFolder.list()) {
+	    	String[] bugIdStrs = projectFolder.list();
+	    	if (bugIdStrs == null) continue;
+	    	for (String bugID_str : bugIdStrs) {
 	    		if (this.filter.contains(projectName + ":" + bugID_str)) {
 	    			ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
 	    			continue;
