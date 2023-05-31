@@ -1,13 +1,17 @@
 package tregression.util;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
@@ -93,7 +97,9 @@ public class Regs4jWrapper {
      * Clones every regression into specified repoPath.
      */
     public void cloneAll(String repoPath) {
-
+        String pathToResults = repoPath + File.separator + "result.txt";
+        Set<String> regressionsAlreadyCloned = getRegressionsAlreadyCheckedOut(pathToResults);
+        
         // List projects
         List<String> projectNames = getProjectNames();
 
@@ -102,13 +108,12 @@ public class Regs4jWrapper {
             LOGGER.info("Regressions {}", regressions);
             for (int regId = 1; regId <= regressions.size(); regId++) {
                 LOGGER.info("Start clone for {} {}", projectName, regId);
-                ProjectPaths checkoutDestinationPaths = generateProjectPaths(repoPath, projectName, regId);
-
-                if (isCheckedOut(checkoutDestinationPaths)) {
+                if (isCheckedOut(regressionsAlreadyCloned, projectName, regId)) {
                     LOGGER.info("{} {} already exists", projectName, regId);
                     continue;
                 }
 
+                ProjectPaths checkoutDestinationPaths = generateProjectPaths(repoPath, projectName, regId);
                 String cloneMessage = cloneSingleRegression(projectName, regId, regressions.get(regId - 1),
                         checkoutDestinationPaths);
                 try {
@@ -119,11 +124,12 @@ public class Regs4jWrapper {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                storeResult(projectName, regId, cloneMessage, repoPath + File.separator + "result.txt");
+                storeResult(projectName, regId, cloneMessage, pathToResults);
             }
         }
     }
-
+    
+    private static final String RESULT_DELIM = ",";
     private void storeResult(String projectName, int regId, String message, String path) {
         LOGGER.info("Writing result for {} {} to file {}", projectName, regId, path);
         FileWriter fileWriter = null;
@@ -131,7 +137,7 @@ public class Regs4jWrapper {
             File file = new File(path);
             file.createNewFile();
             fileWriter = new FileWriter(file, true);
-            fileWriter.write(String.join(",", projectName, String.valueOf(regId), message) + System.lineSeparator());
+            fileWriter.write(String.join(RESULT_DELIM, projectName, String.valueOf(regId), message) + System.lineSeparator());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -144,6 +150,25 @@ public class Regs4jWrapper {
                 e.printStackTrace();
             }
         }
+    }
+    
+    private Set<String> getRegressionsAlreadyCheckedOut(String path) {
+        Set<String> result = new HashSet<>();
+        try (FileReader fileReader = new FileReader(path); BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String[] split = line.split(RESULT_DELIM);
+                String key = formKey(split[0], Integer.parseInt(split[1]));
+                result.add(key);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+    
+    private String formKey(String projectName, int regId) {
+        return projectName + "#" + regId;
     }
 
     private String cloneSingleRegression(String projectName, int regId, Regression regression,
@@ -233,10 +258,12 @@ public class Regs4jWrapper {
         Revision rfc = regression.getRfc();
         File rfcDir = sourceCodeManager.checkout(rfc, projectDir, projectFullName);
         rfc.setLocalCodeDir(rfcDir);
+        if (rfcDir == null) return false;
         regression.setRfc(rfc);
         Revision ric = regression.getRic();
         File ricDir = sourceCodeManager.checkout(ric, projectDir, projectFullName);
         ric.setLocalCodeDir(ricDir);
+        if (ricDir == null) return false;
         regression.setRic(ric);
         Revision working = regression.getWork();
         File workDir = sourceCodeManager.checkout(working, projectDir, projectFullName);
@@ -283,8 +310,8 @@ public class Regs4jWrapper {
      * @param paths
      * @return
      */
-    public boolean isCheckedOut(ProjectPaths paths) {
-        return new File(paths.getBasePath().toString() + ".zip").exists();
+    public boolean isCheckedOut(Set<String> regressionsAlreadyCloned, String project, int regId) {
+        return regressionsAlreadyCloned.contains(formKey(project, regId));
     }
 
     /**
@@ -312,7 +339,7 @@ public class Regs4jWrapper {
         }
     }
 
-    private ProjectPaths generateProjectPaths(String repoPath, String projectFullName, int bugId) {
+    public ProjectPaths generateProjectPaths(String repoPath, String projectFullName, int bugId) {
         String bugIdStr = String.valueOf(bugId);
         Path basePath = Paths.get(repoPath, projectFullName.replace("/", "_"), bugIdStr);
         Path newRICPath = basePath.resolve("ric");
