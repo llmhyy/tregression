@@ -29,7 +29,10 @@ public class Regs4jRunner extends ProjectsRunner {
     }
 
     @Override
-    public RunResult runProject(String projectName, String bugIdStr) {
+    public RunResult runProject(String projectName, String zippedBugIdStr) {
+        if (!zippedBugIdStr.contains(".zip"))
+            return null;
+        String bugIdStr = zippedBugIdStr.substring(0, zippedBugIdStr.indexOf("."));
         RunResult result = new RunResult();
         try {
             Integer.valueOf(bugIdStr);
@@ -46,17 +49,16 @@ public class Regs4jRunner extends ProjectsRunner {
             return result;
         }
 
-        final String bugFolder = Paths.get(basePath, projectName, bugIdStr, "ric").toString();
-        final String fixFolder = Paths.get(basePath, projectName, bugIdStr, "work").toString();
-        final String bugFolderZipped = bugFolder + ".zip";
-        final String fixFolderZipped = fixFolder + ".zip";
-        if (!(new File(bugFolderZipped).exists()) || !(new File(fixFolderZipped).exists())) {
+        Path pathToRegression = Paths.get(basePath, projectName, bugIdStr);
+        extract(pathToRegression.toString() + ".zip");
+        final String bugFolder = pathToRegression.resolve("ric").toString();
+        final String fixFolder = pathToRegression.resolve("work").toString();
+
+        if (!(new File(bugFolder).exists()) || !(new File(fixFolder).exists())) {
             result.errorMessage = ProjectsRunner
                     .genMsg(String.format("Working (%s) or Buggy (%s) project not found", fixFolder, bugFolder));
             return result;
         }
-        extract(bugFolderZipped);
-        extract(fixFolderZipped);
 
         List<EmpiricalTrial> trials = this.generateTrials(bugFolder, fixFolder, config);
         if (trials == null || trials.isEmpty()) {
@@ -64,8 +66,7 @@ public class Regs4jRunner extends ProjectsRunner {
             return result;
         }
         analyseTrials(trials, result);
-        deleteIfExists(bugFolder);
-        deleteIfExists(fixFolder);
+        deleteIfExists(pathToRegression.toString());
         return result;
     }
 
@@ -97,7 +98,7 @@ public class Regs4jRunner extends ProjectsRunner {
         }
         return true;
     }
-    
+
     private void analyseTrials(List<EmpiricalTrial> trials, RunResult result) {
         StringBuilder solutionNameStringBuilder = new StringBuilder();
         for (int i = 0; i < trials.size(); i++) {

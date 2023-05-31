@@ -84,12 +84,12 @@ public class DiffParser {
 			resultFilePath = ADDED_OR_REMOVED_FILE_NAME;
 		} else {
 			String osName = System.getProperty("os.name");
-			int indexOfJava = line.indexOf(".java");
+			line = line.trim();
 			if(osName.contains("Win")){
-				resultFilePath = line.substring(line.indexOf(diffSuffix)+2, indexOfJava + 5);
+				resultFilePath = line.substring(line.indexOf(diffSuffix) + 2);
 			}
 			else{
-				resultFilePath = line.substring(line.indexOf(diffSuffix)+1, indexOfJava + 5);
+				resultFilePath = line.substring(line.indexOf(diffSuffix) + 1);
 			}
 			resultFilePath = resultFilePath.replace("/", File.separator);
 			resultFilePath = resultFilePath.replace("\\\\", File.separator);

@@ -97,6 +97,11 @@
              defaultHandler="tregression.handler.MutationRunnerHandler"
              id="tregression.collectMutationDatasetData"
              name="Collect Mutation Dataset Data">
+       </command>      
+       <command
+             defaultHandler="tregression.handler.Regs4jRunnerHandler"
+             id="tregression.collectRegs4jData" 
+             name="Collect Regs4j Data">
        </command>
  </extension>	
  <extension
@@ -260,6 +265,11 @@
             </command>
             <command
                   commandId="tregression.collectMutationDatasetData"
+                  icon="icons/after.ico"
+                  style="push">
+            </command>            
+            <command
+                  commandId="tregression.collectRegs4jData"
                   icon="icons/after.ico"
                   style="push">
             </command>

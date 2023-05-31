@@ -14,7 +14,7 @@ import microbat.util.JavaUtil;
 import tregression.auto.ProjectsRunner;
 import tregression.auto.Regs4jRunner;
 
-public class Regs4jHandler extends AbstractHandler {
+public class Regs4jRunnerHandler extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -32,7 +32,7 @@ public class Regs4jHandler extends AbstractHandler {
     }
 
     private void execute() {
-        final String basePath = "E:\\david\\Regs4j";
+        final String basePath = "C:\\Users\\bchenghi\\Desktop\\regs4j-test-repo";
         final String resultPath = Paths.get(basePath, "regs4j-result.txt").toString();
         ProjectsRunner runner = new Regs4jRunner(basePath, resultPath);
         runner.run();
