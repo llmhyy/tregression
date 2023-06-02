@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,13 +77,14 @@ class IODetectorIT {
 		TraceNode expectedOutputNode = buggyTrace.getLatestNode();
 		expectedOutputNode.getReadVariables().get(0);
 		VarValue expectedOutput = expectedOutputNode.getReadVariables().get(0);
-		assertEquals(expectedOutput, result.getOutput());
+        assertEquals(expectedOutputNode, result.getOutput().getNode());
+		assertEquals(expectedOutput, result.getOutput().getVarVal());
 
-		Set<VarValue> expectedInputs = new HashSet<>();
-		expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
-		expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
-		expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
-		expectedInputs.addAll(buggyTrace.getTraceNode(6).getWrittenVariables());
+		Set<NodeVarValPair> expectedInputs = new HashSet<>();
+		expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(1), true));
+		expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(4), false));
+		expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(5), false));
+		expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(6), false));
 		assertEquals(expectedInputs, new HashSet<>(result.getInputs()));
 	}
 
@@ -97,12 +99,14 @@ class IODetectorIT {
 			TraceNode outputNode = buggyTrace.getLatestNode();
 			outputNode.getReadVariables().get(0);
 			VarValue output = outputNode.getReadVariables().get(0);
-			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-			Set<VarValue> expectedInputs = new HashSet<>();
-			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(6).getWrittenVariables());
+			List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+			Set<NodeVarValPair> expectedInputs = new HashSet<>();
+			TraceNode node1 = buggyTrace.getTraceNode(1);
+			node1.getReadVariables().forEach(varVal -> expectedInputs.add(new NodeVarValPair(node1, varVal)));
+            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(1), true));
+            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(4), false));
+            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(5), false));
+            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(6), false));
 			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 
@@ -114,12 +118,12 @@ class IODetectorIT {
 			TraceNode outputNode = buggyTrace.getLatestNode();
 			outputNode.getReadVariables().get(0);
 			VarValue output = outputNode.getReadVariables().get(0);
-			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-			Set<VarValue> expectedInputs = new HashSet<>();
-			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(2).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(6).getWrittenVariables());
+			List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+			Set<NodeVarValPair> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(1), true));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(2), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(5), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(6), false));
 			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 
@@ -131,12 +135,13 @@ class IODetectorIT {
 			TraceNode outputNode = buggyTrace.getLatestNode();
 			outputNode.getReadVariables().get(0);
 			VarValue output = outputNode.getReadVariables().get(0);
-			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-			Set<VarValue> expectedInputs = new HashSet<>();
-			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
-			expectedInputs.add(buggyTrace.getTraceNode(8).getWrittenVariables().get(0));
+			List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+			Set<NodeVarValPair> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(1), true));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(4), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(5), false));
+			TraceNode node8 = buggyTrace.getTraceNode(8);
+			expectedInputs.add(new NodeVarValPair(node8, node8.getWrittenVariables().get(0)));
 			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 
@@ -148,15 +153,15 @@ class IODetectorIT {
 			TraceNode outputNode = buggyTrace.getLatestNode();
 			outputNode.getReadVariables().get(0);
 			VarValue output = outputNode.getReadVariables().get(0);
-			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-			Set<VarValue> expectedInputs = new HashSet<>();
-			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(8).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(9).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(11).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(12).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(13).getWrittenVariables());
+			List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+			Set<NodeVarValPair> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(1), true));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(4), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(8), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(9), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(11), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(12), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(13), false));
 			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 
@@ -167,11 +172,11 @@ class IODetectorIT {
 			Trace buggyTrace = testObjects.getBuggyTrace();
 			TraceNode outputNode = buggyTrace.getLatestNode();
 			VarValue output = outputNode.getReadVariables().get(0);
-			List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-			Set<VarValue> expectedInputs = new HashSet<>();
-			expectedInputs.addAll(buggyTrace.getTraceNode(1).getReadVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(4).getWrittenVariables());
-			expectedInputs.addAll(buggyTrace.getTraceNode(5).getWrittenVariables());
+			List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+			Set<NodeVarValPair> expectedInputs = new HashSet<>();
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(1), true));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(4), false));
+			expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(5), false));
 			assertEquals(expectedInputs, new HashSet<>(inputs));
 		}
 	}
@@ -291,12 +296,11 @@ class IODetectorIT {
 				TraceNode outputNode = buggyTrace.getLatestNode();
 				outputNode.getReadVariables().get(0);
 				VarValue output = outputNode.getReadVariables().get(0);
-				List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-				Set<VarValue> expectedInputs = new HashSet<>();
-				for (VarValue input : buggyTrace.getTraceNode(1).getWrittenVariables()) {
-					expectedInputs.add(input);
-				}
-				expectedInputs.add(buggyTrace.getTraceNode(1).getReadVariables().get(0));
+				List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+				Set<NodeVarValPair> expectedInputs = new HashSet<>();
+				TraceNode node1 = buggyTrace.getTraceNode(1);
+	            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(node1, false));
+				expectedInputs.add(new NodeVarValPair(node1, node1.getReadVariables().get(0)));
 				assertEquals(expectedInputs, new HashSet<>(inputs));
 			}
 
@@ -318,8 +322,8 @@ class IODetectorIT {
 				TraceNode outputNode = buggyTrace.getTraceNode(1537);
 				outputNode.getReadVariables().get(0);
 				VarValue output = outputNode.getReadVariables().get(0);
-				List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-				Set<VarValue> expectedInputs = new HashSet<>();
+				List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+				Set<NodeVarValPair> expectedInputs = new HashSet<>();
 			}
 
 			// math_70 bug ID 3
@@ -338,8 +342,8 @@ class IODetectorIT {
 				TraceNode outputNode = buggyTrace.getLatestNode();
 				outputNode.getReadVariables().get(0);
 				VarValue output = outputNode.getReadVariables().get(0);
-				List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-				Set<VarValue> expectedInputs = new HashSet<>();
+				List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+				Set<NodeVarValPair> expectedInputs = new HashSet<>();
 			}
 
 			// math_70 bug ID 5
@@ -361,8 +365,8 @@ class IODetectorIT {
 				TraceNode outputNode = buggyTrace.getLatestNode();
 				outputNode.getReadVariables().get(0);
 				VarValue output = outputNode.getReadVariables().get(0);
-				List<VarValue> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
-				Set<VarValue> expectedInputs = new HashSet<>();
+				List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+				Set<NodeVarValPair> expectedInputs = new HashSet<>();
 			}
 		}
 
@@ -575,5 +579,14 @@ class IODetectorIT {
 		ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
 		PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, workingTrace, diffMatcher);
 		return pairList;
+	}
+	
+	private List<NodeVarValPair> createNodeVarValPairsFromNodeAndVarVals(TraceNode node, boolean isRead) {
+	    List<NodeVarValPair> result = new ArrayList<>();
+	    List<VarValue> varValues = isRead ? node.getReadVariables() : node.getWrittenVariables();
+	    for (VarValue varVal : varValues) {
+	        result.add(new NodeVarValPair(node, varVal));
+	    }
+	    return result;
 	}
 }
