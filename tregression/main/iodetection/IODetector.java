@@ -228,6 +228,10 @@ public class IODetector {
             return Objects.equals(node, other.node) && Objects.equals(varVal, other.varVal);
         }
 
+        @Override
+        public String toString() {
+            return "NodeVarValPair [node=" + node + ", varVal=" + varVal + "]";
+        }
     }
 
     public static class IOResult {
