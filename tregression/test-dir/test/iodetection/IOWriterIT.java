@@ -23,8 +23,9 @@ class IOWriterIT {
     static final String OUTPUT_VAR_ID = "output-1";
     static final String SAMPLE_INPUT_CONTENT = String.join(" ", String.format(INPUT_VAR_ID_FMT, 1), "1", 
             String.format(INPUT_VAR_ID_FMT, 2), "2") + System.lineSeparator();
-    static final String SAMPLE_OUTPUT_CONTENT = OUTPUT_VAR_ID + " " + 1 + System.lineSeparator();;
-    static final String SAMPLE_FILE_CONTENT = SAMPLE_INPUT_CONTENT + SAMPLE_OUTPUT_CONTENT;
+    static final String SAMPLE_WRONG_VAR_VAL_OUTPUT_CONTENT = OUTPUT_VAR_ID + " " + 1 + System.lineSeparator();;
+    static final String SAMPLE_WRONG_VAR_VAL_FILE_CONTENT = SAMPLE_INPUT_CONTENT + SAMPLE_WRONG_VAR_VAL_OUTPUT_CONTENT;
+    static final String SAMPLE_WRONG_BRANCH_FILE_CONTENT = SAMPLE_INPUT_CONTENT + 1 + System.lineSeparator();
 
     private IOWriter writer;
 
@@ -34,7 +35,8 @@ class IOWriterIT {
     private Path tempFile;
 
     private List<NodeVarValPair> inputs;
-    private NodeVarValPair output;
+    private NodeVarValPair wrongVarValOutput;
+    private NodeVarValPair wrongBranchOutput;
 
     @BeforeEach
     void setUp() {
@@ -48,7 +50,8 @@ class IOWriterIT {
         TraceNode outputNode = new TraceNode();
         outputNode.setOrder(1);
         VarValue varValue = new VarValueStub(OUTPUT_VAR_ID);
-        output = new NodeVarValPair(outputNode, varValue);
+        wrongVarValOutput = new NodeVarValPair(outputNode, varValue);
+        wrongBranchOutput = new NodeVarValPair(outputNode, null);
     }
 
     private NodeVarValPair createNodeVarValPair(int id) {
@@ -59,24 +62,31 @@ class IOWriterIT {
     }
 
     @Test
-    void writeIO_InputsAndOutputProvided_WritesIO() throws IOException {
-        writer.writeIO(inputs, output, tempFile);
+    void writeIO_InputsAndWrongVarValOutputProvided_WritesIO() throws IOException {
+        writer.writeIO(inputs, wrongVarValOutput, tempFile);
         String fileContents = Files.readString(tempFile);
-        assertEquals(SAMPLE_FILE_CONTENT, fileContents);
+        assertEquals(SAMPLE_WRONG_VAR_VAL_FILE_CONTENT, fileContents);
+    }
+    
+    @Test
+    void writeIO_InputsAndWrongBranchOutputProvided_WritesIO() throws IOException {
+        writer.writeIO(inputs, wrongBranchOutput, tempFile);
+        String fileContents = Files.readString(tempFile);
+        assertEquals(SAMPLE_WRONG_BRANCH_FILE_CONTENT, fileContents);
     }
 
     @Test
     void writeIO_InputsIsEmpty_WritesOutputCorrectly() throws IOException {
         inputs = new ArrayList<>();
-        writer.writeIO(inputs, output, tempFile);
+        writer.writeIO(inputs, wrongVarValOutput, tempFile);
         String fileContents = Files.readString(tempFile);
-        assertEquals(System.lineSeparator() + SAMPLE_OUTPUT_CONTENT, fileContents);
+        assertEquals(System.lineSeparator() + SAMPLE_WRONG_VAR_VAL_OUTPUT_CONTENT, fileContents);
     }
 
     @Test
     void writeIO_OutputIsEmpty_WritesInputsCorrectly() throws IOException {
-        output = null;
-        writer.writeIO(inputs, output, tempFile);
+        wrongVarValOutput = null;
+        writer.writeIO(inputs, wrongVarValOutput, tempFile);
         String fileContents = Files.readString(tempFile);
         assertEquals(SAMPLE_INPUT_CONTENT + System.lineSeparator(), fileContents);
     }
@@ -85,10 +95,10 @@ class IOWriterIT {
     void writeIO_WritesMultipleTimes_Overwrites() throws IOException {
         int count = 3;
         for (int i = 0; i < count; i++) {
-            writer.writeIO(inputs, output, tempFile);
+            writer.writeIO(inputs, wrongVarValOutput, tempFile);
         }
         String fileContents = Files.readString(tempFile);
-        assertEquals(SAMPLE_FILE_CONTENT, fileContents);
+        assertEquals(SAMPLE_WRONG_VAR_VAL_FILE_CONTENT, fileContents);
     }
 
     /**

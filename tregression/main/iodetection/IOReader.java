@@ -20,7 +20,7 @@ public class IOReader {
             List<IOResult> result = new ArrayList<>();
             String[] splitLine = inputLine.split(IOWriter.IO_DELIMITER);
             for (int i = 0; i < splitLine.length; i += 2) {
-                result.add(new IOResult(splitLine[i], Integer.valueOf(splitLine[i+1])));
+                result.add(new IOResult(splitLine[i], Integer.valueOf(splitLine[i + 1])));
             }
             return Optional.of(result);
         } catch (IOException e) {
@@ -33,7 +33,13 @@ public class IOReader {
         try {
             String[] lines = getLines(path);
             String[] outputStrs = lines[1].split(IOWriter.IO_DELIMITER);
-            return Optional.of(new IOResult(outputStrs[0], Integer.valueOf(outputStrs[1])));
+            int outputStrsLen = outputStrs.length;
+            if (outputStrsLen == 2) {
+                // Wrong Var Value
+                return Optional.of(new IOResult(outputStrs[0], Integer.valueOf(outputStrs[1])));
+            }
+            // Wrong Branch
+            return Optional.of(new IOResult(null, Integer.valueOf(outputStrs[0])));
         } catch (IOException e) {
             e.printStackTrace();
             return Optional.empty();
