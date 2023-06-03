@@ -57,7 +57,7 @@ public class IODetector {
 
     /**
      * Iterates from the last node to first node, and checks for wrong variable
-     * value. Once it is found, it is returned.
+     * value or wrong branch. Once it is found, it is returned.
      * 
      * @return
      */
@@ -66,6 +66,11 @@ public class IODetector {
         int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
         for (int i = lastNodeOrder; i >= 1; i--) {
             node = buggyTrace.getTraceNode(i);
+            TraceNodePair pair = pairList.findByBeforeNode(node);
+            // Check for wrong branch (no corresponding node in correct trace)
+            if (pair == null) {
+                return Optional.of(new NodeVarValPair(node, null));
+            }
             Optional<NodeVarValPair> wrongVariableOptional = getWrongVariableInNode(node);
             if (wrongVariableOptional.isEmpty()) {
                 continue;
@@ -80,7 +85,7 @@ public class IODetector {
      * dependencies to identify inputs.
      * 
      * @param outputNode
-     * @param output
+     * @param output The VarValue that had wrong value, or null if the output is a TraceNode that was wrongly executed.
      * @return
      */
     List<NodeVarValPair> detectInputVarValsFromOutput(TraceNode outputNode, VarValue output) {
@@ -222,8 +227,7 @@ public class IODetector {
             NodeVarValPair other = (NodeVarValPair) obj;
             return Objects.equals(node, other.node) && Objects.equals(varVal, other.varVal);
         }
-        
-        
+
     }
 
     public static class IOResult {

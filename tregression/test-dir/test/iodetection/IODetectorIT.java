@@ -216,8 +216,8 @@ class IODetectorIT {
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
 				NodeVarValPair output = detector.detectOutput().get();
-				TraceNode expectedOutputNode = buggyTrace.getTraceNode(6);
-				VarValue expectedVarVal = expectedOutputNode.getWrittenVariables().get(0);
+				TraceNode expectedOutputNode = buggyTrace.getTraceNode(7);
+				VarValue expectedVarVal = null;
 				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
 				assertEquals(expectedVarVal, output.getVarVal());
 			}
@@ -252,8 +252,8 @@ class IODetectorIT {
 				IODetector detector = testObjects.getIoDetector();
 				Trace buggyTrace = testObjects.getBuggyTrace();
 				NodeVarValPair output = detector.detectOutput().get();
-				TraceNode expectedOutputNode = buggyTrace.getTraceNode(14);
-				VarValue expectedVarVal = expectedOutputNode.getWrittenVariables().get(0);
+				TraceNode expectedOutputNode = buggyTrace.getTraceNode(15);
+				VarValue expectedVarVal = null;
 				assertEquals(expectedOutputNode.getOrder(), output.getNode().getOrder());
 				assertEquals(expectedVarVal, output.getVarVal());
 			}
