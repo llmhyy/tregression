@@ -99,7 +99,7 @@ public class Regs4jWrapper {
     public void cloneAll(String repoPath) {
         String pathToResults = repoPath + File.separator + "result.txt";
         Set<String> regressionsAlreadyCloned = getRegressionsAlreadyCheckedOut(pathToResults);
-        
+
         // List projects
         List<String> projectNames = getProjectNames();
 
@@ -128,8 +128,9 @@ public class Regs4jWrapper {
             }
         }
     }
-    
+
     private static final String RESULT_DELIM = ",";
+
     private void storeResult(String projectName, int regId, String message, String path) {
         LOGGER.info("Writing result for {} {} to file {}", projectName, regId, path);
         FileWriter fileWriter = null;
@@ -137,7 +138,8 @@ public class Regs4jWrapper {
             File file = new File(path);
             file.createNewFile();
             fileWriter = new FileWriter(file, true);
-            fileWriter.write(String.join(RESULT_DELIM, projectName, String.valueOf(regId), message) + System.lineSeparator());
+            fileWriter.write(
+                    String.join(RESULT_DELIM, projectName, String.valueOf(regId), message) + System.lineSeparator());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -151,10 +153,11 @@ public class Regs4jWrapper {
             }
         }
     }
-    
+
     private Set<String> getRegressionsAlreadyCheckedOut(String path) {
         Set<String> result = new HashSet<>();
-        try (FileReader fileReader = new FileReader(path); BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+        try (FileReader fileReader = new FileReader(path);
+                BufferedReader bufferedReader = new BufferedReader(fileReader)) {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 String[] split = line.split(RESULT_DELIM);
@@ -166,7 +169,7 @@ public class Regs4jWrapper {
         }
         return result;
     }
-    
+
     private String formKey(String projectName, int regId) {
         return projectName + "#" + regId;
     }
@@ -257,16 +260,20 @@ public class Regs4jWrapper {
         File projectDir = sourceCodeManager.getProjectDir(projectFullName);
         Revision rfc = regression.getRfc();
         File rfcDir = sourceCodeManager.checkout(rfc, projectDir, projectFullName);
+        if (rfcDir == null)
+            return false;
         rfc.setLocalCodeDir(rfcDir);
-        if (rfcDir == null) return false;
         regression.setRfc(rfc);
         Revision ric = regression.getRic();
         File ricDir = sourceCodeManager.checkout(ric, projectDir, projectFullName);
+        if (ricDir == null)
+            return false;
         ric.setLocalCodeDir(ricDir);
-        if (ricDir == null) return false;
         regression.setRic(ric);
         Revision working = regression.getWork();
         File workDir = sourceCodeManager.checkout(working, projectDir, projectFullName);
+        if (workDir == null)
+            return false;
         working.setLocalCodeDir(workDir);
         regression.setWork(working);
         List<Revision> needToTestMigrateRevisionList = Arrays.asList(ric, working);
