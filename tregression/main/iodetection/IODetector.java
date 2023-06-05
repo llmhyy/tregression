@@ -44,7 +44,7 @@ public class IODetector {
      * 
      * @return
      */
-    public Optional<IOResult> detect() {
+    public Optional<InputsAndOutput> detect() {
         Optional<NodeVarValPair> outputNodeAndVarValOpt = detectOutput();
         if (outputNodeAndVarValOpt.isEmpty()) {
             return Optional.empty();
@@ -52,7 +52,7 @@ public class IODetector {
         NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
         VarValue output = outputNodeAndVarVal.getVarVal();
         List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
-        return Optional.of(new IOResult(inputs, outputNodeAndVarVal));
+        return Optional.of(new InputsAndOutput(inputs, outputNodeAndVarVal));
     }
 
     /**
@@ -234,11 +234,11 @@ public class IODetector {
         }
     }
 
-    public static class IOResult {
+    public static class InputsAndOutput {
         private final List<NodeVarValPair> inputs;
         private final NodeVarValPair output;
 
-        public IOResult(List<NodeVarValPair> inputs, NodeVarValPair output) {
+        public InputsAndOutput(List<NodeVarValPair> inputs, NodeVarValPair output) {
             super();
             this.inputs = inputs;
             this.output = output;

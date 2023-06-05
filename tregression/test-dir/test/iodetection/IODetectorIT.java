@@ -15,7 +15,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import iodetection.IODetector.NodeVarValPair;
-import iodetection.IODetector.IOResult;
+import iodetection.IODetector.InputsAndOutput;
 
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -73,7 +73,7 @@ class IODetectorIT {
         IODetectorTestObjects testObjects = constructTestObjects("input-written-only", 5);
         IODetector detector = testObjects.getIoDetector();
         Trace buggyTrace = testObjects.getBuggyTrace();
-        IOResult result = detector.detect().get();
+        InputsAndOutput result = detector.detect().get();
         TraceNode expectedOutputNode = buggyTrace.getLatestNode();
         expectedOutputNode.getReadVariables().get(0);
         VarValue expectedOutput = expectedOutputNode.getReadVariables().get(0);
