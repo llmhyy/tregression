@@ -32,7 +32,7 @@ public class Regs4jRunnerHandler extends AbstractHandler {
     }
 
     private void execute() {
-        final String basePath = "C:\\Users\\bchenghi\\Desktop\\regs4j-test-repo";
+        final String basePath = "E:\\david\\Regs4j";
         final String resultPath = Paths.get(basePath, "regs4j-result.txt").toString();
         ProjectsRunner runner = new Regs4jRunner(basePath, resultPath);
         runner.run();
