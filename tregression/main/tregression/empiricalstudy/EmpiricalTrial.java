@@ -84,6 +84,10 @@ public class EmpiricalTrial {
 		return bugType==-1 && checkList.isEmpty();
 	}
 	
+	public boolean isSuccessful() {
+		return bugType != -1;
+	}
+	
 	public static String getTypeStringName(int t) {
 		if(t==FIND_BUG) {
 			return "find_bug";

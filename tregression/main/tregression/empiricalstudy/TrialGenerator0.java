@@ -87,7 +87,10 @@ public class TrialGenerator0 {
 
 				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
 						tc, config, requireVisualization, true, useSliceBreaker, enableRandom, breakLimit);
-				if(!trial.isDump()){
+//				if(!trial.isDump()){
+//					break;					
+//				}
+				if(trial.isSuccessful()){
 					break;					
 				}
 			}
