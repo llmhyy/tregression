@@ -35,6 +35,7 @@ import tregression.empiricalstudy.Simulator;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.solutionpattern.PatternIdentifier;
 import tregression.empiricalstudy.training.DED;
 import tregression.model.PairList;
@@ -140,7 +141,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		String buggyPath = PathConfiguration.getBuggyPath(projectName, bugId);
 		String fixPath = PathConfiguration.getCorrectPath(projectName, bugId);
 
-		Defects4jProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugId);
+		ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugId);
 
 		DiffMatcher diffMatcher = new DiffMatcher(config.srcSourceFolder, config.srcTestFolder, buggyPath,
 				fixPath);
@@ -185,7 +186,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		return new Result(buggyTrace, correctTrace, pairList, diffMatcher);
 	}
 
-	private void fillingMissingInfo(String buggyPath, String fixPath, Defects4jProjectConfig config,
+	private void fillingMissingInfo(String buggyPath, String fixPath, ProjectConfig config,
 			Regression regression) {
 		for (TraceNode node : regression.getBuggyTrace().getExecutionList()) {
 			BreakPoint point = node.getBreakPoint();
@@ -250,7 +251,7 @@ public class RegressionRetrieveHandler extends AbstractHandler {
 		return trial;
 	}
 
-	private Regression retrieveRegression(Defects4jProjectConfig config, String buggyPath, String fixPath) {
+	private Regression retrieveRegression(ProjectConfig config, String buggyPath, String fixPath) {
 		String projectName = config.projectName;
 		String bugId = config.regressionID;
 		ExecTraceFileReader execTraceReader = new ExecTraceFileReader();
