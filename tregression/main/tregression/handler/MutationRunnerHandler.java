@@ -33,7 +33,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceStore;
 
 import iodetection.IODetector;
-import iodetection.IODetector.IOResult;
+import iodetection.IODetector.InputsAndOutput;
+import iodetection.IODetector.NodeVarValPair;
 import iodetection.IOWriter;
 import jmutation.dataset.BugDataset;
 import jmutation.dataset.bug.minimize.ProjectMinimizer;
@@ -329,28 +330,28 @@ public class MutationRunnerHandler extends AbstractHandler {
 	}
 
 	private void executeIOPostProcessing(IODetector ioDetector, Path ioFilePath) {
-		Optional<IOResult> ioOptional = ioDetector.detect();
+		Optional<InputsAndOutput> ioOptional = ioDetector.detect();
 		if (ioOptional.isEmpty()) {
 			System.out.println("IO Detection Failed");
 			return;
 		}
-		IOResult io = ioOptional.get();
+		InputsAndOutput io = ioOptional.get();
 		printIOResult(io);
 		saveIOResult(io, ioFilePath);
 	}
 
-	private void printIOResult(IOResult io) {
-		List<VarValue> inputs = io.getInputs();
-		VarValue output = io.getOutput();
+	private void printIOResult(InputsAndOutput io) {
+		List<NodeVarValPair> inputs = io.getInputs();
+		NodeVarValPair output = io.getOutput();
 		System.out.println(String.join(" ", LINE, "inputs", LINE));
-		for (VarValue input : inputs) {
+		for (NodeVarValPair input : inputs) {
 			System.out.println(input);
 		}
 		System.out.println(String.join(" ", LINE, "output", LINE));
 		System.out.println(output);
 	}
 
-	private void saveIOResult(IOResult io, Path path) {
+	private void saveIOResult(InputsAndOutput io, Path path) {
 		IOWriter writer = new IOWriter();
 		try {
 			writer.writeIO(io.getInputs(), io.getOutput(), path);

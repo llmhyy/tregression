@@ -98,7 +98,7 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		// AutoFeedbackHandler.trail should be defined at SeparateVersionHandler
 		AutoDebugAgent agent = new AutoDebugAgent(AutoFeedbackHandler.trial, inputs, outputs, outputNode);
 		DebugResult debugResult = agent.startDebug(result);
-		System.out.println(debugResult);
+		System.out.println(debugResult.getFormattedInfo());
 	}
 
 	protected void setup() {
