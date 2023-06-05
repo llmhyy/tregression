@@ -19,6 +19,7 @@ import sav.common.core.utils.StringUtils;
 import traceagent.report.AgentDefects4jReport;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.preference.TregressionPreference;
 
 /**
@@ -43,7 +44,7 @@ public class RunSingleTestcaseHandler extends RunAllDefects4jHandler {
 						tcs = Arrays.asList(new TestCase(testcase));
 					}
 					System.out.println("working on the " + id + "th bug of " + projectName + " project.");
-					Defects4jProjectConfig config = Defects4jProjectConfig.getConfig(projectName,
+					ProjectConfig config = Defects4jProjectConfig.getConfig(projectName,
 							id);
 					AgentDefects4jReport report = new AgentDefects4jReport(new File("Agent_Defect4j_tc.xlsx"));
 					runSingleBug(config, report, tcs, new TestcaseFilter(false), monitor);

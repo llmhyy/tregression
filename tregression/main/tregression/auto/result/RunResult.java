@@ -76,5 +76,17 @@ public class RunResult {
 		buffer.append(RunResult.DELIMITER);
 	}
 
-
+	public String getFormattedInfo() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("--------------------------------\n");
+		builder.append("ProjectName: " + this.projectName + "\n");
+		builder.append("Bug ID: " + this.bugID + "\n");
+		builder.append("Length: " + this.traceLen + "\n");
+		builder.append("Root Cause Order: " + this.rootCauseOrder + "\n");
+		builder.append("isOmissionBug: " + this.isOmissionBug + "\n");
+		builder.append("SolutationName: " + this.solutionName + "\n");
+		builder.append("Error Message: " + this.errorMessage + "\n");
+		builder.append("--------------------------------\n");
+		return builder.toString();
+	}
 }

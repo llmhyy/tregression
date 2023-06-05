@@ -33,6 +33,7 @@ import traceagent.report.BugCaseTrial;
 import traceagent.report.BugCaseTrial.TraceTrial;
 import tregression.empiricalstudy.TestCase;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
+import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.handler.PathConfiguration;
 import tregression.separatesnapshots.AppClassPathInitializer;
 
@@ -86,7 +87,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 					return;
 				}
 				System.out.println("working on the " + j + "th bug of " + project + " project.");
-				Defects4jProjectConfig d4jConfig = Defects4jProjectConfig.getConfig(project, String.valueOf(j));
+				ProjectConfig d4jConfig = Defects4jProjectConfig.getConfig(project, String.valueOf(j));
 				try {
 					runSingleBug(d4jConfig, report, null, filter, monitor);
 				} catch (Exception e) {
@@ -96,7 +97,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		}
 	}
 
-	void runSingleBug(Defects4jProjectConfig config, AgentDefects4jReport report, List<TestCase> tcs,
+	void runSingleBug(ProjectConfig config, AgentDefects4jReport report, List<TestCase> tcs,
 			TestcaseFilter filter, IProgressMonitor monitor)
 			throws IOException {
 		String projectName = config.projectName;
@@ -128,7 +129,7 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 		}
 	}
 	
-	public TraceTrial run(String workingDir, TestCase tc, Defects4jProjectConfig config, List<String> includeLibs,
+	public TraceTrial run(String workingDir, TestCase tc, ProjectConfig config, List<String> includeLibs,
 			List<String> excludeLibs, boolean isBuggy) {
 		SingleTimer timer = SingleTimer.start(String.format("run %s test", isBuggy ? "buggy" : "correct"));
 		AppJavaClassPath appClassPath = AppClassPathInitializer.initialize(workingDir, tc, config);

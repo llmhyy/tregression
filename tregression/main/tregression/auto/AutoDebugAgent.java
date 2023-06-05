@@ -66,7 +66,7 @@ public class AutoDebugAgent {
 		List<Double> pathFindingTimes = new ArrayList<>();
 		List<Double> totalTimes = new ArrayList<>();
 		boolean debugSuccess = false;
-		
+		boolean locateRootCause = false;
 		while (!isEnd) {
 			spp.updateFeedbacks(userFeedbackRecords);
 			
@@ -104,8 +104,9 @@ public class AutoDebugAgent {
 				if (currentNode.equals(rootCause)) {
 					if (predictedFeedback.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
 						correctFeedbackCount+=1;
-						debugSuccess = true;
+						locateRootCause = true;
 					}
+					debugSuccess = true;
 					isEnd = true;
 					break;
 				}
@@ -134,7 +135,7 @@ public class AutoDebugAgent {
 					NodeFeedbacksPair correctingFeedbacks = this.giveFeedback(prevNode);
 					if (correctingFeedbacks.equals(prevRecord)) {
 						// Omission bug confirmed
-//						this.reportOmissionBug(currentNode, correctingFeedbacks);
+						this.reportOmissionBug(currentNode, correctingFeedbacks);
 						if (correctingFeedbacks.getFeedbackType().equals(UserFeedback.WRONG_PATH) && this.isControlOmission(result)) {
 							correctFeedbackCount+=1;
 						} else if (correctingFeedbacks.getFeedbackType().equals(UserFeedback.WRONG_VARIABLE_VALUE) && this.isDataOmission(debugResult)) {
@@ -185,6 +186,8 @@ public class AutoDebugAgent {
 					NodeFeedbacksPair correctingFeedbacks = this.giveFeedback(currentNode);
 					if (correctingFeedbacks.equals(userFeedbacks)) {
 						// Omission bug confirmed
+						final TraceNode startNode = currentNode.getInvocationParent() == null ? buggyTrace.getTraceNode(1) : currentNode.getInvocationParent();
+						this.reportOmissionBug(startNode, correctingFeedbacks);
 						if (correctingFeedbacks.getFeedbackType().equals(UserFeedback.WRONG_PATH) && this.isControlOmission(result)) {
 							correctFeedbackCount+=1;
 						} else if (correctingFeedbacks.getFeedbackType().equals(UserFeedback.WRONG_VARIABLE_VALUE) && this.isDataOmission(debugResult)) {
@@ -249,5 +252,31 @@ public class AutoDebugAgent {
 			   solutationName.equals("missing if return") ||
 			   solutationName.equals("missing if throw") ||
 			   solutationName.equals("invoke different method");
+	}
+	
+	protected void reportOmissionBug(final TraceNode startNode, final NodeFeedbacksPair feedback) {
+		if (feedback.getFeedbackType().equals(UserFeedback.WRONG_PATH)) {
+			this.reportMissingBranchOmissionBug(startNode, feedback.getNode());
+		} else if (feedback.getFeedbackType().equals(UserFeedback.WRONG_VARIABLE_VALUE)) {
+			VarValue varValue = feedback.getFeedbacks().get(0).getOption().getReadVar();
+			this.reportMissingAssignmentOmissionBug(startNode, feedback.getNode(), varValue);
+		}
+	}
+	protected void reportMissingBranchOmissionBug(final TraceNode startNode, final TraceNode endNode) {
+		SPP.printMsg("-------------------------------------------");
+		SPP.printMsg("Omission bug detected");
+		SPP.printMsg("Scope begin: " + startNode.getOrder());
+		SPP.printMsg("Scope end: " + endNode.getOrder());
+		SPP.printMsg("Omission Type: Missing Branch");
+		SPP.printMsg("-------------------------------------------");
+	}
+	
+	protected void reportMissingAssignmentOmissionBug(final TraceNode startNode, final TraceNode endNode, final VarValue var) {
+		SPP.printMsg("-------------------------------------------");
+		SPP.printMsg("Omission bug detected");
+		SPP.printMsg("Scope begin: " + startNode.getOrder());
+		SPP.printMsg("Scope end: " + endNode.getOrder());
+		SPP.printMsg("Omission Type: Missing Assignment of " + var.getVarName());
+		SPP.printMsg("-------------------------------------------");
 	}
 }

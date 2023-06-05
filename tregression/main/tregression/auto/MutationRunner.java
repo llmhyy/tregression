@@ -16,6 +16,7 @@ import java.util.Optional;
 import iodetection.IODetector;
 import iodetection.IOWriter;
 import iodetection.IODetector.IOResult;
+import iodetection.IODetector.NodeVarValPair;
 import jmutation.dataset.BugDataset;
 import jmutation.dataset.bug.minimize.ProjectMinimizer;
 import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
@@ -182,10 +183,10 @@ public class MutationRunner extends ProjectsRunner {
 	}
 	
 	private void printIOResult(IOResult io) {
-		List<VarValue> inputs = io.getInputs();
-		VarValue output = io.getOutput();
+		List<NodeVarValPair> inputs = io.getInputs();
+		NodeVarValPair output = io.getOutput();
 		System.out.println(String.join(" ", LINE, "inputs", LINE));
-		for (VarValue input : inputs) {
+		for (NodeVarValPair input : inputs) {
 			System.out.println(input);
 		}
 		System.out.println(String.join(" ", LINE, "output", LINE));
