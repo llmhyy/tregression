@@ -60,7 +60,7 @@ public abstract class ProjectsRunner {
             if (bugIdStrs == null)
                 continue;
             for (String bugID_str : bugIdStrs) {
-                if (this.filter.contains(projectName + ":" + bugID_str)) {
+                if (this.filter.contains(formFilterString(projectName, bugID_str))) {
                     ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
                     continue;
                 }
@@ -129,5 +129,13 @@ public abstract class ProjectsRunner {
 
     public static void printMsg(final String message) {
         System.out.println(ProjectsRunner.genMsg(message));
+    }
+    
+    private String formFilterString(String projectName, String bugIdStr) {
+        String finalBugIdStr = bugIdStr;
+        if (finalBugIdStr.contains(".zip")) {
+            finalBugIdStr = bugIdStr.substring(0, bugIdStr.length() - 4);
+        }
+        return projectName + ":" + finalBugIdStr;
     }
 }

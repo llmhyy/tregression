@@ -290,7 +290,7 @@ public class DiffMatcher {
 		return null;
 	}
 
-	public void matchCode(){
+	public void matchCode(){ 
 		List<String> diffContent = getRawDiffContent(sourceFolderName);
 		diffContent.add("diff end");
 		List<FilePairWithDiff> fileDiffs = new DiffParser().parseDiff(diffContent, sourceFolderName);
