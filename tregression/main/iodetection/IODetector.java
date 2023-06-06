@@ -105,15 +105,15 @@ public class IODetector {
     // 2. Control/Invocation Parent
     void detectInputVarValsFromOutput(TraceNode outputNode, Set<VarValue> inputs, Set<NodeVarValPair> inputsWithNodes,
             Set<Integer> visited) {
+        boolean isFirstNode = visited.isEmpty();
         int key = formVisitedKey(outputNode);
         if (visited.contains(key)) {
             return;
         }
         visited.add(key);
         boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
-        if (isTestFile) {
-            // TODO: check if reference, then use heap address. (math_70 bug id 5)
-            // Check primitive variables, compare with correct trace's aligned node
+        if (isTestFile && !isFirstNode) {
+            // If the node is in a test file and is not the node with incorrect variable, check its written variables for inputs.
             List<VarValue> newInputs = new ArrayList<>(outputNode.getWrittenVariables());
             Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(outputNode);
             if (wrongVariable.isPresent()) {
