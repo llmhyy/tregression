@@ -5,13 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import iodetection.IODetector;
-import iodetection.IODetector.InputsAndOutput;
-import iodetection.IODetector.NodeVarValPair;
-
 import java.util.List;
-import java.util.Optional;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
@@ -51,8 +45,6 @@ public class Defects4jRunner extends ProjectsRunner {
 			return null;
 		}
 		
-		projectName = "Codec";
-		bugID_str = "6";
 		final String projectID = projectName + ":" + bugID_str;
 		if (this.outOfMemoryFilters.contains(projectID)) {
 			result.projectName = projectName;
@@ -93,28 +85,9 @@ public class Defects4jRunner extends ProjectsRunner {
 						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 					}
 				}
-                                IODetector ioDetector = new IODetector(trial.getBuggyTrace(), config.srcTestFolder, trial.getPairList());
-                                Optional<InputsAndOutput> ioOptional = ioDetector.detect();
-                                if (ioOptional.isEmpty()) {
-                                        System.out.println("IO Detection Failed");
-                                        return result;
-                                }
-                                InputsAndOutput io = ioOptional.get();
-                                printIOResult(io);
 			}
 		}
 		return result;
 	}
 
-        private static final String LINE = "=========";
-        private void printIOResult(InputsAndOutput io) {
-            List<NodeVarValPair> inputs = io.getInputs();
-            NodeVarValPair output = io.getOutput();
-            System.out.println(String.join(" ", LINE, "inputs", LINE));
-            for (NodeVarValPair input : inputs) {
-                    System.out.println(input);
-            }
-            System.out.println(String.join(" ", LINE, "output", LINE));
-            System.out.println(output);
-    }
 }
