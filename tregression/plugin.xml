@@ -98,6 +98,11 @@
              id="tregression.collectMutationDatasetData"
              name="Collect Mutation Dataset Data">
        </command>
+       <command
+             defaultHandler="tregression.handler.Defects4jAutoDebugHandler"
+             id="tregression.defects4jautodebug"
+             name="Auto Debug Defects4j">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -223,7 +228,7 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.collectDefects4jData"
+                  commandId="tregression.defects4jautodebug"
                   icon="icons/after.ico"
                   style="push">
             </command>

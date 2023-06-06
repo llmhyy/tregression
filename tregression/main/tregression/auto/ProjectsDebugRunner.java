@@ -2,7 +2,8 @@ package tregression.auto;
 
 import java.util.Optional;
 
-import iodetection.IOReader.IOResult;
+import iodetection.IODetector;
+import iodetection.IODetector.InputsAndOutput;
 import microbat.model.trace.Trace;
 import tregression.model.PairList;
 
@@ -16,5 +17,9 @@ public abstract class ProjectsDebugRunner extends ProjectsRunner {
 		super(basePath, resultPath, maxThreadCount);
 	}
 	
+	protected Optional<InputsAndOutput> getIO(final Trace trace, final String testSrcPath, final PairList pairList) {
+		IODetector ioDetector = new IODetector(trace, testSrcPath, pairList);
+		return ioDetector.detect();
+	}
 
 }
