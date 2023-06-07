@@ -61,7 +61,7 @@ public class IODetector {
      * 
      * @return
      */
-    Optional<NodeVarValPair> detectOutput() {
+    public Optional<NodeVarValPair> detectOutput() {
         TraceNode node;
         int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
         for (int i = lastNodeOrder; i >= 1; i--) {
