@@ -181,7 +181,22 @@ class IODetectorIT {
         }
 
         @Test
-        void detectOutput_ExceptionThrownResultingInWrongBranch_ObtainsInputs() {
+        void detectInputVarValsFromOutput_InputIsNotInTestFile_ObtainsInputs() {
+            IODetectorTestObjects testObjects = constructTestObjects("input-not-in-test-file", 11);
+            IODetector detector = testObjects.getIoDetector();
+            Trace buggyTrace = testObjects.getBuggyTrace();
+            TraceNode outputNode = buggyTrace.getLatestNode();
+            VarValue output = outputNode.getReadVariables().get(0);
+            List<NodeVarValPair> inputs = detector.detectInputVarValsFromOutput(outputNode, output);
+            Set<NodeVarValPair> expectedInputs = new HashSet<>();
+            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(1), true));
+            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(4), false));
+            expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(5), false));
+            assertEquals(expectedInputs, new HashSet<>(inputs));
+        }
+
+        @Test
+        void detectInputVarValsFromOutput_ExceptionThrownResultingInWrongBranch_ObtainsInputs() {
             IODetectorTestObjects testObjects = constructTestObjects("regular-exception", 1);
             IODetector detector = testObjects.getIoDetector();
             Trace buggyTrace = testObjects.getBuggyTrace();
