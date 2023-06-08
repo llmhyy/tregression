@@ -162,6 +162,8 @@ class IODetectorIT {
             expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(11), false));
             expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(12), false));
             expectedInputs.addAll(createNodeVarValPairsFromNodeAndVarVals(buggyTrace.getTraceNode(13), false));
+            TraceNode node14 = buggyTrace.getTraceNode(14);
+            expectedInputs.add(new NodeVarValPair(node14, node14.getReadVariables().get(1))); // String value inside invoked method. Technically not supposed to an input, but it's fine.
             assertEquals(expectedInputs, new HashSet<>(inputs));
         }
 

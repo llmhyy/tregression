@@ -1,8 +1,9 @@
 package regularproject;
 
-
 public class Main {
-	public char method(String input, int pos) {
-		return input.charAt(pos);
-	}
+    private String str = "str";
+
+    public String method(String input, int pos) {
+        return input + str.charAt(pos);
+    }
 }

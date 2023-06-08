@@ -85,7 +85,8 @@ public class IODetector {
      * dependencies to identify inputs.
      * 
      * @param outputNode
-     * @param output The VarValue that had wrong value, or null if the output is a TraceNode that was wrongly executed.
+     * @param output     The VarValue that had wrong value, or null if the output is
+     *                   a TraceNode that was wrongly executed.
      * @return
      */
     List<NodeVarValPair> detectInputVarValsFromOutput(TraceNode outputNode, VarValue output) {
@@ -113,7 +114,8 @@ public class IODetector {
         visited.add(key);
         boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
         if (isTestFile && !isFirstNode) {
-            // If the node is in a test file and is not the node with incorrect variable, check its written variables for inputs.
+            // If the node is in a test file and is not the node with incorrect variable,
+            // check its written variables for inputs.
             List<VarValue> newInputs = new ArrayList<>(outputNode.getWrittenVariables());
             Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(outputNode);
             if (wrongVariable.isPresent()) {
@@ -127,10 +129,12 @@ public class IODetector {
                 }
             });
         }
-
+        boolean shouldCheckForStringInputs = shouldCheckForStringInputs(outputNode, isTestFile);
         for (VarValue readVarVal : outputNode.getReadVariables()) {
             TraceNode dataDominator = buggyTrace.findDataDependency(outputNode, readVarVal);
-            if (dataDominator == null && isTestFile && !inputs.contains(readVarVal)) {
+            if ((dataDominator == null && isTestFile && !inputs.contains(readVarVal)) || 
+                    (shouldCheckForStringInputs && 
+                    isStringInput(outputNode, readVarVal))) {
                 inputs.add(readVarVal);
                 inputsWithNodes.add(new NodeVarValPair(outputNode, readVarVal));
             }
@@ -192,6 +196,36 @@ public class IODetector {
             return Optional.of(new NodeVarValPair(node, varValue));
         }
         return Optional.empty();
+    }
+
+    /**
+     * Constants (strings) are not recorded in the TraceNode when written, which
+     * leads to missed inputs. It is recorded when it is read after a method is
+     * invoked and the string is passed as an argument. The method looks at the
+     * first inner node of a method invocation, and checks for any read strings with
+     * correct values, and returns them as possible inputs.
+     *
+     */
+    private boolean shouldCheckForStringInputs(TraceNode node, boolean isTestFile) {
+        return node.getInvocationLevel() > 1 && !isTestFile;
+    }
+
+    private boolean isStringInput(TraceNode node, VarValue readVarValue) {
+        if (!"String".equals(readVarValue.getType())) {
+            return false;
+        }
+        TraceNodePair pair = pairList.findByBeforeNode(node);
+        if (pair == null) {
+            return true;
+        }
+
+        List<VarValue> wrongReadVars = pair.findSingleWrongReadVar(buggyTrace, pairList);
+        for (VarValue wrongReadVar : wrongReadVars) {
+            if (readVarValue.equals(wrongReadVar)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static class NodeVarValPair {
