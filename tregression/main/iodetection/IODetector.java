@@ -129,7 +129,7 @@ public class IODetector {
                 }
             });
         }
-        boolean shouldCheckForStringInputs = shouldCheckForStringInputs(outputNode, isTestFile);
+        boolean shouldCheckForStringInputs = shouldCheckForStringInputs(outputNode);
         for (VarValue readVarVal : outputNode.getReadVariables()) {
             TraceNode dataDominator = buggyTrace.findDataDependency(outputNode, readVarVal);
             if ((dataDominator == null && isTestFile && !inputs.contains(readVarVal)) || 
@@ -206,8 +206,12 @@ public class IODetector {
      * correct values, and returns them as possible inputs.
      *
      */
-    private boolean shouldCheckForStringInputs(TraceNode node, boolean isTestFile) {
-        return node.getInvocationLevel() > 1 && !isTestFile;
+    private boolean shouldCheckForStringInputs(TraceNode node) {
+        TraceNode invocationParent = node.getInvocationParent();
+        if (invocationParent == null) {
+            return false;
+        }
+        return isInTestDir(invocationParent.getBreakPoint().getFullJavaFilePath());
     }
 
     private boolean isStringInput(TraceNode node, VarValue readVarValue) {
