@@ -46,6 +46,10 @@ public class AutoFeedbackAgent {
 		return this.typeToFeedback(type, node, true, this.finder);
 	}
 	
+	public StepChangeType getStepChangeType(final TraceNode node) {
+		return this.typeChecker.getType(node, true, this.pairList, this.matcher);
+	}
+	
 	/**
 	 * Convert the StepChangeType to UserFeedback
 	 * @param type StepChangeType to be converted 

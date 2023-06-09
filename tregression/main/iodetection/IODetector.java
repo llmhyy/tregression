@@ -44,7 +44,7 @@ public class IODetector {
      * 
      * @return
      */
-    public Optional<IOResult> detect() {
+    public Optional<InputsAndOutput> detect() {
         Optional<NodeVarValPair> outputNodeAndVarValOpt = detectOutput();
         if (outputNodeAndVarValOpt.isEmpty()) {
             return Optional.empty();
@@ -52,7 +52,7 @@ public class IODetector {
         NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
         VarValue output = outputNodeAndVarVal.getVarVal();
         List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
-        return Optional.of(new IOResult(inputs, outputNodeAndVarVal));
+        return Optional.of(new InputsAndOutput(inputs, outputNodeAndVarVal));
     }
 
     /**
@@ -61,7 +61,7 @@ public class IODetector {
      * 
      * @return
      */
-    Optional<NodeVarValPair> detectOutput() {
+    public Optional<NodeVarValPair> detectOutput() {
         TraceNode node;
         int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
         for (int i = lastNodeOrder; i >= 1; i--) {
@@ -105,15 +105,15 @@ public class IODetector {
     // 2. Control/Invocation Parent
     void detectInputVarValsFromOutput(TraceNode outputNode, Set<VarValue> inputs, Set<NodeVarValPair> inputsWithNodes,
             Set<Integer> visited) {
+        boolean isFirstNode = visited.isEmpty();
         int key = formVisitedKey(outputNode);
         if (visited.contains(key)) {
             return;
         }
         visited.add(key);
         boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
-        if (isTestFile) {
-            // TODO: check if reference, then use heap address. (math_70 bug id 5)
-            // Check primitive variables, compare with correct trace's aligned node
+        if (isTestFile && !isFirstNode) {
+            // If the node is in a test file and is not the node with incorrect variable, check its written variables for inputs.
             List<VarValue> newInputs = new ArrayList<>(outputNode.getWrittenVariables());
             Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(outputNode);
             if (wrongVariable.isPresent()) {
@@ -234,11 +234,11 @@ public class IODetector {
         }
     }
 
-    public static class IOResult {
+    public static class InputsAndOutput {
         private final List<NodeVarValPair> inputs;
         private final NodeVarValPair output;
 
-        public IOResult(List<NodeVarValPair> inputs, NodeVarValPair output) {
+        public InputsAndOutput(List<NodeVarValPair> inputs, NodeVarValPair output) {
             super();
             this.inputs = inputs;
             this.output = output;

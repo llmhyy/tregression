@@ -76,7 +76,7 @@ public class AutoDebugAgent {
 			long propEndTime = System.currentTimeMillis();
 			
 			SPP.printMsg("Locating root cause ...");
-			spp.locateRootCause();
+			spp.locateRootCause(currentNode);
 			
 			long pathStartTime = System.currentTimeMillis();
 			SPP.printMsg("Constructing path to root cause ...");
@@ -100,8 +100,9 @@ public class AutoDebugAgent {
 				AutoDebugAgent.printMsg("Ground truth feedback: " + userFeedbacks);
 				totalFeedbackCount += 1;
 				
-				// Reach the root cause
-				if (currentNode.equals(rootCause)) {
+				// Reach the root case
+				// UserFeedback type is unclear also tell that this node is root cause
+				if (currentNode.equals(rootCause) || userFeedbacks.getFeedbackType().equals(UserFeedback.UNCLEAR)) {
 					if (predictedFeedback.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
 						correctFeedbackCount+=1;
 						locateRootCause = true;
@@ -110,6 +111,7 @@ public class AutoDebugAgent {
 					isEnd = true;
 					break;
 				}
+				
 				if (userFeedbacks.containsFeedback(predictedFeedback)) {
 					// Feedback predicted correctly, save the feedback into record and move to next node
 					userFeedbackRecords.add(userFeedbacks);
