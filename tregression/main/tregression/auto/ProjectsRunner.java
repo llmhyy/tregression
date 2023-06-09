@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -25,7 +26,7 @@ public abstract class ProjectsRunner {
     protected final String resultPath;
     protected final int maxThreadsCount;
     protected int hangingThreads = 0;
-    protected ExecutorService executorService;
+//	protected ExecutorService executorService;
 
     protected List<String> filter = new ArrayList<>();
 
@@ -37,7 +38,7 @@ public abstract class ProjectsRunner {
         this.basePath = basePath;
         this.resultPath = resultPath;
         this.maxThreadsCount = 5;
-        this.executorService = Executors.newFixedThreadPool(this.maxThreadsCount);
+//		this.executorService = Executors.newFixedThreadPool(this.maxThreadsCount); 
     }
 
     public void run() {
@@ -74,27 +75,44 @@ public abstract class ProjectsRunner {
     protected List<EmpiricalTrial> generateTrials(final String bugFolder, final String fixFolder,
             final ProjectConfig config) {
         final TrialGenerator0 generator0 = new TrialGenerator0();
-        Future<List<EmpiricalTrial>> getTrials = this.executorService.submit(new Callable<List<EmpiricalTrial>>() {
-            @Override
-            public List<EmpiricalTrial> call() throws Exception {
-                return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
-            }
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<List<EmpiricalTrial>> future = executor.submit(() -> {
+            return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
         });
-
-        // Timeout: 10 minutes
-        List<EmpiricalTrial> trials;
         try {
-            trials = getTrials.get(10, TimeUnit.MINUTES);
-        } catch (TimeoutException | InterruptedException | java.util.concurrent.ExecutionException e) {
-            getTrials.cancel(true);
-            this.hangingThreads++;
-            if (this.hangingThreads >= this.maxThreadsCount) {
-                this.executorService.shutdownNow();
-            }
+            return future.get(10, TimeUnit.MINUTES);
+        } catch (TimeoutException e) {
             return null;
+        } catch (InterruptedException e) {
+            return null;
+        } catch (ExecutionException e) {
+            return null;
+        } finally {
+            future.cancel(true);
+            executor.shutdown();
         }
-
-        return trials;
+//		final TrialGenerator0 generator0 = new TrialGenerator0();
+//		Future<List<EmpiricalTrial>> getTrials = this.executorService.submit(new Callable<List<EmpiricalTrial>>() {
+//			@Override
+//			public List<EmpiricalTrial> call() throws Exception {
+//				return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+//			}
+//		});
+//		
+//		// Timeout: 10 minutes
+//		List<EmpiricalTrial> trials;
+//		try {
+//			trials = getTrials.get(10, TimeUnit.MINUTES);
+//		} catch (TimeoutException | InterruptedException | java.util.concurrent.ExecutionException e) {
+//			getTrials.cancel(true);
+//			this.hangingThreads++;
+//			if (this.hangingThreads >= this.maxThreadsCount) {
+//				this.executorService.shutdownNow();
+//			}
+//			return null;
+//		}
+//		
+//		return trials;
     }
 
     protected List<RunResult> loadProcessedResult() {

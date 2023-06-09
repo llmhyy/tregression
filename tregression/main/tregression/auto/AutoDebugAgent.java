@@ -76,7 +76,7 @@ public class AutoDebugAgent {
 			long propEndTime = System.currentTimeMillis();
 			
 			SPP.printMsg("Locating root cause ...");
-			spp.locateRootCause();
+			spp.locateRootCause(currentNode);
 			
 			long pathStartTime = System.currentTimeMillis();
 			SPP.printMsg("Constructing path to root cause ...");

@@ -91,7 +91,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 				List<VarValue> inputs = new ArrayList<>();
 				List<VarValue> outputs = new ArrayList<>();
 				TraceNode outputNode = null;
-				Optional<InputsAndOutput> ioOptional = this.getIO(trace, "scr\\test\\java", trial.getPairList());
+				Optional<InputsAndOutput> ioOptional = this.getIO(trace, config.srcTestFolder, trial.getPairList());
 				if (ioOptional.isEmpty()) {
 					ProjectsRunner.printMsg("Cannot extract input and output");
 					DebugResult debugResult = new DebugResult(result);
@@ -115,6 +115,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 					}
 					ProjectsRunner.printMsg("Outputs: ");
 					ProjectsRunner.printMsg(outputDetected.toString());
+					
 					AutoDebugAgent agent = new AutoDebugAgent(trial, inputs, outputs, outputNode);
 					DebugResult debugResult = new DebugResult(result);
 					try {
