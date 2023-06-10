@@ -50,9 +50,6 @@ public class Defects4jProjectConfig extends ProjectConfig{
 		else if (projectName.equals("JacksonCore") || projectName.equals("JacksonDatabind") || projectName.equals("JacksonXml") || projectName.equals("Jsoup")) {
 			config = new MavenProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
 		}
-		else if (projectName.equals("Jsoup")) {
-			config = new MavenProjectConfig("src"+File.separator+"test"+File.separator+"java", "src"+File.separator+"main"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
-		}
 		else if (projectName.equals("JxPath")) {
 			config = new Defects4jProjectConfig("src"+File.separator+"test", "src"+File.separator+"java", "target"+File.separator+"test-classes", "target"+File.separator+"classes", "target", projectName, regressionID);
 		}
