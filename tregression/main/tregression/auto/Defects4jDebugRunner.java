@@ -4,6 +4,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import iodetection.IODetector.InputsAndOutput;
 import iodetection.IODetector.NodeVarValPair;
@@ -118,11 +122,18 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 					
 					AutoDebugAgent agent = new AutoDebugAgent(trial, inputs, outputs, outputNode);
 					DebugResult debugResult = new DebugResult(result);
+					ExecutorService executor = Executors.newSingleThreadExecutor();
+					Future<DebugResult> future = executor.submit(() -> {
+						return agent.startDebug(new DebugResult(result));
+					});
 					try {
-						debugResult = agent.startDebug(debugResult);
+						debugResult = future.get(20, TimeUnit.MINUTES);
 					} catch (Exception e) {
 						debugResult.errorMessage = AutoDebugAgent.genMsg(e.toString());
-					}
+					} finally {
+			            future.cancel(true);
+			            executor.shutdown();
+			        }
 					return debugResult;
 				}
 			}
