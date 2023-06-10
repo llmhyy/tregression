@@ -85,8 +85,13 @@ public class TrialGenerator0 {
 				System.out.println("#####working on test case " + tc.testClass + "#" + tc.testMethod);
 				workingTC = tc;
 
-				trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
-						tc, config, requireVisualization, true, useSliceBreaker, enableRandom, breakLimit);
+				try {
+					trial = analyzeTestCase(buggyPath, fixPath, isReuse, allowMultiThread,
+							tc, config, requireVisualization, true, useSliceBreaker, enableRandom, breakLimit);
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				}
 //				if(!trial.isDump()){
 //					break;					
 //				}

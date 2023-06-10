@@ -3,6 +3,12 @@ package tregression.auto;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import microbat.model.trace.TraceNode;
@@ -72,11 +78,21 @@ public class AutoDebugAgent {
 			
 			SPP.printMsg("Propagating probability ...");
 			long propStartTime = System.currentTimeMillis();
-			spp.propagate();
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			Future future = executor.submit(() -> spp.propagate());
+			try {
+				future.get(20, TimeUnit.MINUTES);
+			} catch (TimeoutException | InterruptedException | ExecutionException e) {
+				debugResult.errorMessage = genMsg(e.toString());
+				break;
+	        } finally {
+	            future.cancel(true);
+	            executor.shutdown();
+	        }
 			long propEndTime = System.currentTimeMillis();
 			
 			SPP.printMsg("Locating root cause ...");
-			spp.locateRootCause(currentNode);
+			spp.locateRootCause();
 			
 			long pathStartTime = System.currentTimeMillis();
 			SPP.printMsg("Constructing path to root cause ...");
