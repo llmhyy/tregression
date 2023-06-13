@@ -70,24 +70,27 @@ public class AutoDebugAgent {
 		while (!isEnd) {
 			spp.updateFeedbacks(userFeedbackRecords);
 			
+			// Propagation
 			SPP.printMsg("Propagating probability ...");
 			long propStartTime = System.currentTimeMillis();
 			spp.propagate();
 			long propEndTime = System.currentTimeMillis();
+			double propTime = (propEndTime - propStartTime) / (double) 1000;
+			propTimes.add(propTime);
+			SPP.printMsg("Propagatoin time: " + propTime);
 			
+			// Locate root cause
 			SPP.printMsg("Locating root cause ...");
 			spp.locateRootCause(currentNode);
 			
+			// Path finding
 			long pathStartTime = System.currentTimeMillis();
 			SPP.printMsg("Constructing path to root cause ...");
 			spp.constructPath();
 			long pathEndTime = System.currentTimeMillis();
-			
-			double propTime = (propEndTime - propStartTime) / (double) 1000;
-			propTimes.add(propTime);
-			
 			double pathFindingTime = (pathEndTime - pathStartTime) / (double) 1000;
 			pathFindingTimes.add(pathFindingTime);
+			SPP.printMsg("Path finding time: " + pathFindingTime);
 			
 			totalTimes.add(propTime + pathFindingTime);
 			
