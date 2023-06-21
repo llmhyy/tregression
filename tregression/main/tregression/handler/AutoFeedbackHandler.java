@@ -25,6 +25,7 @@ import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
+import tregression.views.StepwiseTraceView;
 import tregression.auto.AutoDebugAgent;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -34,7 +35,7 @@ import tregression.auto.result.RunResult;
 public class AutoFeedbackHandler extends AbstractHandler {
 
 	private BuggyTraceView buggyView;
-	private CorrectTraceView correctView;
+	private CorrectTraceView correctView;	
 
 	public static EmpiricalTrial trial = null;
 	
@@ -107,10 +108,10 @@ public class AutoFeedbackHandler extends AbstractHandler {
 			public void run() {
 				try {
 					buggyView = (BuggyTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BuggyTraceView.ID);
-					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
+					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);					
 				} catch (PartInitException e) {
 					buggyView = null;
-					correctView = null;
+					correctView = null;					
 					System.out.println("Fail to get the view");
 				}
 			}
