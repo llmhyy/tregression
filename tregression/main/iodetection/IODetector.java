@@ -64,18 +64,27 @@ public class IODetector {
     public Optional<NodeVarValPair> detectOutput() {
         TraceNode node;
         int lastNodeOrder = buggyTrace.getLatestNode().getOrder();
+        TraceNode outputNode = null;
         for (int i = lastNodeOrder; i >= 1; i--) {
             node = buggyTrace.getTraceNode(i);
             TraceNodePair pair = pairList.findByBeforeNode(node);
             // Check for wrong branch (no corresponding node in correct trace)
-            if (pair == null) {
-                return Optional.of(new NodeVarValPair(node, null));
+            if (pair == null && outputNode == null) {
+            	outputNode = node;
+//                return Optional.of(new NodeVarValPair(node, null));
             }
             Optional<NodeVarValPair> wrongVariableOptional = getWrongVariableInNode(node);
             if (wrongVariableOptional.isEmpty()) {
                 continue;
             }
-            return wrongVariableOptional;
+            
+            if (outputNode == null) {
+            	return wrongVariableOptional;
+            } else {
+            	NodeVarValPair wrongVariable = wrongVariableOptional.get();
+            	return Optional.of(new NodeVarValPair(outputNode, wrongVariable.getVarVal()));
+            }
+//            return wrongVariableOptional;
         }
         return Optional.empty();
     }

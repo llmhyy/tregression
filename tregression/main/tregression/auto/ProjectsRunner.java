@@ -91,28 +91,6 @@ public abstract class ProjectsRunner {
             future.cancel(true);
             executor.shutdown();
         }
-//		final TrialGenerator0 generator0 = new TrialGenerator0();
-//		Future<List<EmpiricalTrial>> getTrials = this.executorService.submit(new Callable<List<EmpiricalTrial>>() {
-//			@Override
-//			public List<EmpiricalTrial> call() throws Exception {
-//				return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
-//			}
-//		});
-//		
-//		// Timeout: 10 minutes
-//		List<EmpiricalTrial> trials;
-//		try {
-//			trials = getTrials.get(10, TimeUnit.MINUTES);
-//		} catch (TimeoutException | InterruptedException | java.util.concurrent.ExecutionException e) {
-//			getTrials.cancel(true);
-//			this.hangingThreads++;
-//			if (this.hangingThreads >= this.maxThreadsCount) {
-//				this.executorService.shutdownNow();
-//			}
-//			return null;
-//		}
-//		
-//		return trials;
     }
 
     protected List<RunResult> loadProcessedResult() {

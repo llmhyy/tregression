@@ -46,7 +46,7 @@ public class AutoDebugAgent {
 	}
 	
 	public DebugResult startDebug(final RunResult result) {
-		SPP spp = new SPP(this.buggyTrace, inputs, outputs, outputNode);
+		SPP spp = new SPP(this.buggyTrace, inputs, outputs, outputNode, true);
 		DebugResult debugResult = new DebugResult(result);
 		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
