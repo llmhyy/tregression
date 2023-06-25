@@ -50,9 +50,15 @@ public abstract class ProjectsRunner {
         ResultWriter writer = new ResultWriter(resultPath);
         File baseFolder = new File(this.basePath);
         for (String projectName : baseFolder.list()) {
+        	if (projectName.equals("math_70")) {
+        		continue;
+        	}
             ProjectsRunner.printMsg("Processing: " + projectName);
             final String projectPath = Paths.get(this.basePath, projectName).toString();
             File projectFolder = new File(projectPath);
+            if (!projectFolder.isDirectory()) {
+            	continue;
+            }
             for (String bugID_str : projectFolder.list()) {
                 if (this.filter.contains(projectName + ":" + bugID_str)) {
                     ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
