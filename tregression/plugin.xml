@@ -103,6 +103,11 @@
              id="tregression.defects4jautodebug"
              name="Auto Debug Defects4j">
        </command>
+       <command
+             defaultHandler="tregression.handler.IOSelectionHandler"
+             id="tregression.selectIO"
+             name="Select IO">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -266,6 +271,11 @@
             <command
                   commandId="tregression.collectMutationDatasetData"
                   icon="icons/after.ico"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.selectIO"
+                  icon="icons/screenshot.png"
                   style="push">
             </command>
          </toolbar>
