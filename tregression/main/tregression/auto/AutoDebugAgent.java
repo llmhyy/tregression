@@ -7,10 +7,11 @@ import java.util.stream.Collectors;
 
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.probability.SPP.SPP;
+import microbat.probability.SPP.DebugPilot;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
 import microbat.model.trace.Trace;
+import microbat.probability.SPP.propagation.PropagatorType;
 import tregression.auto.result.DebugResult;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -46,7 +47,7 @@ public class AutoDebugAgent {
 	}
 	
 	public DebugResult startDebug(final RunResult result) {
-		SPP spp = new SPP(this.buggyTrace, inputs, outputs, outputNode, true);
+		DebugPilot spp = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.Heuristic);
 		DebugResult debugResult = new DebugResult(result);
 		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
@@ -71,34 +72,34 @@ public class AutoDebugAgent {
 			spp.updateFeedbacks(userFeedbackRecords);
 			
 			// Propagation
-			SPP.printMsg("Propagating probability ...");
+			DebugPilot.printMsg("Propagating probability ...");
 			long propStartTime = System.currentTimeMillis();
 			spp.propagate();
 			long propEndTime = System.currentTimeMillis();
 			double propTime = (propEndTime - propStartTime) / (double) 1000;
 			propTimes.add(propTime);
-			SPP.printMsg("Propagatoin time: " + propTime);
+			DebugPilot.printMsg("Propagatoin time: " + propTime);
 			
 			// Locate root cause
-			SPP.printMsg("Locating root cause ...");
+			DebugPilot.printMsg("Locating root cause ...");
 			spp.locateRootCause(currentNode);
 			
 			// Path finding
 			long pathStartTime = System.currentTimeMillis();
-			SPP.printMsg("Constructing path to root cause ...");
+			DebugPilot.printMsg("Constructing path to root cause ...");
 			spp.constructPath();
 			long pathEndTime = System.currentTimeMillis();
 			double pathFindingTime = (pathEndTime - pathStartTime) / (double) 1000;
 			pathFindingTimes.add(pathFindingTime);
-			SPP.printMsg("Path finding time: " + pathFindingTime);
+			DebugPilot.printMsg("Path finding time: " + pathFindingTime);
 			
 			totalTimes.add(propTime + pathFindingTime);
 			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {
 				UserFeedback predictedFeedback = spp.giveFeedback(currentNode);
-				SPP.printMsg("--------------------------------------");
-				SPP.printMsg("Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
+				DebugPilot.printMsg("--------------------------------------");
+				DebugPilot.printMsg("Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
 				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);
 				AutoDebugAgent.printMsg("Ground truth feedback: " + userFeedbacks);
 				totalFeedbackCount += 1;
@@ -133,10 +134,10 @@ public class AutoDebugAgent {
 					 *  If user insist the previous feedback is accurate, then we say there is 
 					 *  omission bug
 					 */
-					SPP.printMsg("You give CORRECT feedback at node: " + currentNode.getOrder());
+					DebugPilot.printMsg("You give CORRECT feedback at node: " + currentNode.getOrder());
 					NodeFeedbacksPair prevRecord = userFeedbackRecords.peek();
 					TraceNode prevNode = prevRecord.getNode();
-					SPP.printMsg("Please confirm the feedback at previous node.");
+					DebugPilot.printMsg("Please confirm the feedback at previous node.");
 					NodeFeedbacksPair correctingFeedbacks = this.giveFeedback(prevNode);
 					if (correctingFeedbacks.equals(prevRecord)) {
 						// Omission bug confirmed
@@ -154,20 +155,20 @@ public class AutoDebugAgent {
 						while (!lastAccurateFeedbackLocated && !isEnd) {
 							prevRecord = userFeedbackRecords.peek();
 							prevNode = prevRecord.getNode();
-							SPP.printMsg("Please confirm the feedback at previous node.");
+							DebugPilot.printMsg("Please confirm the feedback at previous node.");
 							correctingFeedbacks = this.giveFeedback(prevNode);
 							if (correctingFeedbacks.equals(prevRecord)) {
 								lastAccurateFeedbackLocated = true;
 								currentNode = TraceUtil.findNextNode(prevNode, correctingFeedbacks.getFeedbacks().get(0), buggyTrace);
-								SPP.printMsg("Last accurate feedback located. Please start giveing feedback from node: " + currentNode.getOrder());
+								DebugPilot.printMsg("Last accurate feedback located. Please start giveing feedback from node: " + currentNode.getOrder());
 								continue;
 							}
 							userFeedbackRecords.pop();
 							if (userFeedbackRecords.isEmpty()) {
 								// Reach initial feedback
-								SPP.printMsg("You are going to reach the initialize feedback which assumed to be accurate");
-								SPP.printMsg("Pleas start giving from node: "+prevNode.getOrder());
-								SPP.printMsg("If the initial feedback is inaccurate, please start the whole process again");
+								DebugPilot.printMsg("You are going to reach the initialize feedback which assumed to be accurate");
+								DebugPilot.printMsg("Pleas start giving from node: "+prevNode.getOrder());
+								DebugPilot.printMsg("If the initial feedback is inaccurate, please start the whole process again");
 								currentNode = prevNode;
 								lastAccurateFeedbackLocated = true;
 							}
@@ -187,7 +188,7 @@ public class AutoDebugAgent {
 					 * If the user insist the feedback is accurate, then
 					 * omission bug confirm
 					 */
-					SPP.printMsg("Cannot find next node. Please double check you feedback at node: " + currentNode.getOrder());
+					DebugPilot.printMsg("Cannot find next node. Please double check you feedback at node: " + currentNode.getOrder());
 					NodeFeedbacksPair correctingFeedbacks = this.giveFeedback(currentNode);
 					if (correctingFeedbacks.equals(userFeedbacks)) {
 						// Omission bug confirmed
@@ -200,13 +201,13 @@ public class AutoDebugAgent {
 						}
 						isEnd = true;
 					} else {
-						SPP.printMsg("Wong prediction on feedback, start propagation again");
+						DebugPilot.printMsg("Wong prediction on feedback, start propagation again");
 						needPropagateAgain = true;
 //						this.userFeedbackRecords.add(correctingFeedbacks);
 						currentNode = TraceUtil.findNextNode(currentNode, correctingFeedbacks.getFirstFeedback(), buggyTrace);
 					}
 				} else {
-					SPP.printMsg("Wong prediction on feedback, start propagation again");
+					DebugPilot.printMsg("Wong prediction on feedback, start propagation again");
 					needPropagateAgain = true;
 					userFeedbackRecords.add(userFeedbacks);
 					currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
@@ -268,20 +269,20 @@ public class AutoDebugAgent {
 		}
 	}
 	protected void reportMissingBranchOmissionBug(final TraceNode startNode, final TraceNode endNode) {
-		SPP.printMsg("-------------------------------------------");
-		SPP.printMsg("Omission bug detected");
-		SPP.printMsg("Scope begin: " + startNode.getOrder());
-		SPP.printMsg("Scope end: " + endNode.getOrder());
-		SPP.printMsg("Omission Type: Missing Branch");
-		SPP.printMsg("-------------------------------------------");
+		DebugPilot.printMsg("-------------------------------------------");
+		DebugPilot.printMsg("Omission bug detected");
+		DebugPilot.printMsg("Scope begin: " + startNode.getOrder());
+		DebugPilot.printMsg("Scope end: " + endNode.getOrder());
+		DebugPilot.printMsg("Omission Type: Missing Branch");
+		DebugPilot.printMsg("-------------------------------------------");
 	}
 	
 	protected void reportMissingAssignmentOmissionBug(final TraceNode startNode, final TraceNode endNode, final VarValue var) {
-		SPP.printMsg("-------------------------------------------");
-		SPP.printMsg("Omission bug detected");
-		SPP.printMsg("Scope begin: " + startNode.getOrder());
-		SPP.printMsg("Scope end: " + endNode.getOrder());
-		SPP.printMsg("Omission Type: Missing Assignment of " + var.getVarName());
-		SPP.printMsg("-------------------------------------------");
+		DebugPilot.printMsg("-------------------------------------------");
+		DebugPilot.printMsg("Omission bug detected");
+		DebugPilot.printMsg("Scope begin: " + startNode.getOrder());
+		DebugPilot.printMsg("Scope end: " + endNode.getOrder());
+		DebugPilot.printMsg("Omission Type: Missing Assignment of " + var.getVarName());
+		DebugPilot.printMsg("-------------------------------------------");
 	}
 }
