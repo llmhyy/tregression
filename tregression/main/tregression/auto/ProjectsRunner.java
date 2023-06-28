@@ -50,9 +50,15 @@ public abstract class ProjectsRunner {
         ResultWriter writer = new ResultWriter(resultPath);
         File baseFolder = new File(this.basePath);
         for (String projectName : baseFolder.list()) {
+        	if (projectName.equals("math_70")) {
+        		continue;
+        	}
             ProjectsRunner.printMsg("Processing: " + projectName);
             final String projectPath = Paths.get(this.basePath, projectName).toString();
             File projectFolder = new File(projectPath);
+            if (!projectFolder.isDirectory()) {
+            	continue;
+            }
             for (String bugID_str : projectFolder.list()) {
                 if (this.filter.contains(projectName + ":" + bugID_str)) {
                     ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
@@ -91,28 +97,6 @@ public abstract class ProjectsRunner {
             future.cancel(true);
             executor.shutdown();
         }
-//		final TrialGenerator0 generator0 = new TrialGenerator0();
-//		Future<List<EmpiricalTrial>> getTrials = this.executorService.submit(new Callable<List<EmpiricalTrial>>() {
-//			@Override
-//			public List<EmpiricalTrial> call() throws Exception {
-//				return generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
-//			}
-//		});
-//		
-//		// Timeout: 10 minutes
-//		List<EmpiricalTrial> trials;
-//		try {
-//			trials = getTrials.get(10, TimeUnit.MINUTES);
-//		} catch (TimeoutException | InterruptedException | java.util.concurrent.ExecutionException e) {
-//			getTrials.cancel(true);
-//			this.hangingThreads++;
-//			if (this.hangingThreads >= this.maxThreadsCount) {
-//				this.executorService.shutdownNow();
-//			}
-//			return null;
-//		}
-//		
-//		return trials;
     }
 
     protected List<RunResult> loadProcessedResult() {

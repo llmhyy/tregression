@@ -145,17 +145,23 @@ public class MutationRunner extends ProjectsRunner {
 				if (this.datasetPath != null) {
 					final String fileName = projectName + "_" + bugID_str + ".txt";
 					final String outputPath = Paths.get(this.datasetPath, fileName).toString();
-					ProjectsRunner.printMsg("Saving feature to: " + outputPath );
+					
 					TraceVectorizer vectorizer = new TraceVectorizer();
 					Trace correctTrace = trial.getFixedTrace();
-					List<NodeFeatureRecord> records = vectorizer.vectorize(correctTrace);
-					vectorizer.wirteToFile(records, outputPath);
+					if (correctTrace.size() > 100000) {
+						result.errorMessage = ProjectsRunner.genMsg("Trace length overlong > 50000");
+					} else {
+						ProjectsRunner.printMsg("Vectorizing ...");
+						List<NodeFeatureRecord> records = vectorizer.vectorize(correctTrace);
+						ProjectsRunner.printMsg("Saving feature to: " + outputPath );
+						vectorizer.wirteToFile(records, outputPath);
+					}
 				}
 				
-				IODetector ioDetector = new IODetector(trial.getBuggyTrace(), "src\\test\\java", trial.getPairList());
-				Path ioFilePath = Paths.get(pathConfig.getRepoPath(), projectName,
-						String.format(IO_FILE_NAME_FORMAT, bugId));
-				executeIOPostProcessing(ioDetector, ioFilePath);
+//				IODetector ioDetector = new IODetector(trial.getBuggyTrace(), "src\\test\\java", trial.getPairList());
+//				Path ioFilePath = Paths.get(pathConfig.getRepoPath(), projectName,
+//						String.format(IO_FILE_NAME_FORMAT, bugId));
+//				executeIOPostProcessing(ioDetector, ioFilePath);
 			}
 		} catch (IOException e) {
 			// Crash from unzipping or deleting buggy project
