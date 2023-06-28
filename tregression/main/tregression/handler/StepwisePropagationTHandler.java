@@ -5,9 +5,10 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import microbat.handler.StepwisePropagationHandler;
+import microbat.views.MicroBatViews;
+import microbat.views.PathView;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
-import tregression.views.StepwiseTraceView;
 
 public class StepwisePropagationTHandler extends StepwisePropagationHandler {
 
@@ -15,18 +16,18 @@ public class StepwisePropagationTHandler extends StepwisePropagationHandler {
 	
 	
 	@Override
-	protected void setup() {
+	protected void setup() {		
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					buggyView = (BuggyTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BuggyTraceView.ID);
 					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
-					stepwiseTraceView = (StepwiseTraceView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(StepwiseTraceView.ID);
+					pathView = (PathView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PathView.ID);
 				} catch (PartInitException e) {
 					buggyView = null;
 					correctView = null;
-					stepwiseTraceView = null;
+					pathView = null;
 					System.out.println("Fail to get the view");
 				}
 			}

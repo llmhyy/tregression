@@ -125,15 +125,7 @@
             id="tregression.evalView.buggyTraceView"
             name="Buggy Trace"
             restorable="true">
-      </view>
-      <view
-            category="tregression.category"
-            class="tregression.views.StepwiseTraceView"
-            icon="icons/compare.png"
-            id="tregression.evalView.stepwiseTraceView"
-            name="Stepwise Trace"
-            restorable="true">
-      </view>
+      </view>      
       <view
             category="tregression.category"
             class="tregression.views.StepPropertyView"
