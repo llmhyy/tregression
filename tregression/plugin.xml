@@ -130,7 +130,7 @@
             id="tregression.evalView.buggyTraceView"
             name="Buggy Trace"
             restorable="true">
-      </view>      
+      </view>
       <view
             category="tregression.category"
             class="tregression.views.StepPropertyView"
