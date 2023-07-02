@@ -24,6 +24,8 @@ public class StepwisePropagationTHandler extends StepwisePropagationHandler {
 					buggyView = (BuggyTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BuggyTraceView.ID);
 					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
 					pathView = (PathView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PathView.ID);
+					pathView.setBuggyView(buggyView);
+					
 				} catch (PartInitException e) {
 					buggyView = null;
 					correctView = null;
