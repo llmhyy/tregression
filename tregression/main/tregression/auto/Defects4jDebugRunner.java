@@ -81,6 +81,11 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 					result.errorMessage = "[Trials Generation]: " + trial.getExceptionExplanation();
 					return result;
 				}
+				// trace size limit: 10000
+				if (trace.size() > 10000) {
+					result.errorMessage = ProjectsRunner.genMsg("Exceeds 10k trace size limit");
+					return result;
+				}
 				result.traceLen = Long.valueOf(trace.size());
 				result.isOmissionBug = trial.getBugType() == EmpiricalTrial.OVER_SKIP;
 				result.rootCauseOrder = trial.getRootcauseNode() == null ? -1 : trial.getRootcauseNode().getOrder();
@@ -95,7 +100,8 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 				List<VarValue> inputs = new ArrayList<>();
 				List<VarValue> outputs = new ArrayList<>();
 				TraceNode outputNode = null;
-				Optional<InputsAndOutput> ioOptional = this.getIO(trace, config.srcTestFolder, trial.getPairList());
+				String IOFilePath = "E:\\hongshu\\Defects4j\\io.txt";
+				Optional<InputsAndOutput> ioOptional = this.getIO(trace, config.srcTestFolder, trial.getPairList(), IOFilePath, projectName, bugID_str);
 				if (ioOptional.isEmpty()) {
 					ProjectsRunner.printMsg("Cannot extract input and output");
 					DebugResult debugResult = new DebugResult(result);

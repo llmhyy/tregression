@@ -46,7 +46,21 @@ public class IODetector {
      */
     public Optional<InputsAndOutput> detect() {
         Optional<NodeVarValPair> outputNodeAndVarValOpt = detectOutput();
-        if (outputNodeAndVarValOpt.isEmpty()) {
+        return detectHelper(outputNodeAndVarValOpt);
+    }
+    
+    /**
+     * Runs IO detection.
+     * 
+     * @return
+     */
+    public Optional<InputsAndOutput> detect(int outputNodeID, String outputVar) {
+        Optional<NodeVarValPair> outputNodeAndVarValOpt = searchForOutput(outputNodeID, outputVar);
+        return detectHelper(outputNodeAndVarValOpt);
+    }
+    
+    public Optional<InputsAndOutput> detectHelper(Optional<NodeVarValPair> outputNodeAndVarValOpt) {
+    	if (outputNodeAndVarValOpt.isEmpty()) {
             return Optional.empty();
         }
         NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
@@ -89,6 +103,28 @@ public class IODetector {
         return Optional.empty();
     }
 
+    /**
+     * Search for output node and variable given output Information.
+     * 
+     * @return
+     */
+    public Optional<NodeVarValPair> searchForOutput(int outputNodeID, String outputVar) {
+    	TraceNode node = buggyTrace.getTraceNode(outputNodeID);
+        // no corresponding node in correct trace
+        if (outputVar.startsWith("CR")) {
+            return Optional.of(new NodeVarValPair(node, null));
+        }
+        // find wrong variable
+        List<VarValue> variables = node.getReadVariables();
+        variables.addAll(node.getWrittenVariables());
+        for (VarValue var : variables) {
+        	if (var.getVarID().equals(outputVar)) {
+        		return Optional.of(new NodeVarValPair(node, var));
+        	}
+        }
+        return Optional.empty();
+    }
+    
     /**
      * Given an output, it uses data, control and method invocation parent
      * dependencies to identify inputs.
