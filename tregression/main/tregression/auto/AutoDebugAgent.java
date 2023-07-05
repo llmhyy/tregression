@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import tregression.rl.RewardCalculator;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.probability.SPP.DebugPilot;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
+import microbat.log.Log;
 import microbat.model.trace.Trace;
 import microbat.probability.SPP.propagation.PropagatorType;
 import tregression.auto.result.DebugResult;
@@ -47,7 +49,7 @@ public class AutoDebugAgent {
 	}
 	
 	public DebugResult startDebug(final RunResult result) {
-		DebugPilot spp = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.Heuristic);
+		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.RL);
 		DebugResult debugResult = new DebugResult(result);
 		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
@@ -55,7 +57,7 @@ public class AutoDebugAgent {
 		
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
 		
-		AutoDebugAgent.printMsg("Start automatic debugging: " + result.projectName + ":" + result.bugID);
+		Log.printMsg(this.getClass(),  "Start automatic debugging: " + result.projectName + ":" + result.bugID);
 		
 		TraceNode currentNode = this.outputNode;
 		boolean isEnd = false;
@@ -69,12 +71,12 @@ public class AutoDebugAgent {
 		boolean debugSuccess = false;
 		boolean locateRootCause = false;
 		while (!isEnd) {
-			spp.updateFeedbacks(userFeedbackRecords);
+			debugPilot.updateFeedbacks(userFeedbackRecords);
 			
 			// Propagation
 			DebugPilot.printMsg("Propagating probability ...");
 			long propStartTime = System.currentTimeMillis();
-			spp.propagate();
+			debugPilot.propagate();
 			long propEndTime = System.currentTimeMillis();
 			double propTime = (propEndTime - propStartTime) / (double) 1000;
 			propTimes.add(propTime);
@@ -82,12 +84,12 @@ public class AutoDebugAgent {
 			
 			// Locate root cause
 			DebugPilot.printMsg("Locating root cause ...");
-			spp.locateRootCause(currentNode);
+			debugPilot.locateRootCause(currentNode);
 			
 			// Path finding
 			long pathStartTime = System.currentTimeMillis();
 			DebugPilot.printMsg("Constructing path to root cause ...");
-			spp.constructPath();
+			debugPilot.constructPath();
 			long pathEndTime = System.currentTimeMillis();
 			double pathFindingTime = (pathEndTime - pathStartTime) / (double) 1000;
 			pathFindingTimes.add(pathFindingTime);
@@ -95,13 +97,17 @@ public class AutoDebugAgent {
 			
 			totalTimes.add(propTime + pathFindingTime);
 			
+			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
+			float reward = rewardCalculator.getReward(debugPilot.getRootCause(), debugPilot.getPath(), currentNode);
+			debugPilot.sendReward(reward);
+			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {
-				UserFeedback predictedFeedback = spp.giveFeedback(currentNode);
+				UserFeedback predictedFeedback = debugPilot.giveFeedback(currentNode);
 				DebugPilot.printMsg("--------------------------------------");
 				DebugPilot.printMsg("Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
 				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);
-				AutoDebugAgent.printMsg("Ground truth feedback: " + userFeedbacks);
+				Log.printMsg(this.getClass(), "Ground truth feedback: " + userFeedbacks);
 				totalFeedbackCount += 1;
 				
 				// Reach the root case
@@ -233,14 +239,6 @@ public class AutoDebugAgent {
 		UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
 		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
 		return feedbackPair;
-	}
-	
-	public static String genMsg(final String message) {
-		return "[AutoDebugAgent] " + message;
-	}
-	
-	public static void printMsg(final String message) {
-		System.out.println(AutoDebugAgent.genMsg(message));
 	}
 	
 	public boolean isControlOmission(final RunResult result) {

@@ -26,7 +26,6 @@ public abstract class ProjectsRunner {
     protected final String resultPath;
     protected final int maxThreadsCount;
     protected int hangingThreads = 0;
-//	protected ExecutorService executorService;
 
     protected List<String> filter = new ArrayList<>();
 
@@ -38,7 +37,6 @@ public abstract class ProjectsRunner {
         this.basePath = basePath;
         this.resultPath = resultPath;
         this.maxThreadsCount = 5;
-//		this.executorService = Executors.newFixedThreadPool(this.maxThreadsCount); 
     }
 
     public void run() {
@@ -50,9 +48,6 @@ public abstract class ProjectsRunner {
         ResultWriter writer = new ResultWriter(resultPath);
         File baseFolder = new File(this.basePath);
         for (String projectName : baseFolder.list()) {
-        	if (projectName.equals("math_70")) {
-        		continue;
-        	}
             ProjectsRunner.printMsg("Processing: " + projectName);
             final String projectPath = Paths.get(this.basePath, projectName).toString();
             File projectFolder = new File(projectPath);
@@ -73,7 +68,6 @@ public abstract class ProjectsRunner {
                 }
             }
         }
-
     }
 
     public abstract RunResult runProject(final String projectName, final String bugID_str);

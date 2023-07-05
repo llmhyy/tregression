@@ -1,13 +1,7 @@
 package tregression.handler;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Paths;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -20,32 +14,33 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import microbat.bytecode.ByteCode;
-import microbat.bytecode.ByteCodeList;
-import microbat.bytecode.OpcodeType;
+import com.sun.security.ntlm.Client;
+
+import debuginfo.DebugInfo;
+import debuginfo.NodeFeedbacksPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.util.JavaUtil;
-import sav.common.core.Pair;
-import sav.strategies.dto.AppJavaClassPath;
-import tregression.StepChangeType;
-import tregression.StepChangeTypeChecker;
-import tregression.empiricalstudy.MatchStepFinder;
-import tregression.empiricalstudy.TestCase;
-import tregression.empiricalstudy.config.ConfigFactory;
+import microbat.util.TraceUtil;
+import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.TrialGenerator0;
+import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
-import tregression.model.PairList;
-import tregression.separatesnapshots.AppClassPathInitializer;
 import tregression.separatesnapshots.DiffMatcher;
-import tregression.tracematch.ControlPathBasedTraceMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
-
+import microbat.probability.SPP.propagation.DummyClient;
+import microbat.recommendation.ChosenVariableOption;
+import microbat.recommendation.UserFeedback;
+import java.util.List;
+import java.util.ArrayList;
+import tregression.auto.AutoDebugAgent;
+import tregression.auto.result.DebugResult;
 //import dataset.BugDataset;
 //import dataset.BugDataset.BugData;
 //import dataset.bug.minimize.ProjectMinimizer;
-
+import tregression.auto.result.RunResult;
 import jmutation.utils.TraceHelper;
 
 public class TestingHandler extends AbstractHandler {
@@ -64,37 +59,7 @@ public class TestingHandler extends AbstractHandler {
 				// Access the buggy view and correct view
 				setup();
 				
-		        final String scrFolderPath = "src\\main\\java";
-		        final String testFolderPath = "src\\test\\java";
-		        final String mutatedProjPath = "C:\\Users\\arkwa\\Documents\\NUS\\Debug_Simulation\\Mutation_BugDataset\\1\\bug";
-		        final String originProjPath = "C:\\Users\\arkwa\\Documents\\NUS\\Debug_Simulation\\Mutation_BugDataset\\fix";
-		        
-				
-//				final Trace buggyTrace = buggyView.getTrace();
-//				final Trace correctTrace = correctView.getTrace();
-				
-//		        final Trace buggyTrace = data.getBuggyTrace();
-//		        final Trace correctTrace = data.getWorkingTrace();
-//		        
-//		        dataset.TestCase testCase = data.getTestCase();
-//		        final String projName = data.getProjectName();
-//		        final String regressionID = testCase.toString();
-//		        
-//		        ProjectConfig config = ConfigFactory.createConfig(projName, regressionID, mutatedProjPath, originProjPath);
-//				tregression.empiricalstudy.TestCase tc = new tregression.empiricalstudy.TestCase(testCase.testClassName(), testCase.testMethodName());
-//				AppJavaClassPath buggyApp = AppClassPathInitializer.initialize(mutatedProjPath, tc, config);
-//				AppJavaClassPath correctApp = AppClassPathInitializer.initialize(originProjPath, tc, config);
-//				
-//				buggyTrace.setAppJavaClassPath(buggyApp);
-//				correctTrace.setAppJavaClassPath(correctApp);
-//				
-//		        DiffMatcher matcher = new DiffMatcher(scrFolderPath, testFolderPath, mutatedProjPath, originProjPath);
-//				matcher.matchCode();
-//				
-//				ControlPathBasedTraceMatcher traceMatcher = new ControlPathBasedTraceMatcher();
-//				PairList pairList = traceMatcher.matchTraceNodePair(buggyTrace, correctTrace, matcher);
-//				
-//				updateView(buggyTrace, correctTrace, pairList, matcher);
+		        execute();
 				
 				return Status.OK_STATUS;
 			}
@@ -103,127 +68,83 @@ public class TestingHandler extends AbstractHandler {
 		return null;
 	}
 	
-	private void setAllPropability(List<VarValue> vars, double prob) {
-		for (VarValue var : vars) {
-			var.setProbability(prob);
-		}
-	}
-	private String encodeNodeLocation(TraceNode node) {
-		return node.getBreakPoint().getFullJavaFilePath() + "_" + node.getLineNumber();
-	}
-	
-	private boolean isForEachLoop(TraceNode node) {
-		String code = node.getCodeStatement();
-		code = code.replaceAll("\\s+", "");
-		if (!code.startsWith("for(")) {
-			return false;
-		}
+//	private void execute() {
+//		DummyClient client = new DummyClient("127.0.0.5", 8085);
+//		try {
+//			client.conntectServer();
+//			Trace trace = this.buggyView.getTrace();
+//			for (TraceNode node : trace.getExecutionList()) {
+//				if (!(node.getOrder() >= 530)) {
+//					continue;
+//				}
+//				for (VarValue readVar : node.getReadVariables()) {
+//					if (!readVar.isThisVariable()) {
+//						client.notifyContinuoue();
+//						client.sendVariableVector(readVar);
+//						System.out.println(readVar.getVarName());
+//					}
+//				}
+//				
+//				for (VarValue writtenVar : node.getWrittenVariables()) {
+//					if (!writtenVar.isThisVariable()) {
+//						client.notifyContinuoue();
+//						client.sendVariableVector(writtenVar);
+//						System.out.println(writtenVar.getVarName());
+//					}
+//				}
+//			}
+//			client.notifyStop();
+//			client.disconnectServer();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//	}
+	private void execute() {
+		final String projectName = "Lang";
+		final String bugID_str = "22";
+		final ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugID_str);
+		final String basePath = "E:\\david\\Defects4j";
+		final String bugFolder = Paths.get(basePath, projectName, bugID_str, "bug").toString();
+		final String fixFolder = Paths.get(basePath, projectName, bugID_str, "fix").toString();
+		final TrialGenerator0 generator0 = new TrialGenerator0();
+		List<EmpiricalTrial> trails = generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
 		
-		int count = 0;
-		for (int i = 0; i < code.length(); i++) {
-		    if (code.charAt(i) == ':') {
-		        count++;
-		    }
+		final List<VarValue> inputs = DebugInfo.getInputs();
+		final List<VarValue> outputs = DebugInfo.getOutputs();
+
+		VarValue output = outputs.get(0);		
+		TraceNode outputNode = null;
+		if (output.getVarID().startsWith("CR_")) {
+			// Initial feedback is wrong path
+			NodeFeedbacksPair initPair = DebugInfo.getNodeFeedbackPair();
+			outputNode = initPair.getNode();
+		} else {
+			outputNode = this.getStartingNode(buggyView.getTrace(), outputs.get(0));
 		}
-		
-		return count == 1;
-//		ByteCodeList byteCodeList = new ByteCodeList(node.getBytecode());
-//		return this.isCollectionForEachLoop(byteCodeList) || this.isArrayListForEachLoop(byteCodeList);
-	}
-	
-	private boolean isCollectionForEachLoop(ByteCodeList byteCodeList) {
-		if (byteCodeList.size() != 10) {
-			return false;
-		}
-		int[] opCodeList = {-1,185,-1,167,-1,185,-1,-1,185,154};
-		for (int i=0; i<10; i++) {
-			ByteCode byteCode = byteCodeList.getByteCode(i);
-			int targetOpcode = opCodeList[i];
-			if (targetOpcode == -1) {
-				continue;
-			}
-			if (byteCode.getOpcode() != targetOpcode) {
-				return false;
-			}
-		}
-		
-		ByteCode byteCode_0 = byteCodeList.getByteCode(0);
-		if(byteCode_0.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_2 = byteCodeList.getByteCode(2);
-		if (byteCode_2.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_4 = byteCodeList.getByteCode(4);
-		if (byteCode_4.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_6 = byteCodeList.getByteCode(6);
-		if (byteCode_6.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_7 = byteCodeList.getByteCode(7);
-		if (byteCode_7.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
-			return false;
-		}
-		
-		return true;
+		AutoDebugAgent agent = new AutoDebugAgent(trails.get(0), inputs, outputs, outputNode);
+		DebugResult debugResult = new DebugResult();
+		debugResult.rootCauseOrder =  trails.get(0).getRootcauseNode().getOrder();
+		agent.startDebug(debugResult);
 	}
 	
-	private boolean isArrayListForEachLoop(ByteCodeList byteCodeList) {
-		if (byteCodeList.size() != 16) {
-			return false;
-		}
-		
-		int[] opCodeList = {-1,89,58,190,54,3,-1,167,25,-1,-1,-1,132,-1,21,161};
-		for (int i=0; i<16; i++) {
-			ByteCode byteCode = byteCodeList.getByteCode(i);
-			int targetOpcode = opCodeList[i];
-			if (targetOpcode == -1) {
-				continue;
-			}
-			if (byteCode.getOpcode() != targetOpcode) {
-				return false;
+	protected TraceNode getStartingNode(final Trace trace, final VarValue output) {
+		for (int order = trace.size(); order>=0; order--) {
+			TraceNode node = trace.getTraceNode(order);
+			final String varID = output.getVarID();
+			if (node.isReadVariablesContains(varID)) {
+				return node;
+			} else if (node.isWrittenVariablesContains(varID)) {
+				return node;
 			}
 		}
-		
-		ByteCode byteCode_1 = byteCodeList.getByteCode(0);
-		if(byteCode_1.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_6 = byteCodeList.getByteCode(6);
-		if (byteCode_6.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_9 = byteCodeList.getByteCode(9);
-		if (byteCode_9.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_10 = byteCodeList.getByteCode(10);
-		if (byteCode_10.getOpcodeType() != OpcodeType.LOAD_FROM_ARRAY) {
-			return false;
-		}
-		
-		ByteCode byteCode_11 = byteCodeList.getByteCode(11);
-		if (byteCode_11.getOpcodeType() != OpcodeType.STORE_VARIABLE) {
-			return false;
-		}
-		
-		ByteCode byteCode_13 = byteCodeList.getByteCode(13);
-		if (byteCode_13.getOpcodeType() != OpcodeType.LOAD_VARIABLE) {
-			return false;
-		}
-		
-		return true;
+		return null;
 	}
+	
 	
 	private void setup() {
 		Display.getDefault().syncExec(new Runnable() {
@@ -240,6 +161,7 @@ public class TestingHandler extends AbstractHandler {
 			}
 		});
 	}
+	
 	private void updateView(final Trace buggyTrace, final Trace correctTrace, final tregression.model.PairList pairListTregression, final DiffMatcher matcher) {
 		if (this.buggyView != null && this.correctView != null) {
 			Display.getDefault().syncExec(new Runnable() {

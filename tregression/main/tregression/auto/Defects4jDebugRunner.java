@@ -129,7 +129,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 					try {
 						debugResult = future.get(20, TimeUnit.MINUTES);
 					} catch (Exception e) {
-						debugResult.errorMessage = AutoDebugAgent.genMsg(e.toString());
+						debugResult.errorMessage = e.toString();
 					} finally {
 			            future.cancel(true);
 			            executor.shutdown();

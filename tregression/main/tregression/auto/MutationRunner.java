@@ -76,7 +76,6 @@ public class MutationRunner extends ProjectsRunner {
 			return null;
 		}
 		bugID_str = bugID_str.substring(0, bugID_str.indexOf(ZIP_EXT));
-		
 		if (this.filter.contains(projectName + ":" + bugID_str)) {
 			ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
 			return null;
