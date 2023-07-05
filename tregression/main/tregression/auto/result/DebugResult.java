@@ -8,7 +8,7 @@ public class DebugResult extends RunResult {
 	public int correctFeedbackCount = -1;
 	public int totalFeedbackCount = -1;
 	
-	public boolean locatedRootCause = false;
+	public boolean rootCauseCorrect = false;
 	public boolean debugSuccess = false;
 	
 	public DebugResult() {
@@ -72,7 +72,7 @@ public class DebugResult extends RunResult {
 		result.totalFeedbackCount = Integer.valueOf(totalFeedbackCount_str);
 		
 		final String locateRootCause_str = tokens[11];
-		result.locatedRootCause = Boolean.valueOf(locateRootCause_str);
+		result.rootCauseCorrect = Boolean.valueOf(locateRootCause_str);
 		
 		final String debugSuccess_str = tokens[12];
 		result.debugSuccess = Boolean.valueOf(debugSuccess_str);
@@ -89,7 +89,7 @@ public class DebugResult extends RunResult {
 		this.appendStr(strBuilder, String.valueOf(this.avgTotalTime));
 		this.appendStr(strBuilder, String.valueOf(this.correctFeedbackCount));
 		this.appendStr(strBuilder, String.valueOf(this.totalFeedbackCount));
-		this.appendStr(strBuilder, String.valueOf(this.locatedRootCause));
+		this.appendStr(strBuilder, String.valueOf(this.rootCauseCorrect));
 		this.appendStr(strBuilder, String.valueOf(this.debugSuccess));
 		return strBuilder.toString();
 	}
@@ -109,7 +109,7 @@ public class DebugResult extends RunResult {
 		builder.append("avgTotalTime: " + this.avgTotalTime + "\n");
 		builder.append("correctFeedbackCount: " + this.correctFeedbackCount + "\n");
 		builder.append("totalFeedbackCount: " + this.totalFeedbackCount + "\n");
-		builder.append("locateRootCause: " + this.locatedRootCause + "\n");
+		builder.append("locateRootCause: " + this.rootCauseCorrect + "\n");
 		builder.append("debugSuccess: " + this.debugSuccess + "\n");
 		builder.append("--------------------------------\n");
 		return builder.toString();

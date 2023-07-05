@@ -9,6 +9,7 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.probability.SPP.DebugPilot;
+import microbat.probability.SPP.pathfinding.PathFinderType;
 import microbat.probability.SPP.propagation.PropagatorType;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
@@ -34,7 +35,7 @@ public class TrainModelAgent {
 	}
 	
 	public RunResult startTraining(final RunResult result) {
-		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.RL);
+		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.RL, PathFinderType.Dijstra);
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
 		TrainModelAgent.printMsg("Start automatic debugging: " + result.projectName + ":" + result.bugID);
@@ -44,19 +45,20 @@ public class TrainModelAgent {
 		
 		while (!isEnd) {
 			debugPilot.updateFeedbacks(userFeedbackRecords);
+			debugPilot.multiSlicing();
 			debugPilot.propagate();
 			debugPilot.locateRootCause(currentNode);
 			debugPilot.constructPath();
 			
-			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
-			float reward = rewardCalculator.getReward(debugPilot.getRootCause(), debugPilot.getPath(), currentNode);
-			debugPilot.sendReward(reward);
+//			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
+//			float reward = rewardCalculator.getReward(debugPilot.getRootCause(), debugPilot.getPath(), currentNode);
+//			debugPilot.sendReward(reward);
 			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {
 				UserFeedback predictedFeedback = debugPilot.giveFeedback(currentNode);
-				DebugPilot.printMsg("--------------------------------------");
-				DebugPilot.printMsg("Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
+				Log.printMsg(this.getClass(), "--------------------------------------");
+				Log.printMsg(this.getClass(), "Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
 				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);
 				Log.printMsg(this.getClass(), "Ground truth feedback: " + userFeedbacks);
 
@@ -72,10 +74,10 @@ public class TrainModelAgent {
 					userFeedbackRecords.add(userFeedbacks);
 					currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);
 				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT)) {
-					DebugPilot.printMsg("You give CORRECT feedback at node: " + currentNode.getOrder());
+					Log.printMsg(this.getClass(), "You give CORRECT feedback at node: " + currentNode.getOrder());
 					NodeFeedbacksPair prevRecord = userFeedbackRecords.peek();
 					TraceNode prevNode = prevRecord.getNode();
-					DebugPilot.printMsg("Please confirm the feedback at previous node.");
+					Log.printMsg(this.getClass(), "Please confirm the feedback at previous node.");
 					NodeFeedbacksPair correctingFeedbacks = this.giveFeedback(prevNode);
 					if (correctingFeedbacks.equals(prevRecord)) {
 						isEnd = true;
@@ -86,39 +88,39 @@ public class TrainModelAgent {
 						while (!lastAccurateFeedbackLocated && !isEnd) {
 							prevRecord = userFeedbackRecords.peek();
 							prevNode = prevRecord.getNode();
-							DebugPilot.printMsg("Please confirm the feedback at previous node.");
+							Log.printMsg(this.getClass(), "Please confirm the feedback at previous node.");
 							correctingFeedbacks = this.giveFeedback(prevNode);
 							if (correctingFeedbacks.equals(prevRecord)) {
 								lastAccurateFeedbackLocated = true;
 								currentNode = TraceUtil.findNextNode(prevNode, correctingFeedbacks.getFeedbacks().get(0), buggyTrace);
-								DebugPilot.printMsg("Last accurate feedback located. Please start giveing feedback from node: " + currentNode.getOrder());
+								Log.printMsg(this.getClass(), "Last accurate feedback located. Please start giveing feedback from node: " + currentNode.getOrder());
 								continue;
 							}
 							userFeedbackRecords.pop();
 							if (userFeedbackRecords.isEmpty()) {
 								// Reach initial feedback
-								DebugPilot.printMsg("You are going to reach the initialize feedback which assumed to be accurate");
-								DebugPilot.printMsg("Pleas start giving from node: "+prevNode.getOrder());
-								DebugPilot.printMsg("If the initial feedback is inaccurate, please start the whole process again");
+								Log.printMsg(this.getClass(), "You are going to reach the initialize feedback which assumed to be accurate");
+								Log.printMsg(this.getClass(), "Pleas start giving from node: "+prevNode.getOrder());
+								Log.printMsg(this.getClass(), "If the initial feedback is inaccurate, please start the whole process again");
 								currentNode = prevNode;
 								lastAccurateFeedbackLocated = true;
 							}
 						}
 					}
 				} else if (TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
-					DebugPilot.printMsg("Cannot find next node. Please double check you feedback at node: " + currentNode.getOrder());
+					Log.printMsg(this.getClass(), "Cannot find next node. Please double check you feedback at node: " + currentNode.getOrder());
 					NodeFeedbacksPair correctingFeedbacks = this.giveFeedback(currentNode);
 					if (correctingFeedbacks.equals(userFeedbacks)) {
 						// Omission bug confirmed
 						isEnd = true;
 					} else {
-						DebugPilot.printMsg("Wong prediction on feedback, start propagation again");
+						Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
 						needPropagateAgain = true;
 //						this.userFeedbackRecords.add(correctingFeedbacks);
 						currentNode = TraceUtil.findNextNode(currentNode, correctingFeedbacks.getFirstFeedback(), buggyTrace);
 					}
 				} else {
-					DebugPilot.printMsg("Wong prediction on feedback, start propagation again");
+					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
 					needPropagateAgain = true;
 					userFeedbackRecords.add(userFeedbacks);
 					currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
