@@ -37,12 +37,12 @@ public class AutoFeedbackHandler extends AbstractHandler {
 	private CorrectTraceView correctView;
 
 	public static EmpiricalTrial trial = null;
-	
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
+
 		JavaUtil.sourceFile2CUMap.clear();
-		
+
 		Job job = new Job("Do evaluation") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
@@ -51,23 +51,22 @@ public class AutoFeedbackHandler extends AbstractHandler {
 				return Status.OK_STATUS;
 			}
 		};
-		
+
 		job.schedule();
 		return null;
 	}
-	
+
 	protected void execute() {
 		if (!this.isIOReady()) {
 			System.out.println("Please provide the inputs and outputs");
 			return;
 		}
-		
+
 		if (AutoFeedbackHandler.trial == null) {
 			System.out.println("Trial is null");
 			return;
 		}
-		
-		
+
 		// Get input and output from user
 		final List<VarValue> inputs = DebugInfo.getInputs();
 		final List<VarValue> outputs = DebugInfo.getOutputs();
@@ -79,12 +78,12 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		} else {
 			outputNode = this.getStartingNode(this.buggyView.getTrace(), output);
 		}
-		
+
 		// Project configuration
 		String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
 		String id = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
-		
-		// Store basic information 
+
+		// Store basic information
 		RunResult result = new RunResult();
 		result.projectName = projectName;
 		result.bugID = Integer.valueOf(id);
@@ -94,7 +93,7 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		for (DeadEndRecord record : trial.getDeadEndRecordList()) {
 			result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 		}
-		
+
 		// AutoFeedbackHandler.trail should be defined at SeparateVersionHandler
 		AutoDebugAgent agent = new AutoDebugAgent(AutoFeedbackHandler.trial, inputs, outputs, outputNode);
 		DebugResult debugResult = agent.startDebug(result);
@@ -106,8 +105,10 @@ public class AutoFeedbackHandler extends AbstractHandler {
 			@Override
 			public void run() {
 				try {
-					buggyView = (BuggyTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(BuggyTraceView.ID);
-					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
+					buggyView = (BuggyTraceView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
+							.showView(BuggyTraceView.ID);
+					correctView = (CorrectTraceView) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+							.getActivePage().showView(CorrectTraceView.ID);
 				} catch (PartInitException e) {
 					buggyView = null;
 					correctView = null;
@@ -116,23 +117,23 @@ public class AutoFeedbackHandler extends AbstractHandler {
 			}
 		});
 	}
-	
+
 	protected void jumpToNode(final TraceNode targetNode) {
 		Display.getDefault().asyncExec(new Runnable() {
-		    @Override
-		    public void run() {
+			@Override
+			public void run() {
 				Trace buggyTrace = buggyView.getTrace();
 				buggyView.jumpToNode(buggyTrace, targetNode.getOrder(), true);
-		    }
+			}
 		});
 	}
-	
+
 	protected boolean isIOReady() {
 		return !DebugInfo.getInputs().isEmpty() && !(DebugInfo.getOutputs().isEmpty());
 	}
-	
+
 	protected TraceNode getStartingNode(final Trace trace, final VarValue output) {
-		for (int order = trace.size(); order>=0; order--) {
+		for (int order = trace.size(); order >= 0; order--) {
 			TraceNode node = trace.getTraceNode(order);
 			final String varID = output.getVarID();
 			if (node.isReadVariablesContains(varID)) {
