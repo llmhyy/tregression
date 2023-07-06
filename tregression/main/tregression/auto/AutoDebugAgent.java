@@ -50,7 +50,7 @@ public class AutoDebugAgent {
 	}
 	
 	public DebugResult startDebug(final RunResult result) {
-		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.None, PathFinderType.Random);
+		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.None, PathFinderType.Dijstra);
 		DebugResult debugResult = new DebugResult(result);
 		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
