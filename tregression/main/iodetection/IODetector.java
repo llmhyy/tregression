@@ -71,7 +71,12 @@ public class IODetector {
             // Check for wrong branch (no corresponding node in correct trace)
             if (pair == null && outputNode == null) {
             	outputNode = node;
-//                return Optional.of(new NodeVarValPair(node, null));
+            	// Find the first condition that leads to wrong branch
+            	while (pair == null) {
+            		node = node.getControlDominator();
+            		pair = pairList.findByBeforeNode(node);
+            	}
+                return Optional.of(new NodeVarValPair(outputNode, node.getConditionResult()));
             }
             Optional<NodeVarValPair> wrongVariableOptional = getWrongVariableInNode(node);
             if (wrongVariableOptional.isEmpty()) {
