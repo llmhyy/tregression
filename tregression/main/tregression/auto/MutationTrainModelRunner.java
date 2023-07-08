@@ -29,8 +29,8 @@ import jmutation.dataset.bug.model.path.PathConfiguration;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.probability.SPP.vectorization.NodeFeatureRecord;
-import microbat.probability.SPP.vectorization.TraceVectorizer;
+import microbat.vectorization.NodeFeatureRecord;
+import microbat.vectorization.TraceVectorizer;
 import iodetection.IODetector;
 
 public class MutationTrainModelRunner extends ProjectsRunner {

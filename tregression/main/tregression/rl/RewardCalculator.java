@@ -2,13 +2,14 @@ package tregression.rl;
 
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
-import microbat.probability.SPP.pathfinding.ActionPath;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
 import tregression.auto.AutoFeedbackAgent;
 import debuginfo.NodeFeedbacksPair;
 import java.util.List;
 import java.util.ArrayList;
+
+import microbat.debugpilot.pathfinding.ActionPath;
 import microbat.log.Log;
 
 public class RewardCalculator {

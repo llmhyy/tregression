@@ -3,10 +3,10 @@ package tregression.autofeedback;
 import java.util.ArrayList;
 import java.util.List;
 
+import microbat.debugpilot.propagation.BP.BeliefPropagation;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.probability.BP.BeliefPropagation;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import tregression.empiricalstudy.RootCauseFinder;
