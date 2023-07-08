@@ -9,6 +9,7 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.probability.SPP.DebugPilot;
+import microbat.probability.SPP.DebugPilotTrainer;
 import microbat.probability.SPP.pathfinding.PathFinderType;
 import microbat.probability.SPP.propagation.PropagatorType;
 import microbat.recommendation.UserFeedback;
@@ -35,20 +36,20 @@ public class TrainModelAgent {
 	}
 	
 	public RunResult startTraining(final RunResult result) {
-		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.RL, PathFinderType.Dijstra);
+		DebugPilotTrainer debugPilotTrainer = new DebugPilotTrainer(this.buggyTrace, inputs, outputs, outputNode);
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
-		TrainModelAgent.printMsg("Start automatic debugging: " + result.projectName + ":" + result.bugID);
+		Log.printMsg(this.getClass(), "Start automatic debugging: " + result.projectName + ":" + result.bugID);
 		
 		TraceNode currentNode = this.outputNode;
 		boolean isEnd = false;
 		
 		while (!isEnd) {
-			debugPilot.updateFeedbacks(userFeedbackRecords);
-			debugPilot.multiSlicing();
-			debugPilot.propagate();
-			debugPilot.locateRootCause(currentNode);
-			debugPilot.constructPath();
+			debugPilotTrainer.updateFeedbacks(userFeedbackRecords);
+			debugPilotTrainer.multiSlicing();
+			debugPilotTrainer.propagate();
+			debugPilotTrainer.locateRootCause(currentNode);
+			debugPilotTrainer.constructPath();
 			
 //			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
 //			float reward = rewardCalculator.getReward(debugPilot.getRootCause(), debugPilot.getPath(), currentNode);
@@ -56,7 +57,7 @@ public class TrainModelAgent {
 			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {
-				UserFeedback predictedFeedback = debugPilot.giveFeedback(currentNode);
+				UserFeedback predictedFeedback = debugPilotTrainer.giveFeedback(currentNode);
 				Log.printMsg(this.getClass(), "--------------------------------------");
 				Log.printMsg(this.getClass(), "Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
 				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);
@@ -128,14 +129,6 @@ public class TrainModelAgent {
 			}
 		}
 		return result;
-	}
-	
-	public static String genMsg(final String message) {
-		return "[TrainModelAgent] " + message;
-	}
-	
-	public static void printMsg(final String message) {
-		System.out.println(TrainModelAgent.genMsg(message));
 	}
 	
 	private NodeFeedbacksPair giveFeedback(final TraceNode node) {
