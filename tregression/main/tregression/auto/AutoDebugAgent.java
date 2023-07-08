@@ -50,11 +50,10 @@ public class AutoDebugAgent {
 	}
 	
 	public DebugResult startDebug(final RunResult result) {
-		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.None, PathFinderType.Dijstra);
+		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.None, PathFinderType.Random);
 		DebugResult debugResult = new DebugResult(result);
 		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
-
 		
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
 		
@@ -98,10 +97,6 @@ public class AutoDebugAgent {
 			Log.printMsg(this.getClass(), "Path finding time: " + pathFindingTime);
 			
 			totalTimes.add(propTime + pathFindingTime);
-			
-//			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
-//			float reward = rewardCalculator.getReward(debugPilot.getRootCause(), debugPilot.getPath(), currentNode);
-//			debugPilot.sendReward(reward);
 			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {
