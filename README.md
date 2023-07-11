@@ -9,6 +9,8 @@ A demo video is here.
 
 Audience can also check https://youtu.be/Mte08XIETlU to apply autonamous debugging with Tregression.
 
+Please copy the `.jar` file in `tregression\tregression\lib_resource` to eclipse `dropins\junit_lib` folder `eclipse\committers-2023-062\eclipse\dropins\junit_lib`.
+
 # Citation
 If you need to reference our technique, please use the following citations:
 
