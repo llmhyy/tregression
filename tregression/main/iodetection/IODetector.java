@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -46,7 +47,13 @@ public class IODetector {
      */
     public Optional<InputsAndOutput> detect() {
         Optional<NodeVarValPair> outputNodeAndVarValOpt = detectOutput();
-        return detectHelper(outputNodeAndVarValOpt);
+        if (outputNodeAndVarValOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
+        VarValue output = outputNodeAndVarVal.getVarVal();
+        List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
+        return Optional.of(new InputsAndOutput(inputs, outputNodeAndVarVal));
     }
     
     /**
@@ -67,16 +74,6 @@ public class IODetector {
         String outputVarID = output.get(0)[1];
         outputNodeAndVarVal = searchForNodeVarPair(outputNodeID, outputVarID);
     	return Optional.of(new InputsAndOutput(inputList, outputNodeAndVarVal));
-    }
-    
-    public Optional<InputsAndOutput> detectHelper(Optional<NodeVarValPair> outputNodeAndVarValOpt) {
-    	if (outputNodeAndVarValOpt.isEmpty()) {
-            return Optional.empty();
-        }
-        NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
-        VarValue output = outputNodeAndVarVal.getVarVal();
-        List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
-        return Optional.of(new InputsAndOutput(inputs, outputNodeAndVarVal));
     }
 
     /**
@@ -182,51 +179,56 @@ public class IODetector {
     // 1. Written variables.
     // 2. read variables without data dominators
     //
-    // Recurse on the following:
+    // Iterate on the following:
     // 1. Data dominator on each read variable
     // 2. Control/Invocation Parent
-    void detectInputVarValsFromOutput(TraceNode outputNode, Set<VarValue> inputs, Set<NodeVarValPair> inputsWithNodes,
-            Set<Integer> visited) {
-        boolean isFirstNode = visited.isEmpty();
-        int key = formVisitedKey(outputNode);
-        if (visited.contains(key)) {
-            return;
-        }
-        visited.add(key);
-        boolean isTestFile = isInTestDir(outputNode.getBreakPoint().getFullJavaFilePath());
-        if (isTestFile && !isFirstNode) {
-            // If the node is in a test file and is not the node with incorrect variable,
-            // check its written variables for inputs.
-            List<VarValue> newInputs = new ArrayList<>(outputNode.getWrittenVariables());
-            Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(outputNode);
-            if (wrongVariable.isPresent()) {
-                VarValue incorrectValue = wrongVariable.get().getVarVal();
-                newInputs.remove(incorrectValue);
-            }
-            newInputs.forEach(newInput -> {
-                if (!inputs.contains(newInput)) {
-                    inputsWithNodes.add(new NodeVarValPair(outputNode, newInput));
-                    inputs.add(newInput);
+    void detectInputVarValsFromOutput(TraceNode outputNode, Set<VarValue> inputs, Set<NodeVarValPair> inputsWithNodes, 
+    		Set<Integer> visited) {
+    	Stack<TraceNode> stack = new Stack<>();
+    	stack.push(outputNode);
+    	// dfs
+    	while (!stack.isEmpty()) {
+    		TraceNode node = stack.pop();
+    		int key = formVisitedKey(node);
+    		if (visited.contains(key)) {
+    			continue;
+    		}
+    		visited.add(key);
+    		boolean isTestFile = isInTestDir(node.getBreakPoint().getFullJavaFilePath());
+    		if (isTestFile && !node.equals(outputNode)) {
+    			// If the node is in a test file and is not the node with incorrect variable,
+                // check its written variables for inputs.
+                List<VarValue> newInputs = new ArrayList<>(node.getWrittenVariables());
+                Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(node);
+                if (wrongVariable.isPresent()) {
+                    VarValue incorrectValue = wrongVariable.get().getVarVal();
+                    newInputs.remove(incorrectValue);
                 }
-            });
-        }
-        boolean shouldCheckForStringInputs = shouldCheckForStringInputs(outputNode);
-        for (VarValue readVarVal : outputNode.getReadVariables()) {
-            TraceNode dataDominator = buggyTrace.findDataDependency(outputNode, readVarVal);
-            if ((dataDominator == null && isTestFile && !inputs.contains(readVarVal)) || 
-                    (shouldCheckForStringInputs && 
-                    isStringInput(outputNode, readVarVal))) {
-                inputs.add(readVarVal);
-                inputsWithNodes.add(new NodeVarValPair(outputNode, readVarVal));
+                newInputs.forEach(newInput -> {
+                    if (!inputs.contains(newInput)) {
+                        inputsWithNodes.add(new NodeVarValPair(node, newInput));
+                        inputs.add(newInput);
+                    }
+                });
+    		}
+    		boolean shouldCheckForStringInputs = shouldCheckForStringInputs(node);
+            for (VarValue readVarVal : node.getReadVariables()) {
+                TraceNode dataDominator = buggyTrace.findDataDependency(node, readVarVal);
+                if ((dataDominator == null && isTestFile && !inputs.contains(readVarVal)) || 
+                        (shouldCheckForStringInputs && 
+                        isStringInput(node, readVarVal))) {
+                    inputs.add(readVarVal);
+                    inputsWithNodes.add(new NodeVarValPair(node, readVarVal));
+                }
+                if (dataDominator != null) {
+                    stack.push(dataDominator);
+                }
             }
-            if (dataDominator != null) {
-                detectInputVarValsFromOutput(dataDominator, inputs, inputsWithNodes, visited);
+            TraceNode controlDominator = node.getInvocationMethodOrDominator();
+            if (controlDominator != null) {
+               stack.push(controlDominator);
             }
-        }
-        TraceNode controlDominator = outputNode.getInvocationMethodOrDominator();
-        if (controlDominator != null) {
-            detectInputVarValsFromOutput(controlDominator, inputs, inputsWithNodes, visited);
-        }
+    	}
     }
 
     private int formVisitedKey(TraceNode node) {
