@@ -23,8 +23,8 @@ import jmutation.dataset.bug.model.path.MutationFrameworkPathConfiguration;
 import jmutation.dataset.bug.model.path.PathConfiguration;
 import microbat.model.trace.Trace;
 import microbat.model.value.VarValue;
-import microbat.probability.SPP.vectorization.NodeFeatureRecord;
-import microbat.probability.SPP.vectorization.TraceVectorizer;
+import microbat.vectorization.NodeFeatureRecord;
+import microbat.vectorization.TraceVectorizer;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -76,7 +76,6 @@ public class MutationRunner extends ProjectsRunner {
 			return null;
 		}
 		bugID_str = bugID_str.substring(0, bugID_str.indexOf(ZIP_EXT));
-		
 		if (this.filter.contains(projectName + ":" + bugID_str)) {
 			ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
 			return null;

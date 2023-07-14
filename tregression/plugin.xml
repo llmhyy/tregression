@@ -108,6 +108,11 @@
              id="tregression.selectIO"
              name="Select IO">
        </command>
+       <command
+             defaultHandler="tregression.handler.TrainModelHandler"
+             id="tregression.trainmodel"
+             name="Train Model">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -254,7 +259,7 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.dynamicslicing"
+                  commandId="tregression.trainmodel"
                   icon="icons/property.png"
                   style="push">
             </command>

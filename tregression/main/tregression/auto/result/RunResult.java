@@ -1,5 +1,13 @@
 package tregression.auto.result;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.*;
+
 public class RunResult {
 	
 	public String projectName = " ";
@@ -11,6 +19,39 @@ public class RunResult {
 	public String errorMessage = " ";
 	
 	public final static String DELIMITER = ",";
+	
+	public static void main(String[] args) {
+		final String path = "E:\\david\\Mutation_Dataset\\result.txt";
+		List<RunResult> successCases = new ArrayList<>();
+		System.out.println("Reading ... ");
+		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				RunResult result = RunResult.parseString(line);
+				if (result.errorMessage.equals(" ")) {
+					successCases.add(result);
+				}
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Writting ...");
+		final String outputPath = "E:\\david\\Mutation_Dataset\\good_cases.txt";
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputPath))) {
+			for (RunResult result : successCases) {
+				bw.write(result.toString());
+				bw.newLine();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Finish");
+	}
+	
 	
 	public RunResult() {
 		
