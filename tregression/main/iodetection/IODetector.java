@@ -54,9 +54,19 @@ public class IODetector {
      * 
      * @return
      */
-    public Optional<InputsAndOutput> detect(int outputNodeID, String outputVar) {
-        Optional<NodeVarValPair> outputNodeAndVarValOpt = searchForOutput(outputNodeID, outputVar);
-        return detectHelper(outputNodeAndVarValOpt);
+    public Optional<InputsAndOutput> detect(List<String[]> inputs, List<String[]> output) {
+        List<NodeVarValPair> inputList = new ArrayList<>();
+        NodeVarValPair outputNodeAndVarVal = null;
+        for (String[] entry : inputs) {
+        	int nodeID = Integer.valueOf(entry[0]);
+        	String varID = entry[1];
+        	NodeVarValPair pair = searchForNodeVarPair(nodeID, varID);
+        	inputList.add(pair);
+        }
+        int outputNodeID = Integer.valueOf(output.get(0)[0]);
+        String outputVarID = output.get(0)[1];
+        outputNodeAndVarVal = searchForNodeVarPair(outputNodeID, outputVarID);
+    	return Optional.of(new InputsAndOutput(inputList, outputNodeAndVarVal));
     }
     
     public Optional<InputsAndOutput> detectHelper(Optional<NodeVarValPair> outputNodeAndVarValOpt) {
@@ -118,25 +128,37 @@ public class IODetector {
     }
 
     /**
-     * Search for output node and variable given output Information.
+     * Search for node and variable.
      * 
      * @return
      */
-    public Optional<NodeVarValPair> searchForOutput(int outputNodeID, String outputVar) {
-    	TraceNode node = buggyTrace.getTraceNode(outputNodeID);
-        // no corresponding node in correct trace
-        if (outputVar.startsWith("CR")) {
-            return Optional.of(new NodeVarValPair(node, null));
-        }
+    public NodeVarValPair searchForNodeVarPair(int nodeID, String varID) {
+    	TraceNode node = buggyTrace.getTraceNode(nodeID);
         // find wrong variable
+        VarValue varValue = searchForVar(node, varID);
+        if (varValue != null) {
+        	return new NodeVarValPair(node, varValue);
+        }
+        // output node might be different from node containing output value
+        if (varID.startsWith("CR")) {
+        	int outputVarNodeID = Integer.valueOf(varID.substring(3)); // varID format: CR_xx
+        	TraceNode outputVarNode = buggyTrace.getTraceNode(outputVarNodeID);
+        	VarValue outputVarVal = searchForVar(outputVarNode, varID);
+        	return new NodeVarValPair(node, outputVarVal);
+        }
+        return new NodeVarValPair(node, null);
+    }
+    
+    private VarValue searchForVar(TraceNode node, String varID) {
+    	// find wrong variable
         List<VarValue> variables = node.getReadVariables();
         variables.addAll(node.getWrittenVariables());
         for (VarValue var : variables) {
-        	if (var.getVarID().equals(outputVar)) {
-        		return Optional.of(new NodeVarValPair(node, var));
+        	if (var.getVarID().equals(varID)) {
+        		return var;
         	}
         }
-        return Optional.empty();
+        return null;
     }
     
     /**

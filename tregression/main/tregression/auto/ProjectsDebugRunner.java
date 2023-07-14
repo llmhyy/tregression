@@ -33,9 +33,7 @@ public abstract class ProjectsDebugRunner extends ProjectsRunner {
 		// read from stored IO
 		List<String[]> inputs = storedIO.get(InputsAndOutput.INPUTS_KEY);
 		List<String[]> output = storedIO.get(InputsAndOutput.OUTPUT_KEY);
-		int outputNodeID = Integer.valueOf(output.get(0)[0]);
-		String outputVar = output.get(0)[1];
-		return ioDetector.detect(outputNodeID, outputVar);
+		return ioDetector.detect(inputs, output);
 	}
 
 }
