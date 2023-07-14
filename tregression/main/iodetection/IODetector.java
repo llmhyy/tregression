@@ -332,6 +332,9 @@ public class IODetector {
     }
 
     public static class InputsAndOutput {
+    	public static String INPUTS_KEY = "Inputs";
+    	public static String OUTPUT_KEY = "Output";
+    	
         private final List<NodeVarValPair> inputs;
         private final NodeVarValPair output;
 
@@ -347,6 +350,24 @@ public class IODetector {
 
         public NodeVarValPair getOutput() {
             return output;
+        }
+        
+        @Override
+        public String toString() {
+        	StringBuilder stringBuilder = new StringBuilder();
+        	stringBuilder.append(INPUTS_KEY + "\n");
+        	for (NodeVarValPair pair : this.inputs) {
+        		stringBuilder.append(pair.getNode().getOrder());
+        		stringBuilder.append(" ");
+        		stringBuilder.append(pair.getVarVal().getVarID());
+        		stringBuilder.append("\n");
+        	}
+        	stringBuilder.append(OUTPUT_KEY + "\n");
+        	stringBuilder.append(this.output.getNode().getOrder());
+        	stringBuilder.append(" ");
+    		stringBuilder.append(this.output.getVarVal().getVarID());
+    		stringBuilder.append("\n");
+        	return stringBuilder.toString();
         }
     }
 }

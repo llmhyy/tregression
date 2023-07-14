@@ -95,8 +95,8 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 				List<VarValue> inputs = new ArrayList<>();
 				List<VarValue> outputs = new ArrayList<>();
 				TraceNode outputNode = null;
-				String IOFilePath = "E:\\hongshu\\Defects4j\\io.txt";
-				Optional<InputsAndOutput> ioOptional = this.getIO(trace, config.srcTestFolder, trial.getPairList(), IOFilePath, projectName, bugID_str);
+				String IOStoragePath = "D:\\Defects4j_IO";
+				Optional<InputsAndOutput> ioOptional = this.getIO(trace, config.srcTestFolder, trial.getPairList(), IOStoragePath, projectName, bugID_str);
 				if (ioOptional.isEmpty()) {
 					ProjectsRunner.printMsg("Cannot extract input and output");
 					DebugResult debugResult = new DebugResult(result);
