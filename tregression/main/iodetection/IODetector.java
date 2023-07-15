@@ -273,7 +273,7 @@ public class IODetector {
             if (varValue instanceof ReferenceValue) {
                 long addr = ((ReferenceValue) varValue).getUniqueID();
                 if (addr != -1) { // If the "incorrect" ref var value is not null, don't return it.
-                    continue;
+//                    continue;
                 }
             }
             return Optional.of(new NodeVarValPair(node, varValue));
