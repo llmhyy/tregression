@@ -4,12 +4,14 @@ import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
+import sav.common.core.Pair;
 import tregression.auto.AutoFeedbackAgent;
 import debuginfo.NodeFeedbacksPair;
 import java.util.List;
 import java.util.ArrayList;
 
 import microbat.debugpilot.pathfinding.ActionPath;
+import microbat.debugpilot.pathfinding.ActionPathUtil;
 import microbat.log.Log;
 
 public class RewardCalculator {
@@ -28,20 +30,43 @@ public class RewardCalculator {
 		this.gtPath = this.constructGTPath();
 	}
 	
-	public float getReward(final TraceNode proposedRootCause, final ActionPath proposedPath, final TraceNode currentNode) {
-		float reward = 0;
+	public List<Pair<TraceNode, Double>> getReward(final TraceNode proposedRootCause, final ActionPath proposedPath, final TraceNode currentNode) {
 		
-		if (this.gtRootCause != null) {
-			if (proposedRootCause.equals(this.gtRootCause)) {
-				reward += 1.0;
-			} else {
-				reward += 1 / TraceUtil.relationDistance(proposedRootCause, this.gtRootCause, this.trace, 5);
-			}
+		if (!ActionPathUtil.samePathBeforeNode(proposedPath, this.gtPath, currentNode)) {
+			throw new RuntimeException(Log.genMsg(getClass(), "Path does not match before the currentNode: " + currentNode.getOrder()));
 		}
 		
-		final float feedback_reward = this.countCorrectFeedback(proposedPath, this.gtPath, currentNode);
-		reward += feedback_reward;
-		return reward;
+		double globalReward = 0;
+		globalReward += this.calDistanceReward(proposedRootCause);
+		globalReward += this.calPathReward(proposedPath, this.gtPath, currentNode);
+		
+		List<Pair<TraceNode, Double>> rewardList = new ArrayList<>();
+		final int minPathLength = Math.min(proposedPath.getLength(), this.gtPath.getLength());
+		boolean startCalReward = false;
+		for (int i=0; i<minPathLength; i++) {
+			final NodeFeedbacksPair proposedPair = proposedPath.get(i);
+			final NodeFeedbacksPair gtPair = this.gtPath.get(i);
+			if (proposedPair.getNode().equals(currentNode) && gtPair.getNode().equals(currentNode)) {
+				startCalReward = true;
+			} else if (!proposedPair.getNode().equals(currentNode) && !gtPair.getNode().equals(currentNode)) {
+				
+			} else {
+				throw new RuntimeException(Log.genMsg(this.getClass(), "Path does not match"));
+			}
+			
+			if (startCalReward) {
+				Pair<TraceNode, Double> pair = Pair.of(proposedPair.getNode(), proposedPair.equals(gtPair) ? globalReward + 1.0d : globalReward);
+				rewardList.add(pair);
+			}
+		}
+		return rewardList;
+	}
+	
+	protected double calDistanceReward(final TraceNode proposedRootCause) {
+		if (this.gtRootCause== null) return 0.0f;
+		final double distance = TraceUtil.relationDistance(proposedRootCause, this.gtRootCause, this.trace, 5);
+		if (distance == -1.0f) return 0.0f;
+		return 1 / (distance+1.0f);
 	}
 
 	protected ActionPath constructGTPath() {
@@ -68,7 +93,7 @@ public class RewardCalculator {
 		return TraceUtil.relationDistance(proposedRootCause, gtRootCause, this.trace, 5);
 	}
 	
-	protected float countCorrectFeedback(final ActionPath proposedPath, final ActionPath gtPath, final TraceNode currentNode) {
+	protected double calPathReward(final ActionPath proposedPath, final ActionPath gtPath, final TraceNode currentNode) {
 		int totalCount = 0;
 		boolean startCounting = false;
 		for (NodeFeedbacksPair pair : gtPath) {
@@ -101,6 +126,6 @@ public class RewardCalculator {
 		
 		Log.printMsg(this.getClass(), "Correct Feedback: " + countCorrectFeedback);
 		Log.printMsg(this.getClass(), "Total Feedback: " + totalCount);
-		return countCorrectFeedback / (float) totalCount;
+		return countCorrectFeedback / (double) totalCount;
 	}
 }

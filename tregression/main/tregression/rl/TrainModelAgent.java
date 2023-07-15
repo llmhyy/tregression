@@ -51,9 +51,8 @@ public class TrainModelAgent {
 			debugPilotTrainer.locateRootCause(currentNode);
 			debugPilotTrainer.constructPath();
 			
-//			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
-//			float reward = rewardCalculator.getReward(debugPilot.getRootCause(), debugPilot.getPath(), currentNode);
-//			debugPilot.sendReward(reward);
+			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
+			debugPilotTrainer.sendRewards(rewardCalculator.getReward(debugPilotTrainer.getRootCause(), debugPilotTrainer.getPath(), currentNode));
 			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {

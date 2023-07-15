@@ -31,7 +31,7 @@ public class TrainModelHandler extends AbstractHandler {
 	}
 	
 	protected void execute() {
-		final String basePath = "E:\\david\\Mutation_Dataset";
+		final String basePath = "D:\\Mutation_Dataset";
 		final String resultPath = Paths.get(basePath, "train_result.txt").toString();
 		ProjectsRunner runner = new MutationTrainModelRunner(basePath, resultPath);
 		runner.run();
