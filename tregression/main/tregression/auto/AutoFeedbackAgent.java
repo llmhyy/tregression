@@ -1,10 +1,13 @@
 package tregression.auto;
 
+import java.util.List;
+
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
+import sav.common.core.Pair;
 import tregression.StepChangeType;
 import tregression.StepChangeTypeChecker;
 import tregression.empiricalstudy.EmpiricalTrial;
@@ -69,8 +72,16 @@ public class AutoFeedbackAgent {
 			break;
 		case StepChangeType.DAT:
 			feedback.setFeedbackType(UserFeedback.WRONG_VARIABLE_VALUE);
-			VarValue wrongVar = type.getWrongVariable(node, isOnBefore, finder);
-			feedback.setOption(new ChosenVariableOption(wrongVar, null));
+			final List<Pair<VarValue, VarValue>> wrongVariableList = type.getWrongVariableList();
+			if (wrongVariableList.size() == 1) {
+				VarValue wrongVar = type.getWrongVariable(node, isOnBefore, finder);
+				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+			} else {
+				// If there are multiple variable to choose, do not pick the "this" variable
+				List<Pair<VarValue, VarValue>> filteredList = wrongVariableList.stream().filter(pair -> !pair.first().isThisVariable()).toList();
+				final VarValue wrongVar = filteredList.get(0).first();
+				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+			}
 			break;
 		case StepChangeType.SRC:
 			feedback.setFeedbackType(UserFeedback.UNCLEAR);
