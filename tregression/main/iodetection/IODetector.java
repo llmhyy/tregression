@@ -57,7 +57,20 @@ public class IODetector {
     }
     
     /**
-     * Runs IO detection.
+     * Parses IO detection results.
+     * 
+     * @return
+     */
+    public Optional<NodeVarValPair> detect(List<String[]> output) {
+        NodeVarValPair outputNodeAndVarVal = null;
+        int outputNodeID = Integer.valueOf(output.get(0)[0]);
+        String outputVarID = output.get(0)[1];
+        outputNodeAndVarVal = searchForNodeVarPair(outputNodeID, outputVarID);
+    	return Optional.of(outputNodeAndVarVal);
+    }
+    
+    /**
+     * Parses IO detection results.
      * 
      * @return
      */
