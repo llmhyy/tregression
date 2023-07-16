@@ -257,20 +257,6 @@ public class TraceNodePair {
 				}
 			}
 		}
-		
-		// if mutated var's name doesn't match any original var, mark it as different
-		if (!differentVarValueList.contains(mutatedVarVal)) {
-			boolean isInOriginalList = false;
-			for (VarValue originalVar : originalList) {
-				if (originalVar.getVarName().equals(mutatedVarVal.getVarName())) {
-					isInOriginalList = true;
-					break;
-				}
-			}
-			if (!isInOriginalList) {
-				differentVarValueList.add(mutatedVarVal);
-			}
-		}
 
 		return differentVarValueList;
 	}
