@@ -100,7 +100,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 				if (ioOptional.isEmpty()) {
 					ProjectsRunner.printMsg("Cannot extract input and output");
 					DebugResult debugResult = new DebugResult(result);
-					debugResult.errorMessage = "[IODection]: Cannot find inputs and outputs";
+					debugResult.errorMessage = "[IODetection]: Cannot find inputs and outputs";
 					return debugResult;
 				} else {
 					InputsAndOutput io = ioOptional.get();
@@ -128,7 +128,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 						return agent.startDebug(new DebugResult(result));
 					});
 					try {
-						debugResult = future.get(20, TimeUnit.MINUTES);
+						debugResult = future.get(30, TimeUnit.MINUTES);
 					} catch (Exception e) {
 						debugResult.errorMessage = e.toString();
 					} finally {

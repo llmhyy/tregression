@@ -68,6 +68,9 @@ public class StoredIOParser {
 	}
 	
 	public void storeIO(Optional<InputsAndOutput> ioOptional) {
+		if (ioOptional.isEmpty()) {
+			return;
+		}
 		InputsAndOutput IO = ioOptional.get();
 		String IOString = IO.toString();
 		try {
