@@ -37,7 +37,7 @@ public abstract class ProjectsDebugRunner extends ProjectsRunner {
 		return ioDetector.detect(inputs, output);
 	}
 	
-	protected Optional<NodeVarValPair> getOutput(final Trace trace, final String testSrcPath, final PairList pairList, final String IOStoragePath, final String projectName, final String bugID) {
+	public Optional<NodeVarValPair> getOutput(final Trace trace, final String testSrcPath, final PairList pairList, final String IOStoragePath, final String projectName, final String bugID) {
 		IODetector ioDetector = new IODetector(trace, testSrcPath, pairList);
 		StoredIOParser IOParser = new StoredIOParser(IOStoragePath, projectName, bugID);
 		HashMap<String, List<String[]>> storedIO = IOParser.getStoredIO();
