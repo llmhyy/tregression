@@ -33,8 +33,8 @@ public class Defects4jAutoDebugHandler extends AbstractHandler {
 	}
 	
 	private void execute() {
-		final String basePath = "E:\\david\\Defects4j";
-		final String resultPath = Paths.get("E:\\david\\", "result_1.txt").toString();
+		final String basePath = "D:\\Defects4j";
+		final String resultPath = Paths.get("D:", "result_1.txt").toString();
 		final ProjectsRunner runner = new Defects4jDebugRunner(basePath, resultPath);
 		runner.run();
 	}

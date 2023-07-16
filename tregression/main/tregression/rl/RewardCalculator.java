@@ -10,7 +10,7 @@ import debuginfo.NodeFeedbacksPair;
 import java.util.List;
 import java.util.ArrayList;
 
-import microbat.debugpilot.pathfinding.ActionPath;
+import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.ActionPathUtil;
 import microbat.log.Log;
 
@@ -20,7 +20,7 @@ public class RewardCalculator {
 	protected final AutoFeedbackAgent agent;
 	protected final TraceNode gtRootCause;
 	protected final TraceNode startNode;
-	protected final ActionPath gtPath;
+	protected final FeedbackPath gtPath;
 	
 	public RewardCalculator(final Trace trace, final AutoFeedbackAgent agent, final TraceNode gtRootCause, final TraceNode startNode) {
 		this.trace = trace;
@@ -30,7 +30,7 @@ public class RewardCalculator {
 		this.gtPath = this.constructGTPath();
 	}
 	
-	public List<Pair<TraceNode, Double>> getReward(final TraceNode proposedRootCause, final ActionPath proposedPath, final TraceNode currentNode) {
+	public List<Pair<TraceNode, Double>> getReward(final TraceNode proposedRootCause, final FeedbackPath proposedPath, final TraceNode currentNode) {
 		
 		if (!ActionPathUtil.samePathBeforeNode(proposedPath, this.gtPath, currentNode)) {
 			throw new RuntimeException(Log.genMsg(getClass(), "Path does not match before the currentNode: " + currentNode.getOrder()));
@@ -69,7 +69,7 @@ public class RewardCalculator {
 		return 1 / (distance+1.0f);
 	}
 
-	protected ActionPath constructGTPath() {
+	protected FeedbackPath constructGTPath() {
 		List<NodeFeedbacksPair> paths = new ArrayList<>();
 		TraceNode currentNode = this.startNode;
 		while (!currentNode.equals(this.gtRootCause)) {
@@ -86,14 +86,14 @@ public class RewardCalculator {
 			final NodeFeedbacksPair pair = new NodeFeedbacksPair(this.gtRootCause, feedback);
 			paths.add(pair);
 		}
-		return new ActionPath(paths);
+		return new FeedbackPath(paths);
 	}
 	
 	protected int distance(final TraceNode proposedRootCause, final TraceNode gtRootCause) {
 		return TraceUtil.relationDistance(proposedRootCause, gtRootCause, this.trace, 5);
 	}
 	
-	protected double calPathReward(final ActionPath proposedPath, final ActionPath gtPath, final TraceNode currentNode) {
+	protected double calPathReward(final FeedbackPath proposedPath, final FeedbackPath gtPath, final TraceNode currentNode) {
 		int totalCount = 0;
 		boolean startCounting = false;
 		for (NodeFeedbacksPair pair : gtPath) {
