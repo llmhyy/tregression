@@ -37,7 +37,7 @@ public class RewardCalculator {
 		}
 		
 		double globalReward = 0;
-		globalReward += this.calDistanceReward(proposedRootCause);
+//		globalReward += this.calDistanceReward(proposedRootCause);
 		globalReward += this.calPathReward(proposedPath, this.gtPath, currentNode);
 		
 		List<Pair<TraceNode, Double>> rewardList = new ArrayList<>();
@@ -55,7 +55,19 @@ public class RewardCalculator {
 			}
 			
 			if (startCalReward) {
-				Pair<TraceNode, Double> pair = Pair.of(proposedPair.getNode(), proposedPair.equals(gtPair) ? globalReward + 1.0d : globalReward);
+				/*
+				 * We handle three case
+				 * 1. Feedback is given correctly: reward = global reward + 1.0
+				 * 2. Feedback is given wrongly: reward = global reward - 1.0
+				 * 3. Don't have reference: reward = global reward
+				 */
+				double reward = globalReward;
+				if (proposedPair.equals(gtPair)) {
+					reward += 1.0d;
+				} else if (proposedPair.getNode().equals(gtPair.getNode()) && !proposedPair.equals(gtPair)) {
+					reward -= 1.0d;
+				}
+				Pair<TraceNode, Double> pair = Pair.of(proposedPair.getNode(), reward);
 				rewardList.add(pair);
 			}
 		}
