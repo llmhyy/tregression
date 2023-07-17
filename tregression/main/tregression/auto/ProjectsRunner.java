@@ -60,9 +60,6 @@ public abstract class ProjectsRunner {
                     continue;
                 }
                 final String id = projectName + ":" + bugID_str;
-                if (!id.equals("Math:6"))  {
-                	continue;
-                }
                 	
                 RunResult result = this.runProject(projectName, bugID_str);
                 if (result != null) {
