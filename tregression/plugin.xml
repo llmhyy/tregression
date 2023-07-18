@@ -84,9 +84,9 @@
              name="Run Baseline">
        </command>
        <command
-             defaultHandler="tregression.handler.StepwisePropagationTHandler"
-             id="tregression.spp"
-             name="Stepwise Propagation">
+             defaultHandler="tregression.handler.DebugPilotTHandler"
+             id="tregression.debugpilot"
+             name="Debug Pilot">
        </command>
        <command
              defaultHandler="tregression.handler.Defects4jCollectionHandler"
@@ -269,7 +269,7 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.spp"
+                  commandId="tregression.debugpilot"
                   icon="icons/play.png"
                   style="push">
             </command>
