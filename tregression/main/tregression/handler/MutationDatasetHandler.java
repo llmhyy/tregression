@@ -68,11 +68,11 @@ public class MutationDatasetHandler extends AbstractHandler {
 
 				int traceCollectionTimeoutSeconds = 60;
 				
-				boolean useTestCaseID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.USE_TEST_CASE_ID).equals("true");
-				if (!useTestCaseID) {
-					throw new RuntimeException("Mutation dataset must locate the bug proejction by bug id. Please check the use test case id box.");
-				}
-				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE_ID);
+//				boolean useTestCaseID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID).equals("true");
+//				if (!useTestCaseID) {
+//					throw new RuntimeException("Mutation dataset must locate the bug proejction by bug id. Please check the use test case id box.");
+//				}
+				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
 				int testCaseID = Integer.parseInt(testCaseID_str);
 				
 				System.out.println("Loading mutated projection from " + projectPath + " with bug id " + testCaseID);

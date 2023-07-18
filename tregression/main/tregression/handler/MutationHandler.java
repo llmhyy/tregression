@@ -58,16 +58,19 @@ public class MutationHandler extends AbstractHandler {
 				MutationAgent mutationAgent = new MutationAgent(projectPath, java_path, stepLimit);
 				
 				// Set the target test case
-				boolean useTestCaseID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.USE_TEST_CASE_ID).equals("true");
-				if (useTestCaseID) {
-					String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE_ID);
-					final int testCaesID = Integer.parseInt(testCaseID_str);
-					mutationAgent.setTestCaseID(testCaesID);
-				} else {
-					String testCaseName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE);
-					String[] tokens = testCaseName.split("#");
-					mutationAgent.setTestCaseInfo(tokens[0], tokens[1]);
-				}
+				String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+				final int testCaesID = Integer.parseInt(testCaseID_str);
+				mutationAgent.setTestCaseID(testCaesID);
+//				boolean useTestCaseID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.USE_TEST_CASE_ID).equals("true");
+//				if (useTestCaseID) {
+//					String testCaseID_str = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+//					final int testCaesID = Integer.parseInt(testCaseID_str);
+//					mutationAgent.setTestCaseID(testCaesID);
+//				} else {
+//					String testCaseName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.TEST_CASE);
+//					String[] tokens = testCaseName.split("#");
+//					mutationAgent.setTestCaseInfo(tokens[0], tokens[1]);
+//				}
 				
 				try {
 					mutationAgent.setup();
