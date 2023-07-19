@@ -59,6 +59,8 @@ public class StepDetailIOUI extends StepDetailUI {
 		this.correctButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		this.correctButton.setText("correct");
 		
+		GridData buttonLayoutData = new GridData(SWT.FILL, SWT.FILL, true, false);
+		
 		dataButton = new Button(slicingGroup, SWT.RADIO);
 		dataButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, true, false));
 		dataButton.setText("data ");
@@ -75,32 +77,36 @@ public class StepDetailIOUI extends StepDetailUI {
 		
 		Button addInputButton = new Button(slicingGroup, SWT.NONE);
 		addInputButton.setText("Inputs");
-		addInputButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		addInputButton.setToolTipText("Sets the selected fields as input");
+		addInputButton.setLayoutData(buttonLayoutData);
 		addInputButton.addMouseListener(new AddInputListener());
 		
 		Button addOutputButton = new Button(slicingGroup, SWT.NONE);
 		addOutputButton.setText("Outputs");
-		addOutputButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		addOutputButton.setToolTipText("Sets the selected fields as output");
+		addOutputButton.setLayoutData(buttonLayoutData);
 		addOutputButton.addMouseListener(new AddOuputListener());
 		
 		Button clearVarsButton = new Button(slicingGroup, SWT.NONE);
 		clearVarsButton.setText("clear");
-		clearVarsButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		clearVarsButton.setToolTipText("Clears the input and output selected");
+		clearVarsButton.setLayoutData(buttonLayoutData);
 		clearVarsButton.addMouseListener(new ClearVarsListener());
 		
 		Button showIOButton = new Button(slicingGroup, SWT.NONE);
 		showIOButton.setText("IO");
-		showIOButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		showIOButton.setToolTipText("Shows the input and output fields set");
+		showIOButton.setLayoutData(buttonLayoutData);
 		showIOButton.addMouseListener(new showIOListener());
 		
 		Button manualFeedbackButton = new Button(slicingGroup, SWT.NONE);
 		manualFeedbackButton.setText("Feedback");
-		manualFeedbackButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		manualFeedbackButton.setLayoutData(buttonLayoutData);
 		manualFeedbackButton.addMouseListener(new manualFeedbackListener());
 		
 		Button stopButton = new Button(slicingGroup, SWT.NONE);
 		stopButton.setText("Stop");
-		stopButton.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+		stopButton.setLayoutData(buttonLayoutData);
 		stopButton.addMouseListener(new StopListener());
 	}
 	
