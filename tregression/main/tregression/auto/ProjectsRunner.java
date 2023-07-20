@@ -59,8 +59,7 @@ public abstract class ProjectsRunner {
                     ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
                     continue;
                 }
-                final String id = projectName + ":" + bugID_str;
-                	
+
                 RunResult result = this.runProject(projectName, bugID_str);
                 if (result != null) {
                     writer.writeResult(result);
