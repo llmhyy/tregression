@@ -103,11 +103,7 @@ public class StepDetailIOUI extends StepDetailUI {
 		manualFeedbackButton.setText("Feedback");
 		manualFeedbackButton.setLayoutData(buttonLayoutData);
 		manualFeedbackButton.addMouseListener(new manualFeedbackListener());
-		
-		Button stopButton = new Button(slicingGroup, SWT.NONE);
-		stopButton.setText("Stop");
-		stopButton.setLayoutData(buttonLayoutData);
-		stopButton.addMouseListener(new StopListener());
+		manualFeedbackButton.setToolTipText("Set the feedback on the selected trace node to be wrong-var, wrong-flow or oorrect");
 	}
 	
 	private class AddInputListener implements MouseListener {
