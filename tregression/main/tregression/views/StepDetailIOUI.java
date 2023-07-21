@@ -11,21 +11,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.PlatformUI;
 
-import microbat.model.variable.Variable;
-import microbat.model.variable.LocalVar;
-import microbat.model.value.PrimitiveValue;
-import debuginfo.NodeFeedbacksPair;
 import debuginfo.DebugInfo;
-import microbat.model.trace.Trace;
+import debuginfo.NodeFeedbacksPair;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
-import microbat.recommendation.ChosenVariablesOption;
 import microbat.recommendation.UserFeedback;
-import tregression.handler.ProfInferTHandler;
 
 /**
  * Do everything the same as StepDetailUI.
