@@ -84,9 +84,9 @@
              name="Run Baseline">
        </command>
        <command
-             defaultHandler="tregression.handler.StepwisePropagationTHandler"
-             id="tregression.spp"
-             name="Stepwise Propagation">
+             defaultHandler="tregression.handler.DebugPilotTHandler"
+             id="tregression.debugpilot"
+             name="Debug Pilot">
        </command>
        <command
              defaultHandler="tregression.handler.Defects4jCollectionHandler"
@@ -112,6 +112,11 @@
              defaultHandler="tregression.handler.TrainModelHandler"
              id="tregression.trainmodel"
              name="Train Model">
+       </command>
+       <command
+             defaultHandler="tregression.handler.StopDebugPilotTHandler"
+             id="tregression.stopdebugpilot"
+             name="Stop Debug Pilot">
        </command>
  </extension>	
  <extension
@@ -248,19 +253,13 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.baseline"
-                  icon="icons/recover.png"
-                  style="push">
-            </command>
-            <command
-                  commandId="tregression.autofeedback"
+                  commandId="tregression.debugpilot"
                   icon="icons/play.png"
-                  label="Auto Debug"
                   style="push">
             </command>
             <command
-                  commandId="tregression.trainmodel"
-                  icon="icons/property.png"
+                  commandId="tregression.selectIO"
+                  icon="icons/screenshot.png"
                   style="push">
             </command>
             <command
@@ -269,17 +268,7 @@
                   style="push">
             </command>
             <command
-                  commandId="tregression.spp"
-                  icon="icons/play.png"
-                  style="push">
-            </command>
-            <command
-                  commandId="tregression.collectMutationDatasetData"
-                  icon="icons/after.ico"
-                  style="push">
-            </command>
-            <command
-                  commandId="tregression.selectIO"
+                  commandId="tregression.stopdebugpilot"
                   icon="icons/screenshot.png"
                   style="push">
             </command>

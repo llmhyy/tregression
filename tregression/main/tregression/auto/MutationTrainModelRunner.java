@@ -26,6 +26,7 @@ import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.MutationDatasetProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
 import jmutation.dataset.bug.model.path.PathConfiguration;
+import microbat.log.Log;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -46,6 +47,12 @@ public class MutationTrainModelRunner extends ProjectsRunner {
 
 	@Override
 	public RunResult runProject(String projectName, String bugID_str) {
+		
+		if (!projectName.equals("math_70") ) {
+			Log.printMsg(this.getClass(), "Skipped project " + projectName + " : " + bugID_str);
+			return null;
+		}
+		
 		final String projectPath = Paths.get(this.basePath, projectName).toString();
 		if (!bugID_str.endsWith(MutationTrainModelRunner.ZIP_EXT)) {
 			ProjectsRunner.printMsg(bugID_str + " is not zipped sample");

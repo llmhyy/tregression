@@ -30,7 +30,6 @@ import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
-import microbat.probability.SPP.propagation.DummyClient;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import java.util.List;

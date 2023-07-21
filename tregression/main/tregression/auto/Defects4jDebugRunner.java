@@ -95,11 +95,12 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 				List<VarValue> inputs = new ArrayList<>();
 				List<VarValue> outputs = new ArrayList<>();
 				TraceNode outputNode = null;
-				Optional<InputsAndOutput> ioOptional = this.getIO(trace, config.srcTestFolder, trial.getPairList());
+				String IOStoragePath = "D:\\Defects4j_IO";
+				Optional<InputsAndOutput> ioOptional = this.getIO(trace, config.srcTestFolder, trial.getPairList(), IOStoragePath, projectName, bugID_str);
 				if (ioOptional.isEmpty()) {
 					ProjectsRunner.printMsg("Cannot extract input and output");
 					DebugResult debugResult = new DebugResult(result);
-					debugResult.errorMessage = "[IODection]: Cannot find inputs and outputs";
+					debugResult.errorMessage = "[IODetection]: Cannot find inputs and outputs";
 					return debugResult;
 				} else {
 					InputsAndOutput io = ioOptional.get();
@@ -127,7 +128,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 						return agent.startDebug(new DebugResult(result));
 					});
 					try {
-						debugResult = future.get(20, TimeUnit.MINUTES);
+						debugResult = future.get(30, TimeUnit.MINUTES);
 					} catch (Exception e) {
 						debugResult.errorMessage = e.toString();
 					} finally {
