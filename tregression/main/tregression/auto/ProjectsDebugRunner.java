@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import iodetection.IODetector;
+import iodetection.StoredIOParser;
 import iodetection.IODetector.InputsAndOutput;
 import iodetection.IODetector.NodeVarValPair;
 import microbat.model.trace.Trace;
-import tregression.io.StoredIOParser;
 import tregression.model.PairList;
 
 public abstract class ProjectsDebugRunner extends ProjectsRunner {
