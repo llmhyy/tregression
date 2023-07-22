@@ -1,4 +1,4 @@
-package tregression.io;
+package iodetection;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -75,9 +75,8 @@ public class StoredIOParser {
 		String IOString = IO.toString();
 		try {
 			File file = getFile();
-			if (!file.exists()) {
-				file.createNewFile();
-			}
+			// overwrite the existing IO
+			file.createNewFile();
 			FileWriter fileWriter = new FileWriter(file);
 			fileWriter.append(IOString);
 			fileWriter.close();
