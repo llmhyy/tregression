@@ -18,6 +18,7 @@ import org.eclipse.ui.PlatformUI;
 
 import debuginfo.DebugInfo;
 import debuginfo.NodeFeedbacksPair;
+import debuginfo.NodeVarPair;
 import iodetection.IODetector;
 import iodetection.StoredIOParser;
 import iodetection.IODetector.InputsAndOutput;
@@ -61,7 +62,9 @@ public class IOSelectionHandler extends AbstractHandler {
 		boolean outputSelected = !DebugInfo.getOutputs().isEmpty();
 		if (outputSelected) {
 			if (inputsSelected) {
-				System.out.println("Inputs and output have been selected");
+				// Store the selected IO
+				this.storeIO();
+				System.out.println("Inputs and output have been selected and stored");
 				return;
 			} else {
 				System.out.println("Output has been selected, please select the inputs");
@@ -72,7 +75,7 @@ public class IOSelectionHandler extends AbstractHandler {
 				System.out.println("Inputs have been selected, please select the output");
 				return;
 			} else {
-				// automatically select output and inputs
+				// If there's no IO selected, automatically detect IO
 				Trace buggyTrace = this.buggyView.getTrace();
 				PairList pairList = this.buggyView.getPairList();
 				Optional<InputsAndOutput> ioOptional = this.getIO(buggyTrace, pairList);
@@ -108,7 +111,6 @@ public class IOSelectionHandler extends AbstractHandler {
 		Display.getDefault().syncExec(new Runnable() {
 			@Override
 			public void run() {
-				DebugInfo.clearData();
 				try {
 					buggyView = (BuggyTraceView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
 							.showView(BuggyTraceView.ID);
@@ -148,5 +150,34 @@ public class IOSelectionHandler extends AbstractHandler {
 		List<String[]> inputs = storedIO.get(InputsAndOutput.INPUTS_KEY);
 		List<String[]> output = storedIO.get(InputsAndOutput.OUTPUT_KEY);
 		return ioDetector.detect(inputs, output);
+	}
+	
+	protected void storeIO() {
+		String projectName = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.PROJECT_NAME);
+		String bugID = Activator.getDefault().getPreferenceStore().getString(TregressionPreference.BUG_ID);
+		String IOStoragePath = "D:\\Defects4j_IO";
+		
+		StoredIOParser IOParser = new StoredIOParser(IOStoragePath, projectName, bugID);
+		List<NodeVarPair> inputList = DebugInfo.getInputNodeVarPairs();
+		List<NodeVarPair> outputList = DebugInfo.getOutputNodeVarPairs();
+		List<NodeVarValPair> inputs = new ArrayList<>();
+		inputList.forEach((pair) -> {
+			inputs.add(this.convertPairToRequiredClass(pair));
+		});
+		NodeVarValPair output = this.convertPairToRequiredClass(outputList.get(0));
+		InputsAndOutput IO = new InputsAndOutput(inputs, output);
+		Optional<InputsAndOutput> result = Optional.of(IO);
+		IOParser.storeIO(result);
+	}
+	
+	/**
+	 * NodeVarPair and NodeVarValPair are similar classes in Microbat and Tregression respectively.
+	 * They are created separately to avoid cyclic dependency.
+	 * 
+	 * @param pair as debuginfo.NodeVarPair
+	 * @return pair as iodetection.IODetector.NodeVarValPair
+	 */
+	private NodeVarValPair convertPairToRequiredClass(NodeVarPair pair) {
+		return new NodeVarValPair(pair.getNode(), pair.getVariable(), pair.getVarContainingNodeID());
 	}
 }
