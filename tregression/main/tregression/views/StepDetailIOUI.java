@@ -26,7 +26,6 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.ChosenVariablesOption;
 import microbat.recommendation.UserFeedback;
-import tregression.handler.ProfInferTHandler;
 
 /**
  * Do everything the same as StepDetailUI.
@@ -270,7 +269,8 @@ public class StepDetailIOUI extends StepDetailUI {
 	private List<NodeVarPair> getSelectedNodeVarPairs() {
 		List<NodeVarPair> pairs = new ArrayList<>();
 		List<VarValue> selectedVars = this.getSelectedVars();
-		List<VarValue> variables = currentNode.getReadVariables();
+		List<VarValue> variables = new ArrayList<>();
+		variables.addAll(currentNode.getReadVariables());
 		variables.addAll(currentNode.getWrittenVariables());
 		variables.forEach((var) -> {
 			if (selectedVars.contains(var)) {
