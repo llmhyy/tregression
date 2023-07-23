@@ -11,12 +11,20 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.ui.PlatformUI;
 
-import debuginfo.DebugInfo;
+import microbat.model.variable.Variable;
+import microbat.model.variable.LocalVar;
+import microbat.model.value.PrimitiveValue;
 import debuginfo.NodeFeedbacksPair;
+import debuginfo.NodeVarPair;
+import debuginfo.DebugInfo;
+import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
+import microbat.recommendation.ChosenVariablesOption;
 import microbat.recommendation.UserFeedback;
 
 /**
@@ -103,8 +111,10 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			List<VarValue> inputs = getSelectedVars();
-			DebugInfo.addInputs(inputs);
+//			List<VarValue> inputs = getSelectedVars();
+//			DebugInfo.addInputs(inputs);
+			List<NodeVarPair> inputNodeVarPairs = getSelectedNodeVarPairs();
+			DebugInfo.addInputNodeVarPairs(inputNodeVarPairs);
 		}
 		
 		@Override
@@ -118,17 +128,21 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
+			List<NodeVarPair> outputNodeVarPairs = new ArrayList<>();
 			if (controlButton.getSelection()) {
 				TraceNode controlDom = currentNode.getControlDominator();
 				VarValue controlDomVar = controlDom.getConditionResult();
-				DebugInfo.addOutput(controlDomVar);
+				outputNodeVarPairs.add(new NodeVarPair(currentNode, controlDomVar, controlDom.getOrder()));
+				DebugInfo.addOutputNodeVarPairs(outputNodeVarPairs);
 				
 				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
 				NodeFeedbacksPair pair = new NodeFeedbacksPair(currentNode, feedback);
 				DebugInfo.addNodeFeedbacksPair(pair);
 			} else {
-				List<VarValue> outputs = getSelectedVars();
-				DebugInfo.addOutputs(outputs);
+//				List<VarValue> outputs = getSelectedVars();
+//				DebugInfo.addOutputs(outputs);
+				outputNodeVarPairs.addAll(getSelectedNodeVarPairs());
+				DebugInfo.addOutputNodeVarPairs(outputNodeVarPairs);
 			}
 		}
 
@@ -250,6 +264,20 @@ public class StepDetailIOUI extends StepDetailUI {
 			}
 		}
 		return vars;
+	}
+	
+	private List<NodeVarPair> getSelectedNodeVarPairs() {
+		List<NodeVarPair> pairs = new ArrayList<>();
+		List<VarValue> selectedVars = this.getSelectedVars();
+		List<VarValue> variables = new ArrayList<>();
+		variables.addAll(currentNode.getReadVariables());
+		variables.addAll(currentNode.getWrittenVariables());
+		variables.forEach((var) -> {
+			if (selectedVars.contains(var)) {
+				pairs.add(new NodeVarPair(currentNode, var));
+			}
+		});
+		return pairs;
 	}
 	
 //	public static void registerHandler(RequireIO handler) {

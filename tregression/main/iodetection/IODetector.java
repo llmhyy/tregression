@@ -166,7 +166,8 @@ public class IODetector {
     
     private VarValue searchForVar(TraceNode node, String varID) {
     	// find wrong variable
-        List<VarValue> variables = node.getReadVariables();
+        List<VarValue> variables = new ArrayList<>();
+        variables.addAll(node.getReadVariables());
         variables.addAll(node.getWrittenVariables());
         for (VarValue var : variables) {
         	if (var.getVarID().equals(varID)) {
