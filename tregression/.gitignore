@@ -2,6 +2,8 @@
 /test-bin/
 target/
 
+main/tregression/handler/TestingHandler.java
+
 .metadata
 bin/
 tmp/

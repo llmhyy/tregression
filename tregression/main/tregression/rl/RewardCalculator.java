@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import microbat.debugpilot.pathfinding.FeedbackPath;
-import microbat.debugpilot.pathfinding.ActionPathUtil;
+import microbat.debugpilot.pathfinding.FeedbackPathUtil;
 import microbat.log.Log;
 
 public class RewardCalculator {
@@ -32,7 +32,7 @@ public class RewardCalculator {
 	
 	public List<Pair<TraceNode, Double>> getReward(final TraceNode proposedRootCause, final FeedbackPath proposedPath, final TraceNode currentNode) {
 		
-		if (!ActionPathUtil.samePathBeforeNode(proposedPath, this.gtPath, currentNode)) {
+		if (!FeedbackPathUtil.samePathBeforeNode(proposedPath, this.gtPath, currentNode)) {
 			throw new RuntimeException(Log.genMsg(getClass(), "Path does not match before the currentNode: " + currentNode.getOrder()));
 		}
 		

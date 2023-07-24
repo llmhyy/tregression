@@ -23,6 +23,7 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.util.JavaUtil;
 import microbat.util.TraceUtil;
+import microbat.util.UniquePriorityQueue;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator0;
 import tregression.empiricalstudy.config.Defects4jProjectConfig;
@@ -34,6 +35,8 @@ import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
+
 import tregression.auto.AutoDebugAgent;
 import tregression.auto.result.DebugResult;
 //import dataset.BugDataset;
@@ -104,31 +107,40 @@ public class TestingHandler extends AbstractHandler {
 //		
 //	}
 	private void execute() {
-		final String projectName = "Lang";
-		final String bugID_str = "22";
-		final ProjectConfig config = Defects4jProjectConfig.getConfig(projectName, bugID_str);
-		final String basePath = "E:\\david\\Defects4j";
-		final String bugFolder = Paths.get(basePath, projectName, bugID_str, "bug").toString();
-		final String fixFolder = Paths.get(basePath, projectName, bugID_str, "fix").toString();
-		final TrialGenerator0 generator0 = new TrialGenerator0();
-		List<EmpiricalTrial> trails = generator0.generateTrials(bugFolder, fixFolder, false, false, false, 3, true, true, config, "");
+		final Trace trace = this.buggyView.getTrace();
+		final TraceNode startNode = trace.getTraceNode(338);
+		final TraceNode endNode = trace.getTraceNode(237);
 		
-		final List<VarValue> inputs = DebugInfo.getInputs();
-		final List<VarValue> outputs = DebugInfo.getOutputs();
-
-		VarValue output = outputs.get(0);		
-		TraceNode outputNode = null;
-		if (output.getVarID().startsWith("CR_")) {
-			// Initial feedback is wrong path
-			NodeFeedbacksPair initPair = DebugInfo.getNodeFeedbackPair();
-			outputNode = initPair.getNode();
-		} else {
-			outputNode = this.getStartingNode(buggyView.getTrace(), outputs.get(0));
+		UniquePriorityQueue<TraceNode> toVisitNodes = new UniquePriorityQueue<>(new Comparator<TraceNode>() {
+			@Override
+			public int compare(TraceNode t1, TraceNode t2) {
+				return t2.getOrder() - t1.getOrder();
+			}
+		});
+		
+		toVisitNodes.add(startNode);
+		
+		while (!toVisitNodes.isEmpty()) {
+			final TraceNode node = toVisitNodes.poll();
+			if (node.equals(endNode)) {
+				System.out.println("Path exists");
+				return;
+			}
+			for (VarValue readVar : node.getReadVariables()) {
+				final TraceNode dataDom = trace.findDataDependency(node, readVar);
+				if (dataDom != null) {
+					toVisitNodes.add(dataDom);
+				}
+			}
+			
+			final TraceNode controlDom = node.getControlDominator();
+			if (controlDom != null) {
+				toVisitNodes.add(controlDom);
+			}
 		}
-		AutoDebugAgent agent = new AutoDebugAgent(trails.get(0), inputs, outputs, outputNode);
-		DebugResult debugResult = new DebugResult();
-		debugResult.rootCauseOrder =  trails.get(0).getRootcauseNode().getOrder();
-		agent.startDebug(debugResult);
+		
+		System.out.println("Path does not exists");
+		
 	}
 	
 	protected TraceNode getStartingNode(final Trace trace, final VarValue output) {

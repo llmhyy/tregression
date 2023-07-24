@@ -9,7 +9,7 @@ import microbat.views.TraceView;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
 
-public class ProfInferTHandler 
+public class ProbInferTHandler 
 extends ProbInferHandler 
 {
 	
