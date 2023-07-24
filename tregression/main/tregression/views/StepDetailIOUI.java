@@ -103,7 +103,7 @@ public class StepDetailIOUI extends StepDetailUI {
 		manualFeedbackButton.setText("Feedback");
 		manualFeedbackButton.setLayoutData(buttonLayoutData);
 		manualFeedbackButton.addMouseListener(new manualFeedbackListener());
-		manualFeedbackButton.setToolTipText("Set the feedback on the selected trace node to be wrong-var, wrong-flow or oorrect");
+		manualFeedbackButton.setToolTipText("Set the feedback on the selected trace node to be wrong-var, wrong-flow or correct");
 	}
 	
 	private class AddInputListener implements MouseListener {
