@@ -88,10 +88,13 @@ public class AutoProfInferAgent {
 			debugPilot.locateRootCause(currentNode);
 			
 			final TraceNode proposedRootCause = debugPilot.getRootCause();
+			Log.printMsg(getClass(), "Proposed root cause: " + proposedRootCause.getOrder());
 			if (proposedRootCause.equals(rootCause)) {
+				Log.printMsg(getClass(), "Root Cause is found ...");
 				break;
 			} else {
 				NodeFeedbacksPair feedback = this.giveFeedback(currentNode);
+				Log.printMsg(getClass(), "Wrong root cause, feedback is given: " + feedback);
 				userFeedbackRecords.add(feedback);
 				totalFeedbackCount++;
 			}
