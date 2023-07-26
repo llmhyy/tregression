@@ -22,15 +22,15 @@ import tregression.empiricalstudy.config.Defects4jProjectConfig;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.solutionpattern.SolutionPattern;
 
-public class Defects4jDebugRunner extends ProjectsDebugRunner {
+public class Defects4jProfInferRunner extends ProjectsDebugRunner {
 
 	private List<String> outOfMemoryFilters = new ArrayList<>();
 	
-	public Defects4jDebugRunner(String basePath, String resultPath) {
+	public Defects4jProfInferRunner(String basePath, String resultPath) {
 		this(basePath, resultPath, 5);
 	}
 	
-	public Defects4jDebugRunner(String basePath, String resultPath, int maxThreadsCount) {
+	public Defects4jProfInferRunner(String basePath, String resultPath, int maxThreadsCount) {
 		super(basePath, resultPath, maxThreadsCount);
 	    outOfMemoryFilters.add("Compress:22");
 	    outOfMemoryFilters.add("Compress:29");
@@ -39,7 +39,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 	    outOfMemoryFilters.add("JacksonCore:25");
 	    outOfMemoryFilters.add("Jsoup:81");
 	}
-	
+
 	@Override
 	public RunResult runProject(String projectName, String bugID_str) {
 		RunResult result = new RunResult();
@@ -120,7 +120,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 					ProjectsRunner.printMsg("Outputs: ");
 					ProjectsRunner.printMsg(outputDetected.toString());
 					
-					AutoDebugAgent agent = new AutoDebugAgent(trial, inputs, outputs, outputNode);
+					AutoProfInferAgent agent = new AutoProfInferAgent(trial, inputs, outputs, outputNode);
 					DebugResult debugResult = new DebugResult(result);
 					ExecutorService executor = Executors.newSingleThreadExecutor();
 					Future<DebugResult> future = executor.submit(() -> {

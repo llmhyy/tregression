@@ -118,6 +118,11 @@
              id="tregression.stopdebugpilot"
              name="Stop Debug Pilot">
        </command>
+       <command
+             defaultHandler="tregression.handler.Defects4jAutoProfInferHandler"
+             id="tregression.autoprobinfer"
+             name="Run ProbInfer Debug">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -270,6 +275,11 @@
             <command
                   commandId="tregression.stopdebugpilot"
                   icon="icons/screenshot.png"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.autoprobinfer"
+                  icon="icons/after.ico"
                   style="push">
             </command>
          </toolbar>
