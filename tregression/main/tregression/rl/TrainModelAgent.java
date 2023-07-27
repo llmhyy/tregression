@@ -48,7 +48,7 @@ public class TrainModelAgent {
 			debugPilotTrainer.updateFeedbacks(userFeedbackRecords);
 			debugPilotTrainer.multiSlicing();
 			debugPilotTrainer.propagate();
-			debugPilotTrainer.locateRootCause(currentNode);
+			debugPilotTrainer.locateRootCause();
 			debugPilotTrainer.constructPath();
 			
 			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);

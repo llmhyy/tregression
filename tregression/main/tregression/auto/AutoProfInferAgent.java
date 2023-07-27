@@ -49,7 +49,7 @@ public class AutoProfInferAgent {
 	}
 	
 	public DebugResult startDebug(final RunResult result) {
-		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.SPP_Random, PathFinderType.Dijkstra);
+		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.ProfInfer, PathFinderType.Dijkstra);
 		DebugResult debugResult = new DebugResult(result);
 		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
@@ -85,7 +85,7 @@ public class AutoProfInferAgent {
 			
 			// Locate root cause
 			Log.printMsg(this.getClass(), "Locating root cause ...");
-			debugPilot.locateRootCause(currentNode);
+			debugPilot.locateRootCause();
 			
 			final TraceNode proposedRootCause = debugPilot.getRootCause();
 			Log.printMsg(getClass(), "Proposed root cause: " + proposedRootCause.getOrder());
