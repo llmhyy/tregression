@@ -6,6 +6,7 @@ import java.util.Stack;
 import debuginfo.NodeFeedbacksPair;
 import microbat.debugpilot.DebugPilot;
 import microbat.debugpilot.DebugPilotTrainer;
+import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
 import microbat.log.Log;
@@ -48,15 +49,15 @@ public class TrainModelAgent {
 			debugPilotTrainer.updateFeedbacks(userFeedbackRecords);
 			debugPilotTrainer.multiSlicing();
 			debugPilotTrainer.propagate();
-			debugPilotTrainer.locateRootCause();
-			debugPilotTrainer.constructPath();
+			TraceNode proposedRootCause = debugPilotTrainer.locateRootCause();
+			FeedbackPath feedbackPath = debugPilotTrainer.constructPath(proposedRootCause);
 			
 			RewardCalculator rewardCalculator = new RewardCalculator(this.buggyTrace, this.feedbackAgent, rootCause, this.outputNode);
-			debugPilotTrainer.sendRewards(rewardCalculator.getReward(debugPilotTrainer.getRootCause(), debugPilotTrainer.getPath(), currentNode));
+			debugPilotTrainer.sendRewards(rewardCalculator.getReward(proposedRootCause, feedbackPath, currentNode));
 			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {
-				UserFeedback predictedFeedback = debugPilotTrainer.giveFeedback(currentNode);
+				UserFeedback predictedFeedback = feedbackPath.getFeedback(currentNode).getFirstFeedback();
 				Log.printMsg(this.getClass(), "--------------------------------------");
 				Log.printMsg(this.getClass(), "Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
 				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);

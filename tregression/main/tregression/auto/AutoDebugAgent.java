@@ -11,6 +11,7 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
 import microbat.debugpilot.DebugPilot;
+import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
 import microbat.log.Log;
@@ -85,12 +86,12 @@ public class AutoDebugAgent {
 			
 			// Locate root cause
 			Log.printMsg(this.getClass(), "Locating root cause ...");
-			debugPilot.locateRootCause();
+			TraceNode proposedRootCause =  debugPilot.locateRootCause();
 			
 			// Path finding
 			long pathStartTime = System.currentTimeMillis();
 			Log.printMsg(this.getClass(), "Constructing path to root cause ...");
-			debugPilot.constructPath();
+			FeedbackPath feedbackPath =  debugPilot.constructPath(proposedRootCause);
 			long pathEndTime = System.currentTimeMillis();
 			double pathFindingTime = (pathEndTime - pathStartTime) / (double) 1000;
 			pathFindingTimes.add(pathFindingTime);
@@ -100,7 +101,7 @@ public class AutoDebugAgent {
 			
 			boolean needPropagateAgain = false;
 			while (!needPropagateAgain && !isEnd) {
-				UserFeedback predictedFeedback = debugPilot.giveFeedback(currentNode);
+				UserFeedback predictedFeedback = feedbackPath.getFeedback(currentNode).getFirstFeedback();
 				Log.printMsg(this.getClass(), "--------------------------------------");
 				Log.printMsg(this.getClass(), "Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
 				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);

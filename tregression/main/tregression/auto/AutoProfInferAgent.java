@@ -61,7 +61,6 @@ public class AutoProfInferAgent {
 		
 		Log.printMsg(this.getClass(),  "Start automatic debugging: " + result.projectName + ":" + result.bugID);
 		
-		TraceNode currentNode = this.outputNode;
 		boolean isEnd = false;
 		
 		// Measurement
@@ -85,15 +84,14 @@ public class AutoProfInferAgent {
 			
 			// Locate root cause
 			Log.printMsg(this.getClass(), "Locating root cause ...");
-			debugPilot.locateRootCause();
-			
-			final TraceNode proposedRootCause = debugPilot.getRootCause();
+			final TraceNode proposedRootCause = debugPilot.locateRootCause();
+
 			Log.printMsg(getClass(), "Proposed root cause: " + proposedRootCause.getOrder());
 			if (proposedRootCause.equals(rootCause)) {
 				Log.printMsg(getClass(), "Root Cause is found ...");
 				break;
 			} else {
-				NodeFeedbacksPair feedback = this.giveFeedback(currentNode);
+				NodeFeedbacksPair feedback = this.giveFeedback(proposedRootCause);
 				Log.printMsg(getClass(), "Wrong root cause, feedback is given: " + feedback);
 				userFeedbackRecords.add(feedback);
 				totalFeedbackCount++;

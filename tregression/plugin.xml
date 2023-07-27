@@ -79,11 +79,6 @@
              name="Mutate Target Project">
        </command>
        <command
-             defaultHandler="tregression.handler.ProbInferTHandler"
-             id="tregression.baseline"
-             name="Run Baseline">
-       </command>
-       <command
              defaultHandler="tregression.handler.DebugPilotTHandler"
              id="tregression.debugpilot"
              name="Debug Pilot">
