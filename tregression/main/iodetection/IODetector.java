@@ -52,7 +52,8 @@ public class IODetector {
         }
         NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
         VarValue output = outputNodeAndVarVal.getVarVal();
-        List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
+//        List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
+        List<NodeVarValPair> inputs = detectInputs(outputNodeAndVarVal.getNode());
         return Optional.of(new InputsAndOutput(inputs, outputNodeAndVarVal));
     }
     
@@ -89,6 +90,30 @@ public class IODetector {
         String outputVarID = output.get(0)[2];
         outputNodeAndVarVal = searchForNodeVarPair(outputVarID, outputNodeID, outputVarContainerNodeID);
     	return Optional.of(new InputsAndOutput(inputList, outputNodeAndVarVal));
+    }
+    
+    /**
+     * Iterates from the first node to the node before the output node, adds 
+     * written variables in the test case.
+     * 
+     * @return
+     */
+    public List<NodeVarValPair> detectInputs(TraceNode outputNode) {
+    	List<NodeVarValPair> inputs = new ArrayList<>();
+    	int firstNodeOrder = 1;
+    	int outputNodeOrder = outputNode.getOrder();
+    	TraceNode node;
+    	for (int i = firstNodeOrder; i < outputNodeOrder; i++) {
+    		node = buggyTrace.getTraceNode(i);
+    		boolean isTestFile = isInTestDir(node.getBreakPoint().getFullJavaFilePath());
+    		if (isTestFile) {
+    			List<VarValue> writtenVariables = node.getWrittenVariables();
+    			for (VarValue var : writtenVariables) {
+    				inputs.add(new NodeVarValPair(node, var));
+    			}
+    		}
+    	}
+    	return inputs;
     }
 
     /**
