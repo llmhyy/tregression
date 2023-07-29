@@ -2,6 +2,7 @@ package tregression.auto;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,11 @@ import microbat.debugpilot.DebugPilot;
 import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
+import microbat.debugpilot.rootcausefinder.RootCauseLocatorType;
+import microbat.debugpilot.settings.DebugPilotSettings;
+import microbat.debugpilot.settings.PathFinderSettings;
+import microbat.debugpilot.settings.PropagatorSettings;
+import microbat.debugpilot.settings.RootCauseLocatorSettings;
 import microbat.log.Log;
 import microbat.model.trace.Trace;
 import tregression.auto.result.DebugResult;
@@ -51,7 +57,25 @@ public class AutoDebugAgent {
 	}
 	
 	public DebugResult startDebug(final RunResult result) {
-		DebugPilot debugPilot = new DebugPilot(this.buggyTrace, inputs, outputs, outputNode, PropagatorType.ProfInfer, PathFinderType.Dijkstra);
+		DebugPilotSettings settings = new DebugPilotSettings();
+		settings.setTrace(this.buggyTrace);
+		settings.setCorrectVars(new HashSet<>(this.inputs));
+		settings.setWrongVars(new HashSet<>(this.outputs));
+		settings.setOutputNode(outputNode);
+		
+		PropagatorSettings propagatorSettings = new PropagatorSettings();
+		propagatorSettings.setPropagatorType(PropagatorType.ProfInfer);
+		settings.setPropagatorSettings(propagatorSettings);
+		
+		PathFinderSettings pathFinderSettings = new PathFinderSettings();
+		pathFinderSettings.setPathFinderType(PathFinderType.Dijkstra);
+		settings.setPathFinderSettings(pathFinderSettings);
+		
+		RootCauseLocatorSettings rootCauseLocatorSettings = new RootCauseLocatorSettings();
+		rootCauseLocatorSettings.setRootCauseLocatorType(RootCauseLocatorType.PROBINFER);
+		settings.setRootCauseLocatorSettings(rootCauseLocatorSettings);
+		
+		DebugPilot debugPilot = new DebugPilot(settings);
 		DebugResult debugResult = new DebugResult(result);
 		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
