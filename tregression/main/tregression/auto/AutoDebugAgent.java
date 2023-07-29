@@ -63,15 +63,15 @@ public class AutoDebugAgent {
 		settings.setWrongVars(new HashSet<>(this.outputs));
 		settings.setOutputNode(outputNode);
 		
-		PropagatorSettings propagatorSettings = new PropagatorSettings();
+		PropagatorSettings propagatorSettings = settings.getPropagatorSettings();
 		propagatorSettings.setPropagatorType(PropagatorType.ProfInfer);
 		settings.setPropagatorSettings(propagatorSettings);
 		
-		PathFinderSettings pathFinderSettings = new PathFinderSettings();
+		PathFinderSettings pathFinderSettings = settings.getPathFinderSettings();
 		pathFinderSettings.setPathFinderType(PathFinderType.Dijkstra);
 		settings.setPathFinderSettings(pathFinderSettings);
 		
-		RootCauseLocatorSettings rootCauseLocatorSettings = new RootCauseLocatorSettings();
+		RootCauseLocatorSettings rootCauseLocatorSettings = settings.getRootCauseLocatorSettings();
 		rootCauseLocatorSettings.setRootCauseLocatorType(RootCauseLocatorType.PROBINFER);
 		settings.setRootCauseLocatorSettings(rootCauseLocatorSettings);
 		
