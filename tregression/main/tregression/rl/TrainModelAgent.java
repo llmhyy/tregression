@@ -1,5 +1,6 @@
 package tregression.rl;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Stack;
 
@@ -9,6 +10,11 @@ import microbat.debugpilot.DebugPilotTrainer;
 import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
+import microbat.debugpilot.rootcausefinder.RootCauseLocatorType;
+import microbat.debugpilot.settings.DebugPilotSettings;
+import microbat.debugpilot.settings.PathFinderSettings;
+import microbat.debugpilot.settings.PropagatorSettings;
+import microbat.debugpilot.settings.RootCauseLocatorSettings;
 import microbat.log.Log;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -37,7 +43,26 @@ public class TrainModelAgent {
 	}
 	
 	public RunResult startTraining(final RunResult result) {
-		DebugPilotTrainer debugPilotTrainer = new DebugPilotTrainer(this.buggyTrace, inputs, outputs, outputNode);
+		
+		DebugPilotSettings settings = new DebugPilotSettings();
+		settings.setTrace(this.buggyTrace);
+		settings.setCorrectVars(new HashSet<>(this.inputs));
+		settings.setWrongVars(new HashSet<>(this.outputs));
+		settings.setOutputNode(outputNode);
+		
+		PropagatorSettings propagatorSettings = new PropagatorSettings();
+		propagatorSettings.setPropagatorType(PropagatorType.SPP_RL_TRAIN);
+		settings.setPropagatorSettings(propagatorSettings);
+		
+		PathFinderSettings pathFinderSettings = new PathFinderSettings();
+		pathFinderSettings.setPathFinderType(PathFinderType.Dijkstra);
+		settings.setPathFinderSettings(pathFinderSettings);
+		
+		RootCauseLocatorSettings rootCauseLocatorSettings = new RootCauseLocatorSettings();
+		rootCauseLocatorSettings.setRootCauseLocatorType(RootCauseLocatorType.SPP);
+		settings.setRootCauseLocatorSettings(rootCauseLocatorSettings);
+		
+		DebugPilotTrainer debugPilotTrainer = new DebugPilotTrainer(settings);
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
 		Log.printMsg(this.getClass(), "Start automatic debugging: " + result.projectName + ":" + result.bugID);
