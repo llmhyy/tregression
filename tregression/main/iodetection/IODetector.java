@@ -53,7 +53,7 @@ public class IODetector {
         NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
         VarValue output = outputNodeAndVarVal.getVarVal();
 //        List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
-        List<NodeVarValPair> inputs = detectInputs(outputNodeAndVarVal.getNode());
+        List<NodeVarValPair> inputs = detectInputs(outputNodeAndVarVal.getVarContainerNodeId());
         return Optional.of(new InputsAndOutput(inputs, outputNodeAndVarVal));
     }
     
@@ -94,21 +94,26 @@ public class IODetector {
     
     /**
      * Iterates from the first node to the node before the output node, adds 
-     * written variables in the test case.
+     * correct written variables in the test case.
      * 
      * @return
      */
-    public List<NodeVarValPair> detectInputs(TraceNode outputNode) {
+    public List<NodeVarValPair> detectInputs(int outputVarContainingNode) {
     	List<NodeVarValPair> inputs = new ArrayList<>();
     	int firstNodeOrder = 1;
-    	int outputNodeOrder = outputNode.getOrder();
     	TraceNode node;
-    	for (int i = firstNodeOrder; i < outputNodeOrder; i++) {
+    	for (int i = firstNodeOrder; i < outputVarContainingNode; i++) {
     		node = buggyTrace.getTraceNode(i);
     		boolean isTestFile = isInTestDir(node.getBreakPoint().getFullJavaFilePath());
     		if (isTestFile) {
     			List<VarValue> writtenVariables = node.getWrittenVariables();
-    			for (VarValue var : writtenVariables) {
+    			// remove wrong variables
+    			Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(node);
+                if (wrongVariable.isPresent()) {
+                    VarValue incorrectValue = wrongVariable.get().getVarVal();
+                    writtenVariables.remove(incorrectValue);
+                }
+                for (VarValue var : writtenVariables) {
     				inputs.add(new NodeVarValPair(node, var));
     			}
     		}
