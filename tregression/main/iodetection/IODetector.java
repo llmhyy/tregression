@@ -53,7 +53,7 @@ public class IODetector {
         NodeVarValPair outputNodeAndVarVal = outputNodeAndVarValOpt.get();
         VarValue output = outputNodeAndVarVal.getVarVal();
 //        List<NodeVarValPair> inputs = detectInputVarValsFromOutput(outputNodeAndVarVal.getNode(), output);
-        List<NodeVarValPair> inputs = detectInputs(outputNodeAndVarVal.getVarContainerNodeId());
+        List<NodeVarValPair> inputs = detectInputs(outputNodeAndVarVal.getVarContainerNodeOrder());
         return Optional.of(new InputsAndOutput(inputs, outputNodeAndVarVal));
     }
     
@@ -64,10 +64,10 @@ public class IODetector {
      */
     public Optional<NodeVarValPair> detect(List<String[]> output) {
         NodeVarValPair outputNodeAndVarVal = null;
-        int outputNodeID = Integer.valueOf(output.get(0)[0]);
-        int outputVarContainerNodeID = Integer.valueOf(output.get(0)[1]);
+        int outputNodeOrder = Integer.valueOf(output.get(0)[0]);
+        int outputVarContainerNodeOrder = Integer.valueOf(output.get(0)[1]);
         String outputVarID = output.get(0)[2];
-        outputNodeAndVarVal = searchForNodeVarPair(outputVarID, outputNodeID, outputVarContainerNodeID);
+        outputNodeAndVarVal = searchForNodeVarPair(outputVarID, outputNodeOrder, outputVarContainerNodeOrder);
     	return Optional.of(outputNodeAndVarVal);
     }
     
@@ -80,15 +80,15 @@ public class IODetector {
         List<NodeVarValPair> inputList = new ArrayList<>();
         NodeVarValPair outputNodeAndVarVal = null;
         for (String[] entry : inputs) {
-        	int nodeID = Integer.valueOf(entry[0]);
+        	int nodeOrder = Integer.valueOf(entry[0]);
         	String varID = entry[1];
-        	NodeVarValPair pair = searchForNodeVarPair(varID, nodeID);
+        	NodeVarValPair pair = searchForNodeVarPair(varID, nodeOrder);
         	inputList.add(pair);
         }
-        int outputNodeID = Integer.valueOf(output.get(0)[0]);
-        int outputVarContainerNodeID = Integer.valueOf(output.get(0)[1]);
+        int outputNodeOrder = Integer.valueOf(output.get(0)[0]);
+        int outputVarContainerNodeOrder = Integer.valueOf(output.get(0)[1]);
         String outputVarID = output.get(0)[2];
-        outputNodeAndVarVal = searchForNodeVarPair(outputVarID, outputNodeID, outputVarContainerNodeID);
+        outputNodeAndVarVal = searchForNodeVarPair(outputVarID, outputNodeOrder, outputVarContainerNodeOrder);
     	return Optional.of(new InputsAndOutput(inputList, outputNodeAndVarVal));
     }
     
@@ -164,7 +164,7 @@ public class IODetector {
             } else {
             	// the variable-containing node is different from the output node
             	NodeVarValPair wrongVariable = wrongVariableOptional.get();
-            	return Optional.of(new NodeVarValPair(outputNode, wrongVariable.getVarVal(), wrongVariable.getVarContainerNodeId()));
+            	return Optional.of(new NodeVarValPair(outputNode, wrongVariable.getVarVal(), wrongVariable.getVarContainerNodeOrder()));
             }
 //            return wrongVariableOptional;
         }
@@ -176,8 +176,8 @@ public class IODetector {
      * 
      * @return
      */
-    public NodeVarValPair searchForNodeVarPair(String varID, int... relevantNodeIDs) {
-    	int outputNodeID = relevantNodeIDs[0];
+    public NodeVarValPair searchForNodeVarPair(String varID, int... relevantNodeOrders) {
+    	int outputNodeID = relevantNodeOrders[0];
     	TraceNode node = buggyTrace.getTraceNode(outputNodeID);
         // find wrong variable
         VarValue varValue = searchForVar(node, varID);
@@ -185,11 +185,11 @@ public class IODetector {
         	return new NodeVarValPair(node, varValue);
         }
         // output node might be different from node containing output value
-        if (relevantNodeIDs.length == 2) {
-        	int outputVarNodeID = relevantNodeIDs[1];
-        	TraceNode outputVarNode = buggyTrace.getTraceNode(outputVarNodeID);
+        if (relevantNodeOrders.length == 2) {
+        	int outputVarNodeOrder = relevantNodeOrders[1];
+        	TraceNode outputVarNode = buggyTrace.getTraceNode(outputVarNodeOrder);
         	VarValue outputVarVal = searchForVar(outputVarNode, varID);
-        	return new NodeVarValPair(node, outputVarVal, outputVarNodeID);
+        	return new NodeVarValPair(node, outputVarVal, outputVarNodeOrder);
         }
         return new NodeVarValPair(node, null);
     }
@@ -367,18 +367,18 @@ public class IODetector {
     public static class NodeVarValPair {
         private final TraceNode node;
         private final VarValue varVal;
-        private final int varContainerNodeId;
+        private final int varContainerNodeOrder;
         
-        public NodeVarValPair(TraceNode node, VarValue varVal, int varContainerNodeId) {
+        public NodeVarValPair(TraceNode node, VarValue varVal, int varContainerNodeOrder) {
             this.node = node;
             this.varVal = varVal;
-            this.varContainerNodeId = varContainerNodeId;
+            this.varContainerNodeOrder = varContainerNodeOrder;
         }
 
         public NodeVarValPair(TraceNode node, VarValue varVal) {
             this.node = node;
             this.varVal = varVal;
-            this.varContainerNodeId = node.getOrder();
+            this.varContainerNodeOrder = node.getOrder();
         }
 
         public TraceNode getNode() {
@@ -389,13 +389,13 @@ public class IODetector {
             return varVal;
         }
         
-        public int getVarContainerNodeId() {
-        	return varContainerNodeId;
+        public int getVarContainerNodeOrder() {
+        	return varContainerNodeOrder;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(node, varVal, varContainerNodeId);
+            return Objects.hash(node, varVal, varContainerNodeOrder);
         }
 
         @Override
@@ -408,13 +408,13 @@ public class IODetector {
                 return false;
             NodeVarValPair other = (NodeVarValPair) obj;
             return Objects.equals(node, other.node) && Objects.equals(varVal, other.varVal) 
-            		&& Objects.equals(varContainerNodeId, other.varContainerNodeId);
+            		&& Objects.equals(varContainerNodeOrder, other.varContainerNodeOrder);
         }
 
         @Override
         public String toString() {
             return "NodeVarValPair [node=" + node + ", varVal=" + varVal 
-            		+ ", varContainerNodeId=" + varContainerNodeId + "]";
+            		+ ", varContainerNodeOrder=" + varContainerNodeOrder + "]";
         }
     }
 
@@ -452,7 +452,7 @@ public class IODetector {
         	stringBuilder.append(OUTPUT_KEY + "\n");
         	stringBuilder.append(this.output.getNode().getOrder());
         	stringBuilder.append(" ");
-        	stringBuilder.append(this.output.getVarContainerNodeId());
+        	stringBuilder.append(this.output.getVarContainerNodeOrder());
         	stringBuilder.append(" ");
     		stringBuilder.append(this.output.getVarVal().getVarID());
     		stringBuilder.append("\n");
