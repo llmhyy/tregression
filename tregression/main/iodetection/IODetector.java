@@ -102,6 +102,7 @@ public class IODetector {
     	List<NodeVarValPair> inputs = new ArrayList<>();
     	int firstNodeOrder = 1;
     	TraceNode node;
+    	boolean previousNodeInTestDir = false;
     	for (int i = firstNodeOrder; i < outputVarContainingNode; i++) {
     		node = buggyTrace.getTraceNode(i);
     		boolean isTestFile = isInTestDir(node.getBreakPoint().getFullJavaFilePath());
@@ -116,6 +117,21 @@ public class IODetector {
                 for (VarValue var : writtenVariables) {
     				inputs.add(new NodeVarValPair(node, var));
     			}
+                previousNodeInTestDir = true;
+    		} else {
+    			if (previousNodeInTestDir) {
+    				// check for constants (not captured in test file)
+    				List<VarValue> readVariables = node.getReadVariables();
+        			Optional<NodeVarValPair> wrongVariable = getWrongVariableInNode(node);
+                    if (wrongVariable.isPresent()) {
+                        VarValue incorrectValue = wrongVariable.get().getVarVal();
+                        readVariables.remove(incorrectValue);
+                    }
+                    for (VarValue var : readVariables) {
+        				inputs.add(new NodeVarValPair(node, var));
+        			}
+    			}
+    			previousNodeInTestDir = false;
     		}
     	}
     	return inputs;
