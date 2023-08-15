@@ -17,10 +17,10 @@ import tregression.separatesnapshots.DiffMatcher;
 
 public class AutoFeedbackAgent {
 	
-	private final StepChangeTypeChecker typeChecker;
-	private final PairList pairList;
-	private final DiffMatcher matcher;
-	private final RootCauseFinder finder;
+	protected final StepChangeTypeChecker typeChecker;
+	protected final PairList pairList;
+	protected final DiffMatcher matcher;
+	protected final RootCauseFinder finder;
 	
 	public AutoFeedbackAgent(EmpiricalTrial trail) {
 		final Trace buggyTrace = trail.getBuggyTrace();

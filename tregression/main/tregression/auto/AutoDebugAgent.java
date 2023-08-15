@@ -40,7 +40,7 @@ public class AutoDebugAgent {
 	
 	public AutoDebugAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new AutoFeedbackAgent(trial);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -50,7 +50,7 @@ public class AutoDebugAgent {
 			final DiffMatcher matcher, final PairList pairList, final RootCauseFinder finder,
 			List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = buggyTrace;
-		this.feedbackAgent = new AutoFeedbackAgent(buggyTrace, correctTrace, pairList, matcher, finder);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(buggyTrace, correctTrace, pairList, matcher, finder);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -239,7 +239,6 @@ public class AutoDebugAgent {
 					needPropagateAgain = true;
 					userFeedbackRecords.add(userFeedbacks);
 					currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
-				
 				}
 			}
 		}
