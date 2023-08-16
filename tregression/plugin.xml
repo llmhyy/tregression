@@ -254,22 +254,22 @@
             </command>
             <command
                   commandId="tregression.debugpilot"
-                  icon="icons/play.png"
+                  icon="icons/play_debug_pilot.png"
                   style="push">
             </command>
             <command
                   commandId="tregression.selectIO"
-                  icon="icons/screenshot.png"
+                  icon="icons/selectIO.png"
                   style="push">
             </command>
             <command
                   commandId="tregression.testingTregression"
-                  icon="icons/question_mark.png"
+                  icon="icons/testtube.png"
                   style="push">
             </command>
             <command
                   commandId="tregression.stopdebugpilot"
-                  icon="icons/screenshot.png"
+                  icon="icons/stop_debug_pilot_button.png"
                   style="push">
             </command>
             <command
