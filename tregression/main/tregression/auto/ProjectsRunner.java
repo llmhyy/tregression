@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ public abstract class ProjectsRunner {
     protected int hangingThreads = 0;
 
     protected List<String> filter = new ArrayList<>();
+    protected List<String> targetBugs = new ArrayList<>();
 
     public ProjectsRunner(final String basePath, final String resultPath) {
         this(basePath, resultPath, 5);
@@ -37,6 +39,16 @@ public abstract class ProjectsRunner {
         this.basePath = basePath;
         this.resultPath = resultPath;
         this.maxThreadsCount = 5;
+        
+        final String targetBugPath = Paths.get(basePath, "bugs.txt").toString();
+        try (BufferedReader reader = new BufferedReader(new FileReader(targetBugPath))) {
+        	String line;
+			while ((line = reader.readLine()) != null) {
+				this.targetBugs.add(line);
+			}
+        } catch (IOException e) {
+        	e.printStackTrace();
+        }
     }
 
     public void run() {
@@ -59,6 +71,14 @@ public abstract class ProjectsRunner {
                     ProjectsRunner.printMsg("Skip: " + projectName + " " + bugID_str);
                     continue;
                 }
+                
+                final String id = projectName + ":" + bugID_str;
+                if (!this.targetBugs.contains(id)) {
+                	continue;
+                }
+//                if (!projectName.equals("Lang") && !projectName.equals("Time") && !projectName.equals("Chart") && !projectName.equals("Gson")) {
+//                	continue;
+//                }
 
                 RunResult result = this.runProject(projectName, bugID_str);
                 if (result != null) {
