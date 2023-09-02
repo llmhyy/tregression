@@ -42,9 +42,8 @@ public class AllDefects4jHandler extends AbstractHandler {
 				int skippedNum = 0;
 				int endNum = 500;
 				
-				String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
-				int[] bugNum = {26, 133, 65, 106, 38, 27};
-				
+				String[] projects = {"Chart", "Cli", "Closure", "Codec", "Collections", "Compress", "Csv", "Gson","JacksonCore", "JacksonDatabind", "JacksonXml", "Jsoup", "JxPath", "Lang", "Math", "Mockito", "Time"};
+				int[] bugNum = {26, 40, 176, 18, 28, 47, 16, 18, 26, 112, 6, 93, 22, 65, 106, 38, 27};
 //				String fileName = "defects4j0.old.xlsx";
 				String fileName = "benchmark" + File.separator + "ben.xlsx";
 				Map<ReadEmpiricalTrial, ReadEmpiricalTrial> map = new HashMap<>();
@@ -154,7 +153,7 @@ public class AllDefects4jHandler extends AbstractHandler {
 							&& new File(oldDefects4jFile).exists()) {
 						Map<String, List<String>> keys = new HashMap<String, List<String>>();
 						keys.put("data", Arrays.asList("project", "bug_ID"));
-						ExperimentReportComparisonReporter.reportChange("defects4j_compare.xlsx", oldDefects4jFile, defects4jFile.getAbsolutePath(), 
+						ExperimentReportComparisonReporter.reportChange("defects4j_compare.xlsx", oldDefects4jFile, defects4jFile.getAbsolutePath(),
 									Arrays.asList(new TextComparisonRule(null), new SimulatorComparisonRule()), keys);
 					}
 				}

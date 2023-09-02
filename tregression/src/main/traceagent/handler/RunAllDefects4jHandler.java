@@ -72,16 +72,18 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 	}
 
 	protected void runAll(String reportFile, IProgressMonitor monitor) throws Exception {
-		String[] projects = {"Chart", "Closure", "Lang", "Math", "Mockito", "Time"};
-		int[] bugNum = {26, 133, 65, 106, 38, 27};
+		String[] projects = {"Chart", "Cli", "Closure", "Codec",
+				"Collections", "Compress", "Csv", "Gson","JacksonCore", "JacksonDatabind",
+				"JacksonXml", "Jsoup", "JxPath", "Lang", "Math", "Mockito", "Time"};
+		int[] bugNum = {26, 40, 176, 18, 28, 47, 16, 18, 26, 112, 6, 93, 22, 65, 106, 38, 27};
 		AgentDefects4jReport report = new AgentDefects4jReport(new File(reportFile));
-		TestcaseFilter filter = new TestcaseFilter(false); 
+		TestcaseFilter filter = new TestcaseFilter(false);
 		for (int i = 0; i < projects.length; i++) {
 			String project = projects[i];
 			if (monitor.isCanceled()) {
 				return;
 			}
-			for (int j = 0; j <= bugNum[i]; j++) {
+			for (int j = 1; j <= bugNum[i]; j++) {
 				if (monitor.isCanceled()) {
 					return;
 				}
@@ -123,9 +125,9 @@ public class RunAllDefects4jHandler  extends AbstractHandler {
 				TraceTrial correctTrace = run(fixPath, tc, config, includeLibs, excludeLibs, false);
 				trial.setFixedTrace(correctTrace);
 			}
-			
 			report.record(trial);
 		}
+		
 	}
 	
 	public TraceTrial run(String workingDir, TestCase tc, Defects4jProjectConfig config, List<String> includeLibs,

@@ -65,6 +65,4 @@ public class AgentDefects4jReport extends AbstractExcelWriter {
 		}
 		addCell(row, SUMMARY, traceTrial.getSummary());
 	}
-	
-	
 }
