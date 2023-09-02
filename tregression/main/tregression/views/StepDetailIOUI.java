@@ -17,9 +17,9 @@ import org.eclipse.ui.PlatformUI;
 import microbat.model.variable.Variable;
 import microbat.model.variable.LocalVar;
 import microbat.model.value.PrimitiveValue;
-import debuginfo.NodeFeedbacksPair;
-import debuginfo.NodeVarPair;
-import debuginfo.DebugInfo;
+import microbat.debugpilot.DebugPilotInfo;
+import microbat.debugpilot.NodeFeedbacksPair;
+import microbat.debugpilot.NodeVarPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -113,10 +113,11 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-//			List<VarValue> inputs = getSelectedVars();
+			List<VarValue> inputs = getSelectedVars();
+			DebugPilotInfo.getInstance().addInputs(inputs);
 //			DebugInfo.addInputs(inputs);
-			List<NodeVarPair> inputNodeVarPairs = getSelectedNodeVarPairs();
-			DebugInfo.addInputNodeVarPairs(inputNodeVarPairs);
+//			List<NodeVarPair> inputNodeVarPairs = getSelectedNodeVarPairs();
+//			DebugPilotInfo.addInputNodeVarPairs(inputNodeVarPairs);
 		}
 		
 		@Override
@@ -130,21 +131,24 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			List<NodeVarPair> outputNodeVarPairs = new ArrayList<>();
+//			List<NodeVarPair> outputNodeVarPairs = new ArrayList<>();
+			DebugPilotInfo info = DebugPilotInfo.getInstance();
+			info.setOutputNode(currentNode);
 			if (controlButton.getSelection()) {
 				TraceNode controlDom = currentNode.getControlDominator();
 				VarValue controlDomVar = controlDom.getConditionResult();
-				outputNodeVarPairs.add(new NodeVarPair(currentNode, controlDomVar, controlDom.getOrder()));
-				DebugInfo.addOutputNodeVarPairs(outputNodeVarPairs);
+				info.addOutput(controlDomVar);
+//				outputNodeVarPairs.add(new NodeVarPair(currentNode, controlDomVar, controlDom.getOrder()));
+//				DebugPilotInfo.addOutputNodeVarPairs(outputNodeVarPairs);
 				
-				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
-				NodeFeedbacksPair pair = new NodeFeedbacksPair(currentNode, feedback);
-				DebugInfo.addNodeFeedbacksPair(pair);
+//				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
+//				NodeFeedbacksPair pair = new NodeFeedbacksPair(currentNode, feedback);
+//				DebugPilotInfo.addNodeFeedbacksPair(pair);
 			} else {
-//				List<VarValue> outputs = getSelectedVars();
-//				DebugInfo.addOutputs(outputs);
-				outputNodeVarPairs.addAll(getSelectedNodeVarPairs());
-				DebugInfo.addOutputNodeVarPairs(outputNodeVarPairs);
+				List<VarValue> outputs = getSelectedVars();
+				info.addOutputs(outputs);
+//				outputNodeVarPairs.addAll(getSelectedNodeVarPairs());
+//				DebugPilotInfo.addOutputNodeVarPairs(outputNodeVarPairs);
 			}
 		}
 
@@ -159,7 +163,7 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			DebugInfo.clearData();
+			DebugPilotInfo.getInstance().clearData();
 		}
 
 		@Override
@@ -174,8 +178,11 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			DebugInfo.printInputs();
-			DebugInfo.printOutputs();
+			DebugPilotInfo info = DebugPilotInfo.getInstance();
+			info.printInputs();
+			info.printOutputs();
+//			DebugPilotInfo.printInputs();
+//			DebugPilotInfo.printOutputs();
 		}
 
 		@Override
@@ -212,7 +219,7 @@ public class StepDetailIOUI extends StepDetailUI {
 					feedbacks.add(feedback);
 				}
 			}
-			DebugInfo.addNodeFeedbacksPair(currentNode, feedbacks);
+			DebugPilotInfo.getInstance().setNodeFeedbacksPair(currentNode, feedbacks);
 		}
 
 		@Override
@@ -227,7 +234,7 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			DebugInfo.setStop(true);
+			DebugPilotInfo.getInstance().setStop(true);
 		}
 
 		@Override
