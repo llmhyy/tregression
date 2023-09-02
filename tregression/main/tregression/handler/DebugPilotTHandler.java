@@ -23,7 +23,7 @@ public class DebugPilotTHandler extends DebugPilotHandler {
 					correctView = (CorrectTraceView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(CorrectTraceView.ID);
 					pathView = (PathView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PathView.ID);
 					pathView.setBuggyView(buggyView);
-					
+					trace = buggyView.getTrace();
 				} catch (PartInitException e) {
 					buggyView = null;
 					correctView = null;
