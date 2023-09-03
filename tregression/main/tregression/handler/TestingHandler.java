@@ -16,8 +16,8 @@ import org.eclipse.ui.PlatformUI;
 
 import com.sun.security.ntlm.Client;
 
-import debuginfo.DebugInfo;
-import debuginfo.NodeFeedbacksPair;
+import microbat.debugpilot.DebugPilotInfo;
+import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;

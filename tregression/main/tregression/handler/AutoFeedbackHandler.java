@@ -13,9 +13,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import debuginfo.DebugInfo;
-import debuginfo.NodeFeedbacksPair;
 import microbat.Activator;
+import microbat.debugpilot.DebugPilotInfo;
+import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -68,12 +68,12 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		}
 
 		// Get input and output from user
-		final List<VarValue> inputs = DebugInfo.getInputs();
-		final List<VarValue> outputs = DebugInfo.getOutputs();
+		final List<VarValue> inputs = DebugPilotInfo.getInstance().getInputs();
+		final List<VarValue> outputs = DebugPilotInfo.getInstance().getOutputs();
 		VarValue output = outputs.get(0);
 		TraceNode outputNode = null;
 		if (output.getVarID().startsWith("CR_")) {
-			NodeFeedbacksPair initPair = DebugInfo.getNodeFeedbackPair();
+			NodeFeedbacksPair initPair = DebugPilotInfo.getInstance().getNodeFeedbackPair();
 			outputNode = initPair.getNode();
 		} else {
 			outputNode = this.getStartingNode(this.buggyView.getTrace(), output);
@@ -129,7 +129,7 @@ public class AutoFeedbackHandler extends AbstractHandler {
 	}
 
 	protected boolean isIOReady() {
-		return !DebugInfo.getInputs().isEmpty() && !(DebugInfo.getOutputs().isEmpty());
+		return !DebugPilotInfo.getInstance().getInputs().isEmpty() && !(DebugPilotInfo.getInstance().getOutputs().isEmpty());
 	}
 
 	protected TraceNode getStartingNode(final Trace trace, final VarValue output) {

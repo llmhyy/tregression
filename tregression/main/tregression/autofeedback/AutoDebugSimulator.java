@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.eclipse.swt.widgets.Display;
 
-import debuginfo.NodeFeedbackPair;
+import microbat.debugpilot.NodeFeedbackPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.recommendation.StepRecommender;

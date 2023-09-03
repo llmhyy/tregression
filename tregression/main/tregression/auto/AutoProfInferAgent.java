@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import debuginfo.NodeFeedbackPair;
-import debuginfo.NodeFeedbacksPair;
 import microbat.debugpilot.DebugPilot;
+import microbat.debugpilot.NodeFeedbackPair;
+import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
 import microbat.debugpilot.rootcausefinder.RootCauseLocatorType;

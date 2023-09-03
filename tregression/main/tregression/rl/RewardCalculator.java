@@ -6,10 +6,11 @@ import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
 import sav.common.core.Pair;
 import tregression.auto.AutoFeedbackAgent;
-import debuginfo.NodeFeedbacksPair;
+
 import java.util.List;
 import java.util.ArrayList;
 
+import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.FeedbackPathUtil;
 import microbat.log.Log;

@@ -3,7 +3,7 @@ package tregression.autofeedbackevaluation;
 import java.util.Arrays;
 import java.util.List;
 
-import debuginfo.NodeFeedbackPair;
+import microbat.debugpilot.NodeFeedbackPair;
 import microbat.recommendation.UserFeedback;
 
 /**
