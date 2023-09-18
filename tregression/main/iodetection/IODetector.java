@@ -318,9 +318,9 @@ public class IODetector {
         }
         List<VarValue> result = pair.findSingleWrongWrittenVarID(buggyTrace, pairList);
         Optional<NodeVarValPair> wrongWrittenVar = getWrongVarFromVarList(result, node);
-        if (wrongWrittenVar.isPresent()) {
-            return wrongWrittenVar;
-        }
+//        if (wrongWrittenVar.isPresent()) {
+//            return wrongWrittenVar;
+//        }
         result = pair.findSingleWrongReadVar(buggyTrace, pairList);
         return getWrongVarFromVarList(result, node);
     }

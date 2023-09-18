@@ -9,6 +9,7 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import microbat.debugpilot.DebugPilot;
+import microbat.debugpilot.NodeFeedbackPair;
 import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.PathFinderType;
@@ -22,6 +23,7 @@ import microbat.log.Log;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
 import tregression.auto.result.DebugResult;
@@ -106,15 +108,15 @@ public class AutoDebugAgent {
 		settings.setOutputNode(outputNode);
 		
 		PropagatorSettings propagatorSettings = settings.getPropagatorSettings();
-		propagatorSettings.setPropagatorType(PropagatorType.SPP_CF);
+		propagatorSettings.setPropagatorType(PropagatorType.SPP_S);
 		settings.setPropagatorSettings(propagatorSettings);
 		
 		PathFinderSettings pathFinderSettings = settings.getPathFinderSettings();
-		pathFinderSettings.setPathFinderType(PathFinderType.Dijkstra);
+		pathFinderSettings.setPathFinderType(PathFinderType.DijkstraExp);
 		settings.setPathFinderSettings(pathFinderSettings);
 		
 		RootCauseLocatorSettings rootCauseLocatorSettings = settings.getRootCauseLocatorSettings();
-		rootCauseLocatorSettings.setRootCauseLocatorType(RootCauseLocatorType.SPP);
+		rootCauseLocatorSettings.setRootCauseLocatorType(RootCauseLocatorType.SUSPICIOUS);
 		settings.setRootCauseLocatorSettings(rootCauseLocatorSettings);
 		
 		return settings;
@@ -127,6 +129,19 @@ public class AutoDebugAgent {
 		DebugResult debugResult = new DebugResult(result);
 		
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
+		for (VarValue wrongVar : settings.getPropagatorSettings().getWrongVars()) {
+			if (wrongVar.isConditionResult()) {
+				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
+				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
+				userFeedbackRecords.add(pair);
+			} else {
+				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
+				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+ 				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
+ 				userFeedbackRecords.add(pair);
+			}
+			break;
+		}
 		
 		Log.printMsg(this.getClass(),  "Start automatic debugging: " + result.projectName + ":" + result.bugID);
 		
@@ -193,7 +208,8 @@ public class AutoDebugAgent {
 					final NodeFeedbacksPair prevsFeedbacksPair = userFeedbackRecords.peek();
 					final TraceNode endNode = prevsFeedbacksPair.getNode();
 					final UserFeedback feedback = prevsFeedbacksPair.getFirstFeedback();
-					this.handleOmissionBug(startNode, endNode, feedback);
+//					this.handleOmissionBug(startNode, endNode, feedback);
+					totalFeedbackCount += 1;
 					isEnd = true;
 				} else {
 					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
