@@ -17,7 +17,7 @@ public class StopDebugPilotTHandler extends AbstractHandler {
 		Job job = new Job("DebugPilot") {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				DebugPilotInfo.getInstance().setStop(true);
+//				DebugPilotInfo.getInstance().setStop(true);
 				return Status.OK_STATUS;
 			}
 		};

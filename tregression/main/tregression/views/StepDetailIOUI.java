@@ -234,7 +234,7 @@ public class StepDetailIOUI extends StepDetailUI {
 
 		@Override
 		public void mouseDown(MouseEvent e) {
-			DebugPilotInfo.getInstance().setStop(true);
+//			DebugPilotInfo.getInstance().setStop(true);
 		}
 
 		@Override
