@@ -67,7 +67,7 @@ public class AutoProfInferAgent {
 		settings.setPropagatorSettings(propagatorSettings);
 		
 		PathFinderSettings pathFinderSettings = settings.getPathFinderSettings();
-		pathFinderSettings.setPathFinderType(PathFinderType.Dijkstra);
+		pathFinderSettings.setPathFinderType(PathFinderType.DijkstraExp);
 		settings.setPathFinderSettings(pathFinderSettings);
 		
 		RootCauseLocatorSettings rootCauseLocatorSettings = settings.getRootCauseLocatorSettings();

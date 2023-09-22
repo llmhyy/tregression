@@ -108,11 +108,11 @@ public class AutoDebugAgent {
 		settings.setOutputNode(outputNode);
 		
 		PropagatorSettings propagatorSettings = settings.getPropagatorSettings();
-		propagatorSettings.setPropagatorType(PropagatorType.SPP_S);
+		propagatorSettings.setPropagatorType(PropagatorType.SPPS_CB);
 		settings.setPropagatorSettings(propagatorSettings);
 		
 		PathFinderSettings pathFinderSettings = settings.getPathFinderSettings();
-		pathFinderSettings.setPathFinderType(PathFinderType.DijkstraExp);
+		pathFinderSettings.setPathFinderType(PathFinderType.SuspiciousDijkstraExp);
 		settings.setPathFinderSettings(pathFinderSettings);
 		
 		RootCauseLocatorSettings rootCauseLocatorSettings = settings.getRootCauseLocatorSettings();
