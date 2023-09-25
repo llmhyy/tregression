@@ -21,7 +21,7 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
-import tregression.auto.AutoDebugAgent;
+import tregression.auto.AutoDebugPilotAgent;
 import tregression.auto.AutoFeedbackAgent;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;

@@ -129,7 +129,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 					ProjectsRunner.printMsg("Outputs: ");
 					ProjectsRunner.printMsg(outputDetected.toString());
 					
-					AutoDebugAgent agent = new AutoDebugAgent(trial, inputs, outputs, outputNode);
+					AutoDebugPilotAgent agent = new AutoDebugPilotAgent(trial, inputs, outputs, outputNode);
 					DebugResult debugResult = new DebugResult(result);
 					ExecutorService executor = Executors.newSingleThreadExecutor();
 					Future<DebugResult> future = executor.submit(() -> {

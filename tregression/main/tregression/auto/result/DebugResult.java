@@ -11,6 +11,9 @@ public class DebugResult extends RunResult {
 	public boolean rootCauseCorrect = false;
 	public boolean debugSuccess = false;
 	
+	public double microbat_effort = -1.0d;
+	public double debugpilot_effort = -1.0d;
+	
 	public DebugResult() {
 		
 	}
@@ -76,6 +79,13 @@ public class DebugResult extends RunResult {
 		
 		final String debugSuccess_str = tokens[12];
 		result.debugSuccess = Boolean.valueOf(debugSuccess_str);
+		
+		final String microbat_effort_str = tokens[13];
+		result.debugSuccess = Boolean.valueOf(microbat_effort_str);
+		
+		final String debugpilot_effort_str = tokens[14];
+		result.debugSuccess = Boolean.valueOf(debugpilot_effort_str);
+		
 		return result;
 	}
 	
@@ -91,6 +101,8 @@ public class DebugResult extends RunResult {
 		this.appendStr(strBuilder, String.valueOf(this.totalFeedbackCount));
 		this.appendStr(strBuilder, String.valueOf(this.rootCauseCorrect));
 		this.appendStr(strBuilder, String.valueOf(this.debugSuccess));
+		this.appendStr(strBuilder, String.valueOf(this.microbat_effort));
+		this.appendStr(strBuilder, String.valueOf(this.debugpilot_effort));
 		return strBuilder.toString();
 	}
 	

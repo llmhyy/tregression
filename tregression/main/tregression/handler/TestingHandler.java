@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-import tregression.auto.AutoDebugAgent;
+import tregression.auto.AutoDebugPilotAgent;
 import tregression.auto.result.DebugResult;
 //import dataset.BugDataset;
 //import dataset.BugDataset.BugData;

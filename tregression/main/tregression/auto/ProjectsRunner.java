@@ -76,9 +76,10 @@ public abstract class ProjectsRunner {
                 if (!this.targetBugs.contains(id)) {
                 	continue;
                 }
-//                if (!projectName.equals("Lang") && !projectName.equals("Time") && !projectName.equals("Chart") && !projectName.equals("Gson")) {
-//                	continue;
-//                }
+                
+                if (!id.equals("Lang:22")) {
+                	continue;
+                }
 
                 RunResult result = this.runProject(projectName, bugID_str);
                 if (result != null) {

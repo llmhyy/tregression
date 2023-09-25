@@ -25,7 +25,7 @@ import tregression.preference.TregressionPreference;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
-import tregression.auto.AutoDebugAgent;
+import tregression.auto.AutoDebugPilotAgent;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.auto.result.DebugResult;
@@ -95,7 +95,7 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		}
 
 		// AutoFeedbackHandler.trail should be defined at SeparateVersionHandler
-		AutoDebugAgent agent = new AutoDebugAgent(AutoFeedbackHandler.trial, inputs, outputs, outputNode);
+		AutoDebugPilotAgent agent = new AutoDebugPilotAgent(AutoFeedbackHandler.trial, inputs, outputs, outputNode);
 		DebugResult debugResult = agent.startDebug(result);
 		System.out.println(debugResult.getFormattedInfo());
 	}

@@ -1,9 +1,12 @@
 package tregression.auto;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -30,7 +33,7 @@ import tregression.auto.result.DebugResult;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;
 
-public class AutoDebugAgent {
+public class AutoDebugPilotAgent {
 	
 	protected final Trace buggyTrace;
 	protected final AutoFeedbackAgent feedbackAgent;
@@ -49,7 +52,7 @@ public class AutoDebugAgent {
 	protected boolean debugSuccess = false;
 	protected boolean rootCauseCorrect = false;
 	
-	public AutoDebugAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
+	public AutoDebugPilotAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
 		this.feedbackAgent = new AutoFeedbackAgent(trial);
 		this.inputs = inputs;
@@ -127,6 +130,9 @@ public class AutoDebugAgent {
 		
 		DebugPilot debugPilot = new DebugPilot(settings);
 		DebugResult debugResult = new DebugResult(result);
+		debugResult.microbat_effort = 0.0d;
+		debugResult.debugpilot_effort = 0.0d;
+		
 		
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
 		for (VarValue wrongVar : settings.getPropagatorSettings().getWrongVars()) {
@@ -186,21 +192,29 @@ public class AutoDebugAgent {
 				Log.printMsg(this.getClass(), "Ground truth feedback: " + userFeedbacks);
 				totalFeedbackCount += 1;
 				
+				System.out.println("microbat_effort: " + debugResult.microbat_effort);
+				System.out.println("debugpilot_effort: " + debugResult.debugpilot_effort);
+				
 				// Reach the root case
 				// UserFeedback type is unclear also tell that this node is root cause
 				if (this.gtRootCauses.contains(currentNode)) {
 					if (predictedFeedback.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
 						correctFeedbackCount+=1;
 						rootCauseCorrect = true;
-					}
+					} 
+					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, new UserFeedback(UserFeedback.ROOTCAUSE));
+					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
 					debugSuccess = true;
 					isEnd = true;
 					break;
 				}
 				
 				if (userFeedbacks.containsFeedback(predictedFeedback)) {
+					// Prediction correct
 					userFeedbackRecords.add(userFeedbacks);
-					currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);
+					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
+					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);					
 					correctFeedbackCount+=1;
 				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT) ||
 						TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
@@ -208,6 +222,10 @@ public class AutoDebugAgent {
 					final NodeFeedbacksPair prevsFeedbacksPair = userFeedbackRecords.peek();
 					final TraceNode endNode = prevsFeedbacksPair.getNode();
 					final UserFeedback feedback = prevsFeedbacksPair.getFirstFeedback();
+					
+					debugResult.microbat_effort += this.measureMicorbatEffort(endNode);
+					debugResult.debugpilot_effort += this.countAvaliableFeedback(endNode);
+							
 //					this.handleOmissionBug(startNode, endNode, feedback);
 					totalFeedbackCount += 1;
 					isEnd = true;
@@ -215,6 +233,10 @@ public class AutoDebugAgent {
 					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
 					needPropagateAgain = true;
 					userFeedbackRecords.add(userFeedbacks);
+					
+					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
+					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					
 					currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
 				}
 			}
@@ -317,5 +339,67 @@ public class AutoDebugAgent {
 					}
 				}
 			).toList();
+	}
+	
+	protected int countAvaliableFeedback(final TraceNode node) {
+		return node.getReadVariables().size() + 3; // Add 3 for control slicing, root cause, and correct
+	}
+	
+	protected double measureMicorbatEffort(final TraceNode node) {
+		int totalNoChoice = this.countAvaliableFeedback(node);
+		return (double) totalNoChoice / 2.0d;
+	}
+	
+	protected double measureDebugPilotEffort(final TraceNode node, final UserFeedback feedback, final UserFeedback gtFeedback) {
+		
+		System.out.println("---------------------------------");
+		System.out.println("Node:" + node.getOrder());
+		System.out.println("Given feedback:" + feedback);
+		System.out.println("GT feedback: " + gtFeedback);
+		
+		System.out.println("microbat effort: " + this.measureMicorbatEffort(node));
+		
+		if (feedback.equals(gtFeedback)) {
+			System.out.println("debugpilot effort:" + 1.0d);
+			return 1.0d;
+		}
+		
+		// Find all possible feedback and corresponding suspicious
+		Map<UserFeedback, Double> possibleFeedbackMap = new HashMap<>();
+		for (VarValue readVar : node.getReadVariables()) {
+			UserFeedback possibleFeedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
+			possibleFeedback.setOption(new ChosenVariableOption(readVar, null));
+			if (!possibleFeedback.equals(feedback)) {
+				possibleFeedbackMap.put(possibleFeedback, readVar.computationalCost);
+			}
+		}
+		final TraceNode controlDom = node.getControlDominator();
+		UserFeedback possibleControlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
+		possibleFeedbackMap.put(possibleControlFeedback, controlDom == null ? 0.0d : controlDom.getConditionResult().computationalCost);
+		
+		// Sort the feedback in descending order
+        List<Map.Entry<UserFeedback, Double>> possibleFeedbackList = new ArrayList<>(possibleFeedbackMap.entrySet());
+        Comparator<Map.Entry<UserFeedback, Double>> valueComparator = (entry1, entry2) -> {
+            return Double.compare(entry2.getValue(), entry1.getValue());
+        };
+        possibleFeedbackList.sort(valueComparator);
+        List<UserFeedback> sortedFeedbackList = new ArrayList<>();
+        for (Map.Entry<UserFeedback, Double> entry : possibleFeedbackList) {
+        	sortedFeedbackList.add(entry.getKey());
+        }
+        sortedFeedbackList.add(new UserFeedback(UserFeedback.CORRECT));
+        sortedFeedbackList.add(new UserFeedback(UserFeedback.ROOTCAUSE));
+        
+        // Start measuring effort
+        double effort = 1.0d;
+        for (UserFeedback sortedFeedback : sortedFeedbackList) {
+        	effort += 1.0d;
+        	if (sortedFeedback.equals(gtFeedback)) {
+        		System.out.println("debugpilot effort:" + effort);
+        		return effort;
+        	}
+        }
+        throw new RuntimeException("GT Feedback is not in the sorted list");
+		
 	}
 }
