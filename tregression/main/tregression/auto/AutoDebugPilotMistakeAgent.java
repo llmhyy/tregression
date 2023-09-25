@@ -240,6 +240,7 @@ public class AutoDebugPilotMistakeAgent {
 						userFeedbackRecords.pop();
 						userFeedbackRecords.add(userFeedbacks);
 						currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
+						totalFeedbackCount += 1;
 					}
 					
 				} else {
