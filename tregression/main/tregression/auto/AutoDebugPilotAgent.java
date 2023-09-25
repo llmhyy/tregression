@@ -352,15 +352,7 @@ public class AutoDebugPilotAgent {
 	
 	protected double measureDebugPilotEffort(final TraceNode node, final UserFeedback feedback, final UserFeedback gtFeedback) {
 		
-		System.out.println("---------------------------------");
-		System.out.println("Node:" + node.getOrder());
-		System.out.println("Given feedback:" + feedback);
-		System.out.println("GT feedback: " + gtFeedback);
-		
-		System.out.println("microbat effort: " + this.measureMicorbatEffort(node));
-		
 		if (feedback.equals(gtFeedback)) {
-			System.out.println("debugpilot effort:" + 1.0d);
 			return 1.0d;
 		}
 		
@@ -384,18 +376,17 @@ public class AutoDebugPilotAgent {
         };
         possibleFeedbackList.sort(valueComparator);
         List<UserFeedback> sortedFeedbackList = new ArrayList<>();
+        sortedFeedbackList.add(new UserFeedback(UserFeedback.ROOTCAUSE));
+        sortedFeedbackList.add(new UserFeedback(UserFeedback.CORRECT));
         for (Map.Entry<UserFeedback, Double> entry : possibleFeedbackList) {
         	sortedFeedbackList.add(entry.getKey());
         }
-        sortedFeedbackList.add(new UserFeedback(UserFeedback.CORRECT));
-        sortedFeedbackList.add(new UserFeedback(UserFeedback.ROOTCAUSE));
         
         // Start measuring effort
         double effort = 1.0d;
         for (UserFeedback sortedFeedback : sortedFeedbackList) {
         	effort += 1.0d;
         	if (sortedFeedback.equals(gtFeedback)) {
-        		System.out.println("debugpilot effort:" + effort);
         		return effort;
         	}
         }
