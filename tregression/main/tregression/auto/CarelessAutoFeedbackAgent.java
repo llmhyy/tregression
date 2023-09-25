@@ -9,6 +9,7 @@ import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
+import microbat.util.TraceUtil;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.model.PairList;
@@ -19,12 +20,12 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 	protected double wrongProb;
 
 	public CarelessAutoFeedbackAgent(EmpiricalTrial trail) {
-		this(trail, 0.1d);
+		this(trail, 0.05d);
 	}
 
 	public CarelessAutoFeedbackAgent(Trace buggyTrace, Trace correctTrace, PairList pairList, DiffMatcher matcher,
 			RootCauseFinder finder) {
-		this(buggyTrace, correctTrace, pairList, matcher, finder, 0.1d);
+		this(buggyTrace, correctTrace, pairList, matcher, finder, 0.05d);
 	}
 
 	public CarelessAutoFeedbackAgent(EmpiricalTrial trial, final double wrongProb) {
@@ -38,9 +39,8 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 		this.wrongProb = wrongProb;
 	}
 
-	@Override
-	public UserFeedback giveFeedback(final TraceNode node) {
-		List<UserFeedback> possibleFeedbacks = this.getPossibleFeedbacks(node);
+	public UserFeedback giveFeedback(final TraceNode node, final Trace trace) {
+		List<UserFeedback> possibleFeedbacks = this.getPossibleFeedbacks(node, trace);
 		UserFeedback gtFeedback = super.giveFeedback(node);
 
 		if (possibleFeedbacks.size() <= 1 || Math.random() > this.wrongProb) {
@@ -53,7 +53,7 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 		return possibleFeedbacks.get(randomIdx);
 	}
 
-	protected List<UserFeedback> getPossibleFeedbacks(final TraceNode node) {
+	protected List<UserFeedback> getPossibleFeedbacks(final TraceNode node, final Trace trace) {
 		List<UserFeedback> feedbacks = new ArrayList<>();
 
 		// Control Slicing
@@ -65,8 +65,11 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 		// Data Slicing
 		for (VarValue readVar : node.getReadVariables()) {
 			UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
-			feedback.setOption(new ChosenVariableOption(readVar, null));
+			if (TraceUtil.findNextNode(node, feedback, trace) != null) {				
+				feedback.setOption(new ChosenVariableOption(readVar, null));
+			}
 		}
+		
 
 		return feedbacks;
 	}
