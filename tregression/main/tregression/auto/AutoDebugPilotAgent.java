@@ -221,7 +221,7 @@ public class AutoDebugPilotAgent {
 					final UserFeedback feedback = prevsFeedbacksPair.getFirstFeedback();
 					
 					debugResult.microbat_effort += this.measureMicorbatEffort(endNode);
-					debugResult.debugpilot_effort += this.countAvaliableFeedback(endNode);
+					debugResult.debugpilot_effort += this.measureDebugPilotEffort(endNode, feedback, userFeedbacks.getFirstFeedback());
 							
 //					this.handleOmissionBug(startNode, endNode, feedback);
 					totalFeedbackCount += 1;
