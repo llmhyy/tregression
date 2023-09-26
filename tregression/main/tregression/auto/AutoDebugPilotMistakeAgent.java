@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import microbat.debugpilot.DebugPilot;
 import microbat.debugpilot.NodeFeedbacksPair;
+import microbat.debugpilot.fsc.AbstractDebugPilotState;
+import microbat.debugpilot.fsc.DebugPilotFiniteStateMachine;
 import microbat.debugpilot.pathfinding.FeedbackPath;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
@@ -49,6 +51,8 @@ public class AutoDebugPilotMistakeAgent {
 	protected List<Double> totalTimes = new ArrayList<>();
 	protected boolean debugSuccess = false;
 	protected boolean rootCauseCorrect = false;
+	
+	protected DebugResult debugResult = null;
 	
 	public AutoDebugPilotMistakeAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
@@ -109,7 +113,7 @@ public class AutoDebugPilotMistakeAgent {
 		settings.setOutputNode(outputNode);
 		
 		PropagatorSettings propagatorSettings = settings.getPropagatorSettings();
-		propagatorSettings.setPropagatorType(PropagatorType.SPPS_CB);
+		propagatorSettings.setPropagatorType(PropagatorType.SPPS_CS);
 		settings.setPropagatorSettings(propagatorSettings);
 		
 		PathFinderSettings pathFinderSettings = settings.getPathFinderSettings();
@@ -127,7 +131,7 @@ public class AutoDebugPilotMistakeAgent {
 		DebugPilotSettings settings = this.getSettings();
 		
 		DebugPilot debugPilot = new DebugPilot(settings);
-		DebugResult debugResult = new DebugResult(result);
+		this.debugResult = new DebugResult(result);
 		debugResult.microbat_effort = 0.0d;
 		debugResult.debugpilot_effort = 0.0d;
 		
@@ -146,115 +150,15 @@ public class AutoDebugPilotMistakeAgent {
 			}
 			break;
 		}
+		TraceNode currentNode = this.outputNode;
 		
 		Log.printMsg(this.getClass(),  "Start automatic debugging: " + result.projectName + ":" + result.bugID);
-		
-		TraceNode currentNode = this.outputNode;
-		boolean isEnd = false;
-		
-		// Measurement
-		while (!isEnd) {
-			debugPilot.updateFeedbacks(userFeedbackRecords);
-			debugPilot.multiSlicing();
-			
-			// Propagation
-			Log.printMsg(this.getClass(), "Propagating probability ...");
-			long propStartTime = System.currentTimeMillis();
-			debugPilot.propagate();
-			long propEndTime = System.currentTimeMillis();
-			double propTime = (propEndTime - propStartTime) / (double) 1000;
-			propTimes.add(propTime);
-			Log.printMsg(this.getClass(), "Propagatoin time: " + propTime);
-			
-			// Locate root cause
-			Log.printMsg(this.getClass(), "Locating root cause ...");
-			TraceNode proposedRootCause =  debugPilot.locateRootCause();
-			
-			// Path finding
-			long pathStartTime = System.currentTimeMillis();
-			Log.printMsg(this.getClass(), "Constructing path to root cause ...");
-			FeedbackPath feedbackPath =  debugPilot.constructPath(proposedRootCause);
-			long pathEndTime = System.currentTimeMillis();
-			double pathFindingTime = (pathEndTime - pathStartTime) / (double) 1000;
-			pathFindingTimes.add(pathFindingTime);
-			Log.printMsg(this.getClass(), "Path finding time: " + pathFindingTime);
-			
-			totalTimes.add(propTime + pathFindingTime);
-			
-			boolean needPropagateAgain = false;
-			while (!needPropagateAgain && !isEnd) {
-				UserFeedback predictedFeedback = feedbackPath.getFeedback(currentNode).getFirstFeedback();
-				Log.printMsg(this.getClass(), "--------------------------------------");
-				Log.printMsg(this.getClass(), "Predicted feedback of node: " + currentNode.getOrder() + ": " + predictedFeedback.toString());
-				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);
-				Log.printMsg(this.getClass(), "Ground truth feedback: " + userFeedbacks);
-				totalFeedbackCount += 1;
-				
-				// Reach the root case
-				// UserFeedback type is unclear also tell that this node is root cause
-				if (this.gtRootCauses.contains(currentNode)) {
-					if (predictedFeedback.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
-						correctFeedbackCount+=1;
-						rootCauseCorrect = true;
-					} 
-					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, new UserFeedback(UserFeedback.ROOTCAUSE));
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
-					debugSuccess = true;
-					isEnd = true;
-					break;
-				}
-				
-				if (userFeedbacks.containsFeedback(predictedFeedback)) {
-					// Prediction correct
-					userFeedbackRecords.add(userFeedbacks);
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
-					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
-					currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);					
-					correctFeedbackCount+=1;
-				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT) ||
-						TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
-					final TraceNode startNode = currentNode;
-					final NodeFeedbacksPair prevsFeedbacksPair = userFeedbackRecords.peek();
-					final TraceNode prevNode = prevsFeedbacksPair.getNode();
-					final UserFeedback feedback = prevsFeedbacksPair.getFirstFeedback();
-					
-					
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
-					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, feedback, userFeedbacks.getFirstFeedback());
-					
-					final NodeFeedbacksPair confirmPrevFeedbacksPair = this.giveFeedback(prevNode);
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
-					debugResult.debugpilot_effort += this.countAvaliableFeedback(currentNode);
-					if (confirmPrevFeedbacksPair.equals(prevsFeedbacksPair)) {
-						debugSuccess = false;
-						for (TraceNode candidateRootCause : this.gtRootCauses) {
-							if (this.isWithing(candidateRootCause, startNode, prevNode)) {
-								debugSuccess = true;
-								break;
-							}
-						}
-						totalFeedbackCount += 1;
-						isEnd = true;
-					} else {
-						needPropagateAgain = true;
-						userFeedbackRecords.pop();
-						userFeedbackRecords.add(userFeedbacks);
-						currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
-						totalFeedbackCount += 1;
-					}
-					
-				} else {
-					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
-					needPropagateAgain = true;
-					userFeedbackRecords.add(userFeedbacks);
-					
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
-					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
-					
-					currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
-				}
-			}
+		final DebugPilotFiniteStateMachine fsm = new DebugPilotFiniteStateMachine(debugPilot);
+		fsm.setState(new PropagationState(fsm, userFeedbackRecords, currentNode));
+		while (!fsm.isEnd()) {
+			fsm.handleFeedback();
 		}
+		
 		
 		final double avgPropTime = propTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
 		final double avgPathFindingTime = pathFindingTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
@@ -265,7 +169,6 @@ public class AutoDebugPilotMistakeAgent {
 		debugResult.avgTotalTime = avgTime;
 		debugResult.correctFeedbackCount = correctFeedbackCount;
 		debugResult.totalFeedbackCount = totalFeedbackCount;
-		debugResult.debugSuccess = debugSuccess;
 		debugResult.rootCauseCorrect = rootCauseCorrect;
 		return debugResult;
 	}
@@ -360,9 +263,8 @@ public class AutoDebugPilotMistakeAgent {
 	}
 	
 	protected double measureMicorbatEffort(final TraceNode node) {
-		int totalNoChoice = this.countAvaliableFeedback(node);
-		double effort = (double) totalNoChoice / 2.0d;
-		return Math.max(effort, 1.0d);
+		int totalNoChoice = this.countAvaliableFeedback(node) + 1;
+		return totalNoChoice / 2.0d;
 	}
 	
 	protected double measureDebugPilotEffort(final TraceNode node, final UserFeedback feedback, final UserFeedback gtFeedback) {
@@ -371,6 +273,8 @@ public class AutoDebugPilotMistakeAgent {
 			return 1.0d;
 		}
 		
+		double maxSlicingSuspicious = -1.0d;
+		
 		// Find all possible feedback and corresponding suspicious
 		Map<UserFeedback, Double> possibleFeedbackMap = new HashMap<>();
 		for (VarValue readVar : node.getReadVariables()) {
@@ -378,24 +282,32 @@ public class AutoDebugPilotMistakeAgent {
 			possibleFeedback.setOption(new ChosenVariableOption(readVar, null));
 			if (!possibleFeedback.equals(feedback)) {
 				possibleFeedbackMap.put(possibleFeedback, readVar.computationalCost);
+				maxSlicingSuspicious = Math.max(maxSlicingSuspicious, readVar.computationalCost);
 			}
 		}
 		final TraceNode controlDom = node.getControlDominator();
 		UserFeedback possibleControlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
 		possibleFeedbackMap.put(possibleControlFeedback, controlDom == null ? 0.0d : controlDom.getConditionResult().computationalCost);
+		if (controlDom != null) {			
+			maxSlicingSuspicious = Math.max(maxSlicingSuspicious, controlDom.getConditionResult().computationalCost);
+		}
+		
+		if (gtFeedback.getFeedbackType().equals(UserFeedback.CORRECT) && maxSlicingSuspicious <= 0.2d) {
+			return 3.0d;
+		}
 		
 		// Sort the feedback in descending order
-        List<Map.Entry<UserFeedback, Double>> possibleFeedbackList = new ArrayList<>(possibleFeedbackMap.entrySet());
+        List<Map.Entry<UserFeedback, Double>> slicingFeedbacks = new ArrayList<>(possibleFeedbackMap.entrySet());
         Comparator<Map.Entry<UserFeedback, Double>> valueComparator = (entry1, entry2) -> {
             return Double.compare(entry2.getValue(), entry1.getValue());
         };
-        possibleFeedbackList.sort(valueComparator);
+        slicingFeedbacks.sort(valueComparator);
         List<UserFeedback> sortedFeedbackList = new ArrayList<>();
         sortedFeedbackList.add(new UserFeedback(UserFeedback.ROOTCAUSE));
-        sortedFeedbackList.add(new UserFeedback(UserFeedback.CORRECT));
-        for (Map.Entry<UserFeedback, Double> entry : possibleFeedbackList) {
+        for (Map.Entry<UserFeedback, Double> entry : slicingFeedbacks) {
         	sortedFeedbackList.add(entry.getKey());
         }
+        sortedFeedbackList.add(new UserFeedback(UserFeedback.CORRECT));
         
         // Start measuring effort
         double effort = 1.0d;
@@ -413,4 +325,189 @@ public class AutoDebugPilotMistakeAgent {
 		return rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder(); 
 	}
 	
+	
+	protected class PropagationState extends AbstractDebugPilotState {
+
+		protected Stack<NodeFeedbacksPair> userFeedbackRecords;
+		protected TraceNode currentNode;
+		
+		public PropagationState(DebugPilotFiniteStateMachine stateMachine, TraceNode currentNode) {
+			super(stateMachine);
+			this.userFeedbackRecords = new Stack<NodeFeedbacksPair>();
+			this.currentNode = currentNode;
+		}
+		
+		public PropagationState(DebugPilotFiniteStateMachine stateMachine, final NodeFeedbacksPair initFeedbacksPair, TraceNode currentNode) {
+			this(stateMachine, currentNode);
+			this.userFeedbackRecords.add(initFeedbacksPair);
+		}
+		
+		public PropagationState(DebugPilotFiniteStateMachine stateMachine, Stack<NodeFeedbacksPair> userFeedbackRecords, TraceNode currentNode) {
+			super(stateMachine);
+			this.userFeedbackRecords = userFeedbackRecords;
+			this.currentNode = currentNode;
+		}
+		
+
+		@Override
+		public void handleFeedback() {
+			final DebugPilot debugPilot = this.stateMachine.getDebugPilot();
+			debugPilot.updateFeedbacks(this.userFeedbackRecords);  
+			debugPilot.multiSlicing();
+			
+			// Propagation
+			Log.printMsg(this.getClass(), "Propagating probability ...");
+			long propStartTime = System.currentTimeMillis();
+			debugPilot.propagate();
+			long propEndTime = System.currentTimeMillis();
+			double propTime = (propEndTime - propStartTime) / (double) 1000;
+			propTimes.add(propTime);
+			Log.printMsg(this.getClass(), "Propagatoin time: " + propTime);
+			
+			// Locate root cause
+			Log.printMsg(this.getClass(), "Locating root cause ...");
+			TraceNode proposedRootCause =  debugPilot.locateRootCause();
+			
+			long pathStartTime = System.currentTimeMillis();
+			Log.printMsg(this.getClass(), "Constructing path to root cause ...");
+			FeedbackPath feedbackPath =  debugPilot.constructPath(proposedRootCause);
+			long pathEndTime = System.currentTimeMillis();
+			double pathFindingTime = (pathEndTime - pathStartTime) / (double) 1000;
+			pathFindingTimes.add(pathFindingTime);
+
+			totalTimes.add(propTime + pathFindingTime);
+			
+			for (NodeFeedbacksPair nodeFeedbacksPair : feedbackPath) {
+				if (!nodeFeedbacksPair.getNode().equals(this.currentNode)) {
+					continue;
+				}
+				
+				final UserFeedback predictedFeedback = nodeFeedbacksPair.getFirstFeedback();
+				totalFeedbackCount += 1;
+				
+				NodeFeedbacksPair userFeedbacks = giveFeedback(currentNode);
+				if (gtRootCauses.contains(this.currentNode)) {
+					if (predictedFeedback.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
+						correctFeedbackCount+=1;
+						rootCauseCorrect = true;
+					} 
+					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, new UserFeedback(UserFeedback.ROOTCAUSE));
+					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+					debugSuccess = true;
+					this.stateMachine.setState(new EndState(this.stateMachine, true));
+					return;
+				} else if (userFeedbacks.containsFeedback(predictedFeedback)) {
+					this.userFeedbackRecords.add(userFeedbacks);
+					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					this.currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);					
+					correctFeedbackCount+=1;
+				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT) ||
+						TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
+					// Confirm with user the last node
+					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords));
+					return;
+				} else {
+					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
+
+					this.userFeedbackRecords.add(userFeedbacks);
+					
+					debugResult.microbat_effort += measureMicorbatEffort(this.currentNode);
+					debugResult.debugpilot_effort += measureDebugPilotEffort(this.currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					
+					this.currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
+					this.stateMachine.setState(new PropagationState(this.stateMachine, this.currentNode));
+				}	
+			}
+			throw new RuntimeException("Node does not in the path");
+		}
+	}
+	
+	protected class EndState extends AbstractDebugPilotState {
+
+		protected boolean success;
+		public EndState(DebugPilotFiniteStateMachine stateMachine, boolean success) {
+			super(stateMachine);
+			this.success = success;
+		}
+
+		@Override
+		public void handleFeedback() {
+			debugResult.debugSuccess = success;
+			this.stateMachine.setEnd(true);
+		}
+	}
+	
+	protected class ConfirmState extends AbstractDebugPilotState {
+		
+		protected Stack<NodeFeedbacksPair> userFeedbackRecords;
+		
+		public ConfirmState(DebugPilotFiniteStateMachine stateMachine, Stack<NodeFeedbacksPair> userFeedbackRecords) {
+			super(stateMachine);
+			this.userFeedbackRecords = userFeedbackRecords;
+		}
+		
+		@Override
+		public void handleFeedback() {
+			if (this.userFeedbackRecords.isEmpty()) {
+				debugResult.debugSuccess = false;
+				this.stateMachine.setState(new EndState(stateMachine, false));
+				return;
+			}
+			
+			final NodeFeedbacksPair nodeFeedbacksPair = this.userFeedbackRecords.pop();
+			final TraceNode node = nodeFeedbacksPair.getNode();
+			final UserFeedback predictedFeedback = nodeFeedbacksPair.getFirstFeedback();
+			
+			NodeFeedbacksPair userFeedbacksPair = giveFeedback(node);
+			
+			debugResult.microbat_effort += measureMicorbatEffort(node);
+			debugResult.debugpilot_effort += measureDebugPilotEffort(node, predictedFeedback, userFeedbacksPair.getFirstFeedback());
+			
+			if (userFeedbacksPair.containsFeedback(predictedFeedback)) {
+				TraceNode nextNode = TraceUtil.findNextNode(node, predictedFeedback, buggyTrace);
+				this.stateMachine.setState(new OmissionState(stateMachine, nextNode, node));
+			} else if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
+				this.stateMachine.setState(new EndState(stateMachine, true));
+			} else if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.CORRECT)) {
+				this.stateMachine.setState(new ConfirmState(stateMachine, userFeedbackRecords));
+			} else {
+				TraceNode nextNode = TraceUtil.findNextNode(node, userFeedbacksPair.getFirstFeedback(), buggyTrace);
+				this.userFeedbackRecords.add(userFeedbacksPair);
+				this.stateMachine.setState(new PropagationState(stateMachine, this.userFeedbackRecords, nextNode));
+			}
+		}
+	}
+	
+	protected class OmissionState extends AbstractDebugPilotState {
+		
+		protected TraceNode startNode;
+		protected TraceNode endNode;
+		
+		public OmissionState(DebugPilotFiniteStateMachine stateMachine, TraceNode startNode, TraceNode endNode) {
+			super(stateMachine);
+			this.startNode = startNode;
+			this.endNode = endNode;
+		}
+		
+		@Override
+		public void handleFeedback() {
+			for (TraceNode rootCause : gtRootCauses) {
+				if (this.withinRange(rootCause, this.startNode, this.endNode)) {
+					this.stateMachine.setState(new EndState(this.stateMachine, true));
+					return;
+				}
+			}
+			this.stateMachine.setState(new EndState(this.stateMachine, false));
+			return;
+		}
+		
+		protected boolean withinRange(final TraceNode rootCause, final TraceNode startNode, final TraceNode endNode) {
+			return rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder();
+		
+			
+		}
+	}
 }
