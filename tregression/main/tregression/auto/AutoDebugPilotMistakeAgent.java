@@ -69,6 +69,7 @@ public class AutoDebugPilotMistakeAgent {
 		if (rootCauses.isEmpty()) {
 			rootCauses.addAll(this.extractFirstDeviationNodes(trail));
 		}
+		rootCauses.removeIf(r -> r == null);
 		return rootCauses;
 	}
 	
@@ -330,15 +331,11 @@ public class AutoDebugPilotMistakeAgent {
 
 		protected Stack<NodeFeedbacksPair> userFeedbackRecords;
 		protected TraceNode currentNode;
-		
-		public PropagationState(DebugPilotFiniteStateMachine stateMachine, TraceNode currentNode) {
-			super(stateMachine);
-			this.userFeedbackRecords = new Stack<NodeFeedbacksPair>();
-			this.currentNode = currentNode;
-		}
+
 		
 		public PropagationState(DebugPilotFiniteStateMachine stateMachine, final NodeFeedbacksPair initFeedbacksPair, TraceNode currentNode) {
-			this(stateMachine, currentNode);
+			super(stateMachine);
+			this.currentNode = currentNode;
 			this.userFeedbackRecords.add(initFeedbacksPair);
 		}
 		
@@ -418,7 +415,8 @@ public class AutoDebugPilotMistakeAgent {
 					debugResult.debugpilot_effort += measureDebugPilotEffort(this.currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					
 					this.currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
-					this.stateMachine.setState(new PropagationState(this.stateMachine, this.currentNode));
+					this.stateMachine.setState(new PropagationState(this.stateMachine, this.userFeedbackRecords, this.currentNode));
+					return;
 				}	
 			}
 			throw new RuntimeException("Node does not in the path");

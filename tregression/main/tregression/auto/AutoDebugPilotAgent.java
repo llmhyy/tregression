@@ -67,6 +67,7 @@ public class AutoDebugPilotAgent {
 		if (rootCauses.isEmpty()) {
 			rootCauses.addAll(this.extractFirstDeviationNodes(trail));
 		}
+		rootCauses.removeIf(r -> r == null);
 		return rootCauses;
 	}
 	
