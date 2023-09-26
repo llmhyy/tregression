@@ -132,7 +132,7 @@ public class AutoProfInferAgent {
 		debugResult.avgTotalTime = avgTime;
 		debugResult.correctFeedbackCount = correctFeedbackCount;
 		debugResult.totalFeedbackCount = totalFeedbackCount;
-		debugResult.debugSuccess = debugSuccess;
+		debugResult.debugPilotSuccess = debugSuccess;
 		debugResult.rootCauseCorrect = rootCauseCorrect;
 		return debugResult;
 	}

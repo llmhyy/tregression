@@ -50,6 +50,7 @@ public class AutoDebugPilotAgent {
 	protected List<Double> pathFindingTimes = new ArrayList<>();
 	protected List<Double> totalTimes = new ArrayList<>();
 	protected boolean debugSuccess = false;
+	protected boolean microbatSuccess = false;
 	protected boolean rootCauseCorrect = false;
 	
 	public AutoDebugPilotAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
@@ -203,6 +204,7 @@ public class AutoDebugPilotAgent {
 					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, new UserFeedback(UserFeedback.ROOTCAUSE));
 					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
 					debugSuccess = true;
+					microbatSuccess = true;
 					isEnd = true;
 					break;
 				}
@@ -214,19 +216,43 @@ public class AutoDebugPilotAgent {
 					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);					
 					correctFeedbackCount+=1;
-				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT) ||
-						TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
+				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT)) {
 					final TraceNode startNode = currentNode;
 					final NodeFeedbacksPair prevsFeedbacksPair = userFeedbackRecords.peek();
 					final TraceNode endNode = prevsFeedbacksPair.getNode();
-					final UserFeedback feedback = prevsFeedbacksPair.getFirstFeedback();
 					
 					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
-					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, feedback, userFeedbacks.getFirstFeedback());
-							
+					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					
+					this.debugSuccess = false;
+					this.microbatSuccess = false;
+					for (TraceNode rootCause : gtRootCauses) {
+						if (rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder()) {
+							this.debugSuccess = true;
+							this.microbatSuccess = true;
+							break;
+						}
+					}
+					
 //					this.handleOmissionBug(startNode, endNode, feedback);
 					totalFeedbackCount += 1;
 					isEnd = true;
+				} else if (TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
+					TraceNode startNode = currentNode.getInvocationMethodOrDominator();
+					final TraceNode endNode = currentNode;
+					
+					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
+					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					
+					this.debugSuccess = false;
+					this.microbatSuccess = false;
+					for (TraceNode rootCause : gtRootCauses) {
+						if (rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder()) {
+							this.debugSuccess = true;
+							this.microbatSuccess = true;
+							break;
+						}
+					}
 				} else {
 					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
 					needPropagateAgain = true;
@@ -249,8 +275,9 @@ public class AutoDebugPilotAgent {
 		debugResult.avgTotalTime = avgTime;
 		debugResult.correctFeedbackCount = correctFeedbackCount;
 		debugResult.totalFeedbackCount = totalFeedbackCount;
-		debugResult.debugSuccess = debugSuccess;
+		debugResult.debugPilotSuccess = debugSuccess;
 		debugResult.rootCauseCorrect = rootCauseCorrect;
+		debugResult.microbatSuccess = microbatSuccess;
 		return debugResult;
 	}
 	

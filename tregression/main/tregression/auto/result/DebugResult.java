@@ -9,7 +9,8 @@ public class DebugResult extends RunResult {
 	public int totalFeedbackCount = -1;
 	
 	public boolean rootCauseCorrect = false;
-	public boolean debugSuccess = false;
+	public boolean debugPilotSuccess = false;
+	public boolean microbatSuccess = false;
 	
 	public double microbat_effort = -1.0d;
 	public double debugpilot_effort = -1.0d;
@@ -29,7 +30,7 @@ public class DebugResult extends RunResult {
 		this.avgTotalTime = result.avgTotalTime;
 		this.correctFeedbackCount = result.correctFeedbackCount;
 		this.totalFeedbackCount = result.totalFeedbackCount;
-		this.debugSuccess = result.debugSuccess;
+		this.debugPilotSuccess = result.debugPilotSuccess;
 	}
 	
 	public static DebugResult parseString(final String string) {
@@ -78,13 +79,16 @@ public class DebugResult extends RunResult {
 		result.rootCauseCorrect = Boolean.valueOf(locateRootCause_str);
 		
 		final String debugSuccess_str = tokens[12];
-		result.debugSuccess = Boolean.valueOf(debugSuccess_str);
+		result.debugPilotSuccess = Boolean.valueOf(debugSuccess_str);
 		
 		final String microbat_effort_str = tokens[13];
-		result.debugSuccess = Boolean.valueOf(microbat_effort_str);
+		result.debugPilotSuccess = Boolean.valueOf(microbat_effort_str);
 		
 		final String debugpilot_effort_str = tokens[14];
-		result.debugSuccess = Boolean.valueOf(debugpilot_effort_str);
+		result.debugPilotSuccess = Boolean.valueOf(debugpilot_effort_str);
+		
+		final String microbatSuccess_str = tokens[15];
+		result.microbatSuccess = Boolean.valueOf(microbatSuccess_str);
 		
 		return result;
 	}
@@ -100,9 +104,10 @@ public class DebugResult extends RunResult {
 		this.appendStr(strBuilder, String.valueOf(this.correctFeedbackCount));
 		this.appendStr(strBuilder, String.valueOf(this.totalFeedbackCount));
 		this.appendStr(strBuilder, String.valueOf(this.rootCauseCorrect));
-		this.appendStr(strBuilder, String.valueOf(this.debugSuccess));
+		this.appendStr(strBuilder, String.valueOf(this.debugPilotSuccess));
 		this.appendStr(strBuilder, String.valueOf(this.microbat_effort));
 		this.appendStr(strBuilder, String.valueOf(this.debugpilot_effort));
+		this.appendStr(strBuilder, String.valueOf(this.microbatSuccess));
 		return strBuilder.toString();
 	}
 	
@@ -122,7 +127,7 @@ public class DebugResult extends RunResult {
 		builder.append("correctFeedbackCount: " + this.correctFeedbackCount + "\n");
 		builder.append("totalFeedbackCount: " + this.totalFeedbackCount + "\n");
 		builder.append("locateRootCause: " + this.rootCauseCorrect + "\n");
-		builder.append("debugSuccess: " + this.debugSuccess + "\n");
+		builder.append("debugSuccess: " + this.debugPilotSuccess + "\n");
 		builder.append("--------------------------------\n");
 		return builder.toString();
 	}
