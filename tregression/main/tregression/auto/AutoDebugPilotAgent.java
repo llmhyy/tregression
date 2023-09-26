@@ -370,7 +370,7 @@ public class AutoDebugPilotAgent {
 		possibleFeedbackMap.put(possibleControlFeedback, controlDom == null ? 0.0d : controlDom.getConditionResult().computationalCost);
 		maxSlicingSuspicious = Math.max(maxSlicingSuspicious, controlDom.getConditionResult().computationalCost);
 		
-		if (gtFeedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
+		if (gtFeedback.getFeedbackType().equals(UserFeedback.CORRECT) && maxSlicingSuspicious <= 0.2d) {
 			return 3.0d;
 		}
 		
