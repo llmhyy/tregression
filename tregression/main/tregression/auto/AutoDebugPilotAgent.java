@@ -343,7 +343,7 @@ public class AutoDebugPilotAgent {
 	}
 	
 	protected double measureMicorbatEffort(final TraceNode node) {
-		int totalNoChoice = this.countAvaliableFeedback(node);
+		int totalNoChoice = this.countAvaliableFeedback(node) + 1;
 		return (double) totalNoChoice / 2.0d;
 	}
 	
@@ -353,6 +353,8 @@ public class AutoDebugPilotAgent {
 			return 1.0d;
 		}
 		
+		double maxSlicingSuspicious = -1.0d;
+		
 		// Find all possible feedback and corresponding suspicious
 		Map<UserFeedback, Double> possibleFeedbackMap = new HashMap<>();
 		for (VarValue readVar : node.getReadVariables()) {
@@ -360,24 +362,30 @@ public class AutoDebugPilotAgent {
 			possibleFeedback.setOption(new ChosenVariableOption(readVar, null));
 			if (!possibleFeedback.equals(feedback)) {
 				possibleFeedbackMap.put(possibleFeedback, readVar.computationalCost);
+				maxSlicingSuspicious = Math.max(maxSlicingSuspicious, readVar.computationalCost);
 			}
 		}
 		final TraceNode controlDom = node.getControlDominator();
 		UserFeedback possibleControlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
 		possibleFeedbackMap.put(possibleControlFeedback, controlDom == null ? 0.0d : controlDom.getConditionResult().computationalCost);
+		maxSlicingSuspicious = Math.max(maxSlicingSuspicious, controlDom.getConditionResult().computationalCost);
+		
+		if (gtFeedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
+			return 3.0d;
+		}
 		
 		// Sort the feedback in descending order
-        List<Map.Entry<UserFeedback, Double>> possibleFeedbackList = new ArrayList<>(possibleFeedbackMap.entrySet());
+        List<Map.Entry<UserFeedback, Double>> slicingFeedbacks = new ArrayList<>(possibleFeedbackMap.entrySet());
         Comparator<Map.Entry<UserFeedback, Double>> valueComparator = (entry1, entry2) -> {
             return Double.compare(entry2.getValue(), entry1.getValue());
         };
-        possibleFeedbackList.sort(valueComparator);
+        slicingFeedbacks.sort(valueComparator);
         List<UserFeedback> sortedFeedbackList = new ArrayList<>();
         sortedFeedbackList.add(new UserFeedback(UserFeedback.ROOTCAUSE));
-        sortedFeedbackList.add(new UserFeedback(UserFeedback.CORRECT));
-        for (Map.Entry<UserFeedback, Double> entry : possibleFeedbackList) {
+        for (Map.Entry<UserFeedback, Double> entry : slicingFeedbacks) {
         	sortedFeedbackList.add(entry.getKey());
         }
+        sortedFeedbackList.add(new UserFeedback(UserFeedback.CORRECT));
         
         // Start measuring effort
         double effort = 1.0d;
