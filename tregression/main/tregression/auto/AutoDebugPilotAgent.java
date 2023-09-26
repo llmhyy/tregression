@@ -368,7 +368,9 @@ public class AutoDebugPilotAgent {
 		final TraceNode controlDom = node.getControlDominator();
 		UserFeedback possibleControlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
 		possibleFeedbackMap.put(possibleControlFeedback, controlDom == null ? 0.0d : controlDom.getConditionResult().computationalCost);
-		maxSlicingSuspicious = Math.max(maxSlicingSuspicious, controlDom.getConditionResult().computationalCost);
+		if (controlDom != null) {			
+			maxSlicingSuspicious = Math.max(maxSlicingSuspicious, controlDom.getConditionResult().computationalCost);
+		}
 		
 		if (gtFeedback.getFeedbackType().equals(UserFeedback.CORRECT) && maxSlicingSuspicious <= 0.2d) {
 			return 3.0d;
