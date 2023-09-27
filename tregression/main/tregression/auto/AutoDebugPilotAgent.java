@@ -86,7 +86,7 @@ public class AutoDebugPilotAgent {
 		Set<TraceNode> rootCauses = new HashSet<>();
 		TraceNode firstStep = null;
 		for (TraceNode node : trial.getBuggyTrace().getExecutionList()) {
-			UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
+			UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 			if (!feedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				firstStep = node;
 				break;
@@ -282,7 +282,7 @@ public class AutoDebugPilotAgent {
 	}
 	
 	private NodeFeedbacksPair giveFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
+		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
 		return feedbackPair;
 	}
@@ -314,7 +314,7 @@ public class AutoDebugPilotAgent {
 				this.correctFeedbackCount+=1;
 				return;
 			}
-			UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
+			UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 			if (feedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				left = mid+1;
 			} else {
@@ -334,7 +334,7 @@ public class AutoDebugPilotAgent {
 				this.correctFeedbackCount+=1;
 				return;
 			}
-			UserFeedback userFeedback = this.feedbackAgent.giveFeedback(node);
+			UserFeedback userFeedback = this.feedbackAgent.giveGTFeedback(node);
 			if (userFeedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				startOrder = node.getOrder();
 			} else {

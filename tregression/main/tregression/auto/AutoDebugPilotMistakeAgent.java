@@ -88,7 +88,7 @@ public class AutoDebugPilotMistakeAgent {
 		Set<TraceNode> rootCauses = new HashSet<>();
 		TraceNode firstStep = null;
 		for (TraceNode node : trial.getBuggyTrace().getExecutionList()) {
-			UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
+			UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 			if (!feedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				firstStep = node;
 				break;
@@ -181,6 +181,12 @@ public class AutoDebugPilotMistakeAgent {
 		return feedbackPair;
 	}
 	
+	private NodeFeedbacksPair giveGTFeedback(final TraceNode node) {
+		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
+		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
+		return feedbacksPair;
+	}
+	
 	public void handleOmissionBug(final TraceNode startNode, final TraceNode endNode, final UserFeedback feedback) {
 		List<TraceNode> candidatesNodes = this.buggyTrace.getExecutionList().stream()
 				.filter(node -> node.getOrder() > startNode.getOrder() && node.getOrder() < endNode.getOrder())
@@ -208,7 +214,7 @@ public class AutoDebugPilotMistakeAgent {
 				this.correctFeedbackCount+=1;
 				return;
 			}
-			UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
+			UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 			if (feedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				left = mid+1;
 			} else {
@@ -228,7 +234,7 @@ public class AutoDebugPilotMistakeAgent {
 				this.correctFeedbackCount+=1;
 				return;
 			}
-			UserFeedback userFeedback = this.feedbackAgent.giveFeedback(node);
+			UserFeedback userFeedback = this.feedbackAgent.giveGTFeedback(node);
 			if (userFeedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				startOrder = node.getOrder();
 			} else {
@@ -385,6 +391,8 @@ public class AutoDebugPilotMistakeAgent {
 				totalFeedbackCount += 1;
 				
 				NodeFeedbacksPair userFeedbacks = giveFeedback(currentNode);
+				NodeFeedbacksPair gtUserFeedbacks = giveGTFeedback(currentNode);
+				
 				if (gtRootCauses.contains(this.currentNode)) {
 					if (predictedFeedback.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
 						correctFeedbackCount+=1;
@@ -401,9 +409,9 @@ public class AutoDebugPilotMistakeAgent {
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					this.currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);					
 					correctFeedbackCount+=1;
-				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT)) {
+				} else if (gtUserFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT)) {
 					// Confirm with user the last node
-					this.userFeedbackRecords.pop();
+//					this.userFeedbackRecords.pop();
 					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords, this.microbatSuccess));
@@ -412,6 +420,7 @@ public class AutoDebugPilotMistakeAgent {
 					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords, this.microbatSuccess));
+					return;
 				} else {
 					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
 
@@ -470,7 +479,7 @@ public class AutoDebugPilotMistakeAgent {
 			final TraceNode node = nodeFeedbacksPair.getNode();
 			final UserFeedback predictedFeedback = nodeFeedbacksPair.getFirstFeedback();
 			
-			NodeFeedbacksPair userFeedbacksPair = giveFeedback(node);
+			NodeFeedbacksPair userFeedbacksPair = giveGTFeedback(node);
 			
 			debugResult.microbat_effort += measureMicorbatEffort(node);
 			debugResult.debugpilot_effort += measureDebugPilotEffort(node, predictedFeedback, userFeedbacksPair.getFirstFeedback());

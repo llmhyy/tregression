@@ -44,7 +44,7 @@ public class AutoFeedbackAgent {
 	 * @param node Target node
 	 * @return Ground truth feedback
 	 */
-	public UserFeedback giveFeedback(final TraceNode node) {
+	public UserFeedback giveGTFeedback(final TraceNode node) {
 		StepChangeType type = this.typeChecker.getType(node, true, this.pairList, this.matcher);
 		return this.typeToFeedback(type, node, true, this.finder);
 	}

@@ -34,7 +34,7 @@ public class Defects4jAutoDebugMistakeHandler extends AbstractHandler {
 	
 	private void execute() {
 		final String basePath = "D:\\Defects4j";
-		final String resultPath = Paths.get("D:", "result_spps_cs_5.txt").toString();
+		final String resultPath = Paths.get("D:", "result_spps_cs_5_test.txt").toString();
 		final ProjectsRunner runner = new Defects4jMistakeDebugPIlotRunner(basePath, resultPath);
 		runner.run();
 	}

@@ -41,7 +41,7 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 
 	public UserFeedback giveFeedback(final TraceNode node, final Trace trace) {
 		List<UserFeedback> possibleFeedbacks = this.getPossibleFeedbacks(node, trace);
-		UserFeedback gtFeedback = super.giveFeedback(node);
+		UserFeedback gtFeedback = super.giveGTFeedback(node);
 
 		if (possibleFeedbacks.size() <= 1 || Math.random() > this.wrongProb) {
 			return gtFeedback;
