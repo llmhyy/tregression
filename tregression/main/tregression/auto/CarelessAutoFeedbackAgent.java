@@ -65,8 +65,9 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 		// Data Slicing
 		for (VarValue readVar : node.getReadVariables()) {
 			UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
+			feedback.setOption(new ChosenVariableOption(readVar, null));
 			if (TraceUtil.findNextNode(node, feedback, trace) != null) {				
-				feedback.setOption(new ChosenVariableOption(readVar, null));
+				feedbacks.add(feedback);
 			}
 		}
 		

@@ -176,7 +176,7 @@ public class AutoDebugPilotMistakeAgent {
 	}
 	
 	private NodeFeedbacksPair giveFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
+		UserFeedback feedback = this.feedbackAgent.giveFeedback(node, this.buggyTrace);
 		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
 		return feedbackPair;
 	}
