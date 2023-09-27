@@ -51,6 +51,7 @@ public class AutoDebugPilotMistakeAgent {
 	protected List<Double> totalTimes = new ArrayList<>();
 	protected boolean debugSuccess = false;
 	protected boolean rootCauseCorrect = false;
+	protected boolean microbatSuccess = true;
 	
 	protected DebugResult debugResult = null;
 	
@@ -155,7 +156,7 @@ public class AutoDebugPilotMistakeAgent {
 		
 		Log.printMsg(this.getClass(),  "Start automatic debugging: " + result.projectName + ":" + result.bugID);
 		final DebugPilotFiniteStateMachine fsm = new DebugPilotFiniteStateMachine(debugPilot);
-		fsm.setState(new PropagationState(fsm, userFeedbackRecords, currentNode));
+		fsm.setState(new PropagationState(fsm, userFeedbackRecords, currentNode, true));
 		while (!fsm.isEnd()) {
 			fsm.handleFeedback();
 		}
@@ -319,7 +320,7 @@ public class AutoDebugPilotMistakeAgent {
         	}
         }
         throw new RuntimeException("GT Feedback is not in the sorted list");
-		
+
 	}
 	
 	protected boolean isWithing(final TraceNode rootCause, final TraceNode startNode, final TraceNode endNode) {
@@ -331,21 +332,22 @@ public class AutoDebugPilotMistakeAgent {
 
 		protected Stack<NodeFeedbacksPair> userFeedbackRecords;
 		protected TraceNode currentNode;
-
+		protected boolean microbatSuccess;
 		
-		public PropagationState(DebugPilotFiniteStateMachine stateMachine, final NodeFeedbacksPair initFeedbacksPair, TraceNode currentNode) {
+		public PropagationState(DebugPilotFiniteStateMachine stateMachine, final NodeFeedbacksPair initFeedbacksPair, TraceNode currentNode, boolean microbatSuccess) {
 			super(stateMachine);
 			this.currentNode = currentNode;
 			this.userFeedbackRecords.add(initFeedbacksPair);
+			this.microbatSuccess = microbatSuccess;
 		}
 		
-		public PropagationState(DebugPilotFiniteStateMachine stateMachine, Stack<NodeFeedbacksPair> userFeedbackRecords, TraceNode currentNode) {
+		public PropagationState(DebugPilotFiniteStateMachine stateMachine, Stack<NodeFeedbacksPair> userFeedbackRecords, TraceNode currentNode, boolean microbatSuccess) {
 			super(stateMachine);
 			this.userFeedbackRecords = userFeedbackRecords;
 			this.currentNode = currentNode;
+			this.microbatSuccess = microbatSuccess;
 		}
 		
-
 		@Override
 		public void handleFeedback() {
 			final DebugPilot debugPilot = this.stateMachine.getDebugPilot();
@@ -391,7 +393,7 @@ public class AutoDebugPilotMistakeAgent {
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, new UserFeedback(UserFeedback.ROOTCAUSE));
 					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
 					debugSuccess = true;
-					this.stateMachine.setState(new EndState(this.stateMachine, true));
+					this.stateMachine.setState(new EndState(this.stateMachine, true, this.microbatSuccess));
 					return;
 				} else if (userFeedbacks.containsFeedback(predictedFeedback)) {
 					this.userFeedbackRecords.add(userFeedbacks);
@@ -399,13 +401,17 @@ public class AutoDebugPilotMistakeAgent {
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					this.currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);					
 					correctFeedbackCount+=1;
-				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT) ||
-						TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
+				} else if (userFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT)) {
 					// Confirm with user the last node
+					this.userFeedbackRecords.pop();
 					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
-					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords));
+					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords, this.microbatSuccess));
 					return;
+				} else if (TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
+					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
+					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords, this.microbatSuccess));
 				} else {
 					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
 
@@ -415,7 +421,7 @@ public class AutoDebugPilotMistakeAgent {
 					debugResult.debugpilot_effort += measureDebugPilotEffort(this.currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					
 					this.currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
-					this.stateMachine.setState(new PropagationState(this.stateMachine, this.userFeedbackRecords, this.currentNode));
+					this.stateMachine.setState(new PropagationState(this.stateMachine, this.userFeedbackRecords, this.currentNode, this.microbatSuccess));
 					return;
 				}	
 			}
@@ -425,15 +431,18 @@ public class AutoDebugPilotMistakeAgent {
 	
 	protected class EndState extends AbstractDebugPilotState {
 
-		protected boolean success;
-		public EndState(DebugPilotFiniteStateMachine stateMachine, boolean success) {
+		protected boolean debugPilotSuccess;
+		protected boolean microbatSuccess;
+		public EndState(DebugPilotFiniteStateMachine stateMachine, boolean debugPilotSucess, boolean microbatSuccess) {
 			super(stateMachine);
-			this.success = success;
+			this.debugPilotSuccess = debugPilotSucess;
+			this.microbatSuccess = microbatSuccess;
 		}
 
 		@Override
 		public void handleFeedback() {
-			debugResult.debugSuccess = success;
+			debugResult.debugPilotSuccess = debugPilotSuccess;
+			debugResult.microbatSuccess = this.microbatSuccess;
 			this.stateMachine.setEnd(true);
 		}
 	}
@@ -441,17 +450,19 @@ public class AutoDebugPilotMistakeAgent {
 	protected class ConfirmState extends AbstractDebugPilotState {
 		
 		protected Stack<NodeFeedbacksPair> userFeedbackRecords;
+		protected boolean microbatSuccess;
 		
-		public ConfirmState(DebugPilotFiniteStateMachine stateMachine, Stack<NodeFeedbacksPair> userFeedbackRecords) {
+		public ConfirmState(DebugPilotFiniteStateMachine stateMachine, Stack<NodeFeedbacksPair> userFeedbackRecords, boolean microbatSuccess) {
 			super(stateMachine);
 			this.userFeedbackRecords = userFeedbackRecords;
+			this.microbatSuccess = microbatSuccess;
 		}
 		
 		@Override
 		public void handleFeedback() {
 			if (this.userFeedbackRecords.isEmpty()) {
-				debugResult.debugSuccess = false;
-				this.stateMachine.setState(new EndState(stateMachine, false));
+				debugResult.debugPilotSuccess = false;
+				this.stateMachine.setState(new EndState(stateMachine, false, false));
 				return;
 			}
 			
@@ -465,16 +476,18 @@ public class AutoDebugPilotMistakeAgent {
 			debugResult.debugpilot_effort += measureDebugPilotEffort(node, predictedFeedback, userFeedbacksPair.getFirstFeedback());
 			
 			if (userFeedbacksPair.containsFeedback(predictedFeedback)) {
+				// Confirm that it is not mistake
 				TraceNode nextNode = TraceUtil.findNextNode(node, predictedFeedback, buggyTrace);
-				this.stateMachine.setState(new OmissionState(stateMachine, nextNode, node));
+				this.stateMachine.setState(new OmissionState(stateMachine, nextNode, node,this.microbatSuccess));
 			} else if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
-				this.stateMachine.setState(new EndState(stateMachine, true));
+				// Give a wrong feedback to microbat
+				this.stateMachine.setState(new EndState(stateMachine, true, false));
 			} else if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.CORRECT)) {
-				this.stateMachine.setState(new ConfirmState(stateMachine, userFeedbackRecords));
+				this.stateMachine.setState(new ConfirmState(stateMachine, userFeedbackRecords, false));
 			} else {
 				TraceNode nextNode = TraceUtil.findNextNode(node, userFeedbacksPair.getFirstFeedback(), buggyTrace);
 				this.userFeedbackRecords.add(userFeedbacksPair);
-				this.stateMachine.setState(new PropagationState(stateMachine, this.userFeedbackRecords, nextNode));
+				this.stateMachine.setState(new PropagationState(stateMachine, this.userFeedbackRecords, nextNode, false));
 			}
 		}
 	}
@@ -484,21 +497,24 @@ public class AutoDebugPilotMistakeAgent {
 		protected TraceNode startNode;
 		protected TraceNode endNode;
 		
-		public OmissionState(DebugPilotFiniteStateMachine stateMachine, TraceNode startNode, TraceNode endNode) {
+		protected boolean microbatSuccess;
+		
+		public OmissionState(DebugPilotFiniteStateMachine stateMachine, TraceNode startNode, TraceNode endNode, boolean microbatSuccess) {
 			super(stateMachine);
 			this.startNode = startNode;
 			this.endNode = endNode;
+			this.microbatSuccess = microbatSuccess;
 		}
 		
 		@Override
 		public void handleFeedback() {
 			for (TraceNode rootCause : gtRootCauses) {
 				if (this.withinRange(rootCause, this.startNode, this.endNode)) {
-					this.stateMachine.setState(new EndState(this.stateMachine, true));
+					this.stateMachine.setState(new EndState(this.stateMachine, true, this.microbatSuccess));
 					return;
 				}
 			}
-			this.stateMachine.setState(new EndState(this.stateMachine, false));
+			this.stateMachine.setState(new EndState(this.stateMachine, false, false));
 			return;
 		}
 		
