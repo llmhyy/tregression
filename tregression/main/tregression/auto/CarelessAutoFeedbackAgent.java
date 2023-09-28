@@ -56,11 +56,8 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 	protected List<UserFeedback> getPossibleFeedbacks(final TraceNode node, final Trace trace) {
 		List<UserFeedback> feedbacks = new ArrayList<>();
 
-		// Control Slicing
-		if (node.getControlDominator() != null) {
-			UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
-			feedbacks.add(feedback);
-		}
+		UserFeedback controlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
+		feedbacks.add(controlFeedback);
 
 		// Data Slicing
 		for (VarValue readVar : node.getReadVariables()) {

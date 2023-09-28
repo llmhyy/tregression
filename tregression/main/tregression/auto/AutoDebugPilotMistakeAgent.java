@@ -390,7 +390,7 @@ public class AutoDebugPilotMistakeAgent {
 				final UserFeedback predictedFeedback = nodeFeedbacksPair.getFirstFeedback();
 				totalFeedbackCount += 1;
 				
-				NodeFeedbacksPair userFeedbacks = giveFeedback(currentNode);
+				NodeFeedbacksPair userFeedbacks = feedbackPath.indexOf(nodeFeedbacksPair) == 0 ? giveGTFeedback(currentNode) : giveFeedback(currentNode);
 				NodeFeedbacksPair gtUserFeedbacks = giveGTFeedback(currentNode);
 				
 				if (gtRootCauses.contains(this.currentNode)) {
