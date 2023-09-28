@@ -15,6 +15,8 @@ public class DebugResult extends RunResult {
 	public double microbat_effort = -1.0d;
 	public double debugpilot_effort = -1.0d;
 	
+	public double probinfer_effort = -1.0d;
+	
 	public DebugResult() {
 		
 	}
@@ -90,6 +92,9 @@ public class DebugResult extends RunResult {
 		final String microbatSuccess_str = tokens[15];
 		result.microbatSuccess = Boolean.valueOf(microbatSuccess_str);
 		
+		final String probinfer_effort_str = tokens[16];
+		result.probinfer_effort = Double.valueOf(probinfer_effort_str);
+		
 		return result;
 	}
 	
@@ -108,6 +113,7 @@ public class DebugResult extends RunResult {
 		this.appendStr(strBuilder, String.valueOf(this.microbat_effort));
 		this.appendStr(strBuilder, String.valueOf(this.debugpilot_effort));
 		this.appendStr(strBuilder, String.valueOf(this.microbatSuccess));
+		this.appendStr(strBuilder, String.valueOf(this.probinfer_effort));
 		return strBuilder.toString();
 	}
 	

@@ -77,6 +77,8 @@ public class AutoProfInferAgent {
 		DebugPilot debugPilot = new DebugPilot(settings);
 		DebugResult debugResult = new DebugResult(result);
 		
+		debugResult.probinfer_effort = 0.0d;
+		
 		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
 		if (rootCause  == null) {
 			debugResult.errorMessage = Log.genMsg(getClass(), "Root Cause is null");
@@ -110,7 +112,9 @@ public class AutoProfInferAgent {
 			// Locate root cause
 			Log.printMsg(this.getClass(), "Locating root cause ...");
 			final TraceNode proposedRootCause = debugPilot.locateRootCause();
-
+			
+			debugResult.probinfer_effort += this.measureEffort(proposedRootCause);
+			
 			Log.printMsg(getClass(), "Proposed root cause: " + proposedRootCause.getOrder());
 			if (proposedRootCause.equals(rootCause)) {
 				Log.printMsg(getClass(), "Root Cause is found ...");
@@ -141,5 +145,9 @@ public class AutoProfInferAgent {
 		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
 		return feedbackPair;
+	}
+	
+	protected int measureEffort(final TraceNode node) {
+		return node.getReadVariables().size() + 3;
 	}
 }
