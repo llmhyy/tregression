@@ -36,6 +36,8 @@ public class AutoProfInferAgent {
 	private final List<VarValue> outputs;
 	private final TraceNode outputNode;
 	
+	protected final List<TraceNode> proposeHistory = new ArrayList<>();
+	
 	public AutoProfInferAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
 		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.05d);
@@ -118,8 +120,15 @@ public class AutoProfInferAgent {
 			Log.printMsg(getClass(), "Proposed root cause: " + proposedRootCause.getOrder());
 			if (proposedRootCause.equals(rootCause)) {
 				Log.printMsg(getClass(), "Root Cause is found ...");
+				debugResult.probinfer_success = true;
 				break;
 			} else {
+				long count = this.proposeHistory.stream().filter(n -> n.equals(proposedRootCause)).count();
+				if (count >= 3) {
+					debugResult.probinfer_success = false;
+					break;
+				}
+				this.proposeHistory.add(proposedRootCause);
 				NodeFeedbacksPair feedback = this.giveFeedback(proposedRootCause);
 				Log.printMsg(getClass(), "Wrong root cause, feedback is given: " + feedback);
 				userFeedbackRecords.add(feedback);
