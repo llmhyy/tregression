@@ -40,7 +40,7 @@ public class AutoProfInferAgent {
 	
 	public AutoProfInferAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.05d);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.00d);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -81,7 +81,8 @@ public class AutoProfInferAgent {
 		
 		debugResult.probinfer_effort = 0.0d;
 		
-		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
+		final TraceNode rootCause = this.buggyTrace.getTraceNode((int) result.rootCauseOrder);
+//		final TraceNode rootCause = result.isOmissionBug ? null : this.buggyTrace.getTraceNode((int)result.rootCauseOrder);
 		if (rootCause  == null) {
 			debugResult.errorMessage = Log.genMsg(getClass(), "Root Cause is null");
 			return debugResult;
