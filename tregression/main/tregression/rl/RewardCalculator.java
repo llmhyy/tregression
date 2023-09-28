@@ -86,7 +86,7 @@ public class RewardCalculator {
 		List<NodeFeedbacksPair> paths = new ArrayList<>();
 		TraceNode currentNode = this.startNode;
 		while (!currentNode.equals(this.gtRootCause)) {
-			final UserFeedback feedback = this.agent.giveFeedback(currentNode);
+			final UserFeedback feedback = this.agent.giveGTFeedback(currentNode);
 			final NodeFeedbacksPair pair = new NodeFeedbacksPair(currentNode, feedback);
 			paths.add(pair);
 			if (feedback.getFeedbackType().equals(UserFeedback.CORRECT)) {

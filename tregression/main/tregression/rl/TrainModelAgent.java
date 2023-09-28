@@ -157,7 +157,7 @@ public class TrainModelAgent {
 	}
 	
 	private NodeFeedbacksPair giveFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveFeedback(node);
+		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
 		return feedbackPair;
 	}
