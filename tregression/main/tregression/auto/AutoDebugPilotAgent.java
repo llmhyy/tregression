@@ -253,6 +253,7 @@ public class AutoDebugPilotAgent {
 							break;
 						}
 					}
+					isEnd = true;
 				} else {
 					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
 					needPropagateAgain = true;

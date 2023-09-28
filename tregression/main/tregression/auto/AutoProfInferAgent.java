@@ -31,28 +31,28 @@ import tregression.separatesnapshots.DiffMatcher;
 
 public class AutoProfInferAgent {
 	private final Trace buggyTrace;
-	private final AutoFeedbackAgent feedbackAgent;
+	private final CarelessAutoFeedbackAgent feedbackAgent;
 	private final List<VarValue> inputs;
 	private final List<VarValue> outputs;
 	private final TraceNode outputNode;
 	
 	public AutoProfInferAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new AutoFeedbackAgent(trial);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.05d);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
 	}
 	
-	public AutoProfInferAgent(final Trace buggyTrace, final Trace correctTrace, 
-			final DiffMatcher matcher, final PairList pairList, final RootCauseFinder finder,
-			List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
-		this.buggyTrace = buggyTrace;
-		this.feedbackAgent = new AutoFeedbackAgent(buggyTrace, correctTrace, pairList, matcher, finder);
-		this.inputs = inputs;
-		this.outputs = outputs;
-		this.outputNode = outputNode;
-	}
+//	public AutoProfInferAgent(final Trace buggyTrace, final Trace correctTrace, 
+//			final DiffMatcher matcher, final PairList pairList, final RootCauseFinder finder,
+//			List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
+//		this.buggyTrace = buggyTrace;
+//		this.feedbackAgent = new AutoFeedbackAgent(buggyTrace, correctTrace, pairList, matcher, finder);
+//		this.inputs = inputs;
+//		this.outputs = outputs;
+//		this.outputNode = outputNode;
+//	}
 	
 	public DebugResult startDebug(final RunResult result) {
 		
@@ -142,7 +142,7 @@ public class AutoProfInferAgent {
 	}
 	
 	private NodeFeedbacksPair giveFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
+		UserFeedback feedback = this.feedbackAgent.giveFeedback(node, this.buggyTrace);
 		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
 		return feedbackPair;
 	}
