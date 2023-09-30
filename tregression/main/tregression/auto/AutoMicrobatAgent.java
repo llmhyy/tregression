@@ -28,7 +28,7 @@ import tregression.model.TraceNodePair;
 
 public class AutoMicrobatAgent {
 	protected final Trace buggyTrace;
-	protected final AutoFeedbackAgent feedbackAgent;
+	protected final CarelessAutoFeedbackAgent feedbackAgent;
 	protected final List<VarValue> inputs;
 	protected final List<VarValue> outputs;
 	protected final TraceNode outputNode;
@@ -53,7 +53,7 @@ public class AutoMicrobatAgent {
 	
 	public AutoMicrobatAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new AutoFeedbackAgent(trial);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.05d);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -171,9 +171,18 @@ public class AutoMicrobatAgent {
 				break;
 			}
 			
-			NodeFeedbacksPair gtFeedbacksPair = this.giveFeedback(currentNode);
-			UserFeedback gtFeedback = gtFeedbacksPair.getFirstFeedback();
-			if (gtFeedbacksPair.getFeedbackType().equals(UserFeedback.CORRECT)) {
+			NodeFeedbacksPair userFeedbacksPair = this.giveFeedback(currentNode);
+			UserFeedback userFeedback = userFeedbacksPair.getFirstFeedback();
+			
+			NodeFeedbacksPair gtFeedbacksPair = this.giveGTFeedback(currentNode);
+			
+			if (!gtFeedbacksPair.equals(userFeedbacksPair)) {
+				this.debugResult.microbatSuccess = false;
+				isEnd = true;
+				break;
+			}
+			
+			if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				
 				// Correct feedback is given, omission bug detected
 				final TraceNode startNode = currentNode;
@@ -204,7 +213,7 @@ public class AutoMicrobatAgent {
 				}
 				
 				isEnd = true;
-			} else if (TraceUtil.findNextNode(currentNode, gtFeedback, buggyTrace) == null) {
+			} else if (TraceUtil.findNextNode(currentNode, userFeedback, buggyTrace) == null) {
 				TraceNode startNode = currentNode.getInvocationMethodOrDominator();
 				final TraceNode endNode = currentNode;
 				
@@ -234,8 +243,8 @@ public class AutoMicrobatAgent {
 				isEnd = true;
 			} else {
 				// Give feedback normally
-				currentNode = TraceUtil.findNextNode(currentNode, gtFeedback, buggyTrace);
-				userFeedbackRecords.add(gtFeedbacksPair);
+				currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyTrace);
+				userFeedbackRecords.add(userFeedbacksPair);
 			}
 		}
 		
@@ -248,6 +257,12 @@ public class AutoMicrobatAgent {
 	}
 	
 	protected NodeFeedbacksPair giveFeedback(final TraceNode node) {
+		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
+		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
+		return feedbacksPair;
+	}
+	
+	protected NodeFeedbacksPair giveGTFeedback(final TraceNode node) {
 		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
 		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
 		return feedbacksPair;
