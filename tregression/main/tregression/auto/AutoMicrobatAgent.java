@@ -7,9 +7,17 @@ import java.util.Set;
 import java.util.Stack;
 
 import microbat.debugpilot.NodeFeedbacksPair;
+import microbat.debugpilot.pathfinding.PathFinderType;
+import microbat.debugpilot.propagation.PropagatorType;
+import microbat.debugpilot.rootcausefinder.RootCauseLocatorType;
+import microbat.debugpilot.settings.DebugPilotSettings;
+import microbat.debugpilot.settings.PathFinderSettings;
+import microbat.debugpilot.settings.PropagatorSettings;
+import microbat.debugpilot.settings.RootCauseLocatorSettings;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
+import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
 import tregression.auto.result.DebugResult;
@@ -103,7 +111,31 @@ public class AutoMicrobatAgent {
 		return rootCauses;
 	}
 	
+	protected DebugPilotSettings getSettings() {
+		DebugPilotSettings settings = new DebugPilotSettings();
+		settings.setTrace(this.buggyTrace);
+		settings.setCorrectVars(new HashSet<>(this.inputs));
+		settings.setWrongVars(new HashSet<>(this.outputs));
+		settings.setOutputNode(outputNode);
+		
+		PropagatorSettings propagatorSettings = settings.getPropagatorSettings();
+		propagatorSettings.setPropagatorType(PropagatorType.SPPS_CB);
+		settings.setPropagatorSettings(propagatorSettings);
+		
+		PathFinderSettings pathFinderSettings = settings.getPathFinderSettings();
+		pathFinderSettings.setPathFinderType(PathFinderType.SuspiciousDijkstraExp);
+		settings.setPathFinderSettings(pathFinderSettings);
+		
+		RootCauseLocatorSettings rootCauseLocatorSettings = settings.getRootCauseLocatorSettings();
+		rootCauseLocatorSettings.setRootCauseLocatorType(RootCauseLocatorType.SUSPICIOUS);
+		settings.setRootCauseLocatorSettings(rootCauseLocatorSettings);
+		
+		return settings;
+	}
+	
 	public DebugResult startDebug(final RunResult result) {
+		DebugPilotSettings settings = this.getSettings();
+		
 		this.debugResult = new DebugResult(result);
 		this.debugResult.microbat_effort = 0.0d;
 		this.debugResult.debugpilot_effort = 0.0d;
@@ -112,6 +144,19 @@ public class AutoMicrobatAgent {
 		boolean isEnd = false;
 
 		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
+		for (VarValue wrongVar : settings.getPropagatorSettings().getWrongVars()) {
+			if (wrongVar.isConditionResult()) {
+				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
+				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
+				userFeedbackRecords.add(pair);
+			} else {
+				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
+				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+ 				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
+ 				userFeedbackRecords.add(pair);
+			}
+			break;
+		}
 		
 		long startDebugTime = System.currentTimeMillis();
 		
