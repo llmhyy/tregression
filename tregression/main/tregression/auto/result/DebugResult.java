@@ -18,6 +18,8 @@ public class DebugResult extends RunResult {
 	public double probinfer_effort = -1.0d;
 	public boolean probinfer_success = false;
 	
+	public double debug_time = 0.0d;
+	
 	public DebugResult() {
 		
 	}
@@ -99,6 +101,9 @@ public class DebugResult extends RunResult {
 		final String probinfer_success_str = tokens[17];
 		result.probinfer_success = Boolean.valueOf(probinfer_success_str);
 		
+		final String debug_time_str = tokens[18];
+		result.debug_time = Double.valueOf(debug_time_str);
+		
 		return result;
 	}
 	
@@ -119,6 +124,7 @@ public class DebugResult extends RunResult {
 		this.appendStr(strBuilder, String.valueOf(this.microbatSuccess));
 		this.appendStr(strBuilder, String.valueOf(this.probinfer_effort));
 		this.appendStr(strBuilder, String.valueOf(this.probinfer_success));
+		this.appendStr(strBuilder, String.valueOf(this.debug_time));
 		return strBuilder.toString();
 	}
 	

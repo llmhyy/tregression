@@ -123,6 +123,11 @@
              id="tregression.defects4jautodebug_debugpilot_mistake"
              name="Defects4j Auto Debug Mistake">
        </command>
+       <command
+             defaultHandler="tregression.handler.Defects4jAutoMicrobatHandler"
+             id="tregression.defects4jautodebug_microbat"
+             name="Auto Debug Microbat">
+       </command>
  </extension>	
  <extension
          point="org.eclipse.ui.views">
@@ -274,6 +279,11 @@
             </command>
             <command
                   commandId="tregression.defects4jautodebug_debugpilot_mistake"
+                  icon="icons/after.ico"
+                  style="push">
+            </command>
+            <command
+                  commandId="tregression.defects4jautodebug_microbat"
                   icon="icons/after.ico"
                   style="push">
             </command>

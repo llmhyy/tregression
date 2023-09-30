@@ -22,6 +22,7 @@ import microbat.debugpilot.settings.DebugPilotSettings;
 import microbat.debugpilot.settings.PathFinderSettings;
 import microbat.debugpilot.settings.PropagatorSettings;
 import microbat.debugpilot.settings.RootCauseLocatorSettings;
+import microbat.evaluation.model.PairList;
 import microbat.log.Log;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
@@ -32,6 +33,7 @@ import microbat.util.TraceUtil;
 import tregression.auto.result.DebugResult;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.RootCauseNode;
 
 public class AutoDebugPilotAgent {
 	
@@ -53,12 +55,16 @@ public class AutoDebugPilotAgent {
 	protected boolean microbatSuccess = false;
 	protected boolean rootCauseCorrect = false;
 	
+	protected final EmpiricalTrial trial;
+	protected List<TraceNode> rootCausesAtCorrectTrace = new ArrayList<>();
+	
 	public AutoDebugPilotAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
 		this.feedbackAgent = new AutoFeedbackAgent(trial);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
+		this.trial = trial;
 		this.gtRootCauses = this.extractrootCauses(trial);
 	}
 	
@@ -69,6 +75,12 @@ public class AutoDebugPilotAgent {
 			rootCauses.addAll(this.extractFirstDeviationNodes(trail));
 		}
 		rootCauses.removeIf(r -> r == null);
+		
+		for (RootCauseNode rootCause : trial.getRootCauseFinder().getRealRootCaseList()) {
+			if (!rootCause.isOnBefore()) {
+				this.rootCausesAtCorrectTrace.add(rootCause.getRoot());
+			}
+		}
 		return rootCauses;
 	}
 	
@@ -234,6 +246,16 @@ public class AutoDebugPilotAgent {
 						}
 					}
 					
+					final TraceNode startNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(startNode).getAfterNode();
+					final TraceNode endNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(endNode).getAfterNode();
+					for (TraceNode rootCause : this.rootCausesAtCorrectTrace) {
+						if (rootCause.getOrder() >= startNodeAtCorrectTrace.getOrder() && rootCause.getOrder() <= endNodeAtCorrectTrace.getOrder()) {
+							this.debugSuccess = true;
+							this.microbatSuccess = true;
+							break;
+						}
+					}
+					
 //					this.handleOmissionBug(startNode, endNode, feedback);
 					totalFeedbackCount += 1;
 					isEnd = true;
@@ -253,6 +275,17 @@ public class AutoDebugPilotAgent {
 							break;
 						}
 					}
+					
+					final TraceNode startNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(startNode).getAfterNode();
+					final TraceNode endNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(endNode).getAfterNode();
+					for (TraceNode rootCause : this.rootCausesAtCorrectTrace) {
+						if (rootCause.getOrder() >= startNodeAtCorrectTrace.getOrder() && rootCause.getOrder() <= endNodeAtCorrectTrace.getOrder()) {
+							this.debugSuccess = true;
+							this.microbatSuccess = true;
+							break;
+						}
+					}
+					
 					isEnd = true;
 				} else {
 					Log.printMsg(this.getClass(), "Wong prediction on feedback, start propagation again");
