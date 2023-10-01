@@ -53,7 +53,7 @@ public class AutoMicrobatAgent {
 	
 	public AutoMicrobatAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.05d);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.90d);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -257,7 +257,7 @@ public class AutoMicrobatAgent {
 	}
 	
 	protected NodeFeedbacksPair giveFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
+		UserFeedback feedback = this.feedbackAgent.giveFeedback(node, this.buggyTrace);
 		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
 		return feedbacksPair;
 	}
