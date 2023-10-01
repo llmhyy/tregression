@@ -53,7 +53,7 @@ public class AutoMicrobatAgent {
 	
 	public AutoMicrobatAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.90d);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.15d);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -176,11 +176,11 @@ public class AutoMicrobatAgent {
 			
 			NodeFeedbacksPair gtFeedbacksPair = this.giveGTFeedback(currentNode);
 			
-			if (!gtFeedbacksPair.equals(userFeedbacksPair)) {
-				this.debugResult.microbatSuccess = false;
-				isEnd = true;
-				break;
-			}
+//			if (!gtFeedbacksPair.equals(userFeedbacksPair)) {
+//				this.debugResult.microbatSuccess = false;
+//				isEnd = true;
+//				break;
+//			}
 			
 			if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.CORRECT)) {
 				
@@ -188,6 +188,8 @@ public class AutoMicrobatAgent {
 				final TraceNode startNode = currentNode;
 				final NodeFeedbacksPair prevsFeedbacksPair = userFeedbackRecords.peek();
 				final TraceNode endNode= prevsFeedbacksPair.getNode();
+				
+				this.debugResult.microbat_effort += this.measureMicrobatEffort(endNode);
 				
 				// Check is first deviation point lies in range
 				for (TraceNode rootCause : gtRootCauses) {
@@ -216,7 +218,7 @@ public class AutoMicrobatAgent {
 			} else if (TraceUtil.findNextNode(currentNode, userFeedback, buggyTrace) == null) {
 				TraceNode startNode = currentNode.getInvocationMethodOrDominator();
 				final TraceNode endNode = currentNode;
-				
+				this.debugResult.microbat_effort += this.measureMicrobatEffort(endNode);
 				// Check is first deviation point lies in range
 				for (TraceNode rootCause : gtRootCauses) {
 					if (rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder()) {
