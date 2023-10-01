@@ -32,6 +32,8 @@ import microbat.util.TraceUtil;
 import tregression.auto.result.DebugResult;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;
+import tregression.empiricalstudy.RootCauseNode;
+import tregression.model.TraceNodePair;
 
 public class AutoDebugPilotMistakeAgent {
 
@@ -55,12 +57,17 @@ public class AutoDebugPilotMistakeAgent {
 	
 	protected DebugResult debugResult = null;
 	
+	protected final EmpiricalTrial trial;
+	protected List<TraceNode> rootCausesAtCorrectTrace = new ArrayList<>();
+	
+	
 	public AutoDebugPilotMistakeAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
 		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.05d);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
+		this.trial = trial;
 		this.gtRootCauses = this.extractrootCauses(trial);
 	}
 	
@@ -71,6 +78,13 @@ public class AutoDebugPilotMistakeAgent {
 			rootCauses.addAll(this.extractFirstDeviationNodes(trail));
 		}
 		rootCauses.removeIf(r -> r == null);
+		
+		for (RootCauseNode rootCause : trial.getRootCauseFinder().getRealRootCaseList()) {
+			if (!rootCause.isOnBefore()) {
+				this.rootCausesAtCorrectTrace.add(rootCause.getRoot());
+			}
+		}
+		
 		return rootCauses;
 	}
 	
@@ -154,6 +168,8 @@ public class AutoDebugPilotMistakeAgent {
 		}
 		TraceNode currentNode = this.outputNode;
 		
+		long startDebugTime = System.currentTimeMillis();
+		
 		Log.printMsg(this.getClass(),  "Start automatic debugging: " + result.projectName + ":" + result.bugID);
 		final DebugPilotFiniteStateMachine fsm = new DebugPilotFiniteStateMachine(debugPilot);
 		fsm.setState(new PropagationState(fsm, userFeedbackRecords, currentNode, true));
@@ -161,6 +177,8 @@ public class AutoDebugPilotMistakeAgent {
 			fsm.handleFeedback();
 		}
 		
+		long endDebugTime = System.currentTimeMillis();
+		debugResult.debug_time = (endDebugTime - startDebugTime) / 1000.0d;
 		
 		final double avgPropTime = propTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
 		final double avgPathFindingTime = pathFindingTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
@@ -399,20 +417,20 @@ public class AutoDebugPilotMistakeAgent {
 						rootCauseCorrect = true;
 					} 
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, new UserFeedback(UserFeedback.ROOTCAUSE));
-					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+//					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
 					debugSuccess = true;
 					this.stateMachine.setState(new EndState(this.stateMachine, true, this.microbatSuccess));
 					return;
 				} else if (userFeedbacks.containsFeedback(predictedFeedback)) {
 					this.userFeedbackRecords.add(userFeedbacks);
-					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+//					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					this.currentNode = TraceUtil.findNextNode(currentNode, predictedFeedback, buggyTrace);					
 					correctFeedbackCount+=1;
 				} else if (gtUserFeedbacks.getFeedbackType().equals(UserFeedback.CORRECT)) {
 					// Confirm with user the last node
 //					this.userFeedbackRecords.pop();
-					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+//					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords, this.microbatSuccess));
 					return;
@@ -475,6 +493,8 @@ public class AutoDebugPilotMistakeAgent {
 				return;
 			}
 			
+			totalFeedbackCount += 1;
+			
 			final NodeFeedbacksPair nodeFeedbacksPair = this.userFeedbackRecords.pop();
 			final TraceNode node = nodeFeedbacksPair.getNode();
 			final UserFeedback predictedFeedback = nodeFeedbacksPair.getFirstFeedback();
@@ -486,6 +506,7 @@ public class AutoDebugPilotMistakeAgent {
 			
 			if (userFeedbacksPair.containsFeedback(predictedFeedback)) {
 				// Confirm that it is not mistake
+				correctFeedbackCount+=1;
 				TraceNode nextNode = TraceUtil.findNextNode(node, predictedFeedback, buggyTrace);
 				this.stateMachine.setState(new OmissionState(stateMachine, nextNode, node,this.microbatSuccess));
 			} else if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
@@ -523,6 +544,21 @@ public class AutoDebugPilotMistakeAgent {
 					return;
 				}
 			}
+			
+			final TraceNodePair startNodePair = trial.getPairList().findByBeforeNode(startNode);
+			final TraceNodePair endNodePair = trial.getPairList().findByBeforeNode(endNode);
+			if (startNodePair != null && endNodePair != null) {
+				final TraceNode startNodeAtCorrectTrace = startNodePair.getAfterNode();
+				final TraceNode endNodeAtCorrectTrace = endNodePair.getAfterNode();
+				
+				for (TraceNode rootCause : rootCausesAtCorrectTrace) {
+					if (rootCause.getOrder() >= startNodeAtCorrectTrace.getOrder() && rootCause.getOrder() <= endNodeAtCorrectTrace.getOrder()) {
+						this.stateMachine.setState(new EndState(this.stateMachine, true, this.microbatSuccess));
+						return;
+					}
+				}
+			}
+			
 			this.stateMachine.setState(new EndState(this.stateMachine, false, false));
 			return;
 		}
