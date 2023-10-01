@@ -167,6 +167,7 @@ public class AutoDebugPilotAgent {
 		
 		TraceNode currentNode = this.outputNode;
 		boolean isEnd = false;
+		long startDebugTime = System.currentTimeMillis();
 		
 		// Measurement
 		while (!isEnd) {
@@ -205,7 +206,7 @@ public class AutoDebugPilotAgent {
 				NodeFeedbacksPair userFeedbacks = this.giveFeedback(currentNode);
 				Log.printMsg(this.getClass(), "Ground truth feedback: " + userFeedbacks);
 				totalFeedbackCount += 1;
-				
+
 				// Reach the root case
 				// UserFeedback type is unclear also tell that this node is root cause
 				if (this.gtRootCauses.contains(currentNode)) {
@@ -214,9 +215,8 @@ public class AutoDebugPilotAgent {
 						rootCauseCorrect = true;
 					} 
 					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, new UserFeedback(UserFeedback.ROOTCAUSE));
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
+					
 					debugSuccess = true;
-					microbatSuccess = true;
 					isEnd = true;
 					break;
 				}
@@ -233,15 +233,12 @@ public class AutoDebugPilotAgent {
 					final NodeFeedbacksPair prevsFeedbacksPair = userFeedbackRecords.peek();
 					final TraceNode endNode = prevsFeedbacksPair.getNode();
 					
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
 					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					
 					this.debugSuccess = false;
-					this.microbatSuccess = false;
 					for (TraceNode rootCause : gtRootCauses) {
 						if (rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder()) {
 							this.debugSuccess = true;
-							this.microbatSuccess = true;
 							break;
 						}
 					}
@@ -251,13 +248,10 @@ public class AutoDebugPilotAgent {
 					for (TraceNode rootCause : this.rootCausesAtCorrectTrace) {
 						if (rootCause.getOrder() >= startNodeAtCorrectTrace.getOrder() && rootCause.getOrder() <= endNodeAtCorrectTrace.getOrder()) {
 							this.debugSuccess = true;
-							this.microbatSuccess = true;
 							break;
 						}
 					}
 					
-//					this.handleOmissionBug(startNode, endNode, feedback);
-					totalFeedbackCount += 1;
 					isEnd = true;
 				} else if (TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
 					TraceNode startNode = currentNode.getInvocationMethodOrDominator();
@@ -292,7 +286,6 @@ public class AutoDebugPilotAgent {
 					needPropagateAgain = true;
 					userFeedbackRecords.add(userFeedbacks);
 					
-					debugResult.microbat_effort += this.measureMicorbatEffort(currentNode);
 					debugResult.debugpilot_effort += this.measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					
 					currentNode = TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace);
@@ -312,6 +305,10 @@ public class AutoDebugPilotAgent {
 		debugResult.debugPilotSuccess = debugSuccess;
 		debugResult.rootCauseCorrect = rootCauseCorrect;
 		debugResult.microbatSuccess = microbatSuccess;
+		
+		long endDebugTime = System.currentTimeMillis();
+		debugResult.debug_time = (endDebugTime - startDebugTime) / 1000.0d;
+		
 		return debugResult;
 	}
 	
