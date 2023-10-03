@@ -30,10 +30,12 @@ import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
 import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
+import tregression.auto.AutoDebugPilotMistakeAgent.EndState;
 import tregression.auto.result.DebugResult;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseNode;
+import tregression.model.TraceNodePair;
 
 public class AutoDebugPilotAgent {
 	
@@ -243,14 +245,28 @@ public class AutoDebugPilotAgent {
 						}
 					}
 					
-					final TraceNode startNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(startNode).getAfterNode();
-					final TraceNode endNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(endNode).getAfterNode();
-					for (TraceNode rootCause : this.rootCausesAtCorrectTrace) {
-						if (rootCause.getOrder() >= startNodeAtCorrectTrace.getOrder() && rootCause.getOrder() <= endNodeAtCorrectTrace.getOrder()) {
-							this.debugSuccess = true;
-							break;
+					final TraceNodePair startNodePair = trial.getPairList().findByBeforeNode(startNode);
+					final TraceNodePair endNodePair = trial.getPairList().findByBeforeNode(endNode);
+					if (startNodePair != null && endNodePair != null) {
+						final TraceNode startNodeAtCorrectTrace = startNodePair.getAfterNode();
+						final TraceNode endNodeAtCorrectTrace = endNodePair.getAfterNode();
+						
+						for (TraceNode rootCause : rootCausesAtCorrectTrace) {
+							if (rootCause.getOrder() >= startNodeAtCorrectTrace.getOrder() && rootCause.getOrder() <= endNodeAtCorrectTrace.getOrder()) {
+								this.debugSuccess = true;
+								break;
+							}
 						}
 					}
+					
+//					final TraceNode startNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(startNode).getAfterNode();
+//					final TraceNode endNodeAtCorrectTrace = this.trial.getPairList().findByBeforeNode(endNode).getAfterNode();
+//					for (TraceNode rootCause : this.rootCausesAtCorrectTrace) {
+//						if (rootCause.getOrder() >= startNodeAtCorrectTrace.getOrder() && rootCause.getOrder() <= endNodeAtCorrectTrace.getOrder()) {
+//							this.debugSuccess = true;
+//							break;
+//						}
+//					}
 					
 					isEnd = true;
 				} else if (TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {

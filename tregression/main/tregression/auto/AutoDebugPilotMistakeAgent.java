@@ -63,7 +63,7 @@ public class AutoDebugPilotMistakeAgent {
 	
 	public AutoDebugPilotMistakeAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.05d);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.15d);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -435,7 +435,8 @@ public class AutoDebugPilotMistakeAgent {
 					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords, this.microbatSuccess));
 					return;
 				} else if (TraceUtil.findNextNode(currentNode, userFeedbacks.getFirstFeedback(), buggyTrace) == null) {
-					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+//					debugResult.microbat_effort += measureMicorbatEffort(currentNode);
+					this.userFeedbackRecords.add(userFeedbacks);
 					debugResult.debugpilot_effort += measureDebugPilotEffort(currentNode, predictedFeedback, userFeedbacks.getFirstFeedback());
 					this.stateMachine.setState(new ConfirmState(this.stateMachine, this.userFeedbackRecords, this.microbatSuccess));
 					return;
@@ -508,6 +509,9 @@ public class AutoDebugPilotMistakeAgent {
 				// Confirm that it is not mistake
 				correctFeedbackCount+=1;
 				TraceNode nextNode = TraceUtil.findNextNode(node, predictedFeedback, buggyTrace);
+				if (nextNode == null) {
+					nextNode = node.getInvocationMethodOrDominator();
+				}
 				this.stateMachine.setState(new OmissionState(stateMachine, nextNode, node,this.microbatSuccess));
 			} else if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.ROOTCAUSE)) {
 				// Give a wrong feedback to microbat
