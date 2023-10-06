@@ -176,6 +176,8 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 
 	@Override
 	public boolean performOk(){
+		this.autoSimulationMethod = AutoSimulationMethod.valueOf(this.simulateMethodTypeCombo.getText());
+		
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode("tregression.preference");
 		preferences.put(REPO_PATH, this.projectPathText.getText());
 		preferences.put(PROJECT_NAME, this.projectNameText.getText());
