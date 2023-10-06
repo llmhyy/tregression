@@ -92,7 +92,7 @@ public class SimulatorHandler extends AbstractHandler {
 		}
 		runner.run();
 		
-		
+		System.out.println("Simulation End.");
 	}
 	
 	protected void printSetting(final String inputFolder, final String outputPath, final double mistakeProbability, final long timeLimit, final AutoSimulationMethod method) {
