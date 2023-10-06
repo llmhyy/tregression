@@ -312,7 +312,7 @@ public class MutationRunnerHandler extends AbstractHandler {
 					result.isOmissionBug = t.getBugType() == EmpiricalTrial.OVER_SKIP;
 					result.rootCauseOrder = t.getRootcauseNode() == null ? -1 : t.getRootcauseNode().getOrder();
 					for (DeadEndRecord record : t.getDeadEndRecordList()) {
-						result.solutionName = record.getSolutionPattern().getTypeName();
+//						result.solutionName = record.getSolutionPattern().getTypeName();
 					}
 					IODetector ioDetector = new IODetector(t.getBuggyTrace(), "src\\test\\java", t.getPairList());
 					Path ioFilePath = Paths.get(pathConfig.getRepoPath(), projectName,

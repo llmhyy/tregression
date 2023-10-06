@@ -13,12 +13,19 @@ import tregression.model.PairList;
 
 public abstract class ProjectsDebugRunner extends ProjectsRunner {
 
-	public ProjectsDebugRunner(final String basePath, final String resultPath) {
+	protected final double mistakeProbability;
+	protected final long timeLimit;
+	
+	public ProjectsDebugRunner(final String basePath, final String resultPath, final double mistakeProbability, final long timeLimit) {
 		super(basePath, resultPath);
+		this.mistakeProbability = mistakeProbability;
+		this.timeLimit = timeLimit;
 	}
 	
-	public ProjectsDebugRunner(final String basePath, final String resultPath, final int maxThreadCount) {
+	public ProjectsDebugRunner(final String basePath, final String resultPath, final int maxThreadCount, final double mistakeProbability, final long timeLimt) {
 		super(basePath, resultPath, maxThreadCount);
+		this.mistakeProbability = mistakeProbability;
+		this.timeLimit = timeLimt;
 	}
 	
 	/**

@@ -35,7 +35,7 @@ public class Defects4jAutoProfInferHandler extends AbstractHandler {
 	private void execute() {
 		final String basePath = "D:\\Defects4j";
 		final String resultPath = Paths.get("D:", "probinfer.txt").toString();
-		final ProjectsRunner runner = new Defects4jProfInferRunner(basePath, resultPath);
+		final ProjectsRunner runner = new Defects4jProfInferRunner(basePath, resultPath, 0.0d, 120l);
 		runner.run();
 	}
 	

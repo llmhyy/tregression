@@ -15,44 +15,11 @@ public class RunResult {
 	public long traceLen = -1;
 	public long rootCauseOrder = -1;
 	public boolean isOmissionBug = false;
-	public String solutionName = " ";
+//	public String solutionName = " ";
 	public String errorMessage = " ";
 	
 	public final static String DELIMITER = ",";
-	
-	public static void main(String[] args) {
-		final String path = "E:\\david\\Mutation_Dataset\\result.txt";
-		List<RunResult> successCases = new ArrayList<>();
-		System.out.println("Reading ... ");
-		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-			String line;
-			while ((line = br.readLine()) != null) {
-				RunResult result = RunResult.parseString(line);
-				if (result.errorMessage.equals(" ")) {
-					successCases.add(result);
-				}
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Writting ...");
-		final String outputPath = "E:\\david\\Mutation_Dataset\\good_cases.txt";
-		try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputPath))) {
-			for (RunResult result : successCases) {
-				bw.write(result.toString());
-				bw.newLine();
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("Finish");
-	}
-	
-	
+
 	public RunResult() {
 		
 	}
@@ -63,7 +30,7 @@ public class RunResult {
 		this.traceLen = result.traceLen;
 		this.rootCauseOrder = result.rootCauseOrder;
 		this.isOmissionBug = result.isOmissionBug;
-		this.solutionName = result.solutionName;
+//		this.solutionName = result.solutionName;
 		this.errorMessage = result.errorMessage;
 	}
 	
@@ -90,10 +57,10 @@ public class RunResult {
 		final String isOmissionBug_str = tokens[4];
 		result.isOmissionBug = Boolean.valueOf(isOmissionBug_str);
 		
-		final String solutionName = tokens[5];
-		result.solutionName = solutionName == " " ? null : solutionName;
+//		final String solutionName = tokens[5];
+//		result.solutionName = solutionName == " " ? null : solutionName;
 		
-		final String errMsg = tokens[6];
+		final String errMsg = tokens[5];
 		result.errorMessage = errMsg == " " ? null : errMsg;
 		
 		return result;
@@ -107,7 +74,7 @@ public class RunResult {
 		this.appendStr(strBuilder, String.valueOf(this.traceLen));
 		this.appendStr(strBuilder, String.valueOf(this.rootCauseOrder));
 		this.appendStr(strBuilder, String.valueOf(this.isOmissionBug));
-		this.appendStr(strBuilder, this.solutionName);
+//		this.appendStr(strBuilder, this.solutionName);
 		this.appendStr(strBuilder, this.errorMessage);
 		return strBuilder.toString();
 	}
@@ -125,7 +92,7 @@ public class RunResult {
 		builder.append("Length: " + this.traceLen + "\n");
 		builder.append("Root Cause Order: " + this.rootCauseOrder + "\n");
 		builder.append("isOmissionBug: " + this.isOmissionBug + "\n");
-		builder.append("SolutationName: " + this.solutionName + "\n");
+//		builder.append("SolutationName: " + this.solutionName + "\n");
 		builder.append("Error Message: " + this.errorMessage + "\n");
 		builder.append("--------------------------------\n");
 		return builder.toString();

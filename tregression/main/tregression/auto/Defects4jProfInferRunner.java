@@ -26,12 +26,12 @@ public class Defects4jProfInferRunner extends ProjectsDebugRunner {
 
 	private List<String> outOfMemoryFilters = new ArrayList<>();
 	
-	public Defects4jProfInferRunner(String basePath, String resultPath) {
-		this(basePath, resultPath, 5);
+	public Defects4jProfInferRunner(String basePath, String resultPath, final double mistakeProbability, final long timeLimit) {
+		this(basePath, resultPath, 5, mistakeProbability, timeLimit);
 	}
 	
-	public Defects4jProfInferRunner(String basePath, String resultPath, int maxThreadsCount) {
-		super(basePath, resultPath, maxThreadsCount);
+	public Defects4jProfInferRunner(String basePath, String resultPath, int maxThreadsCount, final double mistakeProbability, final long timeLimit) {
+		super(basePath, resultPath, maxThreadsCount, mistakeProbability, timeLimit);
 	    outOfMemoryFilters.add("Compress:22");
 	    outOfMemoryFilters.add("Compress:29");
 	    outOfMemoryFilters.add("JacksonCore:4");
@@ -86,7 +86,7 @@ public class Defects4jProfInferRunner extends ProjectsDebugRunner {
 				for (DeadEndRecord record : trial.getDeadEndRecordList()) {
 					SolutionPattern solutionPattern = record.getSolutionPattern();
 					if (solutionPattern != null) {
-						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+//						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 					}
 				}
 				
@@ -128,14 +128,14 @@ public class Defects4jProfInferRunner extends ProjectsDebugRunner {
 					ProjectsRunner.printMsg("Outputs: ");
 					ProjectsRunner.printMsg(outputDetected.toString());
 					
-					AutoProfInferAgent agent = new AutoProfInferAgent(trial, inputs, outputs, outputNode);
+					AutoProfInferAgent agent = new AutoProfInferAgent(trial, inputs, outputs, outputNode, this.mistakeProbability);
 					DebugResult debugResult = new DebugResult(result);
 					ExecutorService executor = Executors.newSingleThreadExecutor();
 					Future<DebugResult> future = executor.submit(() -> {
 						return agent.startDebug(new DebugResult(result));
 					});
 					try {
-						debugResult = future.get(30, TimeUnit.MINUTES);
+						debugResult = future.get(this.timeLimit, TimeUnit.MINUTES);
 					} catch (Exception e) {
 						debugResult.errorMessage = e.toString();
 					} finally {

@@ -313,13 +313,13 @@ public class AutoDebugPilotAgent {
 		final double avgPathFindingTime = pathFindingTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
 		final double avgTime = totalTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
 		
-		debugResult.avgPropTime = avgPropTime;
-		debugResult.avgPathFindingTime = avgPathFindingTime;
-		debugResult.avgTotalTime = avgTime;
+//		debugResult.avgPropTime = avgPropTime;
+//		debugResult.avgPathFindingTime = avgPathFindingTime;
+//		debugResult.avgTotalTime = avgTime;
 		debugResult.correctFeedbackCount = correctFeedbackCount;
 		debugResult.totalFeedbackCount = totalFeedbackCount;
 		debugResult.debugPilotSuccess = debugSuccess;
-		debugResult.rootCauseCorrect = rootCauseCorrect;
+//		debugResult.rootCauseCorrect = rootCauseCorrect;
 		debugResult.microbatSuccess = microbatSuccess;
 		
 		long endDebugTime = System.currentTimeMillis();

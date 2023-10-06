@@ -183,7 +183,7 @@ public class IODetector {
             	return Optional.of(new NodeVarValPair(outputNode, wrongVariable.getVarVal(), wrongVariable.getVarContainerNodeOrder()));
             }
 //            return wrongVariableOptional;
-        }
+        } 
         return Optional.empty();
     }
 

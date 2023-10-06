@@ -51,9 +51,9 @@ public class AutoMicrobatAgent {
 	protected List<TraceNode> rootCausesAtCorrectTrace = new ArrayList<>();
 	
 	
-	public AutoMicrobatAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
+	public AutoMicrobatAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode, final double mistakeProbability) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.15d);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, mistakeProbability);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -139,6 +139,7 @@ public class AutoMicrobatAgent {
 		this.debugResult = new DebugResult(result);
 		this.debugResult.microbat_effort = 0.0d;
 		this.debugResult.debugpilot_effort = 0.0d;
+		this.debugResult.microbatSuccess = false;
 		
 		TraceNode currentNode = this.outputNode;
 		boolean isEnd = false;

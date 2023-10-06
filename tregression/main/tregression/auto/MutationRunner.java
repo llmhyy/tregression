@@ -137,7 +137,7 @@ public class MutationRunner extends ProjectsRunner {
 				result.rootCauseOrder = trial.getRootcauseNode() == null ? -1 : trial.getRootcauseNode().getOrder();
 				for (DeadEndRecord record : trial.getDeadEndRecordList()) {
 					if (record.getSolutionPattern() != null) {
-						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+//						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 					}
 				}
 				

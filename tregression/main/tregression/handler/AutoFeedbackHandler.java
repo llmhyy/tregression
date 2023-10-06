@@ -91,7 +91,7 @@ public class AutoFeedbackHandler extends AbstractHandler {
 		result.isOmissionBug = trial.getBugType() == EmpiricalTrial.OVER_SKIP;
 		result.rootCauseOrder = trial.getRootcauseNode().getOrder();
 		for (DeadEndRecord record : trial.getDeadEndRecordList()) {
-			result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+//			result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 		}
 
 		// AutoFeedbackHandler.trail should be defined at SeparateVersionHandler

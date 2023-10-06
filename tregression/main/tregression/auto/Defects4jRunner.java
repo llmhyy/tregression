@@ -82,7 +82,7 @@ public class Defects4jRunner extends ProjectsRunner {
 				for (DeadEndRecord record : trial.getDeadEndRecordList()) {
 					SolutionPattern solutionPattern = record.getSolutionPattern();
 					if (solutionPattern != null) {
-						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+//						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 					}
 				}
 			}

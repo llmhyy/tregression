@@ -1,5 +1,7 @@
 package tregression.preference;
 
+import java.util.stream.Stream;
+
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.PreferencePage;
@@ -18,6 +20,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import microbat.Activator;
+import microbat.debugpilot.propagation.PropagatorType;
+import tregression.auto.AutoSimulationMethod;
 import tregression.autofeedback.AutoFeedbackMethod;
 
 public class TregressionPreference extends PreferencePage implements IWorkbenchPreferencePage {
@@ -30,6 +34,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private Text bugIDText;
 	private Text testCaseText;
 	private Text defects4jFileText;
+	
 //	private Combo autoFeedbackCombo;
 //	private Button manualFeedbackButton;
 //	private Button useTestCaseIDButton;
@@ -37,7 +42,14 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 //	private Text seedText;
 //	private Text dropInFolderText;
 //	private Text configPathText;
-
+	
+	/* Simulator Setting*/
+	protected Text inputFolderText;
+	protected Text outputFolderText;
+	protected Text mistakeProbabilityText;
+	protected Combo simulateMethodTypeCombo;
+	protected AutoSimulationMethod autoSimulationMethod = AutoSimulationMethod.DEBUG_PILOT;
+	protected Text timeLimitText;
 	
 //	private String defaultBuggyProjectPath;
 //	private String defaultCorrectProjectPath;
@@ -47,6 +59,11 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	private String defaultBugID;
 	private String defaultTestCase;
 	private String defaultDefects4jFile;
+	
+	protected String defaultInputFolder;
+	protected String defaultOutputPath;
+	protected double defaultMistakeProbability;
+	protected double defaultTimeLimit;
 //	private String defaultManualFeedback;
 //	private String defaultUseTestCaseID;
 //	private String defaultTestCaesID;
@@ -64,6 +81,13 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 	public static final String TEST_CASE = "test_case";
 	public static final String DEFECTS4J_FILE = "defects4j_file";
 	public static final String AUTO_FEEDBACK_METHOD = "autoFeedbackMethod";
+	
+	public static final String INPUT_FOLDER_KEY = "input_folder_key";
+	public static final String OUTPUT_PATH_KEY = "output_path_key";
+	public static final String MISTAKE_PROBABILITY_KEY = "mistake_probability_key";
+	public static final String AUTO_SIMULATION_METHOD_KEY = "auto_simulation_method_key";
+	public static final String TIME_LIMIT_KEY = "time_limit_key";
+	
 //	public static final String MANUAL_FEEDBACK = "manualFeedback";
 //	public static final String TEST_CASE_ID = "testCaseID";
 //	public static final String USE_TEST_CASE_ID = "useTestCaseID";
@@ -92,6 +116,15 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		this.defaultBugID = Activator.getDefault().getPreferenceStore().getString(BUG_ID);
 		this.defaultTestCase = Activator.getDefault().getPreferenceStore().getString(TEST_CASE);
 		this.defaultDefects4jFile = Activator.getDefault().getPreferenceStore().getString(DEFECTS4J_FILE);
+		
+		this.defaultInputFolder = Activator.getDefault().getPreferenceStore().getString(INPUT_FOLDER_KEY);
+		this.defaultOutputPath = Activator.getDefault().getPreferenceStore().getString(OUTPUT_PATH_KEY);
+		
+		String mistakeProbStr = Activator.getDefault().getPreferenceStore().getString(MISTAKE_PROBABILITY_KEY);
+		this.defaultMistakeProbability = mistakeProbStr == null || mistakeProbStr.isEmpty() ? 0.0d : Double.valueOf(mistakeProbStr);
+		
+		String timeLimitStr = Activator.getDefault().getPreferenceStore().getString(MISTAKE_PROBABILITY_KEY);
+		this.defaultTimeLimit = timeLimitStr == null || timeLimitStr.isEmpty() ? 120.0d : Double.valueOf(timeLimitStr);
 //		this.defaultManualFeedback = Activator.getDefault().getPreferenceStore().getString(MANUAL_FEEDBACK);
 //		this.defaultUseTestCaseID = Activator.getDefault().getPreferenceStore().getString(USE_TEST_CASE_ID);
 //		this.defaultTestCaesID = Activator.getDefault().getPreferenceStore().getString(TEST_CASE_ID);
@@ -137,6 +170,7 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		defects4jFileText.setText(this.defaultDefects4jFile);
 
 //		this.createAutoFeedbackSettingGroup(compo);
+		this.createSimulationSettingGroup(compo);
 		return compo;
 	}
 
@@ -148,94 +182,72 @@ public class TregressionPreference extends PreferencePage implements IWorkbenchP
 		preferences.put(BUG_ID, this.bugIDText.getText());
 		preferences.put(TEST_CASE, this.testCaseText.getText());
 		preferences.put(DEFECTS4J_FILE, this.defects4jFileText.getText());
-//		preferences.put(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
-//		preferences.put(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
-//		preferences.put(USE_TEST_CASE_ID, String.valueOf(this.useTestCaseIDButton.getSelection()));
-//		preferences.put(TEST_CASE_ID, this.testCaseIDText.getText());
-//		preferences.put(SEED, this.seedText.getText());
-//		preferences.put(DROP_IN_FOLDER, this.dropInFolderText.getText());
-//		preferences.put(CONFIG_PATH, this.configPathText.getText());
+		preferences.put(INPUT_FOLDER_KEY, this.inputFolderText.getText());
+		preferences.put(OUTPUT_PATH_KEY, this.outputFolderText.getText());
+		preferences.put(MISTAKE_PROBABILITY_KEY, this.mistakeProbabilityText.getText());
+		preferences.put(AUTO_SIMULATION_METHOD_KEY, this.autoSimulationMethod.name());
+		preferences.put(TIME_LIMIT_KEY, this.timeLimitText.getText());
+	
 		
 		Activator.getDefault().getPreferenceStore().putValue(REPO_PATH, this.projectPathText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(PROJECT_NAME, this.projectNameText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(BUG_ID, this.bugIDText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(TEST_CASE, this.testCaseText.getText());
 		Activator.getDefault().getPreferenceStore().putValue(DEFECTS4J_FILE, this.defects4jFileText.getText());
-//		Activator.getDefault().getPreferenceStore().putValue(AUTO_FEEDBACK_METHOD, this.autoFeedbackCombo.getText());
-//		Activator.getDefault().getPreferenceStore().putValue(MANUAL_FEEDBACK, String.valueOf(this.manualFeedbackButton.getSelection()));
-//		Activator.getDefault().getPreferenceStore().putValue(USE_TEST_CASE_ID, String.valueOf(this.useTestCaseIDButton.getSelection()));
-//		Activator.getDefault().getPreferenceStore().putValue(TEST_CASE_ID, this.testCaseIDText.getText());
-//		Activator.getDefault().getPreferenceStore().putValue(SEED, this.seedText.getText());
-//		Activator.getDefault().getPreferenceStore().putValue(DROP_IN_FOLDER, this.dropInFolderText.getText());
-//		Activator.getDefault().getPreferenceStore().putValue(CONFIG_PATH, this.configPathText.getText());
-
+		Activator.getDefault().getPreferenceStore().putValue(INPUT_FOLDER_KEY, this.inputFolderText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(OUTPUT_PATH_KEY, this.outputFolderText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(MISTAKE_PROBABILITY_KEY, this.mistakeProbabilityText.getText());
+		Activator.getDefault().getPreferenceStore().putValue(AUTO_SIMULATION_METHOD_KEY, this.autoSimulationMethod.name());
+		Activator.getDefault().getPreferenceStore().putValue(TIME_LIMIT_KEY, this.timeLimitText.getText());
 		
 		return true;
 	}
 	
-	private void createAutoFeedbackSettingGroup(Composite parent) {
-//		Group autoFeedbackGroup = new Group(parent, SWT.NONE);
-//		autoFeedbackGroup.setText("Auto Feedback Methods");
-//		
-//		GridData autoFeedbackGroupData = new GridData(SWT.FILL, SWT.FILL, true, true);
-//		autoFeedbackGroupData.horizontalSpan = 3;
-//		autoFeedbackGroup.setLayoutData(autoFeedbackGroupData);
-//		
-//		GridLayout layout = new GridLayout();
-//		layout.numColumns = 2;
-//		
-//		autoFeedbackGroup.setLayout(layout);
-//		
-//		Label methodLabel = new Label(autoFeedbackGroup, SWT.NONE);
-//		methodLabel.setText("Method: ");
-//		
-//		AutoFeedbackMethod[] methods = AutoFeedbackMethod.values();
-//		String[] methodsName = new String[methods.length];
-//		for(int i=0; i<methods.length; i++) {
-//			methodsName[i] = methods[i].name();
-//		}
-//		this.autoFeedbackCombo = new Combo(autoFeedbackGroup, SWT.DROP_DOWN);
-//		this.autoFeedbackCombo.setItems(methodsName);
-//		this.autoFeedbackCombo.select(this.defaultAutoFeedbackMethod);
-//		
-//		this.manualFeedbackButton = new Button(autoFeedbackGroup, SWT.CHECK);
-//		this.manualFeedbackButton.setText("Given feedback manually");
-//		GridData manualFeedbackData = new GridData(SWT.FILL, SWT.FILL, true, false);
-//		manualFeedbackData.horizontalSpan = 3;
-//		this.manualFeedbackButton.setLayoutData(manualFeedbackData);
-//		boolean manualFeedbackButtonSelected = this.defaultManualFeedback.equals("true");
-//		this.manualFeedbackButton.setSelection(manualFeedbackButtonSelected);
-//		
-//		this.useTestCaseIDButton = new Button(autoFeedbackGroup, SWT.CHECK);
-//		this.useTestCaseIDButton.setText("Use Test Case ID");
-//		GridData useTestCaseIDData = new GridData(SWT.FILL, SWT.FILL, true, false);
-//		useTestCaseIDData.horizontalSpan = 3;
-//		this.useTestCaseIDButton.setLayoutData(useTestCaseIDData);
-//		boolean useTestCaseIDDataSelected = this.defaultUseTestCaseID.equals("true");
-//		this.useTestCaseIDButton.setSelection(useTestCaseIDDataSelected);
-//		
-//		Label testCaseIDLabel = new Label(autoFeedbackGroup, SWT.NONE);
-//		testCaseIDLabel.setText("Test Case ID");
-//		this.testCaseIDText = new Text(autoFeedbackGroup, SWT.NONE);
-//		this.testCaseIDText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-//		this.testCaseIDText.setText(this.defaultTestCaesID);
+	protected void createSimulationSettingGroup(Composite parent) {
+		Group simulationGroup = new Group(parent, SWT.NONE);
+		simulationGroup.setText("Simulation Setting");
 		
-//		Label seedLabel = new Label(autoFeedbackGroup, SWT.NONE);
-//		seedLabel.setText("Seed: ");
-//		this.seedText = new Text(autoFeedbackGroup, SWT.NONE);
-//		this.seedText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-//		this.seedText.setText(this.defaultSeed);
-//		
-//		Label dropInFolderLabel = new Label(autoFeedbackGroup, SWT.NONE);
-//		dropInFolderLabel.setText("Drop In Folder: ");
-//		this.dropInFolderText = new Text(autoFeedbackGroup, SWT.NONE);
-//		this.dropInFolderText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-//		this.dropInFolderText.setText(this.defaultDropInFolder);
-//		
-//		Label configPathLabel = new Label(autoFeedbackGroup, SWT.NONE);
-//		configPathLabel.setText("Config Path: ");
-//		this.configPathText = new Text(autoFeedbackGroup, SWT.NONE);
-//		this.configPathText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
-//		this.configPathText.setText(this.defaultConfigPath);
+		GridData simulationData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		simulationData.horizontalSpan = 2;
+		simulationGroup.setLayoutData(simulationData);
+		
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		simulationGroup.setLayout(layout);
+		
+		Label inputFolderLabel = new Label(simulationGroup, SWT.NONE);
+		inputFolderLabel.setText("Input Folder: ");
+		this.inputFolderText = new Text(simulationGroup, SWT.NONE);
+		this.inputFolderText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		this.inputFolderText.setText(this.defaultInputFolder);
+		
+		Label outputPathLabel = new Label(simulationGroup, SWT.NONE);
+		outputPathLabel.setText("Output Folder: ");
+		this.outputFolderText = new Text(simulationGroup, SWT.NONE);
+		this.outputFolderText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		this.outputFolderText.setText(this.defaultOutputPath);
+		
+		Label mistakeProbabilityLabel = new Label(simulationGroup, SWT.NONE);
+		mistakeProbabilityLabel.setText("Mistake Probability: ");
+		this.mistakeProbabilityText = new Text(simulationGroup, SWT.NONE);
+		this.mistakeProbabilityText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		this.mistakeProbabilityText.setText(String.valueOf(this.defaultMistakeProbability));
+		
+		
+		Label timeLimitLabel = new Label(simulationGroup, SWT.NONE);
+		timeLimitLabel.setText("Time Limit (Mins): ");
+		this.timeLimitText = new Text(simulationGroup, SWT.NONE);
+		this.timeLimitText.setLayoutData(new GridData(SWT.FILL, SWT.LEFT, true, false));
+		this.timeLimitText.setText(String.valueOf(this.defaultTimeLimit));
+		
+		Label simulationMethodLabel = new Label(simulationGroup, SWT.NONE);
+		simulationMethodLabel.setText("Testing Approach: ");
+		final String[] autoSimulationMethodNames = Stream.of(AutoSimulationMethod.values()).map(Enum::name).toArray(String[]::new);
+		this.simulateMethodTypeCombo = new Combo(simulationGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+		this.simulateMethodTypeCombo.setItems(autoSimulationMethodNames);
+		this.simulateMethodTypeCombo.select(this.autoSimulationMethod.ordinal());
+		
+		
 	}
+	
 }

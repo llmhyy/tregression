@@ -38,9 +38,9 @@ public class AutoProfInferAgent {
 	
 	protected final List<TraceNode> proposeHistory = new ArrayList<>();
 	
-	public AutoProfInferAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode) {
+	public AutoProfInferAgent(final EmpiricalTrial trial, List<VarValue> inputs, List<VarValue> outputs, TraceNode outputNode, final double mistakeProbability) {
 		this.buggyTrace = trial.getBuggyTrace();
-		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, 0.00d);
+		this.feedbackAgent = new CarelessAutoFeedbackAgent(trial, mistakeProbability);
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.outputNode = outputNode;
@@ -141,13 +141,13 @@ public class AutoProfInferAgent {
 		final double avgPathFindingTime = pathFindingTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
 		final double avgTime = totalTimes.stream().collect(Collectors.averagingDouble(Double::doubleValue));
 		
-		debugResult.avgPropTime = avgPropTime;
-		debugResult.avgPathFindingTime = avgPathFindingTime;
-		debugResult.avgTotalTime = avgTime;
+//		debugResult.avgPropTime = avgPropTime;
+//		debugResult.avgPathFindingTime = avgPathFindingTime;
+//		debugResult.avgTotalTime = avgTime;
 		debugResult.correctFeedbackCount = correctFeedbackCount;
 		debugResult.totalFeedbackCount = totalFeedbackCount;
 		debugResult.debugPilotSuccess = debugSuccess;
-		debugResult.rootCauseCorrect = rootCauseCorrect;
+//		debugResult.rootCauseCorrect = rootCauseCorrect;
 		return debugResult;
 	}
 	

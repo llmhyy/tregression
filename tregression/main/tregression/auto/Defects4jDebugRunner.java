@@ -26,12 +26,12 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 
 	private List<String> outOfMemoryFilters = new ArrayList<>();
 	
-	public Defects4jDebugRunner(String basePath, String resultPath) {
-		this(basePath, resultPath, 5);
+	public Defects4jDebugRunner(String basePath, String resultPath, final double mistakeProbability, final long timeLimit) {
+		this(basePath, resultPath, 5, mistakeProbability, timeLimit);
 	}
 	
-	public Defects4jDebugRunner(String basePath, String resultPath, int maxThreadsCount) {
-		super(basePath, resultPath, maxThreadsCount);
+	public Defects4jDebugRunner(String basePath, String resultPath, int maxThreadsCount, final double mistakeProbability, final long timeLimit) {
+		super(basePath, resultPath, maxThreadsCount, mistakeProbability, timeLimit);
 	    outOfMemoryFilters.add("Compress:22");
 	    outOfMemoryFilters.add("Compress:29");
 	    outOfMemoryFilters.add("JacksonCore:4");
@@ -86,7 +86,7 @@ public class Defects4jDebugRunner extends ProjectsDebugRunner {
 				for (DeadEndRecord record : trial.getDeadEndRecordList()) {
 					SolutionPattern solutionPattern = record.getSolutionPattern();
 					if (solutionPattern != null) {
-						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+//						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 					}
 				}
 				

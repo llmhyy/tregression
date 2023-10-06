@@ -33,7 +33,7 @@ public abstract class ProjectsRunner {
 
     public ProjectsRunner(final String basePath, final String resultPath) {
         this(basePath, resultPath, 5);
-    }
+    } 
 
     public ProjectsRunner(final String basePath, final String resultPath, final int maxThreadCount) {
         this.basePath = basePath;
@@ -73,7 +73,7 @@ public abstract class ProjectsRunner {
                 }
                 
                 final String id = projectName + ":" + bugID_str;
-                if (!this.targetBugs.contains(id)) {
+                if (!this.targetBugs.isEmpty() && !this.targetBugs.contains(id)) {
                 	continue;
                 }
 

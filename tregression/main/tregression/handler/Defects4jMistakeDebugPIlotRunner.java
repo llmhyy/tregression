@@ -31,12 +31,12 @@ public class Defects4jMistakeDebugPIlotRunner extends ProjectsDebugRunner {
 	private List<String> outOfMemoryFilters = new ArrayList<>();
 	
 	
-	public Defects4jMistakeDebugPIlotRunner(String basePath, String resultPath) {
-		this(basePath, resultPath, 5);
+	public Defects4jMistakeDebugPIlotRunner(String basePath, String resultPath, final double mistakeProbability, final long timeLimit) {
+		this(basePath, resultPath, 5, mistakeProbability, timeLimit);
 	}
 	
-	public Defects4jMistakeDebugPIlotRunner(String basePath, String resultPath, int maxThreadsCount) {
-		super(basePath, resultPath, maxThreadsCount);
+	public Defects4jMistakeDebugPIlotRunner(String basePath, String resultPath, int maxThreadsCount, final double mistakeProbability, final long timeLimit) {
+		super(basePath, resultPath, maxThreadsCount, mistakeProbability, timeLimit);
 	    outOfMemoryFilters.add("Compress:22");
 	    outOfMemoryFilters.add("Compress:29");
 	    outOfMemoryFilters.add("JacksonCore:4");
@@ -91,12 +91,12 @@ public class Defects4jMistakeDebugPIlotRunner extends ProjectsDebugRunner {
 				for (DeadEndRecord record : trial.getDeadEndRecordList()) {
 					SolutionPattern solutionPattern = record.getSolutionPattern();
 					if (solutionPattern != null) {
-						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
+//						result.solutionName += record.getSolutionPattern().getTypeName() + ":";
 					}
 				}
 				
 				// Prepare inputs and outputs for automatic debugging
-				List<VarValue> inputs = new ArrayList<>();
+				List<VarValue> inputs = new ArrayList<>(); 
 				List<VarValue> outputs = new ArrayList<>();
 				TraceNode outputNode = null;
 				String IOStoragePath = "D:\\Defects4j_IO";
@@ -134,14 +134,14 @@ public class Defects4jMistakeDebugPIlotRunner extends ProjectsDebugRunner {
 					ProjectsRunner.printMsg("Outputs: ");
 					ProjectsRunner.printMsg(outputDetected.toString());
 					
-					AutoDebugPilotMistakeAgent agent = new AutoDebugPilotMistakeAgent(trial, inputs, outputs, outputNode);
+					AutoDebugPilotMistakeAgent agent = new AutoDebugPilotMistakeAgent(trial, inputs, outputs, outputNode, this.mistakeProbability);
 					DebugResult debugResult = new DebugResult(result);
 					ExecutorService executor = Executors.newSingleThreadExecutor();
 					Future<DebugResult> future = executor.submit(() -> {
 						return agent.startDebug(new DebugResult(result));
 					});
 					try {
-						debugResult = future.get(30, TimeUnit.MINUTES);
+						debugResult = future.get(this.timeLimit, TimeUnit.MINUTES);
 					} catch (Exception e) {
 						debugResult.errorMessage = e.toString();
 					} finally {

@@ -34,8 +34,8 @@ public class Defects4jAutoMicrobatHandler extends AbstractHandler {
 	
 	private void execute() {
 		final String basePath = "D:\\Defects4j";
-		final String resultPath = Paths.get("D:", "microbat.txt").toString();
-		final ProjectsRunner runner = new Defects4jMicrobatRunner(basePath, resultPath);
+		final String resultPath = Paths.get("D:\\david\\result_version_3", "temp.txt").toString();
+		final ProjectsRunner runner = new Defects4jMicrobatRunner(basePath, resultPath, 0.0d, 120l);
 		runner.run();
 	}
 
