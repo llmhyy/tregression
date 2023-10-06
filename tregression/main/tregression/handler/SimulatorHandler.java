@@ -70,7 +70,7 @@ public class SimulatorHandler extends AbstractHandler {
 		try {
 			timeLimit = Long.parseLong(timeLimitStr);
 		} catch (NumberFormatException e) {
-			throw new NumberFormatException("Given time limit is not a double value:" + timeLimitStr);
+			throw new NumberFormatException("Given time limit is not a integer value:" + timeLimitStr);
 		}
 		
 		final String resultFileName = simulationMethod.name() + "_" + String.valueOf(mistakeProbability).replace(".", "_") + ".txt";
