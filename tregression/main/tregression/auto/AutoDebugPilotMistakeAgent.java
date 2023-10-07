@@ -542,10 +542,12 @@ public class AutoDebugPilotMistakeAgent {
 		
 		@Override
 		public void handleFeedback() {
-			for (TraceNode rootCause : gtRootCauses) {
-				if (this.withinRange(rootCause, this.startNode, this.endNode)) {
-					this.stateMachine.setState(new EndState(this.stateMachine, true, this.microbatSuccess));
-					return;
+			if (this.startNode != null) {				
+				for (TraceNode rootCause : gtRootCauses) {
+					if (this.withinRange(rootCause, this.startNode, this.endNode)) {
+						this.stateMachine.setState(new EndState(this.stateMachine, true, this.microbatSuccess));
+						return;
+					}
 				}
 			}
 			

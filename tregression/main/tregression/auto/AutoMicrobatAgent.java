@@ -221,10 +221,12 @@ public class AutoMicrobatAgent {
 				final TraceNode endNode = currentNode;
 				this.debugResult.microbat_effort += this.measureMicrobatEffort(endNode);
 				// Check is first deviation point lies in range
-				for (TraceNode rootCause : gtRootCauses) {
-					if (rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder()) {
-						this.debugResult.microbatSuccess = true;
-						break;
+				if (startNode != null) {					
+					for (TraceNode rootCause : gtRootCauses) {
+						if (rootCause.getOrder() >= startNode.getOrder() && rootCause.getOrder() <= endNode.getOrder()) {
+							this.debugResult.microbatSuccess = true;
+							break;
+						}
 					}
 				}
 				
