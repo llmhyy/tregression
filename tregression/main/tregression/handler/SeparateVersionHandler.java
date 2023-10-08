@@ -14,23 +14,17 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import microbat.Activator;
 import microbat.model.trace.Trace;
-import microbat.model.trace.TraceNode;
-import microbat.recommendation.UserFeedback;
 import microbat.util.JavaUtil;
 import tregression.empiricalstudy.DeadEndCSVWriter;
 import tregression.empiricalstudy.DeadEndRecord;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.TrialGenerator;
 import tregression.empiricalstudy.TrialGenerator0;
-import tregression.empiricalstudy.TrialRecorder;
 import tregression.empiricalstudy.config.ConfigFactory;
 import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.empiricalstudy.training.DED;
 import tregression.empiricalstudy.training.DeadEndData;
 import tregression.preference.TregressionPreference;
-import tregression.auto.AutoFeedbackAgent;
-import tregression.autofeedback.*;
-import tregression.handler.AutoFeedbackHandler;
 
 public class SeparateVersionHandler extends AbstractHandler{
 

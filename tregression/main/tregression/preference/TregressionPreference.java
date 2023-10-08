@@ -9,7 +9,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -20,9 +19,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import microbat.Activator;
-import microbat.debugpilot.propagation.PropagatorType;
 import tregression.auto.AutoSimulationMethod;
-import tregression.autofeedback.AutoFeedbackMethod;
 
 public class TregressionPreference extends PreferencePage implements IWorkbenchPreferencePage {
 

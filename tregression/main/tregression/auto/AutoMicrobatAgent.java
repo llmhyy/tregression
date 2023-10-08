@@ -119,7 +119,7 @@ public class AutoMicrobatAgent {
 		settings.setOutputNode(outputNode);
 		
 		PropagatorSettings propagatorSettings = settings.getPropagatorSettings();
-		propagatorSettings.setPropagatorType(PropagatorType.SPPS_CB);
+		propagatorSettings.setPropagatorType(PropagatorType.SPPS_CS);
 		settings.setPropagatorSettings(propagatorSettings);
 		
 		PathFinderSettings pathFinderSettings = settings.getPathFinderSettings();

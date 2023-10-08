@@ -307,15 +307,15 @@ public class AutoDebugPilotMistakeAgent {
 			UserFeedback possibleFeedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
 			possibleFeedback.setOption(new ChosenVariableOption(readVar, null));
 			if (!possibleFeedback.equals(feedback)) {
-				possibleFeedbackMap.put(possibleFeedback, readVar.computationalCost);
-				maxSlicingSuspicious = Math.max(maxSlicingSuspicious, readVar.computationalCost);
+				possibleFeedbackMap.put(possibleFeedback, readVar.getSuspiciousness());
+				maxSlicingSuspicious = Math.max(maxSlicingSuspicious, readVar.getSuspiciousness());
 			}
 		}
 		final TraceNode controlDom = node.getControlDominator();
 		UserFeedback possibleControlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
-		possibleFeedbackMap.put(possibleControlFeedback, controlDom == null ? 0.0d : controlDom.getConditionResult().computationalCost);
+		possibleFeedbackMap.put(possibleControlFeedback, controlDom == null ? 0.0d : controlDom.getConditionResult().getSuspiciousness());
 		if (controlDom != null) {			
-			maxSlicingSuspicious = Math.max(maxSlicingSuspicious, controlDom.getConditionResult().computationalCost);
+			maxSlicingSuspicious = Math.max(maxSlicingSuspicious, controlDom.getConditionResult().getSuspiciousness());
 		}
 		
 		if (gtFeedback.getFeedbackType().equals(UserFeedback.CORRECT) && maxSlicingSuspicious <= 0.2d) {
