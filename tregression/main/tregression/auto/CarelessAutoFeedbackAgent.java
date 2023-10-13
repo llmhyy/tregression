@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import microbat.debugpilot.userfeedback.DPUserFeedback;
+import microbat.debugpilot.userfeedback.DPUserFeedbackType;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.recommendation.ChosenVariableOption;
-import microbat.recommendation.UserFeedback;
-import microbat.util.TraceUtil;
 import tregression.empiricalstudy.EmpiricalTrial;
 import tregression.empiricalstudy.RootCauseFinder;
 import tregression.model.PairList;
@@ -39,9 +38,9 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 		this.wrongProb = wrongProb;
 	}
 
-	public UserFeedback giveFeedback(final TraceNode node, final Trace trace) {
-		List<UserFeedback> possibleFeedbacks = this.getPossibleFeedbacks(node, trace);
-		UserFeedback gtFeedback = super.giveGTFeedback(node);
+	public DPUserFeedback giveFeedback(final TraceNode node, final Trace trace) {
+		List<DPUserFeedback> possibleFeedbacks = this.getPossibleFeedbacks(node, trace);
+		DPUserFeedback gtFeedback = super.giveGTFeedback(node);
 
 		if (possibleFeedbacks.size() <= 1 || Math.random() > this.wrongProb) {
 			return gtFeedback;
@@ -53,20 +52,27 @@ public class CarelessAutoFeedbackAgent extends AutoFeedbackAgent {
 		return possibleFeedbacks.get(randomIdx);
 	}
 
-	protected List<UserFeedback> getPossibleFeedbacks(final TraceNode node, final Trace trace) {
-		List<UserFeedback> feedbacks = new ArrayList<>();
-
-		UserFeedback controlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
+	protected List<DPUserFeedback> getPossibleFeedbacks(final TraceNode node, final Trace trace) {
+		List<DPUserFeedback> feedbacks = new ArrayList<>();
+		
+		DPUserFeedback controlFeedback = new DPUserFeedback(DPUserFeedbackType.WRONG_PATH, node);
 		feedbacks.add(controlFeedback);
-
-		// Data Slicing
+		
 		for (VarValue readVar : node.getReadVariables()) {
-			UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
-			feedback.setOption(new ChosenVariableOption(readVar, null));
-			if (TraceUtil.findNextNode(node, feedback, trace) != null) {				
-				feedbacks.add(feedback);
-			}
+			DPUserFeedback feedback = new DPUserFeedback(DPUserFeedbackType.WRONG_VARIABLE, node);
+			feedback.addWrongVar(readVar);
 		}
+//		UserFeedback controlFeedback = new UserFeedback(UserFeedback.WRONG_PATH);
+//		feedbacks.add(controlFeedback);
+
+//		// Data Slicing
+//		for (VarValue readVar : node.getReadVariables()) {
+//			UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
+//			feedback.setOption(new ChosenVariableOption(readVar, null));
+//			if (TraceUtil.findNextNode(node, feedback, trace) != null) {				
+//				feedbacks.add(feedback);
+//			}
+//		}
 		
 
 		return feedbacks;

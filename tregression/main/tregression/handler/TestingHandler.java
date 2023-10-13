@@ -1,7 +1,6 @@
 package tregression.handler;
 
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.util.Comparator;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -14,36 +13,14 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
-import com.sun.security.ntlm.Client;
-
-import microbat.debugpilot.DebugPilotInfo;
-import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.util.JavaUtil;
-import microbat.util.TraceUtil;
 import microbat.util.UniquePriorityQueue;
-import tregression.empiricalstudy.EmpiricalTrial;
-import tregression.empiricalstudy.TrialGenerator0;
-import tregression.empiricalstudy.config.Defects4jProjectConfig;
-import tregression.empiricalstudy.config.ProjectConfig;
 import tregression.separatesnapshots.DiffMatcher;
 import tregression.views.BuggyTraceView;
 import tregression.views.CorrectTraceView;
-import microbat.recommendation.ChosenVariableOption;
-import microbat.recommendation.UserFeedback;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
-
-import tregression.auto.AutoDebugPilotAgent;
-import tregression.auto.result.DebugResult;
-//import dataset.BugDataset;
-//import dataset.BugDataset.BugData;
-//import dataset.bug.minimize.ProjectMinimizer;
-import tregression.auto.result.RunResult;
-import jmutation.utils.TraceHelper;
 
 public class TestingHandler extends AbstractHandler {
 

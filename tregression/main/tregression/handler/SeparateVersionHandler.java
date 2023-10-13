@@ -68,7 +68,6 @@ public class SeparateVersionHandler extends AbstractHandler{
 				
 				if(trials.size() != 0) {
 					PlayRegressionLocalizationHandler.finder = trials.get(0).getRootCauseFinder();
-					AutoFeedbackHandler.trial = trials.get(0);
 				}
 				
 				System.out.println("all the trials");

@@ -11,20 +11,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.PlatformUI;
 
-import microbat.model.variable.Variable;
-import microbat.model.variable.LocalVar;
-import microbat.model.value.PrimitiveValue;
 import microbat.debugpilot.DebugPilotInfo;
-import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.debugpilot.NodeVarPair;
-import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
 import microbat.recommendation.ChosenVariableOption;
-import microbat.recommendation.ChosenVariablesOption;
 import microbat.recommendation.UserFeedback;
 
 /**
@@ -75,29 +67,29 @@ public class StepDetailIOUI extends StepDetailUI {
 		FeedbackSubmitListener fListener = new FeedbackSubmitListener();
 		submitButton.addMouseListener(fListener);
 		
-		Button addInputButton = new Button(slicingGroup, SWT.NONE);
-		addInputButton.setText("Inputs");
-		addInputButton.setToolTipText("Sets the selected fields as input");
-		addInputButton.setLayoutData(buttonLayoutData);
-		addInputButton.addMouseListener(new AddInputListener());
-		
-		Button addOutputButton = new Button(slicingGroup, SWT.NONE);
-		addOutputButton.setText("Outputs");
-		addOutputButton.setToolTipText("Sets the selected fields as output");
-		addOutputButton.setLayoutData(buttonLayoutData);
-		addOutputButton.addMouseListener(new AddOuputListener());
-		
-		Button clearVarsButton = new Button(slicingGroup, SWT.NONE);
-		clearVarsButton.setText("clear");
-		clearVarsButton.setToolTipText("Clears the input and output selected");
-		clearVarsButton.setLayoutData(buttonLayoutData);
-		clearVarsButton.addMouseListener(new ClearVarsListener());
-		
-		Button showIOButton = new Button(slicingGroup, SWT.NONE);
-		showIOButton.setText("IO");
-		showIOButton.setToolTipText("Shows the input and output fields set");
-		showIOButton.setLayoutData(buttonLayoutData);
-		showIOButton.addMouseListener(new showIOListener());
+//		Button addInputButton = new Button(slicingGroup, SWT.NONE);
+//		addInputButton.setText("Inputs");
+//		addInputButton.setToolTipText("Sets the selected fields as input");
+//		addInputButton.setLayoutData(buttonLayoutData);
+//		addInputButton.addMouseListener(new AddInputListener());
+//		
+//		Button addOutputButton = new Button(slicingGroup, SWT.NONE);
+//		addOutputButton.setText("Outputs");
+//		addOutputButton.setToolTipText("Sets the selected fields as output");
+//		addOutputButton.setLayoutData(buttonLayoutData);
+//		addOutputButton.addMouseListener(new AddOuputListener());
+//		
+//		Button clearVarsButton = new Button(slicingGroup, SWT.NONE);
+//		clearVarsButton.setText("clear");
+//		clearVarsButton.setToolTipText("Clears the input and output selected");
+//		clearVarsButton.setLayoutData(buttonLayoutData);
+//		clearVarsButton.addMouseListener(new ClearVarsListener());
+//		
+//		Button showIOButton = new Button(slicingGroup, SWT.NONE);
+//		showIOButton.setText("IO");
+//		showIOButton.setToolTipText("Shows the input and output fields set");
+//		showIOButton.setLayoutData(buttonLayoutData);
+//		showIOButton.addMouseListener(new showIOListener());
 		
 		Button manualFeedbackButton = new Button(slicingGroup, SWT.NONE);
 		manualFeedbackButton.setText("Feedback");
@@ -219,7 +211,7 @@ public class StepDetailIOUI extends StepDetailUI {
 					feedbacks.add(feedback);
 				}
 			}
-			DebugPilotInfo.getInstance().setNodeFeedbacksPair(currentNode, feedbacks);
+//			DebugPilotInfo.getInstance().setNodeFeedbacksPair(currentNode, feedbacks);
 		}
 
 		@Override

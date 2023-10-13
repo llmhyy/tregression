@@ -54,11 +54,6 @@
              name="Run Single Defect4j Bug">
        </command>
        <command
-             defaultHandler="tregression.handler.AutoFeedbackHandler"
-             id="tregression.autofeedback"
-             name="Auto Debug">
-       </command>
-       <command
              defaultHandler="tregression.handler.DataCollectionHandler"
              id="tregression.collectdata"
              name="Collect Data">

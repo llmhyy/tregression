@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
 import microbat.debugpilot.rootcausefinder.RootCauseLocatorType;
@@ -14,11 +13,11 @@ import microbat.debugpilot.settings.DebugPilotSettings;
 import microbat.debugpilot.settings.PathFinderSettings;
 import microbat.debugpilot.settings.PropagatorSettings;
 import microbat.debugpilot.settings.RootCauseLocatorSettings;
+import microbat.debugpilot.userfeedback.DPUserFeedback;
+import microbat.debugpilot.userfeedback.DPUserFeedbackType;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.recommendation.ChosenVariableOption;
-import microbat.recommendation.UserFeedback;
 import microbat.util.TraceUtil;
 import tregression.auto.result.DebugResult;
 import tregression.auto.result.RunResult;
@@ -92,8 +91,10 @@ public class AutoMicrobatAgent {
 		Set<TraceNode> rootCauses = new HashSet<>();
 		TraceNode firstStep = null;
 		for (TraceNode node : trial.getBuggyTrace().getExecutionList()) {
-			UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
-			if (!feedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
+//			UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
+			DPUserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
+//			if (!feedback.getFeedbackType().equals(UserFeedback.CORRECT)) {
+			if (feedback.getType() == DPUserFeedbackType.CORRECT) {
 				firstStep = node;
 				break;
 			}
@@ -144,20 +145,35 @@ public class AutoMicrobatAgent {
 		TraceNode currentNode = this.outputNode;
 		boolean isEnd = false;
 
-		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
+		Stack<DPUserFeedback> userFeedbackRecords = new Stack<>();
+		final TraceNode outputNode = settings.getOutputNode();
+		DPUserFeedback feedback = null;
 		for (VarValue wrongVar : settings.getPropagatorSettings().getWrongVars()) {
 			if (wrongVar.isConditionResult()) {
-				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
-				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
-				userFeedbackRecords.add(pair);
+				feedback = new DPUserFeedback(DPUserFeedbackType.WRONG_PATH, outputNode);
+				userFeedbackRecords.add(feedback);
+				break;
 			} else {
-				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
-				feedback.setOption(new ChosenVariableOption(wrongVar, null));
- 				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
- 				userFeedbackRecords.add(pair);
+				feedback = new DPUserFeedback(DPUserFeedbackType.WRONG_VARIABLE, outputNode);
+				feedback.addWrongVar(wrongVar);
 			}
-			break;
 		}
+		userFeedbackRecords.add(feedback);
+		
+//		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
+//		for (VarValue wrongVar : settings.getPropagatorSettings().getWrongVars()) {
+//			if (wrongVar.isConditionResult()) {
+//				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_PATH);
+//				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
+//				userFeedbackRecords.add(pair);
+//			} else {
+//				UserFeedback feedback = new UserFeedback(UserFeedback.WRONG_VARIABLE_VALUE);
+//				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+// 				NodeFeedbacksPair pair = new NodeFeedbacksPair(settings.getOutputNode(), feedback);
+// 				userFeedbackRecords.add(pair);
+//			}
+//			break;
+//		}
 		
 		long startDebugTime = System.currentTimeMillis();
 		
@@ -172,10 +188,11 @@ public class AutoMicrobatAgent {
 				break;
 			}
 			
-			NodeFeedbacksPair userFeedbacksPair = this.giveFeedback(currentNode);
-			UserFeedback userFeedback = userFeedbacksPair.getFirstFeedback();
+//			DPUserFeedback userFeedbacksPair = this.giveFeedback(currentNode);
+//			UserFeedback userFeedback = userFeedbacksPair.getFirstFeedback();
 			
-			NodeFeedbacksPair gtFeedbacksPair = this.giveGTFeedback(currentNode);
+			DPUserFeedback userFeedback = this.giveFeedback(outputNode);
+			DPUserFeedback gtFeedbacksPair = this.giveGTFeedback(currentNode);
 			
 //			if (!gtFeedbacksPair.equals(userFeedbacksPair)) {
 //				this.debugResult.microbatSuccess = false;
@@ -183,11 +200,11 @@ public class AutoMicrobatAgent {
 //				break;
 //			}
 			
-			if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.CORRECT)) {
-				
+//			if (userFeedbacksPair.getFeedbackType().equals(UserFeedback.CORRECT)) {
+			if (userFeedback.getType() == DPUserFeedbackType.CORRECT) {
 				// Correct feedback is given, omission bug detected
 				final TraceNode startNode = currentNode;
-				final NodeFeedbacksPair prevsFeedbacksPair = userFeedbackRecords.peek();
+				final DPUserFeedback prevsFeedbacksPair = userFeedbackRecords.peek();
 				final TraceNode endNode= prevsFeedbacksPair.getNode();
 				
 				this.debugResult.microbat_effort += this.measureMicrobatEffort(endNode);
@@ -216,7 +233,8 @@ public class AutoMicrobatAgent {
 				}
 				
 				isEnd = true;
-			} else if (TraceUtil.findNextNode(currentNode, userFeedback, buggyTrace) == null) {
+//			} else if (TraceUtil.findNextNode(currentNode, userFeedback, buggyTrace) == null) {
+			} else if (TraceUtil.findAllNextNodes(userFeedback).isEmpty()) {
 				TraceNode startNode = currentNode.getInvocationMethodOrDominator();
 				final TraceNode endNode = currentNode;
 				this.debugResult.microbat_effort += this.measureMicrobatEffort(endNode);
@@ -248,8 +266,9 @@ public class AutoMicrobatAgent {
 				isEnd = true;
 			} else {
 				// Give feedback normally
-				currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyTrace);
-				userFeedbackRecords.add(userFeedbacksPair);
+//				currentNode = TraceUtil.findNextNode(currentNode, userFeedback, buggyTrace);
+				currentNode = TraceUtil.findAllNextNodes(userFeedback).stream().findFirst().orElse(null);
+				userFeedbackRecords.add(userFeedback);
 			}
 		}
 		
@@ -261,16 +280,16 @@ public class AutoMicrobatAgent {
 		
 	}
 	
-	protected NodeFeedbacksPair giveFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveFeedback(node, this.buggyTrace);
-		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
-		return feedbacksPair;
+	protected DPUserFeedback giveFeedback(final TraceNode node) {
+		return this.feedbackAgent.giveFeedback(node, this.buggyTrace);
+//		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
+//		return feedbacksPair;
 	}
 	
-	protected NodeFeedbacksPair giveGTFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveGTFeedback(node);
-		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
-		return feedbacksPair;
+	protected DPUserFeedback giveGTFeedback(final TraceNode node) {
+		return this.feedbackAgent.giveGTFeedback(node);
+//		NodeFeedbacksPair feedbacksPair = new NodeFeedbacksPair(node, feedback);
+//		return feedbacksPair;
 	}
 	
 	protected double measureMicrobatEffort(final TraceNode node) {

@@ -7,8 +7,6 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import microbat.debugpilot.DebugPilot;
-import microbat.debugpilot.NodeFeedbackPair;
-import microbat.debugpilot.NodeFeedbacksPair;
 import microbat.debugpilot.pathfinding.PathFinderType;
 import microbat.debugpilot.propagation.PropagatorType;
 import microbat.debugpilot.rootcausefinder.RootCauseLocatorType;
@@ -16,18 +14,14 @@ import microbat.debugpilot.settings.DebugPilotSettings;
 import microbat.debugpilot.settings.PathFinderSettings;
 import microbat.debugpilot.settings.PropagatorSettings;
 import microbat.debugpilot.settings.RootCauseLocatorSettings;
+import microbat.debugpilot.userfeedback.DPUserFeedback;
 import microbat.log.Log;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
-import microbat.recommendation.UserFeedback;
-import microbat.util.TraceUtil;
 import tregression.auto.result.DebugResult;
 import tregression.auto.result.RunResult;
 import tregression.empiricalstudy.EmpiricalTrial;
-import tregression.empiricalstudy.RootCauseFinder;
-import tregression.model.PairList;
-import tregression.separatesnapshots.DiffMatcher;
 
 public class AutoProfInferAgent {
 	private final Trace buggyTrace;
@@ -87,7 +81,7 @@ public class AutoProfInferAgent {
 			debugResult.errorMessage = Log.genMsg(getClass(), "Root Cause is null");
 			return debugResult;
 		}
-		Stack<NodeFeedbacksPair> userFeedbackRecords = new Stack<>();
+		Stack<DPUserFeedback> userFeedbackRecords = new Stack<>();
 		
 		Log.printMsg(this.getClass(),  "Start automatic debugging: " + result.projectName + ":" + result.bugID);
 		
@@ -130,7 +124,7 @@ public class AutoProfInferAgent {
 					break;
 				}
 				this.proposeHistory.add(proposedRootCause);
-				NodeFeedbacksPair feedback = this.giveFeedback(proposedRootCause);
+				DPUserFeedback feedback = this.giveFeedback(proposedRootCause);
 				Log.printMsg(getClass(), "Wrong root cause, feedback is given: " + feedback);
 				userFeedbackRecords.add(feedback);
 				totalFeedbackCount++;
@@ -151,10 +145,14 @@ public class AutoProfInferAgent {
 		return debugResult;
 	}
 	
-	private NodeFeedbacksPair giveFeedback(final TraceNode node) {
-		UserFeedback feedback = this.feedbackAgent.giveFeedback(node, this.buggyTrace);
-		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
-		return feedbackPair;
+//	private NodeFeedbacksPair giveFeedback(final TraceNode node) {
+//		UserFeedback feedback = this.feedbackAgent.giveFeedback(node, this.buggyTrace);
+//		NodeFeedbacksPair feedbackPair = new NodeFeedbacksPair(node, feedback);
+//		return feedbackPair;
+//	}
+	
+	private DPUserFeedback giveFeedback(final TraceNode node) {
+		return this.feedbackAgent.giveFeedback(node, this.buggyTrace);
 	}
 	
 	protected int measureEffort(final TraceNode node) {

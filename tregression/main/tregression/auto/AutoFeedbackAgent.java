@@ -1,7 +1,11 @@
 package tregression.auto;
 
 import java.util.List;
+import java.util.Map;
 
+import microbat.debugpilot.userfeedback.DPUserFeedback;
+import microbat.debugpilot.userfeedback.DPUserFeedbackType;
+import microbat.log.Log;
 import microbat.model.trace.Trace;
 import microbat.model.trace.TraceNode;
 import microbat.model.value.VarValue;
@@ -39,54 +43,84 @@ public class AutoFeedbackAgent {
 		this.finder = finder;
 	}
 	
-	/**
-	 * Get the ground truth feedback of the given node
-	 * @param node Target node
-	 * @return Ground truth feedback
-	 */
-	public UserFeedback giveGTFeedback(final TraceNode node) {
+	public DPUserFeedback giveGTFeedback(final TraceNode node) {
 		StepChangeType type = this.typeChecker.getType(node, true, this.pairList, this.matcher);
 		return this.typeToFeedback(type, node, true, this.finder);
 	}
+	
+//	/**
+//	 * Get the ground truth feedback of the given node
+//	 * @param node Target node
+//	 * @return Ground truth feedback
+//	 */
+//	public UserFeedback giveGTFeedback(final TraceNode node) {
+//		StepChangeType type = this.typeChecker.getType(node, true, this.pairList, this.matcher);
+//		return this.typeToFeedback(type, node, true, this.finder);
+//	}
+	
 	
 	public StepChangeType getStepChangeType(final TraceNode node) {
 		return this.typeChecker.getType(node, true, this.pairList, this.matcher);
 	}
 	
-	/**
-	 * Convert the StepChangeType to UserFeedback
-	 * @param type StepChangeType to be converted 
-	 * @param node Variable needed for getting wrong variable
-	 * @param isOnBefore Variable needed for getting wrong variable
-	 * @param finder Variable needed for getting wrong variable
-	 * @return Converted UserFeedback
-	 */
-	private UserFeedback typeToFeedback(StepChangeType type, TraceNode node, boolean isOnBefore, RootCauseFinder finder) {
-		UserFeedback feedback = new UserFeedback();
-		switch(type.getType()) {
+//	/**
+//	 * Convert the StepChangeType to UserFeedback
+//	 * @param type StepChangeType to be converted 
+//	 * @param node Variable needed for getting wrong variable
+//	 * @param isOnBefore Variable needed for getting wrong variable
+//	 * @param finder Variable needed for getting wrong variable
+//	 * @return Converted UserFeedback
+//	 */
+//	private UserFeedback typeToFeedback(StepChangeType type, TraceNode node, boolean isOnBefore, RootCauseFinder finder) {
+//		UserFeedback feedback = new UserFeedback();
+//		switch(type.getType()) {
+//		case StepChangeType.IDT:
+//			feedback.setFeedbackType(UserFeedback.CORRECT);
+//			break;
+//		case StepChangeType.CTL:
+//			feedback.setFeedbackType(UserFeedback.WRONG_PATH);
+//			break;
+//		case StepChangeType.DAT:
+//			feedback.setFeedbackType(UserFeedback.WRONG_VARIABLE_VALUE);
+//			final List<Pair<VarValue, VarValue>> wrongVariableList = type.getWrongVariableList();
+//			if (wrongVariableList.size() == 1) {
+//				VarValue wrongVar = type.getWrongVariable(node, isOnBefore, finder);
+//				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+//			} else {
+//				// If there are multiple variable to choose, do not pick the "this" variable
+//				List<Pair<VarValue, VarValue>> filteredList = wrongVariableList.stream().filter(pair -> !pair.first().isThisVariable()).toList();
+//				final VarValue wrongVar = filteredList.get(0).first();
+//				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+//			}
+//			break;
+//		case StepChangeType.SRC:
+//			feedback.setFeedbackType(UserFeedback.UNCLEAR);
+//			break;
+//		}
+//		return feedback;
+//	}
+	
+	protected DPUserFeedback typeToFeedback(StepChangeType type, TraceNode node, boolean isOnBefore, RootCauseFinder finder) {
+		switch (type.getType()) {
 		case StepChangeType.IDT:
-			feedback.setFeedbackType(UserFeedback.CORRECT);
-			break;
+			return new DPUserFeedback(DPUserFeedbackType.CORRECT, node);
 		case StepChangeType.CTL:
-			feedback.setFeedbackType(UserFeedback.WRONG_PATH);
-			break;
+			return new DPUserFeedback(DPUserFeedbackType.WRONG_PATH, node);
 		case StepChangeType.DAT:
-			feedback.setFeedbackType(UserFeedback.WRONG_VARIABLE_VALUE);
-			final List<Pair<VarValue, VarValue>> wrongVariableList = type.getWrongVariableList();
-			if (wrongVariableList.size() == 1) {
-				VarValue wrongVar = type.getWrongVariable(node, isOnBefore, finder);
-				feedback.setOption(new ChosenVariableOption(wrongVar, null));
-			} else {
-				// If there are multiple variable to choose, do not pick the "this" variable
-				List<Pair<VarValue, VarValue>> filteredList = wrongVariableList.stream().filter(pair -> !pair.first().isThisVariable()).toList();
-				final VarValue wrongVar = filteredList.get(0).first();
-				feedback.setOption(new ChosenVariableOption(wrongVar, null));
+			DPUserFeedback feedback = new DPUserFeedback(DPUserFeedbackType.WRONG_VARIABLE, node);
+			final List<VarValue> wrongVars = type.getWrongVariableList().stream().map(pair -> pair.first()).toList();
+			for (VarValue readVar : node.getReadVariables()) {
+				if (wrongVars.contains(readVar) ) {
+					feedback.addWrongVar(readVar);
+				} else {
+					feedback.addCorrectVar(readVar);
+				}
 			}
-			break;
+			return feedback;
 		case StepChangeType.SRC:
-			feedback.setFeedbackType(UserFeedback.UNCLEAR);
-			break;
+			return new DPUserFeedback(DPUserFeedbackType.ROOT_CAUSE, node);
+		default:
+			throw new RuntimeException(Log.genMsg(getClass(), "Unhandled step change type: " + type.getType()));	
 		}
-		return feedback;
 	}
 }
